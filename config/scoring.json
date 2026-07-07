@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "presets": {
+    "1d_default": {
+      "timeframe": "1d",
+      "categories": [
+        {
+          "name": "trend",
+          "weight": 0.3,
+          "rules": [
+            { "type": "compare", "left": "close", "op": "gt", "right": "sma:50", "score": 50 },
+            { "type": "compare", "left": "close", "op": "gt", "right": "sma:200", "score": 50 }
+          ]
+        },
+        {
+          "name": "momentum",
+          "weight": 0.25,
+          "rules": [
+            { "type": "rsi_mid", "indicator": "rsi", "low": 30, "high": 70, "score": 100 },
+            { "type": "macd_hist", "indicator": "macd", "score": 100 }
+          ]
+        },
+        {
+          "name": "volatility",
+          "weight": 0.15,
+          "rules": [{ "type": "bb_position", "indicator": "bb", "score": 100 }]
+        },
+        {
+          "name": "volume",
+          "weight": 0.15,
+          "rules": [{ "type": "volume_vs_avg", "period": 20, "score": 100 }]
+        },
+        {
+          "name": "range",
+          "weight": 0.15,
+          "rules": [{ "type": "price_in_range", "lookback": 252, "score": 100 }]
+        }
+      ],
+      "grades": [
+        { "grade": "A", "min": 80 },
+        { "grade": "B", "min": 65 },
+        { "grade": "C", "min": 50 },
+        { "grade": "D", "min": 35 },
+        { "grade": "F", "min": 0 }
+      ]
+    },
+    "1w_swing": {
+      "timeframe": "1w",
+      "categories": [
+        {
+          "name": "trend",
+          "weight": 0.4,
+          "rules": [
+            { "type": "compare", "left": "close", "op": "gt", "right": "sma:50", "score": 100 }
+          ]
+        },
+        {
+          "name": "momentum",
+          "weight": 0.35,
+          "rules": [{ "type": "rsi_mid", "indicator": "rsi", "low": 35, "high": 65, "score": 100 }]
+        },
+        {
+          "name": "range",
+          "weight": 0.25,
+          "rules": [{ "type": "price_in_range", "lookback": 52, "score": 100 }]
+        }
+      ],
+      "grades": [
+        { "grade": "A", "min": 80 },
+        { "grade": "B", "min": 65 },
+        { "grade": "C", "min": 50 },
+        { "grade": "D", "min": 35 },
+        { "grade": "F", "min": 0 }
+      ]
+    }
+  }
+}

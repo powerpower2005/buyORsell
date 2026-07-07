@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "indicators": [
+    {
+      "id": "sma",
+      "enabled": true,
+      "params": { "periods": [20, 50, 200] },
+      "timeframes": ["15m", "1h", "4h", "1d", "1w"],
+      "outputs": ["line"]
+    },
+    {
+      "id": "ema",
+      "enabled": true,
+      "params": { "periods": [12, 26] },
+      "timeframes": ["1d", "1w"],
+      "outputs": ["line"]
+    },
+    {
+      "id": "rsi",
+      "enabled": true,
+      "params": { "period": 14 },
+      "timeframes": ["1d", "1w"],
+      "overbought": 70,
+      "oversold": 30
+    },
+    {
+      "id": "macd",
+      "enabled": true,
+      "params": { "fast": 12, "slow": 26, "signal": 9 },
+      "timeframes": ["1d", "1w"]
+    },
+    {
+      "id": "bb",
+      "enabled": true,
+      "params": { "period": 20, "stdDev": 2 },
+      "timeframes": ["1d"]
+    },
+    {
+      "id": "atr",
+      "enabled": false,
+      "params": { "period": 14 },
+      "timeframes": ["1d"]
+    }
+  ],
+  "signals": [
+    {
+      "id": "golden_cross",
+      "type": "crossover",
+      "fast": "sma:20",
+      "slow": "sma:50",
+      "timeframes": ["1d"]
+    },
+    {
+      "id": "rsi_oversold",
+      "type": "threshold",
+      "indicator": "rsi",
+      "op": "lt",
+      "value": 30,
+      "timeframes": ["1d"]
+    },
+    {
+      "id": "rsi_overbought",
+      "type": "threshold",
+      "indicator": "rsi",
+      "op": "gt",
+      "value": 70,
+      "timeframes": ["1d"]
+    }
+  ]
+}

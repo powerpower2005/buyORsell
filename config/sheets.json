@@ -1,0 +1,24 @@
+{
+  "worksheetBarsFetch": "BarsFetch-v1",
+  "formulaSep": ",",
+  "scratchCol": "Z",
+  "rowStride": 300,
+  "poll": {
+    "initialWaitSec": 15,
+    "attempts": 12,
+    "sleepSec": 5,
+    "fast": {
+      "maxSpanDays": 14,
+      "initialWaitSec": 5,
+      "attempts": 6,
+      "sleepSec": 2
+    },
+    "medium": {
+      "maxSpanDays": 90,
+      "initialWaitSec": 10,
+      "attempts": 8,
+      "sleepSec": 3
+    }
+  },
+  "singleDayLookbackDays": 7
+}

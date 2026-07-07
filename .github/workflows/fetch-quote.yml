@@ -1,0 +1,193 @@
+name: Fetch Quote
+
+on:
+  issues:
+    types: [opened, reopened]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: "Ticker e.g. NVDA:NASDAQ"
+        required: true
+      timeframe:
+        description: "Timeframe"
+        required: false
+        default: "1d"
+  schedule:
+    - cron: "0 */6 * * *"
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: fetch-${{ github.event.inputs.ticker || github.event.issue.number || 'batch' }}
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm ci
+
+      - name: Parse request
+        id: parse
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          INPUT_TICKER: ${{ github.event.inputs.ticker }}
+          INPUT_TF: ${{ github.event.inputs.timeframe }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const event = process.env.EVENT_NAME;
+          let ticker = process.env.INPUT_TICKER || '';
+          let timeframe = process.env.INPUT_TF || '1d';
+
+          function fromTitle(title) {
+            const m = title.match(/\[FETCH\]\s*(.+)/i);
+            return m ? m[1].trim() : '';
+          }
+
+          function fromBody(body) {
+            if (!body) return { ticker: '', timeframe: '1d' };
+            const tickerMatch = body.match(/(?:^|\n)\s*(?:###\s*)?Ticker\s*\n?\s*([A-Z0-9.:-]+)/i)
+              || body.match(/Ticker[:\s]+([A-Z0-9.:-]+)/i);
+            const tfMatch = body.match(/(?:^|\n)\s*(?:###\s*)?Timeframe\s*\n?\s*(\w+)/i)
+              || body.match(/Timeframe[:\s]+(\w+)/i);
+            return {
+              ticker: tickerMatch ? tickerMatch[1].trim() : '',
+              timeframe: tfMatch ? tfMatch[1].trim() : '1d',
+            };
+          }
+
+          if (event === 'issue_comment') {
+            const body = (process.env.COMMENT_BODY || '').trim();
+            const fetchCmd = body.match(/^\/fetch\s+([A-Z0-9.:-]+)(?:\s+(\w+))?/i);
+            if (!fetchCmd) {
+              console.log('skip=true');
+              process.exit(0);
+            }
+            ticker = fetchCmd[1];
+            timeframe = fetchCmd[2] || '1d';
+          } else if (event === 'issues') {
+            const labels = ${{ toJson(github.event.issue.labels.*.name) }};
+            if (!labels.includes('fetch-quote')) {
+              console.log('skip=true');
+              process.exit(0);
+            }
+            const parsed = fromBody(process.env.ISSUE_BODY);
+            ticker = fromTitle(process.env.ISSUE_TITLE) || parsed.ticker;
+            timeframe = parsed.timeframe || '1d';
+          }
+
+          if (!ticker || !/^[A-Z0-9.]+:[A-Z]+$|^[A-Z0-9]+-[A-Z]+$/.test(ticker)) {
+            console.error('Invalid ticker:', ticker);
+            process.exit(1);
+          }
+
+          const out = process.env.GITHUB_OUTPUT;
+          fs.appendFileSync(out, `ticker=${ticker}\n`);
+          fs.appendFileSync(out, `timeframe=${timeframe}\n`);
+          fs.appendFileSync(out, `skip=false\n`);
+          NODE
+
+      - name: Skip if not a fetch request
+        if: steps.parse.outputs.skip == 'true'
+        run: echo "Not a fetch request, skipping."
+
+      - name: Fetch and merge
+        if: steps.parse.outputs.skip != 'true'
+        env:
+          TICKER: ${{ steps.parse.outputs.ticker }}
+          TIMEFRAME: ${{ steps.parse.outputs.timeframe }}
+          FETCH_SOURCE: sheets
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/validate-and-merge.mjs
+
+      - name: Commit data
+        if: steps.parse.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "data: update ${{ steps.parse.outputs.ticker }} ${{ steps.parse.outputs.timeframe }}"
+            git push
+          fi
+
+      - name: Comment on issue
+        if: github.event_name == 'issues' && steps.parse.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const ticker = '${{ steps.parse.outputs.ticker }}';
+            const tf = '${{ steps.parse.outputs.timeframe }}';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ \`${ticker}\` (${tf}) data updated. [View app](https://${context.repo.owner}.github.io/${context.repo.repo}/)`
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
+            });
+
+      - name: Reply to comment
+        if: github.event_name == 'issue_comment' && steps.parse.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const ticker = '${{ steps.parse.outputs.ticker }}';
+            const tf = '${{ steps.parse.outputs.timeframe }}';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ \`${ticker}\` (${tf}) fetch complete.`
+            });
+
+      - name: Scheduled stale refresh
+        if: github.event_name == 'schedule'
+        env:
+          FETCH_SOURCE: sheets
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const indexPath = 'data/index.json';
+          if (!fs.existsSync(indexPath)) process.exit(0);
+          const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+          const policy = JSON.parse(fs.readFileSync('config/data-policy.json', 'utf8'));
+          for (const entry of index.entries) {
+            const full = path.join('data', entry.ticker.replace(/:/g, '-'), entry.timeframe + '.json');
+            if (!fs.existsSync(full)) continue;
+            const quote = JSON.parse(fs.readFileSync(full, 'utf8'));
+            const tfPolicy = policy.freshnessByTimeframe?.[entry.timeframe] || {};
+            const maxAge = (tfPolicy.maxAgeHours || policy.freshness.maxAgeHours) * 3600000;
+            if (Date.now() - new Date(quote.fetchedAt).getTime() > maxAge) {
+              console.log('Stale:', entry.ticker, entry.timeframe);
+              require('child_process').execSync(
+                `node scripts/validate-and-merge.mjs "${entry.ticker}" "${entry.timeframe}"`,
+                { stdio: 'inherit' }
+              );
+            }
+          }
+          NODE

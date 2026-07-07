@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "lookbackBars": 30,
+  "dojiMaxBodyRangeRatio": 0.1,
+  "hammerMinLowerShadowToBody": 2,
+  "hammerMaxUpperShadowToBody": 0.5,
+  "hammerMaxBodyRangeRatio": 0.35,
+  "shootingStarMinUpperShadowToBody": 2,
+  "shootingStarMaxLowerShadowToBody": 0.5,
+  "engulfingMinBodyRangeRatio": 0.05
+}

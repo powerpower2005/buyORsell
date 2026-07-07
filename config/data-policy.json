@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "fetchScriptVersion": "1.0.0",
+  "defaultWindow": "1Y",
+  "freshness": {
+    "maxAgeHours": 24,
+    "requireLastBarIsRecentTradingDay": true,
+    "maxTradingDayLag": 3,
+    "minBarCount": 50
+  },
+  "accuracy": {
+    "spotCheckLatestClose": true,
+    "closeTolerancePct": 1.0,
+    "volumeTolerancePct": 10.0
+  },
+  "update": {
+    "strategy": "incremental_merge",
+    "shortFetchWindowForUpdate": "5D",
+    "skipCommitIfNoDiff": true
+  },
+  "freshnessByTimeframe": {
+    "15m": { "maxAgeHours": 1 },
+    "1h": { "maxAgeHours": 4 },
+    "4h": { "maxAgeHours": 8 },
+    "1d": { "maxAgeHours": 24 },
+    "1w": { "maxAgeHours": 168 }
+  }
+}

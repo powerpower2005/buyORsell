@@ -1,0 +1,49 @@
+:root {
+  --color-bg: #191919;
+  --color-surface: #252525;
+  --color-surface-elevated: #2c2c2e;
+  --color-border: #3a3a3c;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #8b95a1;
+  --color-text-tertiary: #6b7684;
+  --color-accent: #3182f6;
+  --color-positive: #00c471;
+  --color-negative: #f04452;
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --content-max-width: 720px;
+  --page-padding-x: 24px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  text-align: left;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

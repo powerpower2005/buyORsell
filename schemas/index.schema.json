@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "index.schema.json",
+  "type": "object",
+  "required": ["schemaVersion", "updatedAt", "entries"],
+  "properties": {
+    "schemaVersion": { "type": "integer" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ticker", "timeframe", "path", "fetchedAt"],
+        "properties": {
+          "ticker": { "type": "string" },
+          "timeframe": { "type": "string" },
+          "path": { "type": "string" },
+          "fetchedAt": { "type": "string" },
+          "lastBarDate": { "type": "string" },
+          "barCount": { "type": "integer" }
+        }
+      }
+    }
+  }
+}

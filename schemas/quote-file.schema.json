@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "quote-file.schema.json",
+  "type": "object",
+  "required": [
+    "ticker",
+    "timeframe",
+    "fetchedAt",
+    "lastBarDate",
+    "barCount",
+    "ohlcv"
+  ],
+  "properties": {
+    "ticker": { "type": "string", "minLength": 1 },
+    "timeframe": { "type": "string", "enum": ["15m", "1h", "4h", "1d", "1w"] },
+    "window": { "type": "string" },
+    "schemaVersion": { "type": "integer" },
+    "intervalSeconds": { "type": "integer" },
+    "fetchedAt": { "type": "string", "format": "date-time" },
+    "lastBarDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "barCount": { "type": "integer", "minimum": 1 },
+    "checksum": { "type": "string" },
+    "source": {
+      "type": "string",
+      "enum": ["google_sheets_googfinance", "batchexecute"]
+    },
+    "resolvedSymbol": { "type": "string" },
+    "ohlcv": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["date", "open", "high", "low", "close", "volume"],
+        "properties": {
+          "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "open": { "type": "number" },
+          "high": { "type": "number" },
+          "low": { "type": "number" },
+          "close": { "type": "number" },
+          "volume": { "type": "number" }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
