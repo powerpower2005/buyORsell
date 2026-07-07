@@ -32,7 +32,7 @@ export function RequestDataButton({
       ) : (
         <>
           <p className="text-sm text-text-secondary">
-            캐시된 데이터가 없거나 stale입니다. GitHub Issue로 fetch를 요청하세요.
+            수집된 데이터가 없거나 오래되었습니다. GitHub Issue로 Sheets fetch를 요청하세요.
           </p>
           <Button
             variant="primary"

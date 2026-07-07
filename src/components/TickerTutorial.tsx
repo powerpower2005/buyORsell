@@ -2,24 +2,24 @@ import { useEffect, useState } from "react";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
 
-const KEY = "tutorial_seen";
+const KEY = "tutorial_seen_v2";
 
 const STEPS = [
   {
     title: "티커 형식",
-    body: "티커:거래소 형식을 사용하세요. 예: NVDA:NASDAQ",
+    body: "티커:거래소 형식을 사용하세요. 예: NVDA:NASDAQ, 005930:KRX. Google Finance URL을 붙여넣으면 티커만 추출됩니다.",
   },
   {
-    title: "Google Finance URL",
-    body: "URL의 /quote/ 뒤 부분을 그대로 복사해도 됩니다.",
+    title: "데이터 수집 (Sheets)",
+    body: "OHLCV는 Google Finance URL이 아니라 Google Spreadsheet의 GOOGLEFINANCE 함수로 수집합니다. GitHub Issue「Fetch Quote Data」로 요청하면 Actions가 자동 실행됩니다.",
   },
   {
-    title: "데이터 요청",
-    body: "캐시가 없으면 GitHub Issue로 fetch를 요청합니다. 1~3분 polling.",
+    title: "수집된 종목",
+    body: "fetch가 완료되면 repo의 index.json에 등록되고, 화면 상단 「수집된 종목」 목록에 나타납니다. 칩을 눌러 바로 분석할 수 있습니다.",
   },
   {
-    title: "바로 시작",
-    body: "NVDA:NASDAQ 예시로 evaluation을 확인해 보세요.",
+    title: "분석 · polling",
+    body: "데이터가 없거나 오래되었으면 Issue 요청 후 「polling」으로 1~3분 기다리세요. 최신 데이터면 차트·지표·캔들패턴을 확인할 수 있습니다.",
   },
 ];
 

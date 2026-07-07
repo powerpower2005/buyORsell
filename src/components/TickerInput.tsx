@@ -16,7 +16,7 @@ export function TickerInput({ value, onChange, onSubmit, disabled }: Props) {
   return (
     <div className="space-y-3 text-left">
       <Input
-        placeholder="NVDA:NASDAQ 또는 Google Finance URL 붙여넣기"
+        placeholder="NVDA:NASDAQ (티커:거래소)"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && parsed.valid && onSubmit()}
