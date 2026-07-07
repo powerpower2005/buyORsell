@@ -7,11 +7,11 @@ const KEY = "tutorial_seen_v2";
 const STEPS = [
   {
     title: "티커 형식",
-    body: "티커:거래소 형식을 사용하세요. 예: NVDA:NASDAQ, 005930:KRX. Google Finance URL을 붙여넣으면 티커만 추출됩니다.",
+    body: "티커:거래소 형식을 사용하세요. 예: NVDA:NASDAQ, 005930:KRX, BTC-USD",
   },
   {
     title: "데이터 수집 (Sheets)",
-    body: "OHLCV는 Google Finance URL이 아니라 Google Spreadsheet의 GOOGLEFINANCE 함수로 수집합니다. GitHub Issue「Fetch Quote Data」로 요청하면 Actions가 자동 실행됩니다.",
+    body: "Google Spreadsheet의 GOOGLEFINANCE 함수로 OHLCV를 수집합니다. GitHub Issue「Fetch Quote Data」로 요청하면 Actions가 자동 실행됩니다.",
   },
   {
     title: "수집된 종목",

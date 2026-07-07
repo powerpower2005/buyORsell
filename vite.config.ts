@@ -62,9 +62,9 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["manifest.json"],
       manifest: {
-        name: "Google Finance Evaluator",
+        name: "GF Evaluator",
         short_name: "GF Eval",
-        description: "OHLCV technical evaluation from Google Finance data",
+        description: "OHLCV technical evaluation from Google Sheets GOOGLEFINANCE",
         theme_color: "#191919",
         background_color: "#191919",
         display: "standalone",

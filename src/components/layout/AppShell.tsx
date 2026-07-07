@@ -9,7 +9,7 @@ export function Header() {
             GF Evaluator
           </Link>
           <p className="mt-0.5 text-xs text-text-secondary">
-            Google Finance OHLCV evaluation
+            Sheets GOOGLEFINANCE OHLCV evaluation
           </p>
         </div>
         <nav className="flex gap-4 text-sm">
@@ -33,7 +33,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto max-w-content text-left">{children}</div>
       </main>
       <footer className="border-t border-border px-6 py-6 text-left text-xs text-text-tertiary">
-        <p>데이터·분석 참고용이며 투자 권유가 아닙니다. Google Finance 비공식 데이터.</p>
+        <p>데이터·분석 참고용이며 투자 권유가 아닙니다. Google Sheets GOOGLEFINANCE 기반 데이터.</p>
       </footer>
     </div>
   );

@@ -17,9 +17,6 @@ export function GuidePage() {
           <li>한국 주식: 005930:KRX</li>
           <li>암호화폐: BTC-USD</li>
         </ul>
-        <p className="mt-3 text-sm text-text-tertiary">
-          Google Finance URL을 붙여넣으면 티커만 추출합니다. 시세 수집은 URL 스크래핑이 아닙니다.
-        </p>
       </Card>
 
       <Card>
