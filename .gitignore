@@ -1,6 +1,7 @@
 node_modules/
 dist/
 *.tsbuildinfo
+README.md
 .env
 .env.local
 config/service_account.json
