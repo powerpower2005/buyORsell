@@ -34,7 +34,7 @@ import { ErrorBanner } from "@/components/ErrorBanner";
 
 import { parseTickerInput } from "@/lib/urlParser";
 
-import { loadQuote, loadStatus, pollUntilReady } from "@/lib/dataLoader";
+import { loadQuote, loadStatus, loadIndex, pollUntilReady, tickersForTimeframe } from "@/lib/dataLoader";
 
 import { validateFreshness as checkFresh } from "@/lib/validation";
 
@@ -46,8 +46,6 @@ import { computeMTFAlignment } from "@/lib/evaluation/mtfAlignment";
 
 import { getEffectiveIndicatorsConfig } from "@/lib/configStore";
 
-import { loadWatchlist, addWatchlist } from "@/lib/watchlist";
-
 import { computeVolumeAverages, getVolumeMaPeriods } from "@/lib/evaluation/volumeMa";
 import { detectCandlePatterns } from "@/lib/evaluation/candlePatterns";
 import { CandlePatternPanel } from "@/components/CandlePatternPanel";
@@ -55,15 +53,11 @@ import { CandlePatternPanel } from "@/components/CandlePatternPanel";
 import { DataNotFoundError, errorMessage } from "@/lib/errors";
 
 import type {
-
   BacktestResult,
-
+  IndexFile,
   QuoteFile,
-
   StatusFile,
-
   Timeframe,
-
 } from "@/lib/types";
 
 import { Button } from "@/components/ui/Button";
@@ -121,8 +115,27 @@ export function HomePage() {
   const [configTick, setConfigTick] = useState(0);
 
   const [backtest, setBacktest] = useState<BacktestResult | undefined>();
+  const [catalog, setCatalog] = useState<IndexFile | null>(null);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
 
-  const [watchlist, setWatchlist] = useState<string[]>(() => loadWatchlist());
+  const catalogTickers = useMemo(
+    () => (catalog ? tickersForTimeframe(catalog, timeframe) : []),
+    [catalog, timeframe],
+  );
+
+  const refreshCatalog = useCallback(async () => {
+    setCatalogLoading(true);
+    setCatalogError(null);
+    try {
+      setCatalog(await loadIndex());
+    } catch (e) {
+      setCatalog(null);
+      setCatalogError(errorMessage(e));
+    } finally {
+      setCatalogLoading(false);
+    }
+  }, []);
 
 
 
@@ -213,18 +226,13 @@ export function HomePage() {
     if (!parsed.valid) return;
 
     setTicker(parsed.ticker);
-
     syncUrl(parsed.ticker, timeframe);
-
-    addWatchlist(parsed.ticker);
-
-    setWatchlist(loadWatchlist());
-
     await loadData(parsed.ticker, timeframe);
-
   }, [input, timeframe, syncUrl, loadData]);
 
-
+  useEffect(() => {
+    void refreshCatalog();
+  }, [refreshCatalog]);
 
   useEffect(() => {
 
@@ -267,7 +275,7 @@ export function HomePage() {
       });
 
       setQuote(q);
-
+      await refreshCatalog();
     } catch (e) {
 
       setPollError(errorMessage(e));
@@ -355,26 +363,21 @@ export function HomePage() {
 
 
       <WatchlistSidebar
-
-        tickers={watchlist}
-
+        tickers={catalogTickers}
         active={ticker}
-
+        timeframe={timeframe}
+        loading={catalogLoading}
         onSelect={(t) => {
-
           setInput(t);
-
           setTicker(t);
-
           syncUrl(t, timeframe);
-
           loadData(t, timeframe);
-
         }}
-
-        onUpdate={() => setWatchlist(loadWatchlist())}
-
       />
+
+      {catalogError && (
+        <ErrorBanner title="종목 목록 로드 실패" message={catalogError} />
+      )}
 
 
 

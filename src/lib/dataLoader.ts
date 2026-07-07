@@ -237,34 +237,37 @@ export async function pollUntilReady(
 
 
 export function getIndexEntry(
-
   index: IndexFile,
-
   ticker: string,
-
   timeframe: Timeframe,
-
 ) {
-
   const entry = index.entries.find(
-
     (e) => e.ticker === ticker && e.timeframe === timeframe,
-
   );
-
   if (!entry) {
-
     throw new DataNotFoundError(
-
       `index entry ${ticker} ${timeframe}`,
-
       indexDataPath(),
-
     );
-
   }
-
   return entry;
+}
 
+/** Unique tickers from index.json for a timeframe, newest fetch first. */
+export function tickersForTimeframe(
+  index: IndexFile,
+  timeframe: Timeframe,
+): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  const sorted = [...index.entries]
+    .filter((e) => e.timeframe === timeframe)
+    .sort((a, b) => b.fetchedAt.localeCompare(a.fetchedAt));
+  for (const e of sorted) {
+    if (seen.has(e.ticker)) continue;
+    seen.add(e.ticker);
+    out.push(e.ticker);
+  }
+  return out;
 }
 
