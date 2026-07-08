@@ -19,7 +19,7 @@ export interface QuoteFile {
   lastBarDate: string;
   barCount: number;
   checksum?: string;
-  source?: "google_sheets_googfinance" | "batchexecute";
+  source?: "google_sheets_googfinance";
   resolvedSymbol?: string;
   ohlcv: OHLCVBar[];
 }

@@ -1,14 +1,11 @@
 #!/usr/bin/env node
 /**
- * Unified quote fetcher.
- * Default: Google Sheets GOOGLEFINANCE "all" (real OHLCV, Hedge-style).
- * Fallback: FETCH_SOURCE=batchexecute for legacy RPC scrape.
+ * Quote fetcher via Google Sheets GOOGLEFINANCE "all" (Hedge-style).
  */
 
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { fetchQuote as fetchBatchexecute } from "./fetch-google-finance.mjs";
 import { financeSymbolCandidates } from "./lib/finance-symbol.mjs";
 import { fetchBarsWithSymbolCandidates } from "./lib/sheets-bars.mjs";
 
@@ -17,6 +14,10 @@ const ROOT = path.resolve(__dirname, "..");
 
 function loadJson(rel) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, rel), "utf8"));
+}
+
+export function tickerToSlug(ticker) {
+  return ticker.replace(/:/g, "-");
 }
 
 function utcDate(y, m, d) {
@@ -56,9 +57,7 @@ function dateRangeForTimeframe(tfConfig) {
   return { start, end };
 }
 
-export { tickerToSlug } from "./fetch-google-finance.mjs";
-
-export async function fetchQuoteSheets(ticker, timeframe = "1d") {
+export async function fetchQuote(ticker, timeframe = "1d") {
   const timeframes = loadJson("config/timeframes.json").timeframes;
   const tfConfig = timeframes[timeframe];
   if (!tfConfig) throw new Error(`Unknown timeframe: ${timeframe}`);
@@ -111,18 +110,6 @@ export async function fetchQuoteSheets(ticker, timeframe = "1d") {
     checksum: hashLastBar(last),
     ohlcv,
   };
-}
-
-export async function fetchQuote(ticker, timeframe = "1d") {
-  const source = (process.env.FETCH_SOURCE || "sheets").trim().toLowerCase();
-  if (source === "sheets") {
-    return fetchQuoteSheets(ticker, timeframe);
-  }
-  if (source === "batchexecute") {
-    const q = await fetchBatchexecute(ticker, timeframe);
-    return { ...q, source: "batchexecute" };
-  }
-  throw new Error(`Unknown FETCH_SOURCE: ${source} (use sheets or batchexecute)`);
 }
 
 async function main() {

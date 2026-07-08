@@ -24,7 +24,6 @@ export interface CandlePatternHit {
 
 export interface CandlePatternResult {
   lookbackBars: number;
-  unreliableSource: boolean;
   latestBarDate: string;
   onLatestBar: CandlePatternHit[];
   recent: CandlePatternHit[];
@@ -213,7 +212,7 @@ function detectAtIndex(bars: OHLCVBar[], idx: number): CandlePatternHit[] {
 
 export function detectCandlePatterns(
   bars: OHLCVBar[],
-  options?: { lookbackBars?: number; unreliableSource?: boolean },
+  options?: { lookbackBars?: number },
 ): CandlePatternResult {
   requireNonEmptyArray(bars, "OHLCV bars for candle patterns");
   const c = cfg();
@@ -233,7 +232,6 @@ export function detectCandlePatterns(
 
   return {
     lookbackBars: lookback,
-    unreliableSource: options?.unreliableSource ?? false,
     latestBarDate: latestBar.date,
     onLatestBar,
     recent,

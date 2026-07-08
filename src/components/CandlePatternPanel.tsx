@@ -9,17 +9,11 @@ function dirVariant(d: string): "positive" | "negative" | "muted" {
 }
 
 export function CandlePatternPanel({ patterns }: { patterns: CandlePatternResult }) {
-  const { onLatestBar, recent, latestBarDate, unreliableSource, lookbackBars } =
-    patterns;
+  const { onLatestBar, recent, latestBarDate, lookbackBars } = patterns;
 
   return (
     <Card>
       <SectionTitle>캔들 패턴</SectionTitle>
-      {unreliableSource && (
-        <p className="mb-3 text-sm text-negative">
-          batchexecute 합성 OHLC — 패턴 신뢰도 낮음. Sheets fetch 데이터를 사용하세요.
-        </p>
-      )}
       <p className="mb-3 text-xs text-text-tertiary">
         최근 {lookbackBars}봉 · 마지막 봉 {latestBarDate}
       </p>

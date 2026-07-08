@@ -110,7 +110,6 @@ jobs:
         env:
           TICKER: ${{ steps.parse.outputs.ticker }}
           TIMEFRAME: ${{ steps.parse.outputs.timeframe }}
-          FETCH_SOURCE: sheets
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: node scripts/validate-and-merge.mjs
@@ -165,7 +164,6 @@ jobs:
       - name: Scheduled stale refresh
         if: github.event_name == 'schedule'
         env:
-          FETCH_SOURCE: sheets
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |

@@ -336,9 +336,7 @@ export function HomePage() {
         quote.ohlcv,
         getVolumeMaPeriods(timeframe),
       );
-      const patterns = detectCandlePatterns(quote.ohlcv, {
-        unreliableSource: quote.source === "batchexecute",
-      });
+      const patterns = detectCandlePatterns(quote.ohlcv);
 
       evaluation = { indicators, score, mtf, volume, patterns };
 
