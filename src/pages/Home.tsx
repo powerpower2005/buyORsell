@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { TickerInput } from "@/components/TickerInput";
+import { Card, SectionTitle } from "@/components/ui/Card";
 
 import { TimeframeTabs } from "@/components/TimeframeTabs";
 
@@ -125,6 +126,18 @@ export function HomePage() {
   );
 
   const inputParsed = useMemo(() => parseTickerInput(input), [input]);
+  const analyzed =
+    Boolean(ticker) && inputParsed.valid && ticker === inputParsed.ticker;
+  const activeQuote =
+    quote?.ticker === inputParsed.ticker && quote?.timeframe === timeframe
+      ? quote
+      : null;
+  const freshForInput = activeQuote
+    ? checkFresh(activeQuote, timeframe).status === "fresh"
+    : false;
+  const dataReady = analyzed && freshForInput;
+  const needsFetch =
+    analyzed && !loading && (Boolean(loadError) || (activeQuote ? !freshForInput : true));
 
   const refreshCatalog = useCallback(async () => {
     setCatalogLoading(true);
@@ -141,7 +154,7 @@ export function HomePage() {
 
 
 
-  const fresh = quote ? checkFresh(quote, timeframe).status === "fresh" : false;
+  const fresh = freshForInput;
 
 
 
@@ -316,15 +329,15 @@ export function HomePage() {
 
 
 
-  if (quote) {
+  if (dataReady && activeQuote) {
 
     try {
 
-      const indicators = computeAll(quote.ohlcv, timeframe, indicatorConfig);
+      const indicators = computeAll(activeQuote.ohlcv, timeframe, indicatorConfig);
 
       const score = computeScore(
 
-        quote.ohlcv,
+        activeQuote.ohlcv,
 
         indicators,
 
@@ -335,10 +348,10 @@ export function HomePage() {
       const mtf = computeMTFAlignment({ [timeframe]: indicators });
 
       const volume = computeVolumeAverages(
-        quote.ohlcv,
+        activeQuote.ohlcv,
         getVolumeMaPeriods(timeframe),
       );
-      const patterns = detectCandlePatterns(quote.ohlcv);
+      const patterns = detectCandlePatterns(activeQuote.ohlcv);
 
       evaluation = { indicators, score, mtf, volume, patterns };
 
@@ -379,89 +392,81 @@ export function HomePage() {
         <ErrorBanner title="종목 목록 로드 실패" message={catalogError} />
       )}
 
+      <Card>
+        <SectionTitle>1. 종목 · 타임프레임</SectionTitle>
+        <TickerInput value={input} onChange={setInput} />
+        {inputParsed.valid && (
+          <div className="mt-4">
+            <TimeframeTabs
+              value={timeframe}
+              onChange={(tf) => {
+                setTimeframe(tf);
+                if (ticker) syncUrl(ticker, tf);
+              }}
+            />
+          </div>
+        )}
+      </Card>
 
+      {inputParsed.valid && !analyzed && (
+        <Card>
+          <SectionTitle>2. 분석</SectionTitle>
+          <p className="mb-4 text-sm text-text-secondary">
+            저장된 OHLCV가 있으면 차트와 지표를 표시합니다.
+          </p>
+          <Button onClick={analyze} disabled={loading}>
+            {loading ? "로딩 중…" : "분석 시작"}
+          </Button>
+        </Card>
+      )}
 
-      <TickerInput
-        value={input}
-        onChange={setInput}
-        onSubmit={analyze}
-        disabled={loading}
-      />
-
-      {inputParsed.valid && (
-        <>
-          <TimeframeTabs
-            value={timeframe}
-            onChange={(tf) => {
-              setTimeframe(tf);
-              if (ticker) syncUrl(ticker, tf);
-            }}
-          />
+      {analyzed && needsFetch && (
+        <Card>
+          <SectionTitle>2. 데이터 수집</SectionTitle>
+          <p className="mb-4 text-sm text-text-secondary">
+            <strong className="text-text-primary">{inputParsed.ticker}</strong> ·{" "}
+            {timeframe} 데이터가 없거나 오래되었습니다. Issue를 제출한 뒤 polling으로
+            갱신을 기다리세요.
+          </p>
           <RequestDataButton
             ticker={inputParsed.ticker}
             timeframe={timeframe}
-            status={ticker === inputParsed.ticker ? status?.status : undefined}
-            fresh={quote?.ticker === inputParsed.ticker && fresh}
-            polling={polling && ticker === inputParsed.ticker}
-          />
-        </>
-      )}
-
-      {ticker && (
-        <>
-          {loadError && (
-
-            <ErrorBanner title="시세 데이터 없음" message={loadError} />
-
-          )}
-
-          {statusError && !loadError && (
-
-            <ErrorBanner title="Fetch 상태 없음" message={statusError} />
-
-          )}
-
-          {pollError && (
-            <ErrorBanner title="Polling 실패" message={pollError} />
-          )}
-
-          {!fresh && ticker && !loadError && (
-
-            <Button variant="secondary" onClick={startPolling} disabled={polling}>
-
-              {polling ? "Polling…" : "데이터 갱신 polling 시작"}
-
-            </Button>
-
-          )}
-
-
-
-          <FetchStatusBanner
-
+            status={status?.status}
+            fresh={fresh}
             polling={polling}
-
-            message={
-
-              quote
-
-                ? `${quote.barCount} bars · last ${quote.lastBarDate} · ${quote.source ?? "unknown"}${quote.resolvedSymbol ? ` (${quote.resolvedSymbol})` : ""} · fetched ${quote.fetchedAt}`
-
-                : loading
-
-                  ? "로딩 중…"
-
-                  : loadError ?? "데이터 없음"
-
-            }
-
+            showPolling={!loadError}
+            onStartPolling={startPolling}
           />
-
-        </>
-
+          {pollError && (
+            <p className="mt-3 text-sm text-negative">{pollError}</p>
+          )}
+        </Card>
       )}
 
+      {analyzed && dataReady && activeQuote && (
+        <Card>
+          <SectionTitle>2. 데이터</SectionTitle>
+          <FetchStatusBanner
+            polling={polling}
+            message={`${activeQuote.barCount} bars · last ${activeQuote.lastBarDate} · ${activeQuote.source ?? "unknown"}${activeQuote.resolvedSymbol ? ` (${activeQuote.resolvedSymbol})` : ""} · fetched ${activeQuote.fetchedAt}`}
+          />
+        </Card>
+      )}
 
+      {analyzed && loading && !activeQuote && (
+        <Card>
+          <SectionTitle>2. 분석</SectionTitle>
+          <p className="text-sm text-text-secondary">데이터 불러오는 중…</p>
+        </Card>
+      )}
+
+      {analyzed && needsFetch && loadError && (
+        <ErrorBanner title="시세 데이터 없음" message={loadError} />
+      )}
+
+      {analyzed && needsFetch && statusError && !loadError && (
+        <ErrorBanner title="Fetch 상태 없음" message={statusError} />
+      )}
 
       {evaluationError && (
 
@@ -471,11 +476,11 @@ export function HomePage() {
 
 
 
-      {quote && evaluation && (
-
+      {dataReady && activeQuote && evaluation && (
         <div id="export-root" className="space-y-6">
+          <h2 className="text-left text-lg font-semibold">3. 분석 결과</h2>
 
-          <CandleChart bars={quote.ohlcv} timeframe={timeframe} />
+          <CandleChart bars={activeQuote.ohlcv} timeframe={timeframe} />
 
           <VolumePanel snapshot={evaluation.volume} timeframe={timeframe} />
 
@@ -485,12 +490,12 @@ export function HomePage() {
           <CandlePatternPanel patterns={evaluation.patterns} />
           <MTFAlignmentCard alignment={evaluation.mtf} />
 
-          <StrategyBuilder bars={quote.ohlcv} onResult={setBacktest} />
+          <StrategyBuilder bars={activeQuote.ohlcv} onResult={setBacktest} />
 
           <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />
 
           <ExportPanel
-            quote={quote}
+            quote={activeQuote}
             indicators={evaluation.indicators}
             score={evaluation.score}
             patterns={evaluation.patterns}
