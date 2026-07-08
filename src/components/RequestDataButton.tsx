@@ -41,7 +41,7 @@ export function RequestDataButton({
           <Button
             variant="primary"
             disabled={disabled || status === "running"}
-            onClick={() => window.open(issueUrl, "_blank", "noopener")}
+            onClick={() => window.open(issueUrl, "_blank", "noopener,noreferrer")}
           >
             GitHub Issue로 데이터 요청
           </Button>

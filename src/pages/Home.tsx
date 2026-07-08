@@ -124,6 +124,12 @@ export function HomePage() {
     [catalog, timeframe],
   );
 
+  const issueTicker = useMemo(() => {
+    const parsed = parseTickerInput(input);
+    if (parsed.valid) return parsed.ticker;
+    return ticker;
+  }, [input, ticker]);
+
   const refreshCatalog = useCallback(async () => {
     setCatalogLoading(true);
     setCatalogError(null);
@@ -434,9 +440,7 @@ export function HomePage() {
 
 
           <RequestDataButton
-
-            ticker={ticker}
-
+            ticker={issueTicker}
             timeframe={timeframe}
 
             status={status?.status}

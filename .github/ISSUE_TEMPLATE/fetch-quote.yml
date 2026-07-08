@@ -1,6 +1,5 @@
 name: Fetch Quote Data
 description: Request OHLCV fetch for a ticker
-title: "[FETCH] "
 labels:
   - fetch-quote
 body:
@@ -12,15 +11,11 @@ body:
       placeholder: "NVDA:NASDAQ"
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: timeframe
     attributes:
       label: Timeframe
-      options:
-        - "1d"
-        - "1w"
-        - "1h"
-        - "4h"
-        - "15m"
+      description: "1d, 1w, 1h, 4h, or 15m"
+      placeholder: "1d"
     validations:
       required: true
