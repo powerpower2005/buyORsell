@@ -1,125 +1,76 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { useSearchParams } from "react-router-dom";
-
+import clsx from "clsx";
 import { TickerInput } from "@/components/TickerInput";
-
 import { TimeframeTabs } from "@/components/TimeframeTabs";
-
 import { RequestDataButton } from "@/components/RequestDataButton";
-
-import { FetchStatusBanner } from "@/components/FetchStatusBanner";
-
+import {
+  AnalysisStatusCard,
+  type AnalysisStatus,
+} from "@/components/AnalysisStatusCard";
 import { CandleChart } from "@/components/CandleChart";
-
 import { VolumePanel } from "@/components/VolumePanel";
-
 import { ScoreCard } from "@/components/ScoreCard";
-
 import { IndicatorPanel } from "@/components/IndicatorPanel";
-
 import { ConfigPanel } from "@/components/ConfigPanel";
-
 import { ExportPanel } from "@/components/ExportPanel";
-
 import { WatchlistSidebar } from "@/components/WatchlistSidebar";
-
 import { MTFAlignmentCard } from "@/components/MTFAlignmentCard";
-
 import { StrategyBuilder } from "@/components/StrategyBuilder";
-
 import { TickerTutorial } from "@/components/TickerTutorial";
-
 import { ErrorBanner } from "@/components/ErrorBanner";
-
 import { parseTickerInput } from "@/lib/urlParser";
-
-import { loadQuote, loadStatus, loadIndex, pollUntilReady, tickersForTimeframe } from "@/lib/dataLoader";
-
+import {
+  loadQuote,
+  loadStatus,
+  loadIndex,
+  pollUntilReady,
+  tickersForTimeframe,
+} from "@/lib/dataLoader";
 import { validateFreshness as checkFresh } from "@/lib/validation";
-
 import { computeAll } from "@/lib/evaluation/registry";
-
 import { computeScore, presetForTimeframe } from "@/lib/evaluation/scoring";
-
 import { computeMTFAlignment } from "@/lib/evaluation/mtfAlignment";
-
 import { getEffectiveIndicatorsConfig } from "@/lib/configStore";
-
 import { computeVolumeAverages, getVolumeMaPeriods } from "@/lib/evaluation/volumeMa";
 import { detectCandlePatterns } from "@/lib/evaluation/candlePatterns";
 import { CandlePatternPanel } from "@/components/CandlePatternPanel";
-
 import { DataNotFoundError, errorMessage } from "@/lib/errors";
-
 import type {
   BacktestResult,
   IndexFile,
   QuoteFile,
-  StatusFile,
   Timeframe,
 } from "@/lib/types";
-
 import { Button } from "@/components/ui/Button";
-
 import { Card, SectionTitle } from "@/components/ui/Card";
 
-import clsx from "clsx";
-
-
-
 const VALID_TIMEFRAMES: Timeframe[] = ["15m", "1h", "4h", "1d", "1w"];
-
 type ActionMode = "fetch" | "analyze";
-
-
+type Screen = "setup" | "results";
 
 function parseTimeframeParam(value: string | null): Timeframe | null {
-
   if (!value) return null;
-
   return VALID_TIMEFRAMES.includes(value as Timeframe)
-
     ? (value as Timeframe)
-
     : null;
-
 }
 
-
-
 export function HomePage() {
-
   const [params, setParams] = useSearchParams();
-
   const initialTicker = params.get("ticker") ?? "";
-
   const initialTf = parseTimeframeParam(params.get("tf"));
 
-
-
+  const [screen, setScreen] = useState<Screen>(initialTicker ? "results" : "setup");
   const [input, setInput] = useState(initialTicker);
-
   const [ticker, setTicker] = useState(initialTicker);
-
   const [timeframe, setTimeframe] = useState<Timeframe>(initialTf ?? "1d");
-
   const [quote, setQuote] = useState<QuoteFile | null>(null);
-
-  const [status, setStatus] = useState<StatusFile | null>(null);
-
   const [loadError, setLoadError] = useState<string | null>(null);
-
-  const [statusError, setStatusError] = useState<string | null>(null);
-
   const [pollError, setPollError] = useState<string | null>(null);
-
   const [polling, setPolling] = useState(false);
-
   const [loading, setLoading] = useState(false);
-
   const [configTick, setConfigTick] = useState(0);
-
   const [backtest, setBacktest] = useState<BacktestResult | undefined>();
   const [catalog, setCatalog] = useState<IndexFile | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
@@ -146,96 +97,46 @@ export function HomePage() {
     }
   }, []);
 
-
-
   const fresh = quote ? checkFresh(quote, timeframe).status === "fresh" : false;
 
-
-
   const syncUrl = useCallback(
-
     (t: string, tf: Timeframe) => {
-
       const next = new URLSearchParams(params);
-
       if (t) next.set("ticker", t);
-
       else next.delete("ticker");
-
       next.set("tf", tf);
-
       setParams(next, { replace: true });
-
     },
-
     [params, setParams],
-
   );
 
-
-
   const loadData = useCallback(async (t: string, tf: Timeframe) => {
-
     setLoading(true);
-
     setLoadError(null);
-
-    setStatusError(null);
-
     try {
-
       const q = await loadQuote(t, tf);
-
       setQuote(q);
-
     } catch (e) {
-
       setQuote(null);
-
       setLoadError(errorMessage(e));
-
     }
-
-
-
     try {
-
-      const st = await loadStatus(t, tf);
-
-      setStatus(st);
-
+      await loadStatus(t, tf);
     } catch (e) {
-
-      setStatus(null);
-
-      if (e instanceof DataNotFoundError) {
-
-        setStatusError(errorMessage(e));
-
-      } else {
-
-        setStatusError(errorMessage(e));
-
+      if (!(e instanceof DataNotFoundError)) {
+        console.warn("status load:", errorMessage(e));
       }
-
     }
-
-
-
     setLoading(false);
-
   }, []);
 
-
-
   const analyze = useCallback(async () => {
-
     const parsed = parseTickerInput(input);
-
     if (!parsed.valid) return;
-
     setTicker(parsed.ticker);
     syncUrl(parsed.ticker, timeframe);
+    setScreen("results");
+    setPollError(null);
     await loadData(parsed.ticker, timeframe);
   }, [input, timeframe, syncUrl, loadData]);
 
@@ -244,130 +145,98 @@ export function HomePage() {
   }, [refreshCatalog]);
 
   useEffect(() => {
-
-    if (initialTicker) {
-
+    if (initialTicker && screen === "results") {
       loadData(initialTicker, initialTf ?? "1d");
-
     }
-
-  }, [initialTicker, initialTf, loadData]);
-
-
+  }, [initialTicker, initialTf, loadData, screen]);
 
   useEffect(() => {
-
-    if (ticker) loadData(ticker, timeframe);
-
-  }, [timeframe, ticker, loadData]);
-
-
+    if (screen === "results" && ticker) {
+      loadData(ticker, timeframe);
+    }
+  }, [timeframe, ticker, loadData, screen]);
 
   const startPolling = async () => {
-
     if (!ticker) return;
-
     setPolling(true);
-
     setPollError(null);
-
     try {
-
-      const q = await pollUntilReady(ticker, timeframe, (q, st) => {
-
+      const q = await pollUntilReady(ticker, timeframe, (q) => {
         setQuote(q);
-
-        setStatus(st);
-
         setLoadError(null);
-
       });
-
       setQuote(q);
       await refreshCatalog();
     } catch (e) {
-
       setPollError(errorMessage(e));
-
     }
-
     setPolling(false);
-
   };
 
-
-
   const indicatorConfig = useMemo(
-
     () => getEffectiveIndicatorsConfig(),
-
     [configTick],
-
   );
 
-
-
   let evaluation: {
-
     indicators: ReturnType<typeof computeAll>;
-
     score: ReturnType<typeof computeScore>;
-
     mtf: ReturnType<typeof computeMTFAlignment>;
-
     volume: ReturnType<typeof computeVolumeAverages>;
     patterns: ReturnType<typeof detectCandlePatterns>;
   } | null = null;
 
   let evaluationError: string | null = null;
 
-
-
   if (quote) {
-
     try {
-
       const indicators = computeAll(quote.ohlcv, timeframe, indicatorConfig);
-
       const score = computeScore(
-
         quote.ohlcv,
-
         indicators,
-
         presetForTimeframe(timeframe),
-
       );
-
       const mtf = computeMTFAlignment({ [timeframe]: indicators });
-
       const volume = computeVolumeAverages(
         quote.ohlcv,
         getVolumeMaPeriods(timeframe),
       );
       const patterns = detectCandlePatterns(quote.ohlcv);
-
       evaluation = { indicators, score, mtf, volume, patterns };
-
     } catch (e) {
-
       evaluationError = errorMessage(e);
-
     }
-
   }
 
+  const resultStatus: AnalysisStatus | "ready" = (() => {
+    if (loading) return "loading";
+    if (polling) return "polling";
+    if (pollError) return "poll-error";
+    if (loadError || !quote) return "missing";
+    if (!fresh) return "stale";
+    if (evaluationError) return "bad-quality";
+    if (evaluation) return "ready";
+    return "loading";
+  })();
 
+  const statusDetail = (() => {
+    if (evaluationError) return evaluationError;
+    if (quote) {
+      return `${quote.barCount} bars · last ${quote.lastBarDate} · ${quote.source ?? "unknown"} · fetched ${quote.fetchedAt}`;
+    }
+    if (loadError) return loadError;
+    return undefined;
+  })();
+
+  const backToSetup = () => {
+    setScreen("setup");
+    setPollError(null);
+  };
 
   return (
-
     <div className="space-y-6">
-
       <TickerTutorial />
-
       <h1 className="text-left text-2xl font-bold">종목 분석</h1>
-
-
 
       <WatchlistSidebar
         tickers={catalogTickers}
@@ -377,8 +246,9 @@ export function HomePage() {
         onSelect={(t) => {
           setInput(t);
           setTicker(t);
+          setScreen("setup");
+          setActionMode("analyze");
           syncUrl(t, timeframe);
-          loadData(t, timeframe);
         }}
       />
 
@@ -386,175 +256,132 @@ export function HomePage() {
         <ErrorBanner title="종목 목록 로드 실패" message={catalogError} />
       )}
 
-
-
-      <TickerInput
-        value={input}
-        onChange={setInput}
-        onSubmit={analyze}
-        disabled={loading}
-      />
-
-      {inputParsed.valid && (
-        <Card className="space-y-4">
-          <SectionTitle>2. 작업 선택</SectionTitle>
-          <p className="text-sm text-text-secondary">
-            <strong className="text-text-primary">{inputParsed.ticker}</strong> · 데이터가 없으면
-            먼저 수집을 요청하고, 이미 있으면 바로 분석하세요.
-          </p>
-
-          <TimeframeTabs
-            value={timeframe}
-            onChange={(tf) => {
-              setTimeframe(tf);
-              if (ticker) syncUrl(ticker, tf);
-            }}
+      {screen === "setup" && (
+        <>
+          <TickerInput
+            value={input}
+            onChange={setInput}
+            onSubmit={analyze}
+            disabled={loading}
           />
 
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setActionMode("fetch")}
-              className={clsx(
-                "rounded-md px-3 py-1.5 text-sm",
-                actionMode === "fetch"
-                  ? "bg-accent text-white"
-                  : "bg-surface-elevated text-text-secondary hover:text-text-primary",
+          {inputParsed.valid && (
+            <Card className="space-y-4">
+              <SectionTitle>2. 작업 선택</SectionTitle>
+              <p className="text-sm text-text-secondary">
+                <strong className="text-text-primary">{inputParsed.ticker}</strong>
+              </p>
+
+              <TimeframeTabs
+                value={timeframe}
+                onChange={(tf) => {
+                  setTimeframe(tf);
+                  if (ticker) syncUrl(ticker, tf);
+                }}
+              />
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActionMode("fetch")}
+                  className={clsx(
+                    "rounded-md px-3 py-1.5 text-sm",
+                    actionMode === "fetch"
+                      ? "bg-accent text-white"
+                      : "bg-surface-elevated text-text-secondary hover:text-text-primary",
+                  )}
+                >
+                  데이터 요청
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActionMode("analyze")}
+                  className={clsx(
+                    "rounded-md px-3 py-1.5 text-sm",
+                    actionMode === "analyze"
+                      ? "bg-accent text-white"
+                      : "bg-surface-elevated text-text-secondary hover:text-text-primary",
+                  )}
+                >
+                  분석하기
+                </button>
+              </div>
+
+              {actionMode === "fetch" ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-text-secondary">
+                    GitHub Issue를 열어 데이터 수집을 요청합니다.
+                  </p>
+                  <RequestDataButton
+                    ticker={inputParsed.ticker}
+                    timeframe={timeframe}
+                    fresh={false}
+                    polling={false}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-text-secondary">
+                    저장된 OHLCV로 차트·지표·점수를 계산합니다.
+                  </p>
+                  <Button onClick={analyze} disabled={loading}>
+                    분석 시작
+                  </Button>
+                </div>
               )}
-            >
-              데이터 요청
-            </button>
-            <button
-              type="button"
-              onClick={() => setActionMode("analyze")}
-              className={clsx(
-                "rounded-md px-3 py-1.5 text-sm",
-                actionMode === "analyze"
-                  ? "bg-accent text-white"
-                  : "bg-surface-elevated text-text-secondary hover:text-text-primary",
-              )}
-            >
-              분석하기
-            </button>
+            </Card>
+          )}
+        </>
+      )}
+
+      {screen === "results" && ticker && (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="text-left">
+              <p className="text-xs text-text-tertiary">분석 중</p>
+              <p className="text-lg font-semibold">
+                {ticker} · {timeframe}
+              </p>
+            </div>
+            <Button variant="ghost" onClick={backToSetup}>
+              ← 돌아가기
+            </Button>
           </div>
 
-          {actionMode === "fetch" ? (
-            <RequestDataButton
-              ticker={inputParsed.ticker}
+          {resultStatus !== "ready" ? (
+            <AnalysisStatusCard
+              status={resultStatus}
+              ticker={inputParsed.valid ? inputParsed.ticker : ticker}
               timeframe={timeframe}
-              status={ticker === inputParsed.ticker ? status?.status : undefined}
-              fresh={quote?.ticker === inputParsed.ticker && fresh}
-              polling={polling && ticker === inputParsed.ticker}
+              detail={statusDetail}
+              pollError={pollError ?? undefined}
+              onPoll={startPolling}
+              polling={polling}
             />
           ) : (
-            <div className="space-y-2">
-              <p className="text-sm text-text-secondary">
-                저장된 OHLCV 데이터로 차트·지표·점수를 계산합니다.
-              </p>
-              <Button onClick={analyze} disabled={loading}>
-                {loading ? "로딩 중…" : "분석 시작"}
-              </Button>
-            </div>
+            <>
+              <p className="text-left text-xs text-text-tertiary">{statusDetail}</p>
+              <div id="export-root" className="space-y-6">
+                <CandleChart bars={quote!.ohlcv} timeframe={timeframe} />
+                <VolumePanel snapshot={evaluation!.volume} timeframe={timeframe} />
+                <ScoreCard score={evaluation!.score} />
+                <IndicatorPanel results={evaluation!.indicators} />
+                <CandlePatternPanel patterns={evaluation!.patterns} />
+                <MTFAlignmentCard alignment={evaluation!.mtf} />
+                <StrategyBuilder bars={quote!.ohlcv} onResult={setBacktest} />
+                <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />
+                <ExportPanel
+                  quote={quote!}
+                  indicators={evaluation!.indicators}
+                  score={evaluation!.score}
+                  patterns={evaluation!.patterns}
+                  backtest={backtest}
+                />
+              </div>
+            </>
           )}
-        </Card>
-      )}
-
-      {ticker && (
-        <Card className="space-y-4">
-          <SectionTitle>3. 결과</SectionTitle>
-          {loadError && (
-
-            <ErrorBanner title="시세 데이터 없음" message={loadError} />
-
-          )}
-
-          {statusError && !loadError && (
-
-            <ErrorBanner title="Fetch 상태 없음" message={statusError} />
-
-          )}
-
-          {pollError && (
-            <ErrorBanner title="Polling 실패" message={pollError} />
-          )}
-
-          {!fresh && ticker && !loadError && (
-            <div className="space-y-2">
-              <p className="text-sm text-text-secondary">
-                데이터가 오래되었거나 수집 중입니다. Issue 요청 후 polling으로 완료를 기다리세요.
-              </p>
-              <Button variant="secondary" onClick={startPolling} disabled={polling}>
-                {polling ? "Polling…" : "데이터 갱신 polling 시작"}
-              </Button>
-            </div>
-          )}
-
-          <FetchStatusBanner
-
-            polling={polling}
-
-            message={
-
-              quote
-
-                ? `${quote.barCount} bars · last ${quote.lastBarDate} · ${quote.source ?? "unknown"}${quote.resolvedSymbol ? ` (${quote.resolvedSymbol})` : ""} · fetched ${quote.fetchedAt}`
-
-                : loading
-
-                  ? "로딩 중…"
-
-                  : loadError ?? "데이터 없음"
-
-            }
-
-          />
-
-        </Card>
-      )}
-
-
-
-      {evaluationError && (
-
-        <ErrorBanner title="평가 계산 실패" message={evaluationError} />
-
-      )}
-
-
-
-      {quote && evaluation && (
-
-        <div id="export-root" className="space-y-6">
-
-          <CandleChart bars={quote.ohlcv} timeframe={timeframe} />
-
-          <VolumePanel snapshot={evaluation.volume} timeframe={timeframe} />
-
-          <ScoreCard score={evaluation.score} />
-
-          <IndicatorPanel results={evaluation.indicators} />
-          <CandlePatternPanel patterns={evaluation.patterns} />
-          <MTFAlignmentCard alignment={evaluation.mtf} />
-
-          <StrategyBuilder bars={quote.ohlcv} onResult={setBacktest} />
-
-          <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />
-
-          <ExportPanel
-            quote={quote}
-            indicators={evaluation.indicators}
-            score={evaluation.score}
-            patterns={evaluation.patterns}
-            backtest={backtest}
-          />
-
         </div>
-
       )}
-
     </div>
-
   );
-
 }
-
