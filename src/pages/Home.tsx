@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { TickerInput } from "@/components/TickerInput";
-import { Card, SectionTitle } from "@/components/ui/Card";
 
 import { TimeframeTabs } from "@/components/TimeframeTabs";
 
@@ -63,9 +62,15 @@ import type {
 
 import { Button } from "@/components/ui/Button";
 
+import { Card, SectionTitle } from "@/components/ui/Card";
+
+import clsx from "clsx";
+
 
 
 const VALID_TIMEFRAMES: Timeframe[] = ["15m", "1h", "4h", "1d", "1w"];
+
+type ActionMode = "fetch" | "analyze";
 
 
 
@@ -119,6 +124,7 @@ export function HomePage() {
   const [catalog, setCatalog] = useState<IndexFile | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [actionMode, setActionMode] = useState<ActionMode>("fetch");
 
   const catalogTickers = useMemo(
     () => (catalog ? tickersForTimeframe(catalog, timeframe) : []),
@@ -126,18 +132,6 @@ export function HomePage() {
   );
 
   const inputParsed = useMemo(() => parseTickerInput(input), [input]);
-  const analyzed =
-    Boolean(ticker) && inputParsed.valid && ticker === inputParsed.ticker;
-  const activeQuote =
-    quote?.ticker === inputParsed.ticker && quote?.timeframe === timeframe
-      ? quote
-      : null;
-  const freshForInput = activeQuote
-    ? checkFresh(activeQuote, timeframe).status === "fresh"
-    : false;
-  const dataReady = analyzed && freshForInput;
-  const needsFetch =
-    analyzed && !loading && (Boolean(loadError) || (activeQuote ? !freshForInput : true));
 
   const refreshCatalog = useCallback(async () => {
     setCatalogLoading(true);
@@ -154,7 +148,7 @@ export function HomePage() {
 
 
 
-  const fresh = freshForInput;
+  const fresh = quote ? checkFresh(quote, timeframe).status === "fresh" : false;
 
 
 
@@ -329,15 +323,15 @@ export function HomePage() {
 
 
 
-  if (dataReady && activeQuote) {
+  if (quote) {
 
     try {
 
-      const indicators = computeAll(activeQuote.ohlcv, timeframe, indicatorConfig);
+      const indicators = computeAll(quote.ohlcv, timeframe, indicatorConfig);
 
       const score = computeScore(
 
-        activeQuote.ohlcv,
+        quote.ohlcv,
 
         indicators,
 
@@ -348,10 +342,10 @@ export function HomePage() {
       const mtf = computeMTFAlignment({ [timeframe]: indicators });
 
       const volume = computeVolumeAverages(
-        activeQuote.ohlcv,
+        quote.ohlcv,
         getVolumeMaPeriods(timeframe),
       );
-      const patterns = detectCandlePatterns(activeQuote.ohlcv);
+      const patterns = detectCandlePatterns(quote.ohlcv);
 
       evaluation = { indicators, score, mtf, volume, patterns };
 
@@ -392,81 +386,133 @@ export function HomePage() {
         <ErrorBanner title="종목 목록 로드 실패" message={catalogError} />
       )}
 
-      <Card>
-        <SectionTitle>1. 종목 · 타임프레임</SectionTitle>
-        <TickerInput value={input} onChange={setInput} />
-        {inputParsed.valid && (
-          <div className="mt-4">
-            <TimeframeTabs
-              value={timeframe}
-              onChange={(tf) => {
-                setTimeframe(tf);
-                if (ticker) syncUrl(ticker, tf);
-              }}
-            />
-          </div>
-        )}
-      </Card>
 
-      {inputParsed.valid && !analyzed && (
-        <Card>
-          <SectionTitle>2. 분석</SectionTitle>
-          <p className="mb-4 text-sm text-text-secondary">
-            저장된 OHLCV가 있으면 차트와 지표를 표시합니다.
-          </p>
-          <Button onClick={analyze} disabled={loading}>
-            {loading ? "로딩 중…" : "분석 시작"}
-          </Button>
-        </Card>
-      )}
 
-      {analyzed && needsFetch && (
-        <Card>
-          <SectionTitle>2. 데이터 수집</SectionTitle>
-          <p className="mb-4 text-sm text-text-secondary">
-            <strong className="text-text-primary">{inputParsed.ticker}</strong> ·{" "}
-            {timeframe} 데이터가 없거나 오래되었습니다. Issue를 제출한 뒤 polling으로
-            갱신을 기다리세요.
+      <TickerInput
+        value={input}
+        onChange={setInput}
+        onSubmit={analyze}
+        disabled={loading}
+      />
+
+      {inputParsed.valid && (
+        <Card className="space-y-4">
+          <SectionTitle>2. 작업 선택</SectionTitle>
+          <p className="text-sm text-text-secondary">
+            <strong className="text-text-primary">{inputParsed.ticker}</strong> · 데이터가 없으면
+            먼저 수집을 요청하고, 이미 있으면 바로 분석하세요.
           </p>
-          <RequestDataButton
-            ticker={inputParsed.ticker}
-            timeframe={timeframe}
-            status={status?.status}
-            fresh={fresh}
-            polling={polling}
-            showPolling={!loadError}
-            onStartPolling={startPolling}
+
+          <TimeframeTabs
+            value={timeframe}
+            onChange={(tf) => {
+              setTimeframe(tf);
+              if (ticker) syncUrl(ticker, tf);
+            }}
           />
-          {pollError && (
-            <p className="mt-3 text-sm text-negative">{pollError}</p>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setActionMode("fetch")}
+              className={clsx(
+                "rounded-md px-3 py-1.5 text-sm",
+                actionMode === "fetch"
+                  ? "bg-accent text-white"
+                  : "bg-surface-elevated text-text-secondary hover:text-text-primary",
+              )}
+            >
+              데이터 요청
+            </button>
+            <button
+              type="button"
+              onClick={() => setActionMode("analyze")}
+              className={clsx(
+                "rounded-md px-3 py-1.5 text-sm",
+                actionMode === "analyze"
+                  ? "bg-accent text-white"
+                  : "bg-surface-elevated text-text-secondary hover:text-text-primary",
+              )}
+            >
+              분석하기
+            </button>
+          </div>
+
+          {actionMode === "fetch" ? (
+            <RequestDataButton
+              ticker={inputParsed.ticker}
+              timeframe={timeframe}
+              status={ticker === inputParsed.ticker ? status?.status : undefined}
+              fresh={quote?.ticker === inputParsed.ticker && fresh}
+              polling={polling && ticker === inputParsed.ticker}
+            />
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm text-text-secondary">
+                저장된 OHLCV 데이터로 차트·지표·점수를 계산합니다.
+              </p>
+              <Button onClick={analyze} disabled={loading}>
+                {loading ? "로딩 중…" : "분석 시작"}
+              </Button>
+            </div>
           )}
         </Card>
       )}
 
-      {analyzed && dataReady && activeQuote && (
-        <Card>
-          <SectionTitle>2. 데이터</SectionTitle>
+      {ticker && (
+        <Card className="space-y-4">
+          <SectionTitle>3. 결과</SectionTitle>
+          {loadError && (
+
+            <ErrorBanner title="시세 데이터 없음" message={loadError} />
+
+          )}
+
+          {statusError && !loadError && (
+
+            <ErrorBanner title="Fetch 상태 없음" message={statusError} />
+
+          )}
+
+          {pollError && (
+            <ErrorBanner title="Polling 실패" message={pollError} />
+          )}
+
+          {!fresh && ticker && !loadError && (
+            <div className="space-y-2">
+              <p className="text-sm text-text-secondary">
+                데이터가 오래되었거나 수집 중입니다. Issue 요청 후 polling으로 완료를 기다리세요.
+              </p>
+              <Button variant="secondary" onClick={startPolling} disabled={polling}>
+                {polling ? "Polling…" : "데이터 갱신 polling 시작"}
+              </Button>
+            </div>
+          )}
+
           <FetchStatusBanner
+
             polling={polling}
-            message={`${activeQuote.barCount} bars · last ${activeQuote.lastBarDate} · ${activeQuote.source ?? "unknown"}${activeQuote.resolvedSymbol ? ` (${activeQuote.resolvedSymbol})` : ""} · fetched ${activeQuote.fetchedAt}`}
+
+            message={
+
+              quote
+
+                ? `${quote.barCount} bars · last ${quote.lastBarDate} · ${quote.source ?? "unknown"}${quote.resolvedSymbol ? ` (${quote.resolvedSymbol})` : ""} · fetched ${quote.fetchedAt}`
+
+                : loading
+
+                  ? "로딩 중…"
+
+                  : loadError ?? "데이터 없음"
+
+            }
+
           />
+
         </Card>
       )}
 
-      {analyzed && loading && !activeQuote && (
-        <Card>
-          <SectionTitle>2. 분석</SectionTitle>
-          <p className="text-sm text-text-secondary">데이터 불러오는 중…</p>
-        </Card>
-      )}
 
-      {analyzed && needsFetch && loadError && (
-        <ErrorBanner title="시세 데이터 없음" message={loadError} />
-      )}
-
-      {analyzed && needsFetch && statusError && !loadError && (
-        <ErrorBanner title="Fetch 상태 없음" message={statusError} />
-      )}
 
       {evaluationError && (
 
@@ -476,11 +522,11 @@ export function HomePage() {
 
 
 
-      {dataReady && activeQuote && evaluation && (
-        <div id="export-root" className="space-y-6">
-          <h2 className="text-left text-lg font-semibold">3. 분석 결과</h2>
+      {quote && evaluation && (
 
-          <CandleChart bars={activeQuote.ohlcv} timeframe={timeframe} />
+        <div id="export-root" className="space-y-6">
+
+          <CandleChart bars={quote.ohlcv} timeframe={timeframe} />
 
           <VolumePanel snapshot={evaluation.volume} timeframe={timeframe} />
 
@@ -490,12 +536,12 @@ export function HomePage() {
           <CandlePatternPanel patterns={evaluation.patterns} />
           <MTFAlignmentCard alignment={evaluation.mtf} />
 
-          <StrategyBuilder bars={activeQuote.ohlcv} onResult={setBacktest} />
+          <StrategyBuilder bars={quote.ohlcv} onResult={setBacktest} />
 
           <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />
 
           <ExportPanel
-            quote={activeQuote}
+            quote={quote}
             indicators={evaluation.indicators}
             score={evaluation.score}
             patterns={evaluation.patterns}

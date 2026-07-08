@@ -8,8 +8,7 @@ interface Props {
   status?: string;
   fresh: boolean;
   polling: boolean;
-  onStartPolling?: () => void;
-  showPolling?: boolean;
+  disabled?: boolean;
 }
 
 export function RequestDataButton({
@@ -18,31 +17,39 @@ export function RequestDataButton({
   status,
   fresh,
   polling,
-  onStartPolling,
-  showPolling,
+  disabled,
 }: Props) {
   if (fresh) {
     return <Badge variant="fresh">데이터 최신</Badge>;
   }
 
-  if (status === "running" || polling) {
-    return <Badge variant="running">데이터 수집 중…</Badge>;
-  }
-
   const issueUrl = buildFetchIssueUrl(ticker, timeframe);
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <Button
-        variant="primary"
-        onClick={() => window.open(issueUrl, "_blank", "noopener,noreferrer")}
-      >
-        GitHub Issue로 데이터 요청
-      </Button>
-      {showPolling && onStartPolling && (
-        <Button variant="secondary" onClick={onStartPolling} disabled={polling}>
-          {polling ? "Polling…" : "갱신 polling"}
-        </Button>
+    <div className="space-y-2 text-left">
+      {status === "running" || polling ? (
+        <Badge variant="running">데이터 수집 중…</Badge>
+      ) : (
+        <>
+          <p className="text-sm text-text-secondary">
+            수집된 데이터가 없거나 오래되었습니다. GitHub Issue로 fetch를 요청하세요.
+            <span className="mt-1 block text-text-tertiary">
+              입력한 티커 <strong className="text-text-secondary">{ticker}</strong> · {timeframe} 이
+              Issue에 채워집니다.
+            </span>
+          </p>
+          <Button
+            variant="primary"
+            disabled={disabled || status === "running"}
+            onClick={() => window.open(issueUrl, "_blank", "noopener,noreferrer")}
+          >
+            GitHub Issue로 데이터 요청
+          </Button>
+          <p className="text-xs text-text-tertiary">
+            Mega-issue: pinned issue에 <code className="text-text-secondary">/fetch {ticker} {timeframe}</code>{" "}
+            comment
+          </p>
+        </>
       )}
     </div>
   );
