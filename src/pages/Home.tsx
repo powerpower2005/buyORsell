@@ -124,11 +124,7 @@ export function HomePage() {
     [catalog, timeframe],
   );
 
-  const issueTicker = useMemo(() => {
-    const parsed = parseTickerInput(input);
-    if (parsed.valid) return parsed.ticker;
-    return ticker;
-  }, [input, ticker]);
+  const inputParsed = useMemo(() => parseTickerInput(input), [input]);
 
   const refreshCatalog = useCallback(async () => {
     setCatalogLoading(true);
@@ -386,39 +382,33 @@ export function HomePage() {
 
 
       <TickerInput
-
         value={input}
-
         onChange={setInput}
-
         onSubmit={analyze}
-
         disabled={loading}
-
       />
 
-
+      {inputParsed.valid && (
+        <>
+          <TimeframeTabs
+            value={timeframe}
+            onChange={(tf) => {
+              setTimeframe(tf);
+              if (ticker) syncUrl(ticker, tf);
+            }}
+          />
+          <RequestDataButton
+            ticker={inputParsed.ticker}
+            timeframe={timeframe}
+            status={ticker === inputParsed.ticker ? status?.status : undefined}
+            fresh={quote?.ticker === inputParsed.ticker && fresh}
+            polling={polling && ticker === inputParsed.ticker}
+          />
+        </>
+      )}
 
       {ticker && (
-
         <>
-
-          <TimeframeTabs
-
-            value={timeframe}
-
-            onChange={(tf) => {
-
-              setTimeframe(tf);
-
-              syncUrl(ticker, tf);
-
-            }}
-
-          />
-
-
-
           {loadError && (
 
             <ErrorBanner title="시세 데이터 없음" message={loadError} />
@@ -432,26 +422,8 @@ export function HomePage() {
           )}
 
           {pollError && (
-
             <ErrorBanner title="Polling 실패" message={pollError} />
-
           )}
-
-
-
-          <RequestDataButton
-            ticker={issueTicker}
-            timeframe={timeframe}
-
-            status={status?.status}
-
-            fresh={fresh}
-
-            polling={polling}
-
-          />
-
-
 
           {!fresh && ticker && !loadError && (
 
