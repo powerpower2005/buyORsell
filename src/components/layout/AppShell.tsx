@@ -13,6 +13,9 @@ export function Header() {
           </p>
         </div>
         <nav className="flex gap-4 text-sm">
+          <Link to="/browse" className="text-text-secondary hover:text-text-primary">
+            보유 데이터
+          </Link>
           <Link to="/guide" className="text-text-secondary hover:text-text-primary">
             가이드
           </Link>

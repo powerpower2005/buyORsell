@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import clsx from "clsx";
 import { TickerInput } from "@/components/TickerInput";
 import { TimeframeTabs } from "@/components/TimeframeTabs";
@@ -251,6 +251,15 @@ export function HomePage() {
           syncUrl(t, timeframe);
         }}
       />
+      {catalogTickers.length > 0 && (
+        <p className="text-left text-sm text-text-secondary">
+          수집된 종목은{" "}
+          <Link to="/browse" className="text-accent no-underline hover:underline">
+            보유 데이터
+          </Link>
+          에서 바로 볼 수 있습니다.
+        </p>
+      )}
 
       {catalogError && (
         <ErrorBanner title="종목 목록 로드 실패" message={catalogError} />
