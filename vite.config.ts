@@ -64,7 +64,7 @@ export default defineConfig({
       manifest: {
         name: "GF Evaluator",
         short_name: "GF Eval",
-        description: "OHLCV technical evaluation from Google Sheets GOOGLEFINANCE",
+        description: "OHLCV technical evaluation",
         theme_color: "#191919",
         background_color: "#191919",
         display: "standalone",

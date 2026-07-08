@@ -10,8 +10,8 @@ const STEPS = [
     body: "티커:거래소 형식을 사용하세요. 예: NVDA:NASDAQ, 005930:KRX, BTC-USD",
   },
   {
-    title: "데이터 수집 (Sheets)",
-    body: "Google Spreadsheet의 GOOGLEFINANCE 함수로 OHLCV를 수집합니다. GitHub Issue「Fetch Quote Data」로 요청하면 Actions가 자동 실행됩니다.",
+    title: "데이터 수집",
+    body: "GitHub Issue「Fetch Quote Data」로 요청하면 Actions가 OHLCV를 가져와 repo에 저장합니다.",
   },
   {
     title: "수집된 종목",

@@ -20,16 +20,13 @@ export function GuidePage() {
       </Card>
 
       <Card>
-        <SectionTitle>2. 데이터 수집 (Google Sheets)</SectionTitle>
+        <SectionTitle>2. 데이터 수집</SectionTitle>
         <ol className="list-inside list-decimal space-y-2 text-sm text-text-secondary">
           <li>
             GitHub에서 <strong>Fetch Quote Data</strong> Issue를 연다.
           </li>
           <li>티커·타임프레임(보통 1d)을 입력하고 제출한다.</li>
-          <li>
-            Actions가 Spreadsheet <code>GOOGLEFINANCE(...,&quot;all&quot;)</code>로 OHLCV를
-            가져와 <code>data/</code>에 commit한다.
-          </li>
+          <li>Actions가 OHLCV를 가져와 <code>data/</code>에 commit한다.</li>
           <li>1~3분 후 앱을 새로고침하거나 polling을 시작한다.</li>
         </ol>
         <a

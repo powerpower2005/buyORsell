@@ -1,5 +1,5 @@
 name: Fetch Quote Data
-description: Request OHLCV fetch via Google Sheets GOOGLEFINANCE
+description: Request OHLCV fetch for a ticker
 title: "[FETCH] "
 labels:
   - fetch-quote
