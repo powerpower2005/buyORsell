@@ -1,11 +1,13 @@
 import { githubRepo } from "./githubRaw";
 
-export function buildFetchIssueUrl(ticker: string, _timeframe = "1d"): string {
+export function buildFetchIssueUrl(ticker: string, timeframe = "1d"): string {
   const [owner, repo] = githubRepo().split("/");
   const params = new URLSearchParams({
     template: "fetch-quote.yml",
     title: `[FETCH] ${ticker}`,
     labels: "fetch-quote",
+    ticker,
+    timeframe,
   });
   return `https://github.com/${owner}/${repo}/issues/new?${params.toString()}`;
 }

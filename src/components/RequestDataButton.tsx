@@ -33,6 +33,10 @@ export function RequestDataButton({
         <>
           <p className="text-sm text-text-secondary">
             수집된 데이터가 없거나 오래되었습니다. GitHub Issue로 Sheets fetch를 요청하세요.
+            <span className="mt-1 block text-text-tertiary">
+              Issue에 <strong className="text-text-secondary">{ticker}</strong> · {timeframe} 이
+              미리 채워집니다.
+            </span>
           </p>
           <Button
             variant="primary"
