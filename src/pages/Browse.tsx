@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import clsx from "clsx";
-import { loadIndex, loadQuote } from "@/lib/dataLoader";
+import { loadIndex, loadQuote, pollUntilReady } from "@/lib/dataLoader";
 import { validateFreshness } from "@/lib/validation";
 import { computeAll } from "@/lib/evaluation/registry";
 import { computeScore, presetForTimeframe } from "@/lib/evaluation/scoring";
@@ -44,6 +44,29 @@ export function BrowsePage() {
   const [quote, setQuote] = useState<QuoteFile | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [polling, setPolling] = useState(false);
+  const [pollError, setPollError] = useState<string | null>(null);
+
+  const reloadQuote = useCallback(async (entry: IndexEntry) => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      setQuote(await loadQuote(entry.ticker, entry.timeframe as Timeframe));
+    } catch (e) {
+      setQuote(null);
+      setLoadError(errorMessage(e));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const refreshIndex = useCallback(async () => {
+    try {
+      setIndex(await loadIndex());
+    } catch (e) {
+      setIndexError(errorMessage(e));
+    }
+  }, []);
 
   const entries = useMemo(
     () =>
@@ -85,29 +108,53 @@ export function BrowsePage() {
     }
 
     let cancelled = false;
-    setLoading(true);
-    setLoadError(null);
-
-    loadQuote(selected.ticker, selected.timeframe as Timeframe)
-      .then((q) => {
+    void (async () => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const q = await loadQuote(selected.ticker, selected.timeframe as Timeframe);
         if (!cancelled) setQuote(q);
-      })
-      .catch((e) => {
+      } catch (e) {
         if (!cancelled) {
           setQuote(null);
           setLoadError(errorMessage(e));
         }
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    })();
 
     return () => {
       cancelled = true;
     };
   }, [selected]);
 
+  const startPolling = async () => {
+    if (!selected) return;
+    setPolling(true);
+    setPollError(null);
+    try {
+      await pollUntilReady(
+        selected.ticker,
+        selected.timeframe as Timeframe,
+        (q) => {
+          setQuote(q);
+          setLoadError(null);
+        },
+      );
+      await refreshIndex();
+      await reloadQuote(selected);
+    } catch (e) {
+      setPollError(errorMessage(e));
+    }
+    setPolling(false);
+  };
+
   const indicatorConfig = useMemo(() => getEffectiveIndicatorsConfig(), []);
+
+  const freshness = quote && selected
+    ? validateFreshness(quote, selected.timeframe as Timeframe)
+    : null;
 
   let evaluation: {
     indicators: ReturnType<typeof computeAll>;
@@ -119,7 +166,7 @@ export function BrowsePage() {
 
   let evaluationError: string | null = null;
 
-  if (quote && selected) {
+  if (quote && selected && freshness?.status === "fresh") {
     const tf = selected.timeframe as Timeframe;
     try {
       const indicators = computeAll(quote.ohlcv, tf, indicatorConfig);
@@ -133,12 +180,10 @@ export function BrowsePage() {
     }
   }
 
-  const freshness = quote && selected
-    ? validateFreshness(quote, selected.timeframe as Timeframe)
-    : null;
-
   const resultStatus: AnalysisStatus | "ready" = (() => {
     if (loading) return "loading";
+    if (polling) return "polling";
+    if (pollError) return "poll-error";
     if (loadError || !quote) return "missing";
     if (freshness?.status === "stale") return "stale";
     if (evaluationError) return "bad-quality";
@@ -146,10 +191,16 @@ export function BrowsePage() {
     return "loading";
   })();
 
-  const statusDetail = evaluationError
-    ?? (quote
-      ? `${quote.barCount} bars · last ${quote.lastBarDate} · fetched ${quote.fetchedAt}`
-      : loadError ?? undefined);
+  const statusDetail = (() => {
+    if (freshness?.status === "stale" && freshness.reason) {
+      return `stale: ${freshness.reason} · ${quote?.barCount ?? 0} bars · last ${quote?.lastBarDate} · fetched ${quote?.fetchedAt}`;
+    }
+    if (evaluationError) return evaluationError;
+    if (quote) {
+      return `${quote.barCount} bars · last ${quote.lastBarDate} · fetched ${quote.fetchedAt}`;
+    }
+    return loadError ?? undefined;
+  })();
 
   const selectEntry = (entry: IndexEntry) => {
     setSelected(entry);
@@ -264,6 +315,9 @@ export function BrowsePage() {
                   ticker={selected.ticker}
                   timeframe={selected.timeframe}
                   detail={statusDetail}
+                  pollError={pollError ?? undefined}
+                  onPoll={startPolling}
+                  polling={polling}
                 />
               ) : (
                 <div className="space-y-6">

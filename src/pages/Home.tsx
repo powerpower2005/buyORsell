@@ -97,8 +97,6 @@ export function HomePage() {
     }
   }, []);
 
-  const fresh = quote ? checkFresh(quote, timeframe).status === "fresh" : false;
-
   const syncUrl = useCallback(
     (t: string, tf: Timeframe) => {
       const next = new URLSearchParams(params);
@@ -178,6 +176,8 @@ export function HomePage() {
     [configTick],
   );
 
+  const freshness = quote ? checkFresh(quote, timeframe) : null;
+
   let evaluation: {
     indicators: ReturnType<typeof computeAll>;
     score: ReturnType<typeof computeScore>;
@@ -188,7 +188,7 @@ export function HomePage() {
 
   let evaluationError: string | null = null;
 
-  if (quote) {
+  if (quote && freshness?.status === "fresh") {
     try {
       const indicators = computeAll(quote.ohlcv, timeframe, indicatorConfig);
       const score = computeScore(
@@ -213,13 +213,16 @@ export function HomePage() {
     if (polling) return "polling";
     if (pollError) return "poll-error";
     if (loadError || !quote) return "missing";
-    if (!fresh) return "stale";
+    if (freshness?.status === "stale") return "stale";
     if (evaluationError) return "bad-quality";
     if (evaluation) return "ready";
     return "loading";
   })();
 
   const statusDetail = (() => {
+    if (freshness?.status === "stale" && freshness.reason) {
+      return `stale: ${freshness.reason} · ${quote?.barCount ?? 0} bars · last ${quote?.lastBarDate} · fetched ${quote?.fetchedAt}`;
+    }
     if (evaluationError) return evaluationError;
     if (quote) {
       return `${quote.barCount} bars · last ${quote.lastBarDate} · ${quote.source ?? "unknown"} · fetched ${quote.fetchedAt}`;
