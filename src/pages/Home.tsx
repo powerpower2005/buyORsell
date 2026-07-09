@@ -84,11 +84,11 @@ export function HomePage() {
 
   const inputParsed = useMemo(() => parseTickerInput(input), [input]);
 
-  const refreshCatalog = useCallback(async () => {
+  const refreshCatalog = useCallback(async (remote = false) => {
     setCatalogLoading(true);
     setCatalogError(null);
     try {
-      setCatalog(await loadIndex());
+      setCatalog(await loadIndex(remote ? { remote: true } : undefined));
     } catch (e) {
       setCatalog(null);
       setCatalogError(errorMessage(e));
@@ -164,7 +164,7 @@ export function HomePage() {
         setLoadError(null);
       });
       setQuote(q);
-      await refreshCatalog();
+      await refreshCatalog(true);
     } catch (e) {
       setPollError(errorMessage(e));
     }

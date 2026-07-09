@@ -47,11 +47,13 @@ export function BrowsePage() {
   const [polling, setPolling] = useState(false);
   const [pollError, setPollError] = useState<string | null>(null);
 
-  const reloadQuote = useCallback(async (entry: IndexEntry) => {
+  const reloadQuote = useCallback(async (entry: IndexEntry, remote = false) => {
     setLoading(true);
     setLoadError(null);
     try {
-      setQuote(await loadQuote(entry.ticker, entry.timeframe as Timeframe));
+      setQuote(
+        await loadQuote(entry.ticker, entry.timeframe as Timeframe, { remote }),
+      );
     } catch (e) {
       setQuote(null);
       setLoadError(errorMessage(e));
@@ -60,9 +62,9 @@ export function BrowsePage() {
     }
   }, []);
 
-  const refreshIndex = useCallback(async () => {
+  const refreshIndex = useCallback(async (remote = false) => {
     try {
-      setIndex(await loadIndex());
+      setIndex(await loadIndex({ remote }));
     } catch (e) {
       setIndexError(errorMessage(e));
     }
@@ -142,8 +144,8 @@ export function BrowsePage() {
           setLoadError(null);
         },
       );
-      await refreshIndex();
-      await reloadQuote(selected);
+      await refreshIndex(true);
+      await reloadQuote(selected, true);
     } catch (e) {
       setPollError(errorMessage(e));
     }

@@ -116,11 +116,14 @@ jobs:
             timeframe = fetchCmd[2] || '1d';
           } else if (event === 'issues') {
             const labels = ${{ toJson(github.event.issue.labels.*.name) }};
-            if (!labels.includes('fetch-quote')) {
+            const title = process.env.ISSUE_TITLE || '';
+            const isFetchIssue =
+              labels.includes('fetch-quote') || /^\[FETCH\]/i.test(title.trim());
+            if (!isFetchIssue) {
               skip();
             }
             const parsed = fromBody(process.env.ISSUE_BODY);
-            ticker = normalizeTicker(fromTitle(process.env.ISSUE_TITLE) || parsed.ticker);
+            ticker = normalizeTicker(fromTitle(title) || parsed.ticker);
             timeframe = parsed.timeframe || '1d';
           }
 

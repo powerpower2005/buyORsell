@@ -147,13 +147,23 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
   }
 
   if (policy.update.skipCommitIfNoDiff && existing && !hasDiff) {
-    writeJson(statusPath(ticker, timeframe), {
-      status: "skipped",
-      updatedAt: new Date().toISOString(),
-      ticker,
-      timeframe,
-    });
-    return { action: "skipped", reason: "no diff", quote: existing };
+    const staleReason = validateFreshness(existing, policy, timeframe);
+    if (staleReason.status === "fresh") {
+      writeJson(statusPath(ticker, timeframe), {
+        status: "skipped",
+        updatedAt: new Date().toISOString(),
+        ticker,
+        timeframe,
+      });
+      return { action: "skipped", reason: "no diff", quote: existing };
+    }
+    merged = {
+      ...merged,
+      fetchedAt: incoming.fetchedAt,
+      source: incoming.source ?? merged.source,
+      resolvedSymbol: incoming.resolvedSymbol ?? merged.resolvedSymbol,
+    };
+    hasDiff = true;
   }
 
   writeJson(rel, merged);
