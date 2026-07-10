@@ -1,30 +1,62 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createChart, type IChartApi, type ISeriesApi } from "lightweight-charts";
 import type { OHLCVBar, Timeframe } from "@/lib/types";
+import type { CandlePatternResult } from "@/lib/evaluation/candlePatterns";
+import {
+  patternsToChartMarkers,
+  PATTERN_MARKER_LEGEND,
+} from "@/lib/chart/patternMarkers";
 import {
   computeVolumeAverages,
   getVolumeMaPeriods,
   VOLUME_MA_COLORS,
   VOLUME_MA_PERIODS,
 } from "@/lib/evaluation/volumeMa";
+import { Card } from "./ui/Card";
 
 interface Props {
   bars: OHLCVBar[];
   timeframe: Timeframe;
+  patterns?: CandlePatternResult;
   height?: number;
 }
 
-export function CandleChart({ bars, timeframe, height = 480 }: Props) {
+function useViewportChartHeight(fixed?: number) {
+  const compute = () =>
+    Math.min(780, Math.max(540, Math.round(window.innerHeight * 0.62)));
+
+  const [height, setHeight] = useState(fixed ?? 640);
+
+  useEffect(() => {
+    if (fixed != null) {
+      setHeight(fixed);
+      return;
+    }
+    const update = () => setHeight(compute());
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [fixed]);
+
+  return height;
+}
+
+export function CandleChart({ bars, timeframe, patterns, height: heightProp }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candleRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volumeRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const maRefs = useRef<Map<number, ISeriesApi<"Line">>>(new Map());
+  const height = useViewportChartHeight(heightProp);
 
   const periods = useMemo(() => getVolumeMaPeriods(timeframe), [timeframe]);
   const volumeSnapshot = useMemo(
     () => computeVolumeAverages(bars, periods),
     [bars, periods],
+  );
+  const patternMarkers = useMemo(
+    () => patternsToChartMarkers(patterns),
+    [patterns],
   );
 
   useEffect(() => {
@@ -145,26 +177,48 @@ export function CandleChart({ bars, timeframe, height = 480 }: Props) {
       );
     }
 
+    candleRef.current.setMarkers(patternMarkers);
     chartRef.current?.timeScale().fitContent();
-  }, [bars, volumeSnapshot]);
+  }, [bars, volumeSnapshot, patternMarkers]);
 
   return (
-    <div className="w-full text-left">
-      <div ref={containerRef} />
-      <div className="mt-2 flex flex-wrap gap-3 text-xs text-text-secondary">
-        <span>거래량 막대 + 이동평균:</span>
-        {periods.map((p) => (
-          <span key={p} className="flex items-center gap-1">
-            <span
-              className="inline-block h-2 w-4 rounded-sm"
-              style={{
-                backgroundColor: VOLUME_MA_COLORS[p as keyof typeof VOLUME_MA_COLORS],
-              }}
-            />
-            {p}
-          </span>
-        ))}
+    <Card className="overflow-hidden p-3 sm:p-4">
+      <div className="w-full text-left">
+        <div ref={containerRef} className="w-full" />
+        <div className="mt-3 space-y-2 border-t border-border pt-3">
+          <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
+            <span>거래량:</span>
+            {periods.map((p) => (
+              <span key={p} className="flex items-center gap-1">
+                <span
+                  className="inline-block h-2 w-4 rounded-sm"
+                  style={{
+                    backgroundColor:
+                      VOLUME_MA_COLORS[p as keyof typeof VOLUME_MA_COLORS],
+                  }}
+                />
+                MA{p}
+              </span>
+            ))}
+          </div>
+          {patternMarkers.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>캔들 패턴 ({patternMarkers.length}):</span>
+              {PATTERN_MARKER_LEGEND.map((item) => (
+                <span key={item.text} className="flex items-center gap-1.5">
+                  <span
+                    className="inline-flex min-w-[1.75rem] justify-center rounded px-1 font-mono text-[10px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.text}
+                  </span>
+                  <span className="text-text-tertiary">{item.label}</span>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </Card>
   );
 }

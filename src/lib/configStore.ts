@@ -1,6 +1,6 @@
 import indicatorsBase from "../../config/indicators.json";
 import scoringBase from "../../config/scoring.json";
-import type { IndicatorsConfig } from "./evaluation/types";
+import type { IndicatorsConfig, IndicatorConfigItem } from "./evaluation/types";
 
 const OVERRIDE_KEY = "gf:config:overrides";
 
@@ -40,24 +40,83 @@ export function saveOverrides(
   localStorage.setItem(OVERRIDE_KEY, JSON.stringify(overrides));
 }
 
+function mergeIndicatorsConfig(): IndicatorsConfig {
+  const o = loadOverrides();
+  return deepMerge(
+    indicatorsBase as IndicatorsConfig,
+    (o.indicators ?? {}) as DeepPartial<IndicatorsConfig>,
+  );
+}
+
+function persistIndicators(mutator: (config: IndicatorsConfig) => IndicatorsConfig): void {
+  const o = loadOverrides();
+  const current = mergeIndicatorsConfig();
+  o.indicators = mutator(current);
+  saveOverrides(o);
+}
+
+function updateIndicatorItem(
+  id: string,
+  updater: (item: IndicatorConfigItem) => IndicatorConfigItem,
+): void {
+  persistIndicators((config) => ({
+    ...config,
+    indicators: config.indicators.map((item) =>
+      item.id === id ? updater(item) : item,
+    ),
+  }));
+}
+
 export function setIndicatorParam(
   id: string,
   paramKey: string,
   value: number | number[],
 ): void {
-  const o = loadOverrides();
-  if (!o.indicators) o.indicators = { schemaVersion: 1, indicators: [], signals: [] };
-  const items = [...(indicatorsBase.indicators as IndicatorsConfig["indicators"])];
-  const merged = deepMerge({ indicators: items, signals: indicatorsBase.signals }, o.indicators as never);
-  const idx = merged.indicators.findIndex((i) => i.id === id);
-  if (idx >= 0) {
-    merged.indicators[idx] = {
-      ...merged.indicators[idx],
-      params: { ...merged.indicators[idx].params, [paramKey]: value },
-    };
-  }
-  o.indicators = merged as IndicatorsConfig;
-  saveOverrides(o);
+  updateIndicatorItem(id, (item) => ({
+    ...item,
+    params: { ...item.params, [paramKey]: value },
+  }));
+}
+
+export function setIndicatorPeriodAt(
+  id: string,
+  index: number,
+  value: number,
+): void {
+  updateIndicatorItem(id, (item) => {
+    const periods = [...(item.params.periods as number[])];
+    periods[index] = value;
+    return { ...item, params: { ...item.params, periods } };
+  });
+}
+
+export function setIndicatorEnabled(id: string, enabled: boolean): void {
+  updateIndicatorItem(id, (item) => ({ ...item, enabled }));
+}
+
+export function setIndicatorThreshold(
+  id: string,
+  key: "overbought" | "oversold",
+  value: number,
+): void {
+  persistIndicators((config) => ({
+    ...config,
+    indicators: config.indicators.map((item) =>
+      item.id === id ? { ...item, [key]: value } : item,
+    ),
+    signals:
+      id === "rsi"
+        ? config.signals.map((sig) => {
+            if (key === "overbought" && sig.id === "rsi_overbought") {
+              return { ...sig, value };
+            }
+            if (key === "oversold" && sig.id === "rsi_oversold") {
+              return { ...sig, value };
+            }
+            return sig;
+          })
+        : config.signals,
+  }));
 }
 
 export function setCategoryWeight(presetKey: string, category: string, weight: number): void {
@@ -76,14 +135,14 @@ export function resetOverrides(): void {
 }
 
 export function getEffectiveIndicatorsConfig(): IndicatorsConfig {
-  const o = loadOverrides();
-  return deepMerge(
-    indicatorsBase as IndicatorsConfig,
-    (o.indicators ?? {}) as DeepPartial<IndicatorsConfig>,
-  );
+  return mergeIndicatorsConfig();
 }
 
 export function getEffectiveScoringConfig(): typeof scoringBase {
   const o = loadOverrides();
   return deepMerge(scoringBase, (o.scoring ?? {}) as DeepPartial<typeof scoringBase>);
+}
+
+export function getIndicatorConfig(id: string): IndicatorConfigItem | undefined {
+  return getEffectiveIndicatorsConfig().indicators.find((i) => i.id === id);
 }

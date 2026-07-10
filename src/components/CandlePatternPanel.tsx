@@ -16,6 +16,7 @@ export function CandlePatternPanel({ patterns }: { patterns: CandlePatternResult
       <SectionTitle>캔들 패턴</SectionTitle>
       <p className="mb-3 text-xs text-text-tertiary">
         최근 {lookbackBars}봉 · 마지막 봉 {latestBarDate}
+        {recent.length > 0 && " · 차트에 마커로 표시됨"}
       </p>
 
       <div className="mb-4 text-left">

@@ -374,14 +374,20 @@ export function HomePage() {
             <>
               <p className="text-left text-xs text-text-tertiary">{statusDetail}</p>
               <div id="export-root" className="space-y-6">
-                <CandleChart bars={quote!.ohlcv} timeframe={timeframe} />
-                <VolumePanel snapshot={evaluation!.volume} timeframe={timeframe} />
-                <ScoreCard score={evaluation!.score} />
-                <IndicatorPanel results={evaluation!.indicators} />
-                <CandlePatternPanel patterns={evaluation!.patterns} />
+                <CandleChart
+                  bars={quote!.ohlcv}
+                  timeframe={timeframe}
+                  patterns={evaluation!.patterns}
+                />
+                <div className="grid gap-6 xl:grid-cols-2">
+                  <VolumePanel snapshot={evaluation!.volume} timeframe={timeframe} />
+                  <ScoreCard score={evaluation!.score} />
+                  <IndicatorPanel results={evaluation!.indicators} />
+                  <CandlePatternPanel patterns={evaluation!.patterns} />
+                </div>
+                <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />
                 <MTFAlignmentCard alignment={evaluation!.mtf} />
                 <StrategyBuilder bars={quote!.ohlcv} onResult={setBacktest} />
-                <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />
                 <ExportPanel
                   quote={quote!}
                   indicators={evaluation!.indicators}

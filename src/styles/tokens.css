@@ -12,8 +12,8 @@
   --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --content-max-width: 720px;
-  --page-padding-x: 24px;
+  --content-max-width: 1360px;
+  --page-padding-x: 32px;
 }
 
 * {

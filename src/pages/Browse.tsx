@@ -6,6 +6,7 @@ import { validateFreshness } from "@/lib/validation";
 import { computeAll } from "@/lib/evaluation/registry";
 import { computeScore, presetForTimeframe } from "@/lib/evaluation/scoring";
 import { computeMTFAlignment } from "@/lib/evaluation/mtfAlignment";
+import { ConfigPanel } from "@/components/ConfigPanel";
 import { getEffectiveIndicatorsConfig } from "@/lib/configStore";
 import { computeVolumeAverages, getVolumeMaPeriods } from "@/lib/evaluation/volumeMa";
 import { detectCandlePatterns } from "@/lib/evaluation/candlePatterns";
@@ -46,6 +47,7 @@ export function BrowsePage() {
   const [loading, setLoading] = useState(false);
   const [polling, setPolling] = useState(false);
   const [pollError, setPollError] = useState<string | null>(null);
+  const [configTick, setConfigTick] = useState(0);
 
   const reloadQuote = useCallback(async (entry: IndexEntry, remote = false) => {
     setLoading(true);
@@ -152,7 +154,10 @@ export function BrowsePage() {
     setPolling(false);
   };
 
-  const indicatorConfig = useMemo(() => getEffectiveIndicatorsConfig(), []);
+  const indicatorConfig = useMemo(
+    () => getEffectiveIndicatorsConfig(),
+    [configTick],
+  );
 
   const freshness = quote && selected
     ? validateFreshness(quote, selected.timeframe as Timeframe)
@@ -248,7 +253,7 @@ export function BrowsePage() {
         <TimeframeTabs value={timeframe} onChange={onTimeframeChange} />
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,240px)_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,200px)_minmax(0,1fr)]">
         <Card>
           <SectionTitle>수집된 종목</SectionTitle>
           {!entries.length ? (
@@ -327,14 +332,18 @@ export function BrowsePage() {
                   <CandleChart
                     bars={quote!.ohlcv}
                     timeframe={selected.timeframe as Timeframe}
+                    patterns={evaluation!.patterns}
                   />
-                  <VolumePanel
-                    snapshot={evaluation!.volume}
-                    timeframe={selected.timeframe as Timeframe}
-                  />
-                  <ScoreCard score={evaluation!.score} />
-                  <IndicatorPanel results={evaluation!.indicators} />
-                  <CandlePatternPanel patterns={evaluation!.patterns} />
+                  <div className="grid gap-6 xl:grid-cols-2">
+                    <VolumePanel
+                      snapshot={evaluation!.volume}
+                      timeframe={selected.timeframe as Timeframe}
+                    />
+                    <ScoreCard score={evaluation!.score} />
+                    <IndicatorPanel results={evaluation!.indicators} />
+                    <CandlePatternPanel patterns={evaluation!.patterns} />
+                  </div>
+                  <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />
                   <MTFAlignmentCard alignment={evaluation!.mtf} />
                 </div>
               )}
