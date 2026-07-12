@@ -22,6 +22,7 @@ import { CandlePatternPanel } from "@/components/CandlePatternPanel";
 import { MTFAlignmentCard } from "@/components/MTFAlignmentCard";
 import { TimeframeTabs } from "@/components/TimeframeTabs";
 import { ErrorBanner } from "@/components/ErrorBanner";
+import { StaleDataBanner } from "@/components/StaleDataBanner";
 import { Card, SectionTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { errorMessage } from "@/lib/errors";
@@ -162,6 +163,7 @@ export function BrowsePage() {
   const freshness = quote && selected
     ? validateFreshness(quote, selected.timeframe as Timeframe)
     : null;
+  const isStale = freshness?.status === "stale";
 
   let evaluation: {
     indicators: ReturnType<typeof computeAll>;
@@ -173,7 +175,7 @@ export function BrowsePage() {
 
   let evaluationError: string | null = null;
 
-  if (quote && selected && freshness?.status === "fresh") {
+  if (quote && selected) {
     const tf = selected.timeframe as Timeframe;
     try {
       const indicators = computeAll(quote.ohlcv, tf, indicatorConfig);
@@ -192,16 +194,17 @@ export function BrowsePage() {
     if (polling) return "polling";
     if (pollError) return "poll-error";
     if (loadError || !quote) return "missing";
-    if (freshness?.status === "stale") return "stale";
     if (evaluationError) return "bad-quality";
     if (evaluation) return "ready";
     return "loading";
   })();
 
+  const staleDetail = (() => {
+    if (!isStale || !freshness?.reason) return undefined;
+    return `stale: ${freshness.reason} · ${quote?.barCount ?? 0} bars · last ${quote?.lastBarDate} · fetched ${quote?.fetchedAt}`;
+  })();
+
   const statusDetail = (() => {
-    if (freshness?.status === "stale" && freshness.reason) {
-      return `stale: ${freshness.reason} · ${quote?.barCount ?? 0} bars · last ${quote?.lastBarDate} · fetched ${quote?.fetchedAt}`;
-    }
     if (evaluationError) return evaluationError;
     if (quote) {
       return `${quote.barCount} bars · last ${quote.lastBarDate} · fetched ${quote.fetchedAt}`;
@@ -328,6 +331,16 @@ export function BrowsePage() {
                 />
               ) : (
                 <div className="space-y-6">
+                  {isStale && (
+                    <StaleDataBanner
+                      ticker={selected.ticker}
+                      timeframe={selected.timeframe}
+                      detail={staleDetail}
+                      pollError={pollError ?? undefined}
+                      onPoll={startPolling}
+                      polling={polling}
+                    />
+                  )}
                   <p className="text-xs text-text-tertiary">{statusDetail}</p>
                   <CandleChart
                     bars={quote!.ohlcv}

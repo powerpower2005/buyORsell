@@ -152,6 +152,36 @@ jobs:
             "${{ steps.parse.outputs.ticker }}" \
             "${{ steps.parse.outputs.timeframe }}"
 
+      - name: Scheduled stale refresh
+        if: github.event_name == 'schedule'
+        env:
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const indexPath = 'data/index.json';
+          if (!fs.existsSync(indexPath)) process.exit(0);
+          const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+          const policy = JSON.parse(fs.readFileSync('config/data-policy.json', 'utf8'));
+          for (const entry of index.entries) {
+            if (!entry.ticker || !entry.timeframe) continue;
+            const full = path.join('data', entry.ticker.replace(/:/g, '-'), entry.timeframe + '.json');
+            if (!fs.existsSync(full)) continue;
+            const quote = JSON.parse(fs.readFileSync(full, 'utf8'));
+            const tfPolicy = policy.freshnessByTimeframe?.[entry.timeframe] || {};
+            const maxAge = (tfPolicy.maxAgeHours || policy.freshness.maxAgeHours) * 3600000;
+            if (Date.now() - new Date(quote.fetchedAt).getTime() > maxAge) {
+              console.log('Stale:', entry.ticker, entry.timeframe);
+              require('child_process').execSync(
+                `node scripts/validate-and-merge.mjs "${entry.ticker}" "${entry.timeframe}"`,
+                { stdio: 'inherit' }
+              );
+            }
+          }
+          NODE
+
       - name: Commit data
         if: steps.parse.outputs.skip == 'false' || github.event_name == 'schedule'
         run: |
@@ -202,33 +232,3 @@ jobs:
               issue_number: context.issue.number,
               body: `✅ \`${ticker}\` (${tf}) fetch complete.`
             });
-
-      - name: Scheduled stale refresh
-        if: github.event_name == 'schedule'
-        env:
-          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-        run: |
-          node <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
-          const indexPath = 'data/index.json';
-          if (!fs.existsSync(indexPath)) process.exit(0);
-          const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
-          const policy = JSON.parse(fs.readFileSync('config/data-policy.json', 'utf8'));
-          for (const entry of index.entries) {
-            if (!entry.ticker || !entry.timeframe) continue;
-            const full = path.join('data', entry.ticker.replace(/:/g, '-'), entry.timeframe + '.json');
-            if (!fs.existsSync(full)) continue;
-            const quote = JSON.parse(fs.readFileSync(full, 'utf8'));
-            const tfPolicy = policy.freshnessByTimeframe?.[entry.timeframe] || {};
-            const maxAge = (tfPolicy.maxAgeHours || policy.freshness.maxAgeHours) * 3600000;
-            if (Date.now() - new Date(quote.fetchedAt).getTime() > maxAge) {
-              console.log('Stale:', entry.ticker, entry.timeframe);
-              require('child_process').execSync(
-                `node scripts/validate-and-merge.mjs "${entry.ticker}" "${entry.timeframe}"`,
-                { stdio: 'inherit' }
-              );
-            }
-          }
-          NODE

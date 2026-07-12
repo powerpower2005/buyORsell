@@ -32,7 +32,7 @@ const TITLES: Record<AnalysisStatus, string> = {
 const HINTS: Record<AnalysisStatus, string> = {
   loading: "저장된 OHLCV 파일을 확인하고 있습니다.",
   missing: "이 종목·타임프레임 데이터가 아직 없습니다.",
-  stale: "마지막 수집이 오래되어 차트·지표 분석을 표시하지 않습니다. 아래에서 갱신하세요.",
+  stale: "마지막 수집이 오래되었습니다. 아래에서 갱신하세요.",
   "bad-quality": "OHLC 품질 문제로 차트·지표를 계산할 수 없습니다. 새로 수집이 필요합니다.",
   polling: "GitHub Actions가 데이터를 갱신할 때까지 잠시 기다려 주세요.",
   "poll-error": "제한 시간 안에 최신 데이터가 도착하지 않았습니다.",

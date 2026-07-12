@@ -19,6 +19,7 @@ import { MTFAlignmentCard } from "@/components/MTFAlignmentCard";
 import { StrategyBuilder } from "@/components/StrategyBuilder";
 import { TickerTutorial } from "@/components/TickerTutorial";
 import { ErrorBanner } from "@/components/ErrorBanner";
+import { StaleDataBanner } from "@/components/StaleDataBanner";
 import { parseTickerInput } from "@/lib/urlParser";
 import {
   loadQuote,
@@ -177,6 +178,7 @@ export function HomePage() {
   );
 
   const freshness = quote ? checkFresh(quote, timeframe) : null;
+  const isStale = freshness?.status === "stale";
 
   let evaluation: {
     indicators: ReturnType<typeof computeAll>;
@@ -188,7 +190,7 @@ export function HomePage() {
 
   let evaluationError: string | null = null;
 
-  if (quote && freshness?.status === "fresh") {
+  if (quote) {
     try {
       const indicators = computeAll(quote.ohlcv, timeframe, indicatorConfig);
       const score = computeScore(
@@ -213,16 +215,17 @@ export function HomePage() {
     if (polling) return "polling";
     if (pollError) return "poll-error";
     if (loadError || !quote) return "missing";
-    if (freshness?.status === "stale") return "stale";
     if (evaluationError) return "bad-quality";
     if (evaluation) return "ready";
     return "loading";
   })();
 
+  const staleDetail = (() => {
+    if (!isStale || !freshness?.reason) return undefined;
+    return `stale: ${freshness.reason} · ${quote?.barCount ?? 0} bars · last ${quote?.lastBarDate} · fetched ${quote?.fetchedAt}`;
+  })();
+
   const statusDetail = (() => {
-    if (freshness?.status === "stale" && freshness.reason) {
-      return `stale: ${freshness.reason} · ${quote?.barCount ?? 0} bars · last ${quote?.lastBarDate} · fetched ${quote?.fetchedAt}`;
-    }
     if (evaluationError) return evaluationError;
     if (quote) {
       return `${quote.barCount} bars · last ${quote.lastBarDate} · fetched ${quote.fetchedAt}`;
@@ -372,6 +375,16 @@ export function HomePage() {
             />
           ) : (
             <>
+              {isStale && (
+                <StaleDataBanner
+                  ticker={inputParsed.valid ? inputParsed.ticker : ticker}
+                  timeframe={timeframe}
+                  detail={staleDetail}
+                  pollError={pollError ?? undefined}
+                  onPoll={startPolling}
+                  polling={polling}
+                />
+              )}
               <p className="text-left text-xs text-text-tertiary">{statusDetail}</p>
               <div id="export-root" className="space-y-6">
                 <CandleChart
