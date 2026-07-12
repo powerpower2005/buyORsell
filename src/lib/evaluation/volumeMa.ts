@@ -1,11 +1,9 @@
 import type { OHLCVBar, Timeframe } from "../types";
-import { InsufficientDataError } from "../errors";
-import { requireMinBars, requireNonEmptyArray } from "../require";
+import { requireNonEmptyArray } from "../require";
 
 export const VOLUME_MA_PERIODS = [3, 7, 15, 30] as const;
+export const VOLUME_MA_PERIODS_DAILY = [...VOLUME_MA_PERIODS, 90] as const;
 export const VOLUME_MA_PERIODS_WEEKLY = [3, 7, 15] as const;
-
-export type VolumeMaPeriod = (typeof VOLUME_MA_PERIODS)[number];
 
 export interface VolumeMaPoint {
   date: string;
@@ -13,9 +11,10 @@ export interface VolumeMaPoint {
 }
 
 export interface VolumeMaSeries {
-  period: VolumeMaPeriod;
+  period: number;
   series: VolumeMaPoint[];
-  latest: number;
+  latest: number | null;
+  available: boolean;
 }
 
 export interface VolumeMaSnapshot {
@@ -32,15 +31,22 @@ const TF_UNIT: Record<Timeframe, string> = {
   "1w": "주",
 };
 
-export const VOLUME_MA_COLORS: Record<VolumeMaPeriod, string> = {
+export const VOLUME_MA_COLORS: Record<number, string> = {
   3: "#3182f6",
   7: "#fbbf24",
   15: "#c084fc",
   30: "#8b95a1",
+  90: "#64748b",
 };
 
 export function getVolumeMaPeriods(timeframe: Timeframe): readonly number[] {
-  return timeframe === "1w" ? VOLUME_MA_PERIODS_WEEKLY : VOLUME_MA_PERIODS;
+  if (timeframe === "1w") return VOLUME_MA_PERIODS_WEEKLY;
+  if (timeframe === "1d") return VOLUME_MA_PERIODS_DAILY;
+  return VOLUME_MA_PERIODS;
+}
+
+export function volumeMaColor(period: number): string {
+  return VOLUME_MA_COLORS[period] ?? "#8b95a1";
 }
 
 function sma(values: number[], period: number): number[] {
@@ -63,14 +69,20 @@ export function computeVolumeAverages(
 ): VolumeMaSnapshot {
   requireNonEmptyArray(bars, "OHLCV bars");
 
-  const maxPeriod = Math.max(...periods);
-  requireMinBars(bars.length, maxPeriod, "volume moving average");
-
   const volumes = bars.map((b) => b.volume);
   const dates = bars.map((b) => b.date);
   const last = bars[bars.length - 1];
 
   const averages: VolumeMaSeries[] = periods.map((period) => {
+    if (bars.length < period) {
+      return {
+        period,
+        series: [],
+        latest: null,
+        available: false,
+      };
+    }
+
     const vals = sma(volumes, period);
     const series: VolumeMaPoint[] = [];
     for (let i = 0; i < dates.length; i++) {
@@ -78,15 +90,12 @@ export function computeVolumeAverages(
       if (!Number.isNaN(v)) series.push({ date: dates[i], value: v });
     }
     const latest = vals[vals.length - 1];
-    if (Number.isNaN(latest)) {
-      throw new InsufficientDataError(
-        `volume MA(${period}): insufficient bars (${bars.length})`,
-      );
-    }
+
     return {
-      period: period as VolumeMaPeriod,
+      period,
       series,
-      latest,
+      latest: Number.isNaN(latest) ? null : latest,
+      available: !Number.isNaN(latest),
     };
   });
 
@@ -107,4 +116,8 @@ export function formatVolume(value: number): string {
   if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
   if (abs >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
   return value.toFixed(0);
+}
+
+export function volumeMaUnavailableReason(period: number, timeframe: Timeframe): string {
+  return `데이터 부족 (${period}${TF_UNIT[timeframe]}치 미만)`;
 }

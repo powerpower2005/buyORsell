@@ -391,6 +391,7 @@ export function HomePage() {
                   bars={quote!.ohlcv}
                   timeframe={timeframe}
                   patterns={evaluation!.patterns}
+                  indicators={evaluation!.indicators}
                 />
                 <div className="grid gap-6 xl:grid-cols-2">
                   <VolumePanel snapshot={evaluation!.volume} timeframe={timeframe} />

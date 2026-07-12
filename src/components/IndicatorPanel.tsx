@@ -2,6 +2,7 @@ import { Card, SectionTitle } from "./ui/Card";
 import type { IndicatorResults } from "@/lib/types";
 import { Badge } from "./ui/Badge";
 import { getIndicatorConfig } from "@/lib/configStore";
+import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 
 function fmt(value: number | null | undefined, digits = 2): string {
   if (value == null || Number.isNaN(value)) return "—";
@@ -15,8 +16,9 @@ export function IndicatorPanel({ results }: { results: IndicatorResults }) {
   const smaPeriods = ((smaCfg?.params.periods as number[] | undefined) ?? [50, 200])
     .slice()
     .sort((a, b) => a - b);
+  const smaColors = parsePeriodColors(smaCfg?.params.colors);
 
-  const metrics: { label: string; value: string }[] = [];
+  const metrics: { label: string; value: string; color?: string }[] = [];
 
   const rsi = results.indicators.rsi?.latest.rsi;
   if (rsi != null) {
@@ -32,7 +34,12 @@ export function IndicatorPanel({ results }: { results: IndicatorResults }) {
     const key = `sma:${period}`;
     const val = results.indicators.sma?.latest[key];
     if (val != null) {
-      metrics.push({ label: `SMA ${period}`, value: fmt(val) });
+      const idx = ((smaCfg?.params.periods as number[] | undefined) ?? []).indexOf(period);
+      metrics.push({
+        label: `SMA ${period}`,
+        value: fmt(val),
+        color: resolvePeriodColor(smaColors, period, Math.max(0, idx)),
+      });
     }
   }
 
@@ -54,7 +61,7 @@ export function IndicatorPanel({ results }: { results: IndicatorResults }) {
       ) : (
         <div className="grid gap-3 text-left sm:grid-cols-2">
           {metrics.map((m) => (
-            <Metric key={m.label} label={m.label} value={m.value} />
+            <Metric key={m.label} label={m.label} value={m.value} color={m.color} />
           ))}
         </div>
       )}
@@ -71,10 +78,26 @@ export function IndicatorPanel({ results }: { results: IndicatorResults }) {
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: string;
+  color?: string;
+}) {
   return (
     <div>
-      <p className="text-xs text-text-tertiary">{label}</p>
+      <p className="flex items-center gap-1.5 text-xs text-text-tertiary">
+        {color ? (
+          <span
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ backgroundColor: color }}
+          />
+        ) : null}
+        {label}
+      </p>
       <p className="tabular-nums text-lg font-medium">{value}</p>
     </div>
   );

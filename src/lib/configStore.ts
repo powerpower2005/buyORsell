@@ -1,6 +1,7 @@
 import indicatorsBase from "../../config/indicators.json";
 import scoringBase from "../../config/scoring.json";
 import type { IndicatorsConfig, IndicatorConfigItem } from "./evaluation/types";
+import { nextDefaultPeriodColor, parsePeriodColors } from "./indicatorColors";
 
 const OVERRIDE_KEY = "gf:config:overrides";
 
@@ -67,6 +68,10 @@ function updateIndicatorItem(
   }));
 }
 
+function periodColorsOf(item: IndicatorConfigItem): Record<string, string> {
+  return parsePeriodColors(item.params.colors);
+}
+
 export function setIndicatorParam(
   id: string,
   paramKey: string,
@@ -85,8 +90,54 @@ export function setIndicatorPeriodAt(
 ): void {
   updateIndicatorItem(id, (item) => {
     const periods = [...(item.params.periods as number[])];
+    const oldPeriod = periods[index];
     periods[index] = value;
-    return { ...item, params: { ...item.params, periods } };
+    const colors = { ...periodColorsOf(item) };
+    if (oldPeriod != null && colors[String(oldPeriod)] != null) {
+      colors[String(value)] = colors[String(oldPeriod)];
+      delete colors[String(oldPeriod)];
+    }
+    return {
+      ...item,
+      params: { ...item.params, periods, colors },
+    };
+  });
+}
+
+export function addIndicatorPeriod(id: string): void {
+  updateIndicatorItem(id, (item) => {
+    const periods = [...((item.params.periods as number[]) ?? [])];
+    const colors = { ...periodColorsOf(item) };
+    const last = periods.at(-1) ?? 20;
+    const next = Math.min(250, Math.max(2, last + (periods.length > 1 ? 10 : 20)));
+    let candidate = next;
+    while (periods.includes(candidate) && candidate <= 250) candidate += 5;
+    periods.push(candidate);
+    colors[String(candidate)] = nextDefaultPeriodColor(colors, periods.length - 1);
+    return { ...item, params: { ...item.params, periods, colors } };
+  });
+}
+
+export function removeIndicatorPeriod(id: string, index: number): void {
+  updateIndicatorItem(id, (item) => {
+    const periods = [...((item.params.periods as number[]) ?? [])];
+    if (periods.length <= 1) return item;
+    const removed = periods[index];
+    periods.splice(index, 1);
+    const colors = { ...periodColorsOf(item) };
+    delete colors[String(removed)];
+    return { ...item, params: { ...item.params, periods, colors } };
+  });
+}
+
+export function setIndicatorPeriodColor(
+  id: string,
+  period: number,
+  color: string,
+): void {
+  updateIndicatorItem(id, (item) => {
+    const colors = { ...periodColorsOf(item), [String(period)]: color };
+    return { ...item, params: { ...item.params, colors } };
   });
 }
 

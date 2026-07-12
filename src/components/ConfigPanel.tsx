@@ -1,12 +1,17 @@
 import { Card, SectionTitle } from "./ui/Card";
+import { ColorSwatchPicker } from "./ColorSwatchPicker";
 import {
+  addIndicatorPeriod,
   getEffectiveIndicatorsConfig,
+  removeIndicatorPeriod,
   resetOverrides,
   setIndicatorEnabled,
   setIndicatorParam,
   setIndicatorPeriodAt,
+  setIndicatorPeriodColor,
   setIndicatorThreshold,
 } from "@/lib/configStore";
+import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 import { Button } from "./ui/Button";
 import { ConfigError } from "@/lib/errors";
 import { requireNumber } from "@/lib/require";
@@ -15,7 +20,7 @@ interface Props {
   onChange: () => void;
 }
 
-function NumField({
+function NumInput({
   label,
   value,
   min,
@@ -32,18 +37,19 @@ function NumField({
 }) {
   return (
     <label className="block text-sm text-text-secondary">
-      <span className="flex items-center justify-between gap-2">
-        <span>{label}</span>
-        <span className="tabular-nums text-text-primary">{value}</span>
-      </span>
+      <span className="mb-1 block">{label}</span>
       <input
-        type="range"
+        type="number"
         min={min}
         max={max}
         step={step}
-        value={value}
-        className="mt-1.5 w-full accent-accent"
-        onChange={(e) => onChange(Number(e.target.value))}
+        value={Number.isFinite(value) ? value : ""}
+        className="w-full rounded-md border border-border bg-bg px-3 py-2 tabular-nums text-text-primary outline-none focus:border-accent"
+        onChange={(e) => {
+          const n = Number(e.target.value);
+          if (!Number.isFinite(n)) return;
+          onChange(Math.min(max, Math.max(min, n)));
+        }}
       />
     </label>
   );
@@ -93,6 +99,87 @@ function IndicatorSection({
   );
 }
 
+function PeriodListEditor({
+  indicatorId,
+  title,
+  periods,
+  colors,
+  min,
+  max,
+  maxCount = 8,
+  onChange,
+}: {
+  indicatorId: string;
+  title: string;
+  periods: number[];
+  colors: Record<string, string>;
+  min: number;
+  max: number;
+  maxCount?: number;
+  onChange: () => void;
+}) {
+  return (
+    <div className="space-y-3">
+      {periods.map((period, i) => {
+        const color = resolvePeriodColor(colors, period, i);
+        return (
+          <div
+            key={`${indicatorId}-${i}-${period}`}
+            className="rounded-md border border-border/80 bg-surface-elevated/40 p-3"
+          >
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <span className="text-xs font-medium text-text-primary">
+                {title} · Period {i + 1}
+              </span>
+              <button
+                type="button"
+                disabled={periods.length <= 1}
+                className="text-xs text-text-tertiary hover:text-negative disabled:opacity-30"
+                onClick={() => {
+                  removeIndicatorPeriod(indicatorId, i);
+                  onChange();
+                }}
+              >
+                삭제
+              </button>
+            </div>
+            <NumInput
+              label="Period"
+              value={period}
+              min={min}
+              max={max}
+              onChange={(v) => {
+                setIndicatorPeriodAt(indicatorId, i, v);
+                onChange();
+              }}
+            />
+            <div className="mt-3">
+              <p className="mb-1.5 text-xs text-text-tertiary">색상</p>
+              <ColorSwatchPicker
+                value={color}
+                onChange={(c) => {
+                  setIndicatorPeriodColor(indicatorId, period, c);
+                  onChange();
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
+      <Button
+        variant="secondary"
+        disabled={periods.length >= maxCount}
+        onClick={() => {
+          addIndicatorPeriod(indicatorId);
+          onChange();
+        }}
+      >
+        Period 추가
+      </Button>
+    </div>
+  );
+}
+
 export function ConfigPanel({ onChange }: Props) {
   const cfg = getEffectiveIndicatorsConfig();
   const find = (id: string) => cfg.indicators.find((i) => i.id === id);
@@ -110,6 +197,8 @@ export function ConfigPanel({ onChange }: Props) {
 
   const smaPeriods = (sma.params.periods as number[]) ?? [20, 50, 200];
   const emaPeriods = (ema.params.periods as number[]) ?? [12, 26];
+  const smaColors = parsePeriodColors(sma.params.colors);
+  const emaColors = parsePeriodColors(ema.params.colors);
 
   const patch = () => onChange();
 
@@ -117,7 +206,7 @@ export function ConfigPanel({ onChange }: Props) {
     <Card>
       <SectionTitle>기술 지표 설정</SectionTitle>
       <p className="mb-4 text-xs text-text-tertiary">
-        브라우저에 저장됩니다. 변경 즉시 점수·지표에 반영됩니다.
+        브라우저에 저장됩니다. 변경 즉시 점수·지표·차트에 반영됩니다.
       </p>
 
       <div className="space-y-3 text-left">
@@ -129,19 +218,15 @@ export function ConfigPanel({ onChange }: Props) {
             patch();
           }}
         >
-          {smaPeriods.map((period, i) => (
-            <NumField
-              key={`sma-${i}`}
-              label={`Period ${i + 1}`}
-              value={period}
-              min={5}
-              max={250}
-              onChange={(v) => {
-                setIndicatorPeriodAt("sma", i, v);
-                patch();
-              }}
-            />
-          ))}
+          <PeriodListEditor
+            indicatorId="sma"
+            title="SMA"
+            periods={smaPeriods}
+            colors={smaColors}
+            min={2}
+            max={250}
+            onChange={patch}
+          />
         </IndicatorSection>
 
         <IndicatorSection
@@ -152,19 +237,15 @@ export function ConfigPanel({ onChange }: Props) {
             patch();
           }}
         >
-          {emaPeriods.map((period, i) => (
-            <NumField
-              key={`ema-${i}`}
-              label={`Period ${i + 1}`}
-              value={period}
-              min={2}
-              max={100}
-              onChange={(v) => {
-                setIndicatorPeriodAt("ema", i, v);
-                patch();
-              }}
-            />
-          ))}
+          <PeriodListEditor
+            indicatorId="ema"
+            title="EMA"
+            periods={emaPeriods}
+            colors={emaColors}
+            min={2}
+            max={100}
+            onChange={patch}
+          />
         </IndicatorSection>
 
         <IndicatorSection
@@ -175,31 +256,31 @@ export function ConfigPanel({ onChange }: Props) {
             patch();
           }}
         >
-          <NumField
+          <NumInput
             label="Period"
             value={requireNumber(rsi.params.period, "rsi.period")}
-            min={5}
-            max={30}
+            min={2}
+            max={50}
             onChange={(v) => {
               setIndicatorParam("rsi", "period", v);
               patch();
             }}
           />
-          <NumField
+          <NumInput
             label="Overbought"
             value={requireNumber(rsi.overbought, "rsi.overbought")}
-            min={60}
-            max={90}
+            min={50}
+            max={95}
             onChange={(v) => {
               setIndicatorThreshold("rsi", "overbought", v);
               patch();
             }}
           />
-          <NumField
+          <NumInput
             label="Oversold"
             value={requireNumber(rsi.oversold, "rsi.oversold")}
-            min={10}
-            max={40}
+            min={5}
+            max={50}
             onChange={(v) => {
               setIndicatorThreshold("rsi", "oversold", v);
               patch();
@@ -215,31 +296,31 @@ export function ConfigPanel({ onChange }: Props) {
             patch();
           }}
         >
-          <NumField
+          <NumInput
             label="Fast"
             value={requireNumber(macd.params.fast, "macd.fast")}
             min={2}
-            max={30}
+            max={50}
             onChange={(v) => {
               setIndicatorParam("macd", "fast", v);
               patch();
             }}
           />
-          <NumField
+          <NumInput
             label="Slow"
             value={requireNumber(macd.params.slow, "macd.slow")}
-            min={10}
-            max={50}
+            min={5}
+            max={100}
             onChange={(v) => {
               setIndicatorParam("macd", "slow", v);
               patch();
             }}
           />
-          <NumField
+          <NumInput
             label="Signal"
             value={requireNumber(macd.params.signal, "macd.signal")}
             min={2}
-            max={20}
+            max={30}
             onChange={(v) => {
               setIndicatorParam("macd", "signal", v);
               patch();
@@ -255,21 +336,21 @@ export function ConfigPanel({ onChange }: Props) {
             patch();
           }}
         >
-          <NumField
+          <NumInput
             label="Period"
             value={requireNumber(bb.params.period, "bb.period")}
             min={5}
-            max={50}
+            max={100}
             onChange={(v) => {
               setIndicatorParam("bb", "period", v);
               patch();
             }}
           />
-          <NumField
+          <NumInput
             label="Std Dev"
             value={requireNumber(bb.params.stdDev, "bb.stdDev")}
-            min={1}
-            max={4}
+            min={0.5}
+            max={5}
             step={0.5}
             onChange={(v) => {
               setIndicatorParam("bb", "stdDev", v);
@@ -286,11 +367,11 @@ export function ConfigPanel({ onChange }: Props) {
             patch();
           }}
         >
-          <NumField
+          <NumInput
             label="Period"
             value={requireNumber(atr.params.period, "atr.period")}
-            min={5}
-            max={30}
+            min={2}
+            max={50}
             onChange={(v) => {
               setIndicatorParam("atr", "period", v);
               patch();

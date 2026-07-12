@@ -346,6 +346,7 @@ export function BrowsePage() {
                     bars={quote!.ohlcv}
                     timeframe={selected.timeframe as Timeframe}
                     patterns={evaluation!.patterns}
+                    indicators={evaluation!.indicators}
                   />
                   <div className="grid gap-6 xl:grid-cols-2">
                     <VolumePanel

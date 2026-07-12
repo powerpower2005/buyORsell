@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createChart, type IChartApi, type ISeriesApi } from "lightweight-charts";
-import type { OHLCVBar, Timeframe } from "@/lib/types";
+import type { OHLCVBar, Timeframe, IndicatorResults } from "@/lib/types";
 import type { CandlePatternResult } from "@/lib/evaluation/candlePatterns";
+import { getIndicatorConfig } from "@/lib/configStore";
+import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 import {
   patternsToChartMarkers,
   PATTERN_MARKER_LEGEND,
@@ -9,8 +11,7 @@ import {
 import {
   computeVolumeAverages,
   getVolumeMaPeriods,
-  VOLUME_MA_COLORS,
-  VOLUME_MA_PERIODS,
+  volumeMaColor,
 } from "@/lib/evaluation/volumeMa";
 import { Card } from "./ui/Card";
 
@@ -18,6 +19,7 @@ interface Props {
   bars: OHLCVBar[];
   timeframe: Timeframe;
   patterns?: CandlePatternResult;
+  indicators?: IndicatorResults;
   height?: number;
 }
 
@@ -41,12 +43,19 @@ function useViewportChartHeight(fixed?: number) {
   return height;
 }
 
-export function CandleChart({ bars, timeframe, patterns, height: heightProp }: Props) {
+export function CandleChart({
+  bars,
+  timeframe,
+  patterns,
+  indicators,
+  height: heightProp,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candleRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volumeRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const maRefs = useRef<Map<number, ISeriesApi<"Line">>>(new Map());
+  const overlayRefs = useRef<Map<string, ISeriesApi<"Line">>>(new Map());
   const height = useViewportChartHeight(heightProp);
 
   const periods = useMemo(() => getVolumeMaPeriods(timeframe), [timeframe]);
@@ -98,10 +107,10 @@ export function CandleChart({ bars, timeframe, patterns, height: heightProp }: P
     });
 
     const maLines = new Map<number, ISeriesApi<"Line">>();
-    for (const period of VOLUME_MA_PERIODS) {
+    for (const period of getVolumeMaPeriods(timeframe)) {
       const line = chart.addLineSeries({
         priceScaleId: "volume",
-        color: VOLUME_MA_COLORS[period],
+        color: volumeMaColor(period),
         lineWidth: period <= 7 ? 2 : 1,
         title: `Vol MA${period}`,
       });
@@ -127,8 +136,90 @@ export function CandleChart({ bars, timeframe, patterns, height: heightProp }: P
       candleRef.current = null;
       volumeRef.current = null;
       maRefs.current = new Map();
+      overlayRefs.current = new Map();
     };
-  }, [height]);
+  }, [height, timeframe]);
+
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart || !indicators) return;
+
+    const wanted = new Set<string>();
+
+    const drawGroup = (
+      pluginId: "sma" | "ema",
+      prefix: string,
+      lineWidth: 1 | 2,
+    ) => {
+      const cfg = getIndicatorConfig(pluginId);
+      if (!cfg?.enabled) return;
+      const out = indicators.indicators[pluginId];
+      if (!out) return;
+      const periods = (cfg.params.periods as number[]) ?? [];
+      const colors = parsePeriodColors(cfg.params.colors);
+
+      periods.forEach((period, i) => {
+        const key = `${prefix}:${period}`;
+        const points = out.series[key];
+        if (!points?.length) return;
+        wanted.add(key);
+
+        let line = overlayRefs.current.get(key);
+        if (!line) {
+          line = chart.addLineSeries({
+            color: resolvePeriodColor(colors, period, i),
+            lineWidth,
+            title: key.toUpperCase(),
+          });
+          overlayRefs.current.set(key, line);
+        } else {
+          line.applyOptions({
+            color: resolvePeriodColor(colors, period, i),
+            visible: true,
+            title: key.toUpperCase(),
+          });
+        }
+
+        line.setData(
+          points.map((p) => ({
+            time: p.date as `${number}-${number}-${number}`,
+            value: p.value,
+          })),
+        );
+      });
+    };
+
+    drawGroup("sma", "sma", 2);
+    drawGroup("ema", "ema", 1);
+
+    for (const [key, line] of overlayRefs.current) {
+      if (!wanted.has(key)) {
+        line.setData([]);
+        line.applyOptions({ visible: false });
+      }
+    }
+  }, [indicators]);
+
+  const overlayLegend = useMemo(() => {
+    if (!indicators) return [];
+    const items: { label: string; color: string }[] = [];
+
+    for (const pluginId of ["sma", "ema"] as const) {
+      const cfg = getIndicatorConfig(pluginId);
+      if (!cfg?.enabled) continue;
+      const periods = (cfg.params.periods as number[]) ?? [];
+      const colors = parsePeriodColors(cfg.params.colors);
+      periods.forEach((period, i) => {
+        const key = `${pluginId}:${period}`;
+        if (!indicators.indicators[pluginId]?.series[key]?.length) return;
+        items.push({
+          label: `${pluginId.toUpperCase()} ${period}`,
+          color: resolvePeriodColor(colors, period, i),
+        });
+      });
+    }
+    return items;
+  }, [indicators]);
 
   useEffect(() => {
     if (!bars.length || !candleRef.current || !volumeRef.current) return;
@@ -154,8 +245,10 @@ export function CandleChart({ bars, timeframe, patterns, height: heightProp }: P
       })),
     );
 
-    const active = new Set(volumeSnapshot.averages.map((a) => a.period));
-    for (const period of VOLUME_MA_PERIODS) {
+    const active = new Set(
+      volumeSnapshot.averages.filter((a) => a.available).map((a) => a.period),
+    );
+    for (const period of periods) {
       const line = maRefs.current.get(period);
       if (!line) continue;
       if (!active.has(period)) {
@@ -167,6 +260,7 @@ export function CandleChart({ bars, timeframe, patterns, height: heightProp }: P
     }
 
     for (const avg of volumeSnapshot.averages) {
+      if (!avg.available) continue;
       const line = maRefs.current.get(avg.period);
       if (!line) continue;
       line.setData(
@@ -179,23 +273,34 @@ export function CandleChart({ bars, timeframe, patterns, height: heightProp }: P
 
     candleRef.current.setMarkers(patternMarkers);
     chartRef.current?.timeScale().fitContent();
-  }, [bars, volumeSnapshot, patternMarkers]);
+  }, [bars, volumeSnapshot, patternMarkers, periods]);
 
   return (
     <Card className="overflow-hidden p-3 sm:p-4">
       <div className="w-full text-left">
         <div ref={containerRef} className="w-full" />
         <div className="mt-3 space-y-2 border-t border-border pt-3">
+          {overlayLegend.length > 0 && (
+            <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
+              <span>이동평균:</span>
+              {overlayLegend.map((item) => (
+                <span key={item.label} className="flex items-center gap-1">
+                  <span
+                    className="inline-block h-0.5 w-4 rounded-sm"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  {item.label}
+                </span>
+              ))}
+            </div>
+          )}
           <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
             <span>거래량:</span>
             {periods.map((p) => (
               <span key={p} className="flex items-center gap-1">
                 <span
                   className="inline-block h-2 w-4 rounded-sm"
-                  style={{
-                    backgroundColor:
-                      VOLUME_MA_COLORS[p as keyof typeof VOLUME_MA_COLORS],
-                  }}
+                  style={{ backgroundColor: volumeMaColor(p) }}
                 />
                 MA{p}
               </span>

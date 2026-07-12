@@ -15,8 +15,8 @@ export function CandlePatternPanel({ patterns }: { patterns: CandlePatternResult
     <Card>
       <SectionTitle>캔들 패턴</SectionTitle>
       <p className="mb-3 text-xs text-text-tertiary">
-        최근 {lookbackBars}봉 · 마지막 봉 {latestBarDate}
-        {recent.length > 0 && " · 차트에 마커로 표시됨"}
+        전체 {lookbackBars}봉 검사 · 마지막 봉 {latestBarDate}
+        {recent.length > 0 && ` · ${recent.length}건 감지 · 차트에 마커 표시`}
       </p>
 
       <div className="mb-4 text-left">
@@ -35,11 +35,11 @@ export function CandlePatternPanel({ patterns }: { patterns: CandlePatternResult
       </div>
 
       <div className="text-left">
-        <p className="text-xs font-medium text-text-secondary">lookback 내 역사</p>
+        <p className="text-xs font-medium text-text-secondary">검출 이력</p>
         {!recent.length ? (
           <p className="mt-1 text-sm text-text-tertiary">없음</p>
         ) : (
-          <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto text-sm">
+          <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto text-sm">
             {[...recent].reverse().map((p) => (
               <li
                 key={`${p.id}-${p.date}-${p.barIndex}`}

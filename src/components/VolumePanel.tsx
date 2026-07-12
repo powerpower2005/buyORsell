@@ -2,8 +2,9 @@ import { Card, SectionTitle } from "./ui/Card";
 import type { Timeframe } from "@/lib/types";
 import {
   formatVolume,
+  volumeMaColor,
   volumeMaLabel,
-  VOLUME_MA_COLORS,
+  volumeMaUnavailableReason,
   type VolumeMaSnapshot,
 } from "@/lib/evaluation/volumeMa";
 
@@ -27,22 +28,29 @@ export function VolumePanel({ snapshot, timeframe }: Props) {
       <div className="grid gap-3 text-left sm:grid-cols-2">
         {snapshot.averages.map((avg) => {
           const label = volumeMaLabel(avg.period, timeframe);
-          const ratio = snapshot.currentVolume / avg.latest;
           return (
             <div key={avg.period}>
               <div className="flex items-center gap-2">
                 <span
                   className="inline-block h-2 w-2 rounded-full"
-                  style={{ backgroundColor: VOLUME_MA_COLORS[avg.period] }}
+                  style={{ backgroundColor: volumeMaColor(avg.period) }}
                 />
                 <p className="text-xs text-text-tertiary">{label}</p>
               </div>
-              <p className="tabular-nums text-lg font-medium">
-                {formatVolume(avg.latest)}
-              </p>
-              <p className="text-xs text-text-secondary">
-                현재 / 평균: {ratio.toFixed(2)}x
-              </p>
+              {avg.available && avg.latest != null ? (
+                <>
+                  <p className="tabular-nums text-lg font-medium">
+                    {formatVolume(avg.latest)}
+                  </p>
+                  <p className="text-xs text-text-secondary">
+                    현재 / 평균: {(snapshot.currentVolume / avg.latest).toFixed(2)}x
+                  </p>
+                </>
+              ) : (
+                <p className="mt-1 text-sm text-text-tertiary">
+                  {volumeMaUnavailableReason(avg.period, timeframe)}
+                </p>
+              )}
             </div>
           );
         })}

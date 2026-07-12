@@ -1,6 +1,6 @@
 import type { OHLCVBar, TrendLabel } from "../types";
 import patternConfig from "../../../config/candle-patterns.json";
-import { ConfigError, InsufficientDataError } from "../errors";
+import { InsufficientDataError } from "../errors";
 import { requireMinBars, requireNonEmptyArray } from "../require";
 
 export type CandlePatternId =
@@ -73,11 +73,12 @@ function metrics(bar: OHLCVBar): BarMetrics {
 }
 
 function cfg() {
-  const c = patternConfig;
-  if (c.lookbackBars == null) {
-    throw new ConfigError("candle-patterns.json: lookbackBars required");
-  }
-  return c;
+  return patternConfig;
+}
+
+function scanStartIndex(barsLength: number, lookback?: number | null): number {
+  if (lookback == null || lookback <= 0) return 1;
+  return Math.max(1, barsLength - lookback);
 }
 
 function hit(
@@ -212,14 +213,13 @@ function detectAtIndex(bars: OHLCVBar[], idx: number): CandlePatternHit[] {
 
 export function detectCandlePatterns(
   bars: OHLCVBar[],
-  options?: { lookbackBars?: number },
+  options?: { lookbackBars?: number | null },
 ): CandlePatternResult {
   requireNonEmptyArray(bars, "OHLCV bars for candle patterns");
-  const c = cfg();
-  const lookback = options?.lookbackBars ?? c.lookbackBars;
+  const lookback = options?.lookbackBars ?? null;
   requireMinBars(bars.length, 2, "candle pattern detection");
 
-  const start = Math.max(1, bars.length - lookback);
+  const start = scanStartIndex(bars.length, lookback);
   const recent: CandlePatternHit[] = [];
 
   for (let i = start; i < bars.length; i++) {
@@ -231,7 +231,7 @@ export function detectCandlePatterns(
   const latestBar = bars[lastIdx];
 
   return {
-    lookbackBars: lookback,
+    lookbackBars: bars.length - start,
     latestBarDate: latestBar.date,
     onLatestBar,
     recent,
