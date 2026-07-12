@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Quote fetcher via Google Sheets GOOGLEFINANCE "all" (Hedge-style).
+ * Quote fetcher via Sheets GOOGLEFINANCE "all" (Hedge-style).
  */
 
 import fs from "fs";
@@ -102,7 +102,7 @@ export async function fetchQuote(ticker, timeframe = "1d") {
     window: tfConfig.googleWindow,
     schemaVersion: 1,
     intervalSeconds: tfConfig.intervalSeconds,
-    source: "google_sheets_googfinance",
+    source: "gf",
     resolvedSymbol: symbol,
     fetchedAt: new Date().toISOString(),
     lastBarDate: last.date,

@@ -62,9 +62,9 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["manifest.json"],
       manifest: {
-        name: "GF Evaluator",
-        short_name: "GF Eval",
-        description: "OHLCV technical evaluation",
+        name: "GF",
+        short_name: "GF",
+        description: "OHLCV 기술 분석",
         theme_color: "#191919",
         background_color: "#191919",
         display: "standalone",

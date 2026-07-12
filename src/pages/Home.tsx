@@ -225,7 +225,7 @@ export function HomePage() {
     }
     if (evaluationError) return evaluationError;
     if (quote) {
-      return `${quote.barCount} bars · last ${quote.lastBarDate} · ${quote.source ?? "unknown"} · fetched ${quote.fetchedAt}`;
+      return `${quote.barCount} bars · last ${quote.lastBarDate} · fetched ${quote.fetchedAt}`;
     }
     if (loadError) return loadError;
     return undefined;

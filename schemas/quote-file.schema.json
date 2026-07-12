@@ -22,7 +22,7 @@
     "checksum": { "type": "string" },
     "source": {
       "type": "string",
-      "enum": ["google_sheets_googfinance"]
+      "enum": ["gf", "google_sheets_googfinance"]
     },
     "resolvedSymbol": { "type": "string" },
     "ohlcv": {
