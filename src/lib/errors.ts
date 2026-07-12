@@ -41,15 +41,6 @@ export class FetchError extends GfError {
   }
 }
 
-export class PollTimeoutError extends GfError {
-  constructor(ticker: string, timeframe: string) {
-    super(
-      `Polling timed out: no fresh data for ${ticker} (${timeframe})`,
-      "POLL_TIMEOUT",
-    );
-  }
-}
-
 export function errorMessage(err: unknown): string {
   if (err instanceof GfError || err instanceof Error) return err.message;
   return String(err);

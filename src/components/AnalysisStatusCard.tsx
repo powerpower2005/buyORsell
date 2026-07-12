@@ -1,23 +1,18 @@
 import { buildFetchIssueUrl } from "@/lib/issueUrl";
+import { describeFetchSchedule } from "@/lib/fetchSchedule";
 import { Button } from "./ui/Button";
-import { Badge } from "./ui/Badge";
 
 export type AnalysisStatus =
   | "loading"
   | "missing"
   | "stale"
-  | "bad-quality"
-  | "polling"
-  | "poll-error";
+  | "bad-quality";
 
 interface Props {
   status: AnalysisStatus;
   ticker: string;
   timeframe: string;
   detail?: string;
-  pollError?: string;
-  onPoll?: () => void;
-  polling?: boolean;
 }
 
 const TITLES: Record<AnalysisStatus, string> = {
@@ -25,8 +20,6 @@ const TITLES: Record<AnalysisStatus, string> = {
   missing: "데이터 없음",
   stale: "데이터가 오래됨",
   "bad-quality": "분석할 수 없는 데이터",
-  polling: "수집 완료 대기 중",
-  "poll-error": "Polling 실패",
 };
 
 const HINTS: Record<AnalysisStatus, string> = {
@@ -34,8 +27,6 @@ const HINTS: Record<AnalysisStatus, string> = {
   missing: "이 종목·타임프레임 데이터가 아직 없습니다.",
   stale: "마지막 수집이 오래되었습니다. 아래에서 갱신하세요.",
   "bad-quality": "OHLC 품질 문제로 차트·지표를 계산할 수 없습니다. 새로 수집이 필요합니다.",
-  polling: "GitHub Actions가 데이터를 갱신할 때까지 잠시 기다려 주세요.",
-  "poll-error": "제한 시간 안에 최신 데이터가 도착하지 않았습니다.",
 };
 
 export function AnalysisStatusCard({
@@ -43,21 +34,13 @@ export function AnalysisStatusCard({
   ticker,
   timeframe,
   detail,
-  pollError,
-  onPoll,
-  polling,
 }: Props) {
   const issueUrl = buildFetchIssueUrl(ticker, timeframe);
-  const showIssue = status !== "loading" && status !== "polling";
+  const schedule = describeFetchSchedule();
+  const showIssue = status !== "loading";
 
   return (
     <div className="rounded-xl border border-border bg-surface-elevated px-6 py-8 text-left">
-      {status === "polling" || polling ? (
-        <div className="mb-3">
-          <Badge variant="running">Polling…</Badge>
-        </div>
-      ) : null}
-
       <h2 className="text-lg font-semibold text-text-primary">{TITLES[status]}</h2>
       <p className="mt-2 text-sm text-text-secondary">{HINTS[status]}</p>
 
@@ -71,24 +54,24 @@ export function AnalysisStatusCard({
         </p>
       )}
 
-      {pollError && (
-        <p className="mt-2 text-sm text-negative">{pollError}</p>
-      )}
-
       {showIssue && (
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Button
-            variant="primary"
-            onClick={() => window.open(issueUrl, "_blank", "noopener,noreferrer")}
-          >
-            GitHub Issue로 데이터 요청
-          </Button>
-          {onPoll && (status === "stale" || status === "poll-error") && (
-            <Button variant="secondary" onClick={onPoll} disabled={polling}>
-              {polling ? "Polling…" : "Polling 시작"}
+        <>
+          <div className="mt-4 rounded-md border border-border/60 bg-bg px-3 py-2.5 text-sm text-text-secondary">
+            <p>
+              <span className="font-medium text-text-primary">자동 갱신</span>
+              {" · "}6시간마다 · 다음:{" "}
+              <span className="text-text-primary">{schedule.nextRun}</span>
+            </p>
+          </div>
+          <div className="mt-6">
+            <Button
+              variant="primary"
+              onClick={() => window.open(issueUrl, "_blank", "noopener,noreferrer")}
+            >
+              GitHub Issue로 데이터 요청
             </Button>
-          )}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

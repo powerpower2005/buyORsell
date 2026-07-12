@@ -7,7 +7,6 @@ interface Props {
   timeframe: string;
   status?: string;
   fresh: boolean;
-  polling: boolean;
   disabled?: boolean;
 }
 
@@ -16,14 +15,13 @@ export function RequestDataButton({
   timeframe,
   status,
   fresh,
-  polling,
   disabled,
 }: Props) {
   if (fresh) {
     return <Badge variant="fresh">데이터 최신</Badge>;
   }
 
-  if (status === "running" || polling) {
+  if (status === "running") {
     return <Badge variant="running">데이터 수집 중…</Badge>;
   }
 

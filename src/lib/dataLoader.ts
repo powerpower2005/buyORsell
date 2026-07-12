@@ -12,7 +12,7 @@ import {
   statusDataPath,
 } from "./githubRaw";
 
-import { DataNotFoundError, FetchError, PollTimeoutError } from "./errors";
+import { DataNotFoundError, FetchError } from "./errors";
 
 import { validateFreshness } from "./validation";
 
@@ -103,47 +103,6 @@ export async function loadIndex(options?: { remote?: boolean }): Promise<IndexFi
 
 export function isFresh(quote: QuoteFile, timeframe: Timeframe): boolean {
   return validateFreshness(quote, timeframe).status === "fresh";
-}
-
-export async function pollUntilReady(
-  ticker: string,
-  timeframe: Timeframe,
-  onTick?: (quote: QuoteFile | null, status: StatusFile | null) => void,
-  intervalMs = 10000,
-  maxAttempts = 60,
-): Promise<QuoteFile> {
-  let lastQuote: QuoteFile | null = null;
-  let lastStatus: StatusFile | null = null;
-
-  for (let i = 0; i < maxAttempts; i++) {
-    try {
-      lastQuote = await loadQuote(ticker, timeframe, { remote: true });
-    } catch (e) {
-      if (!(e instanceof DataNotFoundError)) throw e;
-      lastQuote = null;
-    }
-
-    try {
-      lastStatus = await loadStatus(ticker, timeframe, true);
-    } catch (e) {
-      if (!(e instanceof DataNotFoundError)) throw e;
-      lastStatus = null;
-    }
-
-    onTick?.(lastQuote, lastStatus);
-
-    if (lastQuote && isFresh(lastQuote, timeframe)) return lastQuote;
-    if (lastStatus?.status === "failed") {
-      throw new FetchError(
-        `Fetch failed for ${ticker} ${timeframe} (status: failed)`,
-      );
-    }
-
-    await new Promise((r) => setTimeout(r, intervalMs));
-  }
-
-  if (lastQuote && isFresh(lastQuote, timeframe)) return lastQuote;
-  throw new PollTimeoutError(ticker, timeframe);
 }
 
 export function getIndexEntry(

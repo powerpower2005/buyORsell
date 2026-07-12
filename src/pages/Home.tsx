@@ -25,7 +25,6 @@ import {
   loadQuote,
   loadStatus,
   loadIndex,
-  pollUntilReady,
   tickersForTimeframe,
 } from "@/lib/dataLoader";
 import { validateFreshness as checkFresh } from "@/lib/validation";
@@ -68,8 +67,6 @@ export function HomePage() {
   const [timeframe, setTimeframe] = useState<Timeframe>(initialTf ?? "1d");
   const [quote, setQuote] = useState<QuoteFile | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [pollError, setPollError] = useState<string | null>(null);
-  const [polling, setPolling] = useState(false);
   const [loading, setLoading] = useState(false);
   const [configTick, setConfigTick] = useState(0);
   const [backtest, setBacktest] = useState<BacktestResult | undefined>();
@@ -135,7 +132,6 @@ export function HomePage() {
     setTicker(parsed.ticker);
     syncUrl(parsed.ticker, timeframe);
     setScreen("results");
-    setPollError(null);
     await loadData(parsed.ticker, timeframe);
   }, [input, timeframe, syncUrl, loadData]);
 
@@ -154,23 +150,6 @@ export function HomePage() {
       loadData(ticker, timeframe);
     }
   }, [timeframe, ticker, loadData, screen]);
-
-  const startPolling = async () => {
-    if (!ticker) return;
-    setPolling(true);
-    setPollError(null);
-    try {
-      const q = await pollUntilReady(ticker, timeframe, (q) => {
-        setQuote(q);
-        setLoadError(null);
-      });
-      setQuote(q);
-      await refreshCatalog(true);
-    } catch (e) {
-      setPollError(errorMessage(e));
-    }
-    setPolling(false);
-  };
 
   const indicatorConfig = useMemo(
     () => getEffectiveIndicatorsConfig(),
@@ -212,8 +191,6 @@ export function HomePage() {
 
   const resultStatus: AnalysisStatus | "ready" = (() => {
     if (loading) return "loading";
-    if (polling) return "polling";
-    if (pollError) return "poll-error";
     if (loadError || !quote) return "missing";
     if (evaluationError) return "bad-quality";
     if (evaluation) return "ready";
@@ -236,7 +213,6 @@ export function HomePage() {
 
   const backToSetup = () => {
     setScreen("setup");
-    setPollError(null);
   };
 
   return (
@@ -331,7 +307,6 @@ export function HomePage() {
                     ticker={inputParsed.ticker}
                     timeframe={timeframe}
                     fresh={false}
-                    polling={false}
                   />
                 </div>
               ) : (
@@ -369,9 +344,6 @@ export function HomePage() {
               ticker={inputParsed.valid ? inputParsed.ticker : ticker}
               timeframe={timeframe}
               detail={statusDetail}
-              pollError={pollError ?? undefined}
-              onPoll={startPolling}
-              polling={polling}
             />
           ) : (
             <>
@@ -380,9 +352,6 @@ export function HomePage() {
                   ticker={inputParsed.valid ? inputParsed.ticker : ticker}
                   timeframe={timeframe}
                   detail={staleDetail}
-                  pollError={pollError ?? undefined}
-                  onPoll={startPolling}
-                  polling={polling}
                 />
               )}
               <p className="text-left text-xs text-text-tertiary">{statusDetail}</p>

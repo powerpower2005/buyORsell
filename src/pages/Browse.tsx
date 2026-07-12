@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import clsx from "clsx";
-import { loadIndex, loadQuote, pollUntilReady } from "@/lib/dataLoader";
+import { loadIndex, loadQuote } from "@/lib/dataLoader";
 import { validateFreshness } from "@/lib/validation";
 import { computeAll } from "@/lib/evaluation/registry";
 import { computeScore, presetForTimeframe } from "@/lib/evaluation/scoring";
@@ -46,32 +46,7 @@ export function BrowsePage() {
   const [quote, setQuote] = useState<QuoteFile | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [polling, setPolling] = useState(false);
-  const [pollError, setPollError] = useState<string | null>(null);
   const [configTick, setConfigTick] = useState(0);
-
-  const reloadQuote = useCallback(async (entry: IndexEntry, remote = false) => {
-    setLoading(true);
-    setLoadError(null);
-    try {
-      setQuote(
-        await loadQuote(entry.ticker, entry.timeframe as Timeframe, { remote }),
-      );
-    } catch (e) {
-      setQuote(null);
-      setLoadError(errorMessage(e));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const refreshIndex = useCallback(async (remote = false) => {
-    try {
-      setIndex(await loadIndex({ remote }));
-    } catch (e) {
-      setIndexError(errorMessage(e));
-    }
-  }, []);
 
   const entries = useMemo(
     () =>
@@ -134,27 +109,6 @@ export function BrowsePage() {
     };
   }, [selected]);
 
-  const startPolling = async () => {
-    if (!selected) return;
-    setPolling(true);
-    setPollError(null);
-    try {
-      await pollUntilReady(
-        selected.ticker,
-        selected.timeframe as Timeframe,
-        (q) => {
-          setQuote(q);
-          setLoadError(null);
-        },
-      );
-      await refreshIndex(true);
-      await reloadQuote(selected, true);
-    } catch (e) {
-      setPollError(errorMessage(e));
-    }
-    setPolling(false);
-  };
-
   const indicatorConfig = useMemo(
     () => getEffectiveIndicatorsConfig(),
     [configTick],
@@ -191,8 +145,6 @@ export function BrowsePage() {
 
   const resultStatus: AnalysisStatus | "ready" = (() => {
     if (loading) return "loading";
-    if (polling) return "polling";
-    if (pollError) return "poll-error";
     if (loadError || !quote) return "missing";
     if (evaluationError) return "bad-quality";
     if (evaluation) return "ready";
@@ -325,9 +277,6 @@ export function BrowsePage() {
                   ticker={selected.ticker}
                   timeframe={selected.timeframe}
                   detail={statusDetail}
-                  pollError={pollError ?? undefined}
-                  onPoll={startPolling}
-                  polling={polling}
                 />
               ) : (
                 <div className="space-y-6">
@@ -336,9 +285,6 @@ export function BrowsePage() {
                       ticker={selected.ticker}
                       timeframe={selected.timeframe}
                       detail={staleDetail}
-                      pollError={pollError ?? undefined}
-                      onPoll={startPolling}
-                      polling={polling}
                     />
                   )}
                   <p className="text-xs text-text-tertiary">{statusDetail}</p>
