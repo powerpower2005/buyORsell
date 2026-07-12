@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "fetch": "node scripts/fetch-quote.mjs",
     "validate-data": "node scripts/validate-data.mjs",
-    "test:fetch": "node scripts/validate-and-merge.mjs NVDA:NASDAQ 1d"
+    "test:fetch": "node scripts/validate-and-merge.mjs NVDA:NASDAQ 1d",
+    "test:stale-refresh": "node scripts/test-stale-refresh.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

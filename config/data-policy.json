@@ -4,7 +4,6 @@
   "defaultWindow": "1Y",
   "freshness": {
     "maxAgeHours": 24,
-    "requireLastBarIsRecentTradingDay": true,
     "maxTradingDayLag": 3,
     "minBarCount": 50
   },
@@ -16,13 +15,13 @@
   "update": {
     "strategy": "incremental_merge",
     "shortFetchWindowForUpdate": "5D",
-    "skipCommitIfNoDiff": true
+    "skipCommitIfNoDiff": false
   },
   "freshnessByTimeframe": {
-    "15m": { "maxAgeHours": 1 },
-    "1h": { "maxAgeHours": 4 },
-    "4h": { "maxAgeHours": 8 },
-    "1d": { "maxAgeHours": 24 },
-    "1w": { "maxAgeHours": 168 }
+    "15m": { "freshnessMode": "maxAge", "maxAgeHours": 1 },
+    "1h": { "freshnessMode": "maxAge", "maxAgeHours": 4 },
+    "4h": { "freshnessMode": "maxAge", "maxAgeHours": 8 },
+    "1d": { "freshnessMode": "tradingDay" },
+    "1w": { "freshnessMode": "tradingDay" }
   }
 }

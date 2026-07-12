@@ -6,6 +6,11 @@ import { ConfigError } from "./errors";
 
 import { requireDefined } from "./require";
 
+import {
+  tradingDayLag,
+  usesTradingDayFreshness,
+} from "./freshness";
+
 
 
 export interface FreshnessResult {
@@ -60,6 +65,36 @@ export function validateFreshness(
 
 
 
+  if (quote.barCount < policy.freshness.minBarCount) {
+
+    return { status: "stale", reason: "minBarCount" };
+
+  }
+
+
+
+  if (usesTradingDayFreshness(timeframe)) {
+
+    const lag = tradingDayLag(quote.lastBarDate);
+
+    if (lag > policy.freshness.maxTradingDayLag) {
+
+      return {
+
+        status: "stale",
+
+        reason: `lastBarDate ${lag} trading day(s) behind`,
+
+      };
+
+    }
+
+    return { status: "fresh", reason: "ok" };
+
+  }
+
+
+
   const tfPolicy =
 
     (policy.freshnessByTimeframe as Record<string, { maxAgeHours?: number }>)?.[
@@ -83,30 +118,6 @@ export function validateFreshness(
   if (ageMs > maxAgeHours * 3600 * 1000) {
 
     return { status: "stale", reason: "maxAgeHours exceeded" };
-
-  }
-
-
-
-  if (quote.barCount < policy.freshness.minBarCount) {
-
-    return { status: "stale", reason: "minBarCount" };
-
-  }
-
-
-
-  const lagDays = Math.floor(
-
-    (Date.now() - new Date(quote.lastBarDate + "T12:00:00Z").getTime()) /
-
-      86400000,
-
-  );
-
-  if (lagDays > policy.freshness.maxTradingDayLag + 3) {
-
-    return { status: "stale", reason: "lastBarDate too old" };
 
   }
 
@@ -167,4 +178,3 @@ export function mergeOhlcv(
   return { ohlcv, changedBars: changed, hasDiff: changed > 0 };
 
 }
-

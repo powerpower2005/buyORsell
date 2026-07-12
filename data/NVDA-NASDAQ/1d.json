@@ -8,17 +8,9 @@
   "resolvedSymbol": "NASDAQ:NVDA",
   "fetchedAt": "2026-07-09T17:22:23.608Z",
   "lastBarDate": "2026-07-08",
-  "barCount": 460,
+  "barCount": 459,
   "checksum": "4a0018c",
   "ohlcv": [
-    {
-      "date": "2021-07-09",
-      "open": 20.05,
-      "high": 20.05,
-      "low": 20.05,
-      "close": 20.05,
-      "volume": 41626428
-    },
     {
       "date": "2021-07-16",
       "open": 20.05,

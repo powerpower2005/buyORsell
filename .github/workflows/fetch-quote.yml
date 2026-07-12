@@ -159,27 +159,29 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |
           node <<'NODE'
+          (async () => {
           const fs = require('fs');
           const path = require('path');
           const indexPath = 'data/index.json';
           if (!fs.existsSync(indexPath)) process.exit(0);
           const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
           const policy = JSON.parse(fs.readFileSync('config/data-policy.json', 'utf8'));
+          const { validateFreshness } = await import('./scripts/validate-and-merge.mjs');
           for (const entry of index.entries) {
             if (!entry.ticker || !entry.timeframe) continue;
             const full = path.join('data', entry.ticker.replace(/:/g, '-'), entry.timeframe + '.json');
             if (!fs.existsSync(full)) continue;
             const quote = JSON.parse(fs.readFileSync(full, 'utf8'));
-            const tfPolicy = policy.freshnessByTimeframe?.[entry.timeframe] || {};
-            const maxAge = (tfPolicy.maxAgeHours || policy.freshness.maxAgeHours) * 3600000;
-            if (Date.now() - new Date(quote.fetchedAt).getTime() > maxAge) {
-              console.log('Stale:', entry.ticker, entry.timeframe);
+            const freshness = validateFreshness(quote, policy, entry.timeframe);
+            if (freshness.status === 'stale') {
+              console.log('Stale:', entry.ticker, entry.timeframe, freshness.reason);
               require('child_process').execSync(
                 `node scripts/validate-and-merge.mjs "${entry.ticker}" "${entry.timeframe}"`,
                 { stdio: 'inherit' }
               );
             }
           }
+          })().catch((e) => { console.error(e); process.exit(1); });
           NODE
 
       - name: Commit data

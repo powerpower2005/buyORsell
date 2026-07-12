@@ -45,9 +45,7 @@ export function mergeOhlcv(existing, incoming) {
   return { ohlcv, changedBars: changed, hasDiff: changed > 0 };
 }
 
-function parseWeekday(dateStr) {
-  return new Date(dateStr + "T12:00:00Z").getUTCDay();
-}
+import { tradingDayLag, usesTradingDayFreshness } from "./lib/freshness.mjs";
 
 export function validateFreshness(quoteFile, policy, timeframe = quoteFile.timeframe) {
   if (!policy?.freshness?.maxAgeHours) {
@@ -56,32 +54,30 @@ export function validateFreshness(quoteFile, policy, timeframe = quoteFile.timef
   if (policy.freshness.minBarCount == null) {
     throw new Error("data-policy.json: freshness.minBarCount is required");
   }
-
-  const tfPolicy = policy.freshnessByTimeframe?.[timeframe];
-  const maxAgeHours = tfPolicy?.maxAgeHours ?? policy.freshness.maxAgeHours;
-  const minBarCount = policy.freshness.minBarCount;
-
-  const ageMs = Date.now() - new Date(quoteFile.fetchedAt).getTime();
-  if (ageMs > maxAgeHours * 3600 * 1000) {
-    return { status: "stale", reason: "maxAgeHours exceeded" };
+  if (policy.freshness.maxTradingDayLag == null) {
+    throw new Error("data-policy.json: freshness.maxTradingDayLag is required");
   }
 
-  if (quoteFile.barCount < minBarCount) {
+  if (quoteFile.barCount < policy.freshness.minBarCount) {
     return { status: "stale", reason: "minBarCount" };
   }
 
-  if (policy.freshness.requireLastBarIsRecentTradingDay) {
-    const last = new Date(quoteFile.lastBarDate + "T12:00:00Z");
-    const now = new Date();
-    const lagDays = Math.floor((now - last) / 86400000);
-    const maxLag = policy.freshness.maxTradingDayLag + 2;
-    if (lagDays > maxLag) {
-      return { status: "stale", reason: "lastBarDate too old" };
+  if (usesTradingDayFreshness(timeframe, policy.freshnessByTimeframe)) {
+    const lag = tradingDayLag(quoteFile.lastBarDate);
+    if (lag > policy.freshness.maxTradingDayLag) {
+      return {
+        status: "stale",
+        reason: `lastBarDate ${lag} trading day(s) behind`,
+      };
     }
-    const dow = parseWeekday(quoteFile.lastBarDate);
-    if (dow === 0 || dow === 6) {
-      /* weekend bar ok */
-    }
+    return { status: "fresh", reason: "ok" };
+  }
+
+  const tfPolicy = policy.freshnessByTimeframe?.[timeframe];
+  const maxAgeHours = tfPolicy?.maxAgeHours ?? policy.freshness.maxAgeHours;
+  const ageMs = Date.now() - new Date(quoteFile.fetchedAt).getTime();
+  if (ageMs > maxAgeHours * 3600 * 1000) {
+    return { status: "stale", reason: "maxAgeHours exceeded" };
   }
 
   return { status: "fresh", reason: "ok" };
@@ -132,39 +128,25 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
   });
 
   const incoming = await fetchQuote(ticker, timeframe);
-  let merged = incoming;
-  let hasDiff = true;
+  let ohlcv = incoming.ohlcv;
+  let barsChanged = !existing?.ohlcv?.length;
 
   if (existing?.ohlcv?.length) {
     const m = mergeOhlcv(existing.ohlcv, incoming.ohlcv);
-    merged = {
-      ...incoming,
-      ohlcv: m.ohlcv,
-      barCount: m.ohlcv.length,
-      lastBarDate: m.ohlcv.at(-1).date,
-    };
-    hasDiff = m.hasDiff;
+    ohlcv = m.ohlcv;
+    barsChanged = m.hasDiff;
   }
 
-  if (policy.update.skipCommitIfNoDiff && existing && !hasDiff) {
-    const staleReason = validateFreshness(existing, policy, timeframe);
-    if (staleReason.status === "fresh") {
-      writeJson(statusPath(ticker, timeframe), {
-        status: "skipped",
-        updatedAt: new Date().toISOString(),
-        ticker,
-        timeframe,
-      });
-      return { action: "skipped", reason: "no diff", quote: existing };
-    }
-    merged = {
-      ...merged,
-      fetchedAt: incoming.fetchedAt,
-      source: incoming.source ?? merged.source,
-      resolvedSymbol: incoming.resolvedSymbol ?? merged.resolvedSymbol,
-    };
-    hasDiff = true;
-  }
+  // Successful fetch always stamps fetchedAt so freshness reflects verification time,
+  // even when GOOGLEFINANCE returns identical bars.
+  const merged = {
+    ...(existing || {}),
+    ...incoming,
+    ohlcv,
+    barCount: ohlcv.length,
+    lastBarDate: ohlcv.at(-1).date,
+    fetchedAt: incoming.fetchedAt,
+  };
 
   writeJson(rel, merged);
   writeJson(statusPath(ticker, timeframe), {
@@ -183,7 +165,7 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
     barCount: merged.barCount,
   });
 
-  return { action: "committed", quote: merged, hasDiff };
+  return { action: "committed", quote: merged, barsChanged };
 }
 
 async function main() {
