@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-13T13:56:50.264Z",
+  "updatedAt": "2026-07-13T14:08:35.930Z",
   "entries": [
     {
       "ticker": "NVDA:NASDAQ",
@@ -25,6 +25,14 @@
       "fetchedAt": "2026-07-13T13:56:50.263Z",
       "lastBarDate": "2026-07-10",
       "barCount": 243
+    },
+    {
+      "ticker": "NDX:INDEXNASDAQ",
+      "timeframe": "1d",
+      "path": "data/NDX-INDEXNASDAQ/1d.json",
+      "fetchedAt": "2026-07-13T14:08:35.929Z",
+      "lastBarDate": "2026-07-10",
+      "barCount": 250
     }
   ]
 }
