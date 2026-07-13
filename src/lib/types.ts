@@ -64,6 +64,7 @@ export interface IndicatorOutput {
 export interface IndicatorResults {
   indicators: Record<string, IndicatorOutput>;
   signals: SignalResult[];
+  skipped?: string[];
 }
 
 export interface SignalResult {
@@ -85,6 +86,7 @@ export interface ScoreResult {
   grade: string;
   preset: string;
   breakdown: ScoreBreakdown[];
+  skippedRules?: string[];
 }
 
 export interface BacktestTrade {

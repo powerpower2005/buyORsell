@@ -1,5 +1,6 @@
 import type { OHLCVBar, TrendLabel } from "../types";
 import patternConfig from "../../../config/candle-patterns.json";
+import { patternLabel } from "../candlePatternMeta";
 import { InsufficientDataError } from "../errors";
 import { requireMinBars, requireNonEmptyArray } from "../require";
 
@@ -40,15 +41,15 @@ interface BarMetrics {
 }
 
 const LABELS: Record<CandlePatternId, string> = {
-  doji: "Doji",
-  hammer: "Hammer",
-  inverted_hammer: "Inverted Hammer",
-  shooting_star: "Shooting Star",
-  hanging_man: "Hanging Man",
-  bullish_engulfing: "Bullish Engulfing",
-  bearish_engulfing: "Bearish Engulfing",
-  bullish_harami: "Bullish Harami",
-  bearish_harami: "Bearish Harami",
+  doji: patternLabel("doji"),
+  hammer: patternLabel("hammer"),
+  inverted_hammer: patternLabel("inverted_hammer"),
+  shooting_star: patternLabel("shooting_star"),
+  hanging_man: patternLabel("hanging_man"),
+  bullish_engulfing: patternLabel("bullish_engulfing"),
+  bearish_engulfing: patternLabel("bearish_engulfing"),
+  bullish_harami: patternLabel("bullish_harami"),
+  bearish_harami: patternLabel("bearish_harami"),
 };
 
 function metrics(bar: OHLCVBar): BarMetrics {

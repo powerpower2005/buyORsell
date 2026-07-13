@@ -66,29 +66,13 @@ function evalSignals(
 
       const ind = results[indId];
 
-      if (!ind) {
-
-        throw new InsufficientDataError(
-
-          `Signal ${sig.id}: indicator ${indId} not computed`,
-
-        );
-
-      }
+      if (!ind) continue;
 
       const fastSeries = ind.series[fastKey];
 
       const slowSeries = ind.series[slowKey];
 
-      if (!fastSeries?.length || !slowSeries?.length) {
-
-        throw new InsufficientDataError(
-
-          `Signal ${sig.id}: insufficient series for crossover`,
-
-        );
-
-      }
+      if (!fastSeries?.length || !slowSeries?.length) continue;
 
       const f0 = fastSeries.at(-2)?.value;
 
@@ -98,15 +82,7 @@ function evalSignals(
 
       const s1 = slowSeries.at(-1)?.value;
 
-      if (f0 == null || f1 == null || s0 == null || s1 == null) {
-
-        throw new InsufficientDataError(
-
-          `Signal ${sig.id}: crossover values missing`,
-
-        );
-
-      }
+      if (f0 == null || f1 == null || s0 == null || s1 == null) continue;
 
       const active = f0 <= s0 && f1 > s1;
 
@@ -134,11 +110,7 @@ function evalSignals(
 
       const rsi = results.rsi?.latest.rsi;
 
-      if (rsi == null) {
-
-        throw new InsufficientDataError(`Signal ${sig.id}: RSI not available`);
-
-      }
+      if (rsi == null) continue;
 
       let active = false;
 
@@ -212,6 +184,8 @@ export function computeAll(
 
   const indicators: IndicatorResults["indicators"] = {};
 
+  const skipped: string[] = [];
+
 
 
   for (const item of config.indicators) {
@@ -232,11 +206,13 @@ export function computeAll(
 
     if (bars.length < min) {
 
-      throw new InsufficientDataError(
+      skipped.push(
 
         `Indicator ${item.id} requires ${min} bars, got ${bars.length}`,
 
       );
+
+      continue;
 
     }
 
@@ -254,7 +230,15 @@ export function computeAll(
 
   const signals = evalSignals(bars, config, indicators, timeframe);
 
-  return { indicators, signals };
+  return {
+
+    indicators,
+
+    signals,
+
+    skipped: skipped.length ? skipped : undefined,
+
+  };
 
 }
 

@@ -6,7 +6,7 @@ import scoringConfig from "../../../config/scoring.json";
 
 import { ConfigError, InsufficientDataError } from "../errors";
 
-import { requireDefined, requireMinBars, requireNonEmptyArray, requireNumber } from "../require";
+import { requireDefined, requireNonEmptyArray, requireNumber } from "../require";
 
 
 
@@ -25,6 +25,18 @@ interface ScoringPreset {
   }[];
 
   grades: { grade: string; min: number }[];
+
+}
+
+
+
+interface RuleEval {
+
+  points: number;
+
+  maxPoints: number;
+
+  skipped?: string;
 
 }
 
@@ -74,7 +86,7 @@ function lastClose(bars: OHLCVBar[]): number {
 
 
 
-function requireIndicatorValue(
+function tryIndicatorValue(
 
   indicators: IndicatorResults["indicators"],
 
@@ -82,25 +94,15 @@ function requireIndicatorValue(
 
   key: string,
 
-): number {
+): number | null {
 
   const out = indicators[pluginId];
 
-  if (!out) {
-
-    throw new InsufficientDataError(`Indicator not computed: ${pluginId}`);
-
-  }
+  if (!out) return null;
 
   const val = out.latest[key];
 
-  if (val == null) {
-
-    throw new InsufficientDataError(`Indicator value missing: ${pluginId}.${key}`);
-
-  }
-
-  return val;
+  return val ?? null;
 
 }
 
@@ -114,7 +116,7 @@ function evalRule(
 
   indicators: IndicatorResults["indicators"],
 
-): number {
+): RuleEval {
 
   const ruleType = requireDefined(rule.type, "rule.type");
 
@@ -130,15 +132,15 @@ function evalRule(
 
     const op = requireDefined(rule.op as string, "rule.op");
 
-    let rhs: number;
+    let rhs: number | null;
 
     if (right.startsWith("sma:")) {
 
-      rhs = requireIndicatorValue(indicators, "sma", right);
+      rhs = tryIndicatorValue(indicators, "sma", right);
 
     } else if (right.startsWith("ema:")) {
 
-      rhs = requireIndicatorValue(indicators, "ema", right);
+      rhs = tryIndicatorValue(indicators, "ema", right);
 
     } else {
 
@@ -146,9 +148,23 @@ function evalRule(
 
     }
 
+    if (rhs == null) {
+
+      return {
+
+        points: 0,
+
+        maxPoints: 0,
+
+        skipped: `compare ${right}: indicator not available`,
+
+      };
+
+    }
+
     const pass = op === "gt" ? close > rhs : close < rhs;
 
-    return pass ? ruleScore : 0;
+    return { points: pass ? ruleScore : 0, maxPoints: ruleScore };
 
   }
 
@@ -156,17 +172,31 @@ function evalRule(
 
   if (ruleType === "rsi_mid") {
 
-    const rsi = requireIndicatorValue(indicators, "rsi", "rsi");
+    const rsi = tryIndicatorValue(indicators, "rsi", "rsi");
+
+    if (rsi == null) {
+
+      return {
+
+        points: 0,
+
+        maxPoints: 0,
+
+        skipped: "rsi_mid: RSI not available",
+
+      };
+
+    }
 
     const low = requireNumber(rule.low, "rule.low");
 
     const high = requireNumber(rule.high, "rule.high");
 
-    if (rsi >= low && rsi <= high) return ruleScore;
+    if (rsi >= low && rsi <= high) return { points: ruleScore, maxPoints: ruleScore };
 
-    if (rsi < low) return ruleScore * 0.8;
+    if (rsi < low) return { points: ruleScore * 0.8, maxPoints: ruleScore };
 
-    return ruleScore * 0.3;
+    return { points: ruleScore * 0.3, maxPoints: ruleScore };
 
   }
 
@@ -174,9 +204,29 @@ function evalRule(
 
   if (ruleType === "macd_hist") {
 
-    const hist = requireIndicatorValue(indicators, "macd", "macdHist");
+    const hist = tryIndicatorValue(indicators, "macd", "macdHist");
 
-    return hist > 0 ? ruleScore : ruleScore * 0.2;
+    if (hist == null) {
+
+      return {
+
+        points: 0,
+
+        maxPoints: 0,
+
+        skipped: "macd_hist: MACD not available",
+
+      };
+
+    }
+
+    return {
+
+      points: hist > 0 ? ruleScore : ruleScore * 0.2,
+
+      maxPoints: ruleScore,
+
+    };
 
   }
 
@@ -184,35 +234,82 @@ function evalRule(
 
   if (ruleType === "bb_position") {
 
-    const upper = requireIndicatorValue(indicators, "bb", "bbUpper");
+    const upper = tryIndicatorValue(indicators, "bb", "bbUpper");
 
-    const lower = requireIndicatorValue(indicators, "bb", "bbLower");
+    const lower = tryIndicatorValue(indicators, "bb", "bbLower");
+
+    if (upper == null || lower == null) {
+
+      return {
+
+        points: 0,
+
+        maxPoints: 0,
+
+        skipped: "bb_position: Bollinger bands not available",
+
+      };
+
+    }
 
     if (upper === lower) {
 
-      throw new InsufficientDataError("Bollinger bands upper equals lower");
+      return {
+
+        points: 0,
+
+        maxPoints: 0,
+
+        skipped: "bb_position: flat Bollinger band range",
+
+      };
 
     }
 
     const pos = (close - lower) / (upper - lower);
 
-    if (pos > 0.8) return ruleScore * 0.4;
+    if (pos > 0.8) return { points: ruleScore * 0.4, maxPoints: ruleScore };
 
-    if (pos < 0.2) return ruleScore * 0.9;
+    if (pos < 0.2) return { points: ruleScore * 0.9, maxPoints: ruleScore };
 
-    return ruleScore * 0.7;
+    return { points: ruleScore * 0.7, maxPoints: ruleScore };
 
   }
 
 
 
   if (ruleType === "volume_vs_avg") {
+
     const period = requireNumber(rule.period, "rule.period");
-    requireMinBars(bars.length, period, "volume_vs_avg");
+
+    if (bars.length < period) {
+
+      return {
+
+        points: 0,
+
+        maxPoints: 0,
+
+        skipped: `volume_vs_avg: need at least ${period} bars, got ${bars.length}`,
+
+      };
+
+    }
+
     const slice = bars.slice(-period);
+
     const avg = slice.reduce((s, b) => s + b.volume, 0) / slice.length;
+
     const lastVol = bars.at(-1)!.volume;
-    return lastVol >= avg ? ruleScore : ruleScore * 0.5;
+
+    return {
+
+      points: lastVol >= avg ? ruleScore : ruleScore * 0.5,
+
+      maxPoints: ruleScore,
+
+    };
+
   }
 
 
@@ -221,7 +318,19 @@ function evalRule(
 
     const lookback = requireNumber(rule.lookback, "rule.lookback");
 
-    requireMinBars(bars.length, lookback, "price_in_range");
+    if (bars.length < lookback) {
+
+      return {
+
+        points: 0,
+
+        maxPoints: 0,
+
+        skipped: `price_in_range: need at least ${lookback} bars, got ${bars.length}`,
+
+      };
+
+    }
 
     const slice = bars.slice(-lookback);
 
@@ -231,13 +340,21 @@ function evalRule(
 
     if (max === min) {
 
-      throw new InsufficientDataError("price_in_range: flat range in lookback");
+      return {
+
+        points: 0,
+
+        maxPoints: 0,
+
+        skipped: "price_in_range: flat range in lookback",
+
+      };
 
     }
 
     const pos = (close - min) / (max - min);
 
-    return pos * ruleScore;
+    return { points: pos * ruleScore, maxPoints: ruleScore };
 
   }
 
@@ -275,7 +392,11 @@ export function computeScore(
 
   const breakdown: ScoreBreakdown[] = [];
 
+  const skippedRules: string[] = [];
+
   let total = 0;
+
+  let activeWeight = 0;
 
 
 
@@ -283,25 +404,31 @@ export function computeScore(
 
     let catScore = 0;
 
+    let maxRule = 0;
+
     for (const rule of cat.rules) {
 
-      catScore += evalRule(rule, bars, indicatorResults.indicators);
+      const result = evalRule(rule, bars, indicatorResults.indicators);
+
+      catScore += result.points;
+
+      maxRule += result.maxPoints;
+
+      if (result.skipped) skippedRules.push(result.skipped);
 
     }
 
-    const maxRule = cat.rules.reduce(
+    if (maxRule <= 0) continue;
 
-      (s, r) => s + requireNumber(r.score, "rule.score"),
 
-      0,
 
-    );
-
-    const normalized = maxRule > 0 ? Math.min(100, (catScore / maxRule) * 100) : 0;
+    const normalized = Math.min(100, (catScore / maxRule) * 100);
 
     const weighted = normalized * cat.weight;
 
     total += weighted;
+
+    activeWeight += cat.weight;
 
     breakdown.push({
 
@@ -319,7 +446,15 @@ export function computeScore(
 
 
 
-  const value = Math.round(Math.min(100, total));
+  const value =
+
+    activeWeight > 0
+
+      ? Math.round(Math.min(100, total / activeWeight))
+
+      : 0;
+
+
 
   return {
 
@@ -330,6 +465,8 @@ export function computeScore(
     preset: presetKey,
 
     breakdown,
+
+    skippedRules: skippedRules.length ? skippedRules : undefined,
 
   };
 
@@ -350,4 +487,3 @@ export function presetForTimeframe(tf: string): string {
   throw new ConfigError(`No scoring preset for timeframe: ${tf}`);
 
 }
-

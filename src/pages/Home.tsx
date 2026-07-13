@@ -19,6 +19,7 @@ import { MTFAlignmentCard } from "@/components/MTFAlignmentCard";
 import { StrategyBuilder } from "@/components/StrategyBuilder";
 import { TickerTutorial } from "@/components/TickerTutorial";
 import { ErrorBanner } from "@/components/ErrorBanner";
+import { PartialDataBanner } from "@/components/PartialDataBanner";
 import { StaleDataBanner } from "@/components/StaleDataBanner";
 import { parseTickerInput } from "@/lib/urlParser";
 import {
@@ -35,6 +36,7 @@ import { getEffectiveIndicatorsConfig } from "@/lib/configStore";
 import { computeVolumeAverages, getVolumeMaPeriods } from "@/lib/evaluation/volumeMa";
 import { detectCandlePatterns } from "@/lib/evaluation/candlePatterns";
 import { CandlePatternPanel } from "@/components/CandlePatternPanel";
+import { getChartPatternVisibility } from "@/lib/candlePatternStore";
 import { DataNotFoundError, errorMessage } from "@/lib/errors";
 import type {
   BacktestResult,
@@ -69,6 +71,7 @@ export function HomePage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [configTick, setConfigTick] = useState(0);
+  const [patternChartTick, setPatternChartTick] = useState(0);
   const [backtest, setBacktest] = useState<BacktestResult | undefined>();
   const [catalog, setCatalog] = useState<IndexFile | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
@@ -155,6 +158,10 @@ export function HomePage() {
     () => getEffectiveIndicatorsConfig(),
     [configTick],
   );
+  const chartPatternVisibility = useMemo(
+    () => getChartPatternVisibility(),
+    [patternChartTick],
+  );
 
   const freshness = quote ? checkFresh(quote, timeframe) : null;
   const isStale = freshness?.status === "stale";
@@ -168,6 +175,7 @@ export function HomePage() {
   } | null = null;
 
   let evaluationError: string | null = null;
+  let evaluationWarnings: string[] = [];
 
   if (quote) {
     try {
@@ -183,6 +191,10 @@ export function HomePage() {
         getVolumeMaPeriods(timeframe),
       );
       const patterns = detectCandlePatterns(quote.ohlcv);
+      evaluationWarnings = [
+        ...(indicators.skipped ?? []),
+        ...(score.skippedRules ?? []),
+      ];
       evaluation = { indicators, score, mtf, volume, patterns };
     } catch (e) {
       evaluationError = errorMessage(e);
@@ -354,19 +366,29 @@ export function HomePage() {
                   detail={staleDetail}
                 />
               )}
+              {evaluationWarnings.length > 0 && (
+                <PartialDataBanner warnings={evaluationWarnings} />
+              )}
               <p className="text-left text-xs text-text-tertiary">{statusDetail}</p>
               <div id="export-root" className="space-y-6">
                 <CandleChart
                   bars={quote!.ohlcv}
                   timeframe={timeframe}
                   patterns={evaluation!.patterns}
+                  chartPatternVisibility={chartPatternVisibility}
                   indicators={evaluation!.indicators}
                 />
                 <div className="grid gap-6 xl:grid-cols-2">
                   <VolumePanel snapshot={evaluation!.volume} timeframe={timeframe} />
                   <ScoreCard score={evaluation!.score} />
                   <IndicatorPanel results={evaluation!.indicators} />
-                  <CandlePatternPanel patterns={evaluation!.patterns} />
+                  <CandlePatternPanel
+                    patterns={evaluation!.patterns}
+                    chartVisibility={chartPatternVisibility}
+                    onChartVisibilityChange={() =>
+                      setPatternChartTick((n) => n + 1)
+                    }
+                  />
                 </div>
                 <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />
                 <MTFAlignmentCard alignment={evaluation!.mtf} />

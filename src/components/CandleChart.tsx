@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createChart, type IChartApi, type ISeriesApi } from "lightweight-charts";
 import type { OHLCVBar, Timeframe, IndicatorResults } from "@/lib/types";
-import type { CandlePatternResult } from "@/lib/evaluation/candlePatterns";
+import type { CandlePatternId, CandlePatternResult } from "@/lib/evaluation/candlePatterns";
 import { getIndicatorConfig } from "@/lib/configStore";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 import {
   patternsToChartMarkers,
-  PATTERN_MARKER_LEGEND,
+  visiblePatternLegend,
 } from "@/lib/chart/patternMarkers";
 import {
   computeVolumeAverages,
@@ -19,6 +19,7 @@ interface Props {
   bars: OHLCVBar[];
   timeframe: Timeframe;
   patterns?: CandlePatternResult;
+  chartPatternVisibility?: Record<CandlePatternId, boolean>;
   indicators?: IndicatorResults;
   height?: number;
 }
@@ -47,6 +48,7 @@ export function CandleChart({
   bars,
   timeframe,
   patterns,
+  chartPatternVisibility,
   indicators,
   height: heightProp,
 }: Props) {
@@ -64,8 +66,19 @@ export function CandleChart({
     [bars, periods],
   );
   const patternMarkers = useMemo(
-    () => patternsToChartMarkers(patterns),
-    [patterns],
+    () =>
+      patternsToChartMarkers(
+        patterns,
+        chartPatternVisibility ?? ({} as Record<CandlePatternId, boolean>),
+      ),
+    [patterns, chartPatternVisibility],
+  );
+  const patternLegend = useMemo(
+    () =>
+      chartPatternVisibility
+        ? visiblePatternLegend(chartPatternVisibility)
+        : [],
+    [chartPatternVisibility],
   );
 
   useEffect(() => {
@@ -306,10 +319,10 @@ export function CandleChart({
               </span>
             ))}
           </div>
-          {patternMarkers.length > 0 && (
+          {patternLegend.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
               <span>캔들 패턴 ({patternMarkers.length}):</span>
-              {PATTERN_MARKER_LEGEND.map((item) => (
+              {patternLegend.map((item) => (
                 <span key={item.text} className="flex items-center gap-1.5">
                   <span
                     className="inline-flex min-w-[1.75rem] justify-center rounded px-1 font-mono text-[10px] font-semibold"

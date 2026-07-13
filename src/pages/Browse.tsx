@@ -19,9 +19,11 @@ import { VolumePanel } from "@/components/VolumePanel";
 import { ScoreCard } from "@/components/ScoreCard";
 import { IndicatorPanel } from "@/components/IndicatorPanel";
 import { CandlePatternPanel } from "@/components/CandlePatternPanel";
+import { getChartPatternVisibility } from "@/lib/candlePatternStore";
 import { MTFAlignmentCard } from "@/components/MTFAlignmentCard";
 import { TimeframeTabs } from "@/components/TimeframeTabs";
 import { ErrorBanner } from "@/components/ErrorBanner";
+import { PartialDataBanner } from "@/components/PartialDataBanner";
 import { StaleDataBanner } from "@/components/StaleDataBanner";
 import { Card, SectionTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -47,6 +49,7 @@ export function BrowsePage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [configTick, setConfigTick] = useState(0);
+  const [patternChartTick, setPatternChartTick] = useState(0);
 
   const entries = useMemo(
     () =>
@@ -113,6 +116,10 @@ export function BrowsePage() {
     () => getEffectiveIndicatorsConfig(),
     [configTick],
   );
+  const chartPatternVisibility = useMemo(
+    () => getChartPatternVisibility(),
+    [patternChartTick],
+  );
 
   const freshness = quote && selected
     ? validateFreshness(quote, selected.timeframe as Timeframe)
@@ -128,6 +135,7 @@ export function BrowsePage() {
   } | null = null;
 
   let evaluationError: string | null = null;
+  let evaluationWarnings: string[] = [];
 
   if (quote && selected) {
     const tf = selected.timeframe as Timeframe;
@@ -137,6 +145,10 @@ export function BrowsePage() {
       const mtf = computeMTFAlignment({ [tf]: indicators });
       const volume = computeVolumeAverages(quote.ohlcv, getVolumeMaPeriods(tf));
       const patterns = detectCandlePatterns(quote.ohlcv);
+      evaluationWarnings = [
+        ...(indicators.skipped ?? []),
+        ...(score.skippedRules ?? []),
+      ];
       evaluation = { indicators, score, mtf, volume, patterns };
     } catch (e) {
       evaluationError = errorMessage(e);
@@ -287,11 +299,15 @@ export function BrowsePage() {
                       detail={staleDetail}
                     />
                   )}
+                  {evaluationWarnings.length > 0 && (
+                    <PartialDataBanner warnings={evaluationWarnings} />
+                  )}
                   <p className="text-xs text-text-tertiary">{statusDetail}</p>
                   <CandleChart
                     bars={quote!.ohlcv}
                     timeframe={selected.timeframe as Timeframe}
                     patterns={evaluation!.patterns}
+                    chartPatternVisibility={chartPatternVisibility}
                     indicators={evaluation!.indicators}
                   />
                   <div className="grid gap-6 xl:grid-cols-2">
@@ -301,7 +317,13 @@ export function BrowsePage() {
                     />
                     <ScoreCard score={evaluation!.score} />
                     <IndicatorPanel results={evaluation!.indicators} />
-                    <CandlePatternPanel patterns={evaluation!.patterns} />
+                    <CandlePatternPanel
+                      patterns={evaluation!.patterns}
+                      chartVisibility={chartPatternVisibility}
+                      onChartVisibilityChange={() =>
+                        setPatternChartTick((n) => n + 1)
+                      }
+                    />
                   </div>
                   <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />
                   <MTFAlignmentCard alignment={evaluation!.mtf} />
