@@ -3,13 +3,11 @@ import { Link, useSearchParams } from "react-router-dom";
 import clsx from "clsx";
 import { loadIndex, loadQuote } from "@/lib/dataLoader";
 import { validateFreshness } from "@/lib/validation";
-import { computeAll } from "@/lib/evaluation/registry";
-import { computeScore, presetForTimeframe } from "@/lib/evaluation/scoring";
-import { computeMTFAlignment } from "@/lib/evaluation/mtfAlignment";
-import { ConfigPanel } from "@/components/ConfigPanel";
+import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
 import { getEffectiveIndicatorsConfig } from "@/lib/configStore";
-import { computeVolumeAverages, getVolumeMaPeriods } from "@/lib/evaluation/volumeMa";
-import { detectCandlePatterns } from "@/lib/evaluation/candlePatterns";
+import { ConfigPanel } from "@/components/ConfigPanel";
+import { CandlePatternPanel } from "@/components/CandlePatternPanel";
+import { getChartPatternVisibility } from "@/lib/candlePatternStore";
 import {
   AnalysisStatusCard,
   type AnalysisStatus,
@@ -18,8 +16,6 @@ import { CandleChart } from "@/components/CandleChart";
 import { VolumePanel } from "@/components/VolumePanel";
 import { ScoreCard } from "@/components/ScoreCard";
 import { IndicatorPanel } from "@/components/IndicatorPanel";
-import { CandlePatternPanel } from "@/components/CandlePatternPanel";
-import { getChartPatternVisibility } from "@/lib/candlePatternStore";
 import { MTFAlignmentCard } from "@/components/MTFAlignmentCard";
 import { TimeframeTabs } from "@/components/TimeframeTabs";
 import { ErrorBanner } from "@/components/ErrorBanner";
@@ -126,40 +122,20 @@ export function BrowsePage() {
     : null;
   const isStale = freshness?.status === "stale";
 
-  let evaluation: {
-    indicators: ReturnType<typeof computeAll>;
-    score: ReturnType<typeof computeScore>;
-    mtf: ReturnType<typeof computeMTFAlignment>;
-    volume: ReturnType<typeof computeVolumeAverages>;
-    patterns: ReturnType<typeof detectCandlePatterns>;
-  } | null = null;
-
-  let evaluationError: string | null = null;
-  let evaluationWarnings: string[] = [];
-
-  if (quote && selected) {
-    const tf = selected.timeframe as Timeframe;
-    try {
-      const indicators = computeAll(quote.ohlcv, tf, indicatorConfig);
-      const score = computeScore(quote.ohlcv, indicators, presetForTimeframe(tf));
-      const mtf = computeMTFAlignment({ [tf]: indicators });
-      const volume = computeVolumeAverages(quote.ohlcv, getVolumeMaPeriods(tf));
-      const patterns = detectCandlePatterns(quote.ohlcv);
-      evaluationWarnings = [
-        ...(indicators.skipped ?? []),
-        ...(score.skippedRules ?? []),
-      ];
-      evaluation = { indicators, score, mtf, volume, patterns };
-    } catch (e) {
-      evaluationError = errorMessage(e);
-    }
-  }
+  const evaluation =
+    quote && selected
+      ? evaluateQuote(
+          quote.ohlcv,
+          selected.timeframe as Timeframe,
+          indicatorConfig,
+        )
+      : null;
 
   const resultStatus: AnalysisStatus | "ready" = (() => {
     if (loading) return "loading";
     if (loadError || !quote) return "missing";
-    if (evaluationError) return "bad-quality";
-    if (evaluation) return "ready";
+    if (evaluation?.fatalError) return "bad-quality";
+    if (quote.ohlcv.length > 0 && evaluation) return "ready";
     return "loading";
   })();
 
@@ -169,7 +145,7 @@ export function BrowsePage() {
   })();
 
   const statusDetail = (() => {
-    if (evaluationError) return evaluationError;
+    if (evaluation?.fatalError) return evaluation.fatalError;
     if (quote) {
       return `${quote.barCount} bars · last ${quote.lastBarDate} · fetched ${quote.fetchedAt}`;
     }
@@ -299,14 +275,14 @@ export function BrowsePage() {
                       detail={staleDetail}
                     />
                   )}
-                  {evaluationWarnings.length > 0 && (
-                    <PartialDataBanner warnings={evaluationWarnings} />
+                  {evaluation!.warnings.length > 0 && (
+                    <PartialDataBanner warnings={evaluation!.warnings} />
                   )}
                   <p className="text-xs text-text-tertiary">{statusDetail}</p>
                   <CandleChart
                     bars={quote!.ohlcv}
                     timeframe={selected.timeframe as Timeframe}
-                    patterns={evaluation!.patterns}
+                    patterns={evaluation!.patterns ?? undefined}
                     chartPatternVisibility={chartPatternVisibility}
                     indicators={evaluation!.indicators}
                   />
@@ -315,15 +291,17 @@ export function BrowsePage() {
                       snapshot={evaluation!.volume}
                       timeframe={selected.timeframe as Timeframe}
                     />
-                    <ScoreCard score={evaluation!.score} />
+                    {evaluation!.score && <ScoreCard score={evaluation!.score} />}
                     <IndicatorPanel results={evaluation!.indicators} />
-                    <CandlePatternPanel
-                      patterns={evaluation!.patterns}
-                      chartVisibility={chartPatternVisibility}
-                      onChartVisibilityChange={() =>
-                        setPatternChartTick((n) => n + 1)
-                      }
-                    />
+                    {evaluation!.patterns && (
+                      <CandlePatternPanel
+                        patterns={evaluation!.patterns}
+                        chartVisibility={chartPatternVisibility}
+                        onChartVisibilityChange={() =>
+                          setPatternChartTick((n) => n + 1)
+                        }
+                      />
+                    )}
                   </div>
                   <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />
                   <MTFAlignmentCard alignment={evaluation!.mtf} />

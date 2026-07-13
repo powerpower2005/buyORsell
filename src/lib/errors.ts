@@ -45,3 +45,17 @@ export function errorMessage(err: unknown): string {
   if (err instanceof GfError || err instanceof Error) return err.message;
   return String(err);
 }
+
+export function isInsufficientDataError(err: unknown): err is InsufficientDataError {
+  return err instanceof InsufficientDataError;
+}
+
+/** Broken OHLC rows — block analysis. Short history alone is recoverable. */
+export function isOhlcQualityError(err: unknown): boolean {
+  if (!isInsufficientDataError(err)) return false;
+  const msg = err.message;
+  return (
+    msg.includes("Invalid bar range") ||
+    msg.includes("Empty or missing array")
+  );
+}

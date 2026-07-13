@@ -77,6 +77,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        clientsClaim: true,
+        skipWaiting: true,
         globPatterns: ["**/*.{js,css,html,ico,svg,json}"],
         runtimeCaching: [
           {

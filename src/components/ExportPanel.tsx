@@ -13,7 +13,7 @@ import type { CandlePatternResult } from "@/lib/evaluation/candlePatterns";
 interface Props {
   quote: QuoteFile;
   indicators: IndicatorResults;
-  score: ScoreResult;
+  score?: ScoreResult;
   patterns?: CandlePatternResult;
   backtest?: BacktestResult;
   exportRootId?: string;
