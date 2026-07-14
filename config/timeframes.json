@@ -27,11 +27,11 @@
     "1d": {
       "label": "일봉",
       "intervalSeconds": 86400,
-      "googleWindow": "1Y",
+      "googleWindow": "2Y",
       "googleChartMode": 7,
-      "sheetsLookbackDays": 365,
+      "sheetsLookbackDays": 730,
       "enabled": true,
-      "maxBars": 300
+      "maxBars": 600
     },
     "1w": {
       "label": "주봉",

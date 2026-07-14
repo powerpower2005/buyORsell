@@ -50,10 +50,9 @@ function prepareBars(
   timeframe: Timeframe,
   warnings: string[],
 ): OHLCVBar[] {
-  let out = windowBars(bars, timeframe);
-  const afterWindow = out.length;
-  out = dropLeadingWrongCadence(out, timeframe);
-  if (out.length < bars.length || out.length < afterWindow) {
+  let out = dropLeadingWrongCadence(bars, timeframe);
+  out = windowBars(out, timeframe);
+  if (out.length < bars.length) {
     warnings.push(
       `Using ${out.length} of ${bars.length} bars within ${timeframe} window`,
     );

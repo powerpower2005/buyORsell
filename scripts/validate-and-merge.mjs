@@ -75,10 +75,10 @@ export function windowBars(bars, timeframe) {
   return out;
 }
 
-/** Lookback trim + drop leading weekly stretch for 1d. */
+/** Drop leading weekly stretch first, then apply lookback / maxBars. */
 export function sanitizeBars(bars, timeframe) {
-  let out = windowBars(bars, timeframe);
-  out = dropLeadingWrongCadence(out, timeframe);
+  let out = dropLeadingWrongCadence(bars, timeframe);
+  out = windowBars(out, timeframe);
   return out;
 }
 
@@ -186,6 +186,8 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
   });
 
   const incoming = await fetchQuote(ticker, timeframe);
+  // Drop weekly leading stretch from the fetch itself before merge/assert.
+  incoming.ohlcv = dropLeadingWrongCadence(incoming.ohlcv, timeframe);
   assertBarsMatchTimeframe(
     incoming.ohlcv,
     timeframe,

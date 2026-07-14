@@ -20,7 +20,6 @@ export function medianGapDays(bars: OHLCVBar[]): number {
 
 /**
  * For 1d: drop a leading weekly-spaced stretch so only daily-cadence bars remain.
- * Walks from the start until the remaining suffix has a daily median gap.
  */
 export function dropLeadingWrongCadence(
   bars: OHLCVBar[],
@@ -39,6 +38,15 @@ export function dropLeadingWrongCadence(
   return bars;
 }
 
+export function weeklyGapRatio(bars: OHLCVBar[]): number {
+  if (bars.length < 2) return 0;
+  let weekly = 0;
+  for (let i = 1; i < bars.length; i++) {
+    if (gapDays(bars[i - 1].date, bars[i].date) >= 6) weekly++;
+  }
+  return weekly / (bars.length - 1);
+}
+
 /**
  * Reject bars that are clearly weekly-sampled when timeframe is 1d.
  */
@@ -49,9 +57,11 @@ export function assertBarsMatchTimeframe(
 ): void {
   if (timeframe !== "1d" || bars.length < 10) return;
   const median = medianGapDays(bars);
-  if (median >= 6) {
+  const weeklyShare = weeklyGapRatio(bars);
+  if (median >= 6 || weeklyShare >= 0.35) {
     throw new Error(
-      `${context}: expected daily bars for 1d, but median gap is ${median} days (weekly-like)`,
+      `${context}: expected daily bars for 1d, but median gap is ${median} days` +
+        ` and weekly-like gaps are ${(weeklyShare * 100).toFixed(0)}%`,
     );
   }
 }

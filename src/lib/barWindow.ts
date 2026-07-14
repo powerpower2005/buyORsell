@@ -8,9 +8,8 @@ function addUtcDays(isoDate: string, days: number): string {
 }
 
 /**
- * Keep bars inside the timeframe lookback / maxBars window.
- * Incremental merges can otherwise retain older weekly/chart-downsampled rows
- * that GOOGLEFINANCE returned under a larger historical window.
+ * Soft trim: keep bars inside lookback / maxBars so merges do not grow forever.
+ * Daily history longer than 1Y is fine — only drop what exceeds the configured window.
  */
 export function windowBars(bars: OHLCVBar[], timeframe: Timeframe): OHLCVBar[] {
   if (!bars.length) return bars;
