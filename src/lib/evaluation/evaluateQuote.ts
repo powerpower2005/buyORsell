@@ -22,6 +22,10 @@ import {
   detectSwingStructure,
   type SwingStructureResult,
 } from "./swingStructure";
+import {
+  detectSupportResistance,
+  type SupportResistanceResult,
+} from "./supportResistance";
 
 export interface QuoteEvaluation {
   indicators: IndicatorResults;
@@ -30,6 +34,7 @@ export interface QuoteEvaluation {
   volume: VolumeMaSnapshot;
   patterns: CandlePatternResult | null;
   structure: SwingStructureResult | null;
+  supportResistance: SupportResistanceResult | null;
   warnings: string[];
   fatalError: string | null;
   /** Bars actually used after lookback / maxBars / cadence cleanup. */
@@ -91,6 +96,7 @@ export function evaluateQuote(
       },
       patterns: null,
       structure: null,
+      supportResistance: null,
       warnings,
       fatalError: "No OHLCV bars available",
       bars: [],
@@ -140,6 +146,16 @@ export function evaluateQuote(
     }
   }
 
+  let supportResistance: SupportResistanceResult | null = null;
+  if (!fatalError) {
+    try {
+      supportResistance = detectSupportResistance(prepared);
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
   return {
     indicators,
     score,
@@ -147,6 +163,7 @@ export function evaluateQuote(
     volume,
     patterns,
     structure,
+    supportResistance,
     warnings,
     fatalError,
     bars: prepared,

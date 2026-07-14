@@ -33,8 +33,10 @@ import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
 import { getEffectiveIndicatorsConfig } from "@/lib/configStore";
 import { CandlePatternPanel } from "@/components/CandlePatternPanel";
 import { SwingStructurePanel } from "@/components/SwingStructurePanel";
+import { SupportResistancePanel } from "@/components/SupportResistancePanel";
 import { getChartPatternVisibility } from "@/lib/candlePatternStore";
 import { getSwingChartVisibility } from "@/lib/swingStructureStore";
+import { getSrChartVisibility } from "@/lib/srZoneStore";
 import { DataNotFoundError, errorMessage } from "@/lib/errors";
 import type {
   BacktestResult,
@@ -71,6 +73,7 @@ export function HomePage() {
   const [configTick, setConfigTick] = useState(0);
   const [patternChartTick, setPatternChartTick] = useState(0);
   const [structureChartTick, setStructureChartTick] = useState(0);
+  const [srChartTick, setSrChartTick] = useState(0);
   const [backtest, setBacktest] = useState<BacktestResult | undefined>();
   const [catalog, setCatalog] = useState<IndexFile | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
@@ -164,6 +167,10 @@ export function HomePage() {
   const chartStructureVisibility = useMemo(
     () => getSwingChartVisibility(),
     [structureChartTick],
+  );
+  const chartSrVisibility = useMemo(
+    () => getSrChartVisibility(),
+    [srChartTick],
   );
 
   const freshness = quote ? checkFresh(quote, timeframe) : null;
@@ -350,6 +357,8 @@ export function HomePage() {
                   chartPatternVisibility={chartPatternVisibility}
                   structure={evaluation!.structure ?? undefined}
                   chartStructureVisibility={chartStructureVisibility}
+                  supportResistance={evaluation!.supportResistance ?? undefined}
+                  chartSrVisibility={chartSrVisibility}
                   indicators={evaluation!.indicators}
                 />
                 <div className="grid gap-6 xl:grid-cols-2">
@@ -363,6 +372,13 @@ export function HomePage() {
                       onChartVisibilityChange={() =>
                         setStructureChartTick((n) => n + 1)
                       }
+                    />
+                  )}
+                  {evaluation!.supportResistance && (
+                    <SupportResistancePanel
+                      sr={evaluation!.supportResistance}
+                      chartVisibility={chartSrVisibility}
+                      onChartVisibilityChange={() => setSrChartTick((n) => n + 1)}
                     />
                   )}
                   {evaluation!.patterns && (

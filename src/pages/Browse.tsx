@@ -8,8 +8,10 @@ import { getEffectiveIndicatorsConfig } from "@/lib/configStore";
 import { ConfigPanel } from "@/components/ConfigPanel";
 import { CandlePatternPanel } from "@/components/CandlePatternPanel";
 import { SwingStructurePanel } from "@/components/SwingStructurePanel";
+import { SupportResistancePanel } from "@/components/SupportResistancePanel";
 import { getChartPatternVisibility } from "@/lib/candlePatternStore";
 import { getSwingChartVisibility } from "@/lib/swingStructureStore";
+import { getSrChartVisibility } from "@/lib/srZoneStore";
 import {
   AnalysisStatusCard,
   type AnalysisStatus,
@@ -49,6 +51,7 @@ export function BrowsePage() {
   const [configTick, setConfigTick] = useState(0);
   const [patternChartTick, setPatternChartTick] = useState(0);
   const [structureChartTick, setStructureChartTick] = useState(0);
+  const [srChartTick, setSrChartTick] = useState(0);
 
   const entries = useMemo(
     () =>
@@ -122,6 +125,10 @@ export function BrowsePage() {
   const chartStructureVisibility = useMemo(
     () => getSwingChartVisibility(),
     [structureChartTick],
+  );
+  const chartSrVisibility = useMemo(
+    () => getSrChartVisibility(),
+    [srChartTick],
   );
 
   const freshness = quote && selected
@@ -293,6 +300,8 @@ export function BrowsePage() {
                     chartPatternVisibility={chartPatternVisibility}
                     structure={evaluation!.structure ?? undefined}
                     chartStructureVisibility={chartStructureVisibility}
+                    supportResistance={evaluation!.supportResistance ?? undefined}
+                    chartSrVisibility={chartSrVisibility}
                     indicators={evaluation!.indicators}
                   />
                   <div className="grid gap-6 xl:grid-cols-2">
@@ -305,6 +314,15 @@ export function BrowsePage() {
                         chartVisibility={chartStructureVisibility}
                         onChartVisibilityChange={() =>
                           setStructureChartTick((n) => n + 1)
+                        }
+                      />
+                    )}
+                    {evaluation!.supportResistance && (
+                      <SupportResistancePanel
+                        sr={evaluation!.supportResistance}
+                        chartVisibility={chartSrVisibility}
+                        onChartVisibilityChange={() =>
+                          setSrChartTick((n) => n + 1)
                         }
                       />
                     )}

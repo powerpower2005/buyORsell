@@ -3,6 +3,7 @@ import { createChart, type IChartApi, type ISeriesApi } from "lightweight-charts
 import type { OHLCVBar, Timeframe, IndicatorResults } from "@/lib/types";
 import type { CandlePatternId, CandlePatternResult } from "@/lib/evaluation/candlePatterns";
 import type { SwingStructureResult } from "@/lib/evaluation/swingStructure";
+import type { SupportResistanceResult } from "@/lib/evaluation/supportResistance";
 import { getIndicatorConfig } from "@/lib/configStore";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 import {
@@ -13,7 +14,9 @@ import {
   structureToChartMarkers,
   visibleStructureLegend,
 } from "@/lib/chart/structureMarkers";
+import { SR_ZONE_COLORS, visibleSrZones } from "@/lib/chart/srZoneOverlay";
 import type { SwingChartToggleId } from "@/lib/swingStructureStore";
+import type { SrChartToggleId } from "@/lib/srZoneStore";
 import { Card } from "./ui/Card";
 
 interface Props {
@@ -23,6 +26,8 @@ interface Props {
   chartPatternVisibility?: Record<CandlePatternId, boolean>;
   structure?: SwingStructureResult;
   chartStructureVisibility?: Record<SwingChartToggleId, boolean>;
+  supportResistance?: SupportResistanceResult;
+  chartSrVisibility?: Record<SrChartToggleId, boolean>;
   indicators?: IndicatorResults;
   height?: number;
 }
@@ -54,10 +59,14 @@ export function CandleChart({
   chartPatternVisibility,
   structure,
   chartStructureVisibility,
+  supportResistance,
+  chartSrVisibility,
   indicators,
   height: heightProp,
 }: Props) {
+  const wrapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candleRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volumeRef = useRef<ISeriesApi<"Histogram"> | null>(null);
@@ -80,6 +89,17 @@ export function CandleChart({
     });
   }, [patterns, chartPatternVisibility, structure, chartStructureVisibility]);
 
+  const srZones = useMemo(
+    () =>
+      visibleSrZones(
+        supportResistance,
+        chartSrVisibility ?? ({} as Record<SrChartToggleId, boolean>),
+      ),
+    [supportResistance, chartSrVisibility],
+  );
+  const srZonesRef = useRef(srZones);
+  srZonesRef.current = srZones;
+
   const patternLegend = useMemo(
     () =>
       chartPatternVisibility
@@ -94,6 +114,61 @@ export function CandleChart({
         : [],
     [chartStructureVisibility],
   );
+
+  const drawSrOverlay = () => {
+    const canvas = overlayRef.current;
+    const wrap = wrapRef.current;
+    const series = candleRef.current;
+    if (!canvas || !wrap || !series) return;
+
+    const width = wrap.clientWidth;
+    const h = wrap.clientHeight;
+    if (width <= 0 || h <= 0) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(h * dpr);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${h}px`;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, h);
+
+    for (const zone of srZonesRef.current) {
+      const y1 = series.priceToCoordinate(zone.high);
+      const y2 = series.priceToCoordinate(zone.low);
+      if (y1 == null || y2 == null) continue;
+      const top = Math.min(y1, y2);
+      const bandH = Math.max(2, Math.abs(y2 - y1));
+      const colors = SR_ZONE_COLORS[zone.kind];
+
+      ctx.fillStyle = colors.fill;
+      ctx.fillRect(0, top, width, bandH);
+
+      ctx.strokeStyle = colors.stroke;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(0, y1);
+      ctx.lineTo(width, y1);
+      ctx.moveTo(0, y2);
+      ctx.lineTo(width, y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = colors.label;
+      ctx.font = "11px Pretendard, sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      const label =
+        zone.kind === "support"
+          ? `S ${zone.low.toFixed(2)}-${zone.high.toFixed(2)}`
+          : `R ${zone.low.toFixed(2)}-${zone.high.toFixed(2)}`;
+      ctx.fillText(label, 8, top + bandH / 2);
+    }
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -141,14 +216,19 @@ export function CandleChart({
     volumeRef.current = volume;
     overlayRefs.current = new Map();
 
+    const onRange = () => drawSrOverlay();
+    chart.timeScale().subscribeVisibleLogicalRangeChange(onRange);
+
     const ro = new ResizeObserver(() => {
       if (containerRef.current) {
         chart.applyOptions({ width: containerRef.current.clientWidth });
+        drawSrOverlay();
       }
     });
     ro.observe(containerRef.current);
 
     return () => {
+      chart.timeScale().unsubscribeVisibleLogicalRangeChange(onRange);
       ro.disconnect();
       chart.remove();
       chartRef.current = null;
@@ -156,6 +236,8 @@ export function CandleChart({
       volumeRef.current = null;
       overlayRefs.current = new Map();
     };
+    // recreate chart on timeframe only; overlay redraw bound later via deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeframe]);
 
   useEffect(() => {
@@ -163,6 +245,11 @@ export function CandleChart({
     if (containerRef.current) {
       containerRef.current.style.height = `${height}px`;
     }
+    if (wrapRef.current) {
+      wrapRef.current.style.height = `${height}px`;
+    }
+    drawSrOverlay();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [height]);
 
   useEffect(() => {
@@ -273,20 +360,40 @@ export function CandleChart({
 
       candleRef.current.setMarkers(chartMarkers);
       chartRef.current?.timeScale().fitContent();
+      requestAnimationFrame(() => drawSrOverlay());
     } catch (err) {
       console.error("CandleChart setData failed:", err);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bars, chartMarkers, timeframe]);
+
+  useEffect(() => {
+    drawSrOverlay();
+    const chart = chartRef.current;
+    if (!chart) return;
+    const onRange = () => drawSrOverlay();
+    chart.timeScale().subscribeVisibleLogicalRangeChange(onRange);
+    return () => {
+      chart.timeScale().unsubscribeVisibleLogicalRangeChange(onRange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [srZones]);
 
   return (
     <Card className="overflow-hidden p-3 sm:p-4">
       <div className="w-full text-left">
-        <div
-          ref={containerRef}
-          className="w-full"
-          style={{ height }}
-          aria-label="candlestick-chart"
-        />
+        <div ref={wrapRef} className="relative w-full" style={{ height }}>
+          <div
+            ref={containerRef}
+            className="absolute inset-0 w-full"
+            aria-label="candlestick-chart"
+          />
+          <canvas
+            ref={overlayRef}
+            className="pointer-events-none absolute inset-0 z-[1]"
+            aria-hidden
+          />
+        </div>
         <div className="mt-3 space-y-2 border-t border-border pt-3">
           {overlayLegend.length > 0 && (
             <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
@@ -330,6 +437,23 @@ export function CandleChart({
                     {item.text}
                   </span>
                   <span className="text-text-tertiary">{item.label}</span>
+                </span>
+              ))}
+            </div>
+          )}
+          {srZones.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>지지·저항 가격대 ({srZones.length}):</span>
+              {srZones.slice(0, 6).map((z) => (
+                <span key={z.id} className="flex items-center gap-1.5">
+                  <span
+                    className="inline-block h-2 w-4 rounded-sm"
+                    style={{ backgroundColor: SR_ZONE_COLORS[z.kind].stroke }}
+                  />
+                  <span className="tabular-nums text-text-tertiary">
+                    {z.kind === "support" ? "S" : "R"} {z.low.toFixed(2)}–
+                    {z.high.toFixed(2)}
+                  </span>
                 </span>
               ))}
             </div>
