@@ -7,7 +7,9 @@ import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
 import { getEffectiveIndicatorsConfig } from "@/lib/configStore";
 import { ConfigPanel } from "@/components/ConfigPanel";
 import { CandlePatternPanel } from "@/components/CandlePatternPanel";
+import { SwingStructurePanel } from "@/components/SwingStructurePanel";
 import { getChartPatternVisibility } from "@/lib/candlePatternStore";
+import { getSwingChartVisibility } from "@/lib/swingStructureStore";
 import {
   AnalysisStatusCard,
   type AnalysisStatus,
@@ -46,6 +48,7 @@ export function BrowsePage() {
   const [loading, setLoading] = useState(false);
   const [configTick, setConfigTick] = useState(0);
   const [patternChartTick, setPatternChartTick] = useState(0);
+  const [structureChartTick, setStructureChartTick] = useState(0);
 
   const entries = useMemo(
     () =>
@@ -115,6 +118,10 @@ export function BrowsePage() {
   const chartPatternVisibility = useMemo(
     () => getChartPatternVisibility(),
     [patternChartTick],
+  );
+  const chartStructureVisibility = useMemo(
+    () => getSwingChartVisibility(),
+    [structureChartTick],
   );
 
   const freshness = quote && selected
@@ -284,12 +291,23 @@ export function BrowsePage() {
                     timeframe={selected.timeframe as Timeframe}
                     patterns={evaluation!.patterns ?? undefined}
                     chartPatternVisibility={chartPatternVisibility}
+                    structure={evaluation!.structure ?? undefined}
+                    chartStructureVisibility={chartStructureVisibility}
                     indicators={evaluation!.indicators}
                   />
                   <div className="grid gap-6 xl:grid-cols-2">
                     <VolumePanel snapshot={evaluation!.volume} />
                     {evaluation!.score && <ScoreCard score={evaluation!.score} />}
                     <IndicatorPanel results={evaluation!.indicators} />
+                    {evaluation!.structure && (
+                      <SwingStructurePanel
+                        structure={evaluation!.structure}
+                        chartVisibility={chartStructureVisibility}
+                        onChartVisibilityChange={() =>
+                          setStructureChartTick((n) => n + 1)
+                        }
+                      />
+                    )}
                     {evaluation!.patterns && (
                       <CandlePatternPanel
                         patterns={evaluation!.patterns}

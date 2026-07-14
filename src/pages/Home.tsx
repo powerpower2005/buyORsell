@@ -32,7 +32,9 @@ import { validateFreshness as checkFresh } from "@/lib/validation";
 import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
 import { getEffectiveIndicatorsConfig } from "@/lib/configStore";
 import { CandlePatternPanel } from "@/components/CandlePatternPanel";
+import { SwingStructurePanel } from "@/components/SwingStructurePanel";
 import { getChartPatternVisibility } from "@/lib/candlePatternStore";
+import { getSwingChartVisibility } from "@/lib/swingStructureStore";
 import { DataNotFoundError, errorMessage } from "@/lib/errors";
 import type {
   BacktestResult,
@@ -68,6 +70,7 @@ export function HomePage() {
   const [loading, setLoading] = useState(false);
   const [configTick, setConfigTick] = useState(0);
   const [patternChartTick, setPatternChartTick] = useState(0);
+  const [structureChartTick, setStructureChartTick] = useState(0);
   const [backtest, setBacktest] = useState<BacktestResult | undefined>();
   const [catalog, setCatalog] = useState<IndexFile | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
@@ -157,6 +160,10 @@ export function HomePage() {
   const chartPatternVisibility = useMemo(
     () => getChartPatternVisibility(),
     [patternChartTick],
+  );
+  const chartStructureVisibility = useMemo(
+    () => getSwingChartVisibility(),
+    [structureChartTick],
   );
 
   const freshness = quote ? checkFresh(quote, timeframe) : null;
@@ -341,12 +348,23 @@ export function HomePage() {
                   timeframe={timeframe}
                   patterns={evaluation!.patterns ?? undefined}
                   chartPatternVisibility={chartPatternVisibility}
+                  structure={evaluation!.structure ?? undefined}
+                  chartStructureVisibility={chartStructureVisibility}
                   indicators={evaluation!.indicators}
                 />
                 <div className="grid gap-6 xl:grid-cols-2">
                   <VolumePanel snapshot={evaluation!.volume} />
                   {evaluation!.score && <ScoreCard score={evaluation!.score} />}
                   <IndicatorPanel results={evaluation!.indicators} />
+                  {evaluation!.structure && (
+                    <SwingStructurePanel
+                      structure={evaluation!.structure}
+                      chartVisibility={chartStructureVisibility}
+                      onChartVisibilityChange={() =>
+                        setStructureChartTick((n) => n + 1)
+                      }
+                    />
+                  )}
                   {evaluation!.patterns && (
                     <CandlePatternPanel
                       patterns={evaluation!.patterns}

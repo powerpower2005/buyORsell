@@ -2,12 +2,18 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createChart, type IChartApi, type ISeriesApi } from "lightweight-charts";
 import type { OHLCVBar, Timeframe, IndicatorResults } from "@/lib/types";
 import type { CandlePatternId, CandlePatternResult } from "@/lib/evaluation/candlePatterns";
+import type { SwingStructureResult } from "@/lib/evaluation/swingStructure";
 import { getIndicatorConfig } from "@/lib/configStore";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 import {
   patternsToChartMarkers,
   visiblePatternLegend,
 } from "@/lib/chart/patternMarkers";
+import {
+  structureToChartMarkers,
+  visibleStructureLegend,
+} from "@/lib/chart/structureMarkers";
+import type { SwingChartToggleId } from "@/lib/swingStructureStore";
 import { Card } from "./ui/Card";
 
 interface Props {
@@ -15,6 +21,8 @@ interface Props {
   timeframe: Timeframe;
   patterns?: CandlePatternResult;
   chartPatternVisibility?: Record<CandlePatternId, boolean>;
+  structure?: SwingStructureResult;
+  chartStructureVisibility?: Record<SwingChartToggleId, boolean>;
   indicators?: IndicatorResults;
   height?: number;
 }
@@ -44,6 +52,8 @@ export function CandleChart({
   timeframe,
   patterns,
   chartPatternVisibility,
+  structure,
+  chartStructureVisibility,
   indicators,
   height: heightProp,
 }: Props) {
@@ -54,20 +64,35 @@ export function CandleChart({
   const overlayRefs = useRef<Map<string, ISeriesApi<"Line">>>(new Map());
   const height = useViewportChartHeight(heightProp);
 
-  const patternMarkers = useMemo(
-    () =>
-      patternsToChartMarkers(
-        patterns,
-        chartPatternVisibility ?? ({} as Record<CandlePatternId, boolean>),
-      ),
-    [patterns, chartPatternVisibility],
-  );
+  const chartMarkers = useMemo(() => {
+    const patternMs = patternsToChartMarkers(
+      patterns,
+      chartPatternVisibility ?? ({} as Record<CandlePatternId, boolean>),
+    );
+    const structureMs = structureToChartMarkers(
+      structure,
+      chartStructureVisibility ?? ({} as Record<SwingChartToggleId, boolean>),
+    );
+    return [...patternMs, ...structureMs].sort((a, b) => {
+      const byDate = String(a.time).localeCompare(String(b.time));
+      if (byDate !== 0) return byDate;
+      return String(a.id).localeCompare(String(b.id));
+    });
+  }, [patterns, chartPatternVisibility, structure, chartStructureVisibility]);
+
   const patternLegend = useMemo(
     () =>
       chartPatternVisibility
         ? visiblePatternLegend(chartPatternVisibility)
         : [],
     [chartPatternVisibility],
+  );
+  const structureLegend = useMemo(
+    () =>
+      chartStructureVisibility
+        ? visibleStructureLegend(chartStructureVisibility)
+        : [],
+    [chartStructureVisibility],
   );
 
   useEffect(() => {
@@ -246,12 +271,12 @@ export function CandleChart({
         })),
       );
 
-      candleRef.current.setMarkers(patternMarkers);
+      candleRef.current.setMarkers(chartMarkers);
       chartRef.current?.timeScale().fitContent();
     } catch (err) {
       console.error("CandleChart setData failed:", err);
     }
-  }, [bars, patternMarkers, timeframe]);
+  }, [bars, chartMarkers, timeframe]);
 
   return (
     <Card className="overflow-hidden p-3 sm:p-4">
@@ -279,8 +304,24 @@ export function CandleChart({
           )}
           {patternLegend.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>캔들 패턴 ({patternMarkers.length}):</span>
+              <span>캔들 패턴 ({patternLegend.length}):</span>
               {patternLegend.map((item) => (
+                <span key={item.text} className="flex items-center gap-1.5">
+                  <span
+                    className="inline-flex min-w-[1.75rem] justify-center rounded px-1 font-mono text-[10px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.text}
+                  </span>
+                  <span className="text-text-tertiary">{item.label}</span>
+                </span>
+              ))}
+            </div>
+          )}
+          {structureLegend.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>스윙 구조:</span>
+              {structureLegend.map((item) => (
                 <span key={item.text} className="flex items-center gap-1.5">
                   <span
                     className="inline-flex min-w-[1.75rem] justify-center rounded px-1 font-mono text-[10px] font-semibold"

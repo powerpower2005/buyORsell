@@ -18,6 +18,10 @@ import { computeScore, presetForTimeframe } from "./scoring";
 import { computeMTFAlignment } from "./mtfAlignment";
 import { computeVolumeAverages, getVolumeMaPeriods } from "./volumeMa";
 import { detectCandlePatterns } from "./candlePatterns";
+import {
+  detectSwingStructure,
+  type SwingStructureResult,
+} from "./swingStructure";
 
 export interface QuoteEvaluation {
   indicators: IndicatorResults;
@@ -25,6 +29,7 @@ export interface QuoteEvaluation {
   mtf: MTFAlignment;
   volume: VolumeMaSnapshot;
   patterns: CandlePatternResult | null;
+  structure: SwingStructureResult | null;
   warnings: string[];
   fatalError: string | null;
   /** Bars actually used after lookback / maxBars / cadence cleanup. */
@@ -85,6 +90,7 @@ export function evaluateQuote(
         averages: [],
       },
       patterns: null,
+      structure: null,
       warnings,
       fatalError: "No OHLCV bars available",
       bars: [],
@@ -124,12 +130,23 @@ export function evaluateQuote(
     }
   }
 
+  let structure: SwingStructureResult | null = null;
+  if (!fatalError) {
+    try {
+      structure = detectSwingStructure(prepared);
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
   return {
     indicators,
     score,
     mtf,
     volume,
     patterns,
+    structure,
     warnings,
     fatalError,
     bars: prepared,
