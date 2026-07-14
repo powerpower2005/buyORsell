@@ -3,6 +3,11 @@ import type { IndicatorsConfig } from "./types";
 import type { CandlePatternResult } from "./candlePatterns";
 import type { VolumeMaSnapshot } from "./volumeMa";
 import type { MTFAlignment } from "../types";
+import { windowBars } from "../barWindow";
+import {
+  assertBarsMatchTimeframe,
+  dropLeadingWrongCadence,
+} from "../barCadence";
 import {
   errorMessage,
   isInsufficientDataError,
@@ -22,6 +27,8 @@ export interface QuoteEvaluation {
   patterns: CandlePatternResult | null;
   warnings: string[];
   fatalError: string | null;
+  /** Bars actually used after lookback / maxBars / cadence cleanup. */
+  bars: OHLCVBar[];
 }
 
 const EMPTY_INDICATORS: IndicatorResults = { indicators: {}, signals: [] };
@@ -38,6 +45,27 @@ function absorbError(
   return errorMessage(err);
 }
 
+function prepareBars(
+  bars: OHLCVBar[],
+  timeframe: Timeframe,
+  warnings: string[],
+): OHLCVBar[] {
+  let out = windowBars(bars, timeframe);
+  const afterWindow = out.length;
+  out = dropLeadingWrongCadence(out, timeframe);
+  if (out.length < bars.length || out.length < afterWindow) {
+    warnings.push(
+      `Using ${out.length} of ${bars.length} bars within ${timeframe} window`,
+    );
+  }
+  try {
+    assertBarsMatchTimeframe(out, timeframe, "quote");
+  } catch (err) {
+    warnings.push(errorMessage(err));
+  }
+  return out;
+}
+
 export function evaluateQuote(
   bars: OHLCVBar[],
   timeframe: Timeframe,
@@ -45,8 +73,9 @@ export function evaluateQuote(
 ): QuoteEvaluation {
   const warnings: string[] = [];
   let fatalError: string | null = null;
+  const prepared = prepareBars(bars, timeframe, warnings);
 
-  if (!bars.length) {
+  if (!prepared.length) {
     return {
       indicators: EMPTY_INDICATORS,
       score: null,
@@ -57,14 +86,15 @@ export function evaluateQuote(
         averages: [],
       },
       patterns: null,
-      warnings: [],
+      warnings,
       fatalError: "No OHLCV bars available",
+      bars: [],
     };
   }
 
   let indicators = EMPTY_INDICATORS;
   try {
-    indicators = computeAll(bars, timeframe, indicatorConfig);
+    indicators = computeAll(prepared, timeframe, indicatorConfig);
     if (indicators.skipped?.length) warnings.push(...indicators.skipped);
   } catch (err) {
     const fatal = absorbError(err, warnings);
@@ -74,7 +104,7 @@ export function evaluateQuote(
   let score: ScoreResult | null = null;
   if (!fatalError) {
     try {
-      score = computeScore(bars, indicators, presetForTimeframe(timeframe));
+      score = computeScore(prepared, indicators, presetForTimeframe(timeframe));
       if (score.skippedRules?.length) warnings.push(...score.skippedRules);
     } catch (err) {
       const fatal = absorbError(err, warnings);
@@ -82,13 +112,13 @@ export function evaluateQuote(
     }
   }
 
-  const volume = computeVolumeAverages(bars, getVolumeMaPeriods(timeframe));
+  const volume = computeVolumeAverages(prepared, getVolumeMaPeriods(timeframe));
   const mtf = computeMTFAlignment({ [timeframe]: indicators });
 
   let patterns: CandlePatternResult | null = null;
   if (!fatalError) {
     try {
-      patterns = detectCandlePatterns(bars);
+      patterns = detectCandlePatterns(prepared);
     } catch (err) {
       const fatal = absorbError(err, warnings);
       if (fatal) fatalError = fatal;
@@ -103,5 +133,6 @@ export function evaluateQuote(
     patterns,
     warnings,
     fatalError,
+    bars: prepared,
   };
 }

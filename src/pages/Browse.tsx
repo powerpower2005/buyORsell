@@ -135,7 +135,7 @@ export function BrowsePage() {
     if (loading) return "loading";
     if (loadError || !quote) return "missing";
     if (evaluation?.fatalError) return "bad-quality";
-    if (quote.ohlcv.length > 0 && evaluation) return "ready";
+    if (evaluation?.bars.length && evaluation) return "ready";
     return "loading";
   })();
 
@@ -280,7 +280,7 @@ export function BrowsePage() {
                   )}
                   <p className="text-xs text-text-tertiary">{statusDetail}</p>
                   <CandleChart
-                    bars={quote!.ohlcv}
+                    bars={evaluation!.bars}
                     timeframe={selected.timeframe as Timeframe}
                     patterns={evaluation!.patterns ?? undefined}
                     chartPatternVisibility={chartPatternVisibility}

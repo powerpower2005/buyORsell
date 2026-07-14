@@ -4,6 +4,10 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { fetchQuote, tickerToSlug } from "./fetch-quote.mjs";
+import {
+  assertBarsMatchTimeframe,
+  dropLeadingWrongCadence,
+} from "./lib/bar-cadence.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -43,6 +47,39 @@ export function mergeOhlcv(existing, incoming) {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([, b]) => b);
   return { ohlcv, changedBars: changed, hasDiff: changed > 0 };
+}
+
+function addUtcDays(isoDate, days) {
+  const d = new Date(`${isoDate}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Drop bars outside the timeframe lookback / maxBars (stops weekly pollution sticking forever). */
+export function windowBars(bars, timeframe) {
+  if (!bars.length) return bars;
+  const timeframes = loadJson("config/timeframes.json").timeframes;
+  const cfg = timeframes[timeframe] ?? {};
+  let out = bars;
+
+  if (cfg.sheetsLookbackDays != null) {
+    const last = bars.at(-1).date;
+    const cutoff = addUtcDays(last, -cfg.sheetsLookbackDays);
+    out = out.filter((b) => b.date >= cutoff);
+  }
+
+  if (cfg.maxBars != null && out.length > cfg.maxBars) {
+    out = out.slice(-cfg.maxBars);
+  }
+
+  return out;
+}
+
+/** Lookback trim + drop leading weekly stretch for 1d. */
+export function sanitizeBars(bars, timeframe) {
+  let out = windowBars(bars, timeframe);
+  out = dropLeadingWrongCadence(out, timeframe);
+  return out;
 }
 
 import { tradingDayLag, usesTradingDayFreshness } from "./lib/freshness.mjs";
@@ -115,7 +152,28 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
     if (!force) {
       const v = validateFreshness(existing, policy, timeframe);
       if (v.status === "fresh") {
-        return { action: "skipped", reason: "already fresh", quote: existing };
+        const cleaned = sanitizeBars(existing.ohlcv, timeframe);
+        if (cleaned.length === existing.ohlcv.length) {
+          return { action: "skipped", reason: "already fresh", quote: existing };
+        }
+        // Fresh but polluted / outside window — rewrite cleaned history without refetch.
+        assertBarsMatchTimeframe(cleaned, timeframe, `stored ${ticker} ${timeframe}`);
+        const rewritten = {
+          ...existing,
+          ohlcv: cleaned,
+          barCount: cleaned.length,
+          lastBarDate: cleaned.at(-1).date,
+        };
+        writeJson(rel, rewritten);
+        updateIndex({
+          ticker,
+          timeframe,
+          path: rel,
+          fetchedAt: rewritten.fetchedAt,
+          lastBarDate: rewritten.lastBarDate,
+          barCount: rewritten.barCount,
+        });
+        return { action: "cleaned", reason: "trimmed polluted history", quote: rewritten };
       }
     }
   }
@@ -128,6 +186,12 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
   });
 
   const incoming = await fetchQuote(ticker, timeframe);
+  assertBarsMatchTimeframe(
+    incoming.ohlcv,
+    timeframe,
+    `GOOGLEFINANCE ${ticker} ${timeframe}`,
+  );
+
   let ohlcv = incoming.ohlcv;
   let barsChanged = !existing?.ohlcv?.length;
 
@@ -136,6 +200,16 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
     ohlcv = m.ohlcv;
     barsChanged = m.hasDiff;
   }
+
+  const beforeSanitize = ohlcv.length;
+  ohlcv = sanitizeBars(ohlcv, timeframe);
+  if (ohlcv.length !== beforeSanitize) barsChanged = true;
+
+  if (!ohlcv.length) {
+    throw new Error(`No bars left after sanitize for ${ticker} ${timeframe}`);
+  }
+
+  assertBarsMatchTimeframe(ohlcv, timeframe, `sanitized ${ticker} ${timeframe}`);
 
   // Successful fetch always stamps fetchedAt so freshness reflects verification time,
   // even when GOOGLEFINANCE returns identical bars.

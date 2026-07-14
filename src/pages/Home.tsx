@@ -170,7 +170,7 @@ export function HomePage() {
     if (loading) return "loading";
     if (loadError || !quote) return "missing";
     if (evaluation?.fatalError) return "bad-quality";
-    if (quote.ohlcv.length > 0 && evaluation) return "ready";
+    if (evaluation?.bars.length && evaluation) return "ready";
     return "loading";
   })();
 
@@ -337,7 +337,7 @@ export function HomePage() {
               <p className="text-left text-xs text-text-tertiary">{statusDetail}</p>
               <div id="export-root" className="space-y-6">
                 <CandleChart
-                  bars={quote!.ohlcv}
+                  bars={evaluation!.bars}
                   timeframe={timeframe}
                   patterns={evaluation!.patterns ?? undefined}
                   chartPatternVisibility={chartPatternVisibility}
@@ -359,7 +359,7 @@ export function HomePage() {
                 </div>
                 <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />
                 <MTFAlignmentCard alignment={evaluation!.mtf} />
-                <StrategyBuilder bars={quote!.ohlcv} onResult={setBacktest} />
+                <StrategyBuilder bars={evaluation!.bars} onResult={setBacktest} />
                 <ExportPanel
                   quote={quote!}
                   indicators={evaluation!.indicators}
