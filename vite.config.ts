@@ -60,7 +60,7 @@ export default defineConfig({
     serveDataDir(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["manifest.json"],
+      includeAssets: ["icon.svg", "manifest.json"],
       manifest: {
         name: "GF",
         short_name: "GF",
@@ -70,9 +70,10 @@ export default defineConfig({
         display: "standalone",
         icons: [
           {
-            src: "/icon.svg",
+            src: "icon.svg",
             sizes: "any",
             type: "image/svg+xml",
+            purpose: "any",
           },
         ],
       },
