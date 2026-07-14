@@ -5,7 +5,12 @@ export interface IndicatorPlugin {
   compute(
     bars: OHLCVBar[],
     params: Record<string, unknown>,
-  ): { series: Record<string, SeriesPoint[]>; latest: Record<string, number | null> };
+  ): {
+    series: Record<string, SeriesPoint[]>;
+    latest: Record<string, number | null>;
+    skipped?: string[];
+  };
+  /** Minimum bars before attempting any output for this plugin. */
   minBars(params: Record<string, unknown>): number;
 }
 

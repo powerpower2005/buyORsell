@@ -2,7 +2,7 @@ import type { OHLCVBar, IndicatorResults, SignalResult, Timeframe, TrendLabel } 
 
 import type { IndicatorsConfig, IndicatorPlugin, SignalConfig } from "./types";
 
-import { allPlugins } from "./indicators/index";
+import { allPlugins, indicatorHasOutput } from "./indicators/index";
 
 import { ConfigError, InsufficientDataError } from "../errors";
 
@@ -205,23 +205,21 @@ export function computeAll(
     const min = plugin.minBars(item.params);
 
     if (bars.length < min) {
-
       skipped.push(
-
         `Indicator ${item.id} requires ${min} bars, got ${bars.length}`,
-
       );
-
       continue;
-
     }
 
+    const out = plugin.compute(bars, item.params);
+    if (out.skipped?.length) skipped.push(...out.skipped);
+
+    if (!indicatorHasOutput(out)) continue;
+
     indicators[item.id] = {
-
       id: item.id,
-
-      ...plugin.compute(bars, item.params),
-
+      series: out.series,
+      latest: out.latest,
     };
 
   }
