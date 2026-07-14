@@ -85,7 +85,7 @@ export function CandleChart({
     if (!containerRef.current) return;
 
     const chart = createChart(containerRef.current, {
-      width: containerRef.current.clientWidth,
+      width: containerRef.current.clientWidth || containerRef.current.parentElement?.clientWidth || 600,
       height,
       layout: {
         background: { color: "#252525" },
@@ -134,6 +134,7 @@ export function CandleChart({
     candleRef.current = candles;
     volumeRef.current = volume;
     maRefs.current = maLines;
+    overlayRefs.current = new Map();
 
     const ro = new ResizeObserver(() => {
       if (containerRef.current) {
@@ -151,7 +152,16 @@ export function CandleChart({
       maRefs.current = new Map();
       overlayRefs.current = new Map();
     };
-  }, [height, timeframe]);
+    // Recreate only when timeframe changes — height is applied separately so candle
+    // data is not wiped by a remount without a follow-up setData.
+  }, [timeframe]);
+
+  useEffect(() => {
+    chartRef.current?.applyOptions({ height });
+    if (containerRef.current) {
+      containerRef.current.style.height = `${height}px`;
+    }
+  }, [height]);
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -211,7 +221,7 @@ export function CandleChart({
         line.applyOptions({ visible: false });
       }
     }
-  }, [indicators]);
+  }, [indicators, timeframe]);
 
   const overlayLegend = useMemo(() => {
     if (!indicators) return [];
@@ -237,61 +247,70 @@ export function CandleChart({
   useEffect(() => {
     if (!bars.length || !candleRef.current || !volumeRef.current) return;
 
-    candleRef.current.setData(
-      bars.map((b) => ({
-        time: b.date as `${number}-${number}-${number}`,
-        open: b.open,
-        high: b.high,
-        low: b.low,
-        close: b.close,
-      })),
-    );
-
-    volumeRef.current.setData(
-      bars.map((b) => ({
-        time: b.date as `${number}-${number}-${number}`,
-        value: b.volume,
-        color:
-          b.close >= b.open
-            ? "rgba(0, 196, 113, 0.45)"
-            : "rgba(240, 68, 82, 0.45)",
-      })),
-    );
-
-    const active = new Set(
-      volumeSnapshot.averages.filter((a) => a.available).map((a) => a.period),
-    );
-    for (const period of periods) {
-      const line = maRefs.current.get(period);
-      if (!line) continue;
-      if (!active.has(period)) {
-        line.setData([]);
-        line.applyOptions({ visible: false });
-        continue;
-      }
-      line.applyOptions({ visible: true });
-    }
-
-    for (const avg of volumeSnapshot.averages) {
-      if (!avg.available) continue;
-      const line = maRefs.current.get(avg.period);
-      if (!line) continue;
-      line.setData(
-        avg.series.map((p) => ({
-          time: p.date as `${number}-${number}-${number}`,
-          value: p.value,
+    try {
+      candleRef.current.setData(
+        bars.map((b) => ({
+          time: b.date as `${number}-${number}-${number}`,
+          open: b.open,
+          high: b.high,
+          low: b.low,
+          close: b.close,
         })),
       );
-    }
 
-    candleRef.current.setMarkers(patternMarkers);
-    chartRef.current?.timeScale().fitContent();
-  }, [bars, volumeSnapshot, patternMarkers, periods]);
+      volumeRef.current.setData(
+        bars.map((b) => ({
+          time: b.date as `${number}-${number}-${number}`,
+          value: b.volume,
+          color:
+            b.close >= b.open
+              ? "rgba(0, 196, 113, 0.45)"
+              : "rgba(240, 68, 82, 0.45)",
+        })),
+      );
+
+      const active = new Set(
+        volumeSnapshot.averages.filter((a) => a.available).map((a) => a.period),
+      );
+      for (const period of periods) {
+        const line = maRefs.current.get(period);
+        if (!line) continue;
+        if (!active.has(period)) {
+          line.setData([]);
+          line.applyOptions({ visible: false });
+          continue;
+        }
+        line.applyOptions({ visible: true });
+      }
+
+      for (const avg of volumeSnapshot.averages) {
+        if (!avg.available) continue;
+        const line = maRefs.current.get(avg.period);
+        if (!line) continue;
+        line.setData(
+          avg.series.map((p) => ({
+            time: p.date as `${number}-${number}-${number}`,
+            value: p.value,
+          })),
+        );
+      }
+
+      candleRef.current.setMarkers(patternMarkers);
+      chartRef.current?.timeScale().fitContent();
+    } catch (err) {
+      console.error("CandleChart setData failed:", err);
+    }
+  }, [bars, volumeSnapshot, patternMarkers, periods, timeframe]);
 
   return (
     <Card className="overflow-hidden p-3 sm:p-4">
       <div className="w-full text-left">
-        <div ref={containerRef} className="w-full" />
+        <div
+          ref={containerRef}
+          className="w-full"
+          style={{ height }}
+          aria-label="candlestick-chart"
+        />
         <div className="mt-3 space-y-2 border-t border-border pt-3">
           {overlayLegend.length > 0 && (
             <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
