@@ -29,6 +29,12 @@ interface Props {
   supportResistance?: SupportResistanceResult;
   chartSrVisibility?: Record<SrChartToggleId, boolean>;
   indicators?: IndicatorResults;
+  /** Per-period SMA/EMA line visibility. Missing period defaults to true. */
+  maVisibility?: {
+    sma?: Record<number, boolean>;
+    ema?: Record<number, boolean>;
+  };
+  showVolume?: boolean;
   height?: number;
 }
 
@@ -62,6 +68,8 @@ export function CandleChart({
   supportResistance,
   chartSrVisibility,
   indicators,
+  maVisibility,
+  showVolume = true,
   height: heightProp,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -269,11 +277,14 @@ export function CandleChart({
       if (!out) return;
       const periods = (cfg.params.periods as number[]) ?? [];
       const colors = parsePeriodColors(cfg.params.colors);
+      const periodVis = maVisibility?.[pluginId];
 
       periods.forEach((period, i) => {
         const key = `${prefix}:${period}`;
         const points = out.series[key];
         if (!points?.length) return;
+        const visible = periodVis?.[period] ?? true;
+        if (!visible) return;
         wanted.add(key);
 
         let line = overlayRefs.current.get(key);
@@ -310,7 +321,7 @@ export function CandleChart({
         line.applyOptions({ visible: false });
       }
     }
-  }, [indicators, timeframe]);
+  }, [indicators, timeframe, maVisibility]);
 
   const overlayLegend = useMemo(() => {
     if (!indicators) return [];
@@ -321,7 +332,9 @@ export function CandleChart({
       if (!cfg?.enabled) continue;
       const periods = (cfg.params.periods as number[]) ?? [];
       const colors = parsePeriodColors(cfg.params.colors);
+      const periodVis = maVisibility?.[pluginId];
       periods.forEach((period, i) => {
+        if (!(periodVis?.[period] ?? true)) return;
         const key = `${pluginId}:${period}`;
         if (!indicators.indicators[pluginId]?.series[key]?.length) return;
         items.push({
@@ -331,7 +344,7 @@ export function CandleChart({
       });
     }
     return items;
-  }, [indicators]);
+  }, [indicators, maVisibility]);
 
   useEffect(() => {
     if (!bars.length || !candleRef.current || !volumeRef.current) return;
@@ -347,15 +360,18 @@ export function CandleChart({
         })),
       );
 
+      volumeRef.current.applyOptions({ visible: showVolume });
       volumeRef.current.setData(
-        bars.map((b) => ({
-          time: b.date as `${number}-${number}-${number}`,
-          value: b.volume,
-          color:
-            b.close >= b.open
-              ? "rgba(0, 196, 113, 0.45)"
-              : "rgba(240, 68, 82, 0.45)",
-        })),
+        showVolume
+          ? bars.map((b) => ({
+              time: b.date as `${number}-${number}-${number}`,
+              value: b.volume,
+              color:
+                b.close >= b.open
+                  ? "rgba(0, 196, 113, 0.45)"
+                  : "rgba(240, 68, 82, 0.45)",
+            }))
+          : [],
       );
 
       candleRef.current.setMarkers(chartMarkers);
@@ -365,7 +381,7 @@ export function CandleChart({
       console.error("CandleChart setData failed:", err);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bars, chartMarkers, timeframe]);
+  }, [bars, chartMarkers, timeframe, showVolume]);
 
   useEffect(() => {
     drawSrOverlay();

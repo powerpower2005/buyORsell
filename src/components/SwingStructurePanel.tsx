@@ -1,4 +1,3 @@
-import clsx from "clsx";
 import { Card, SectionTitle } from "./ui/Card";
 import { Badge } from "./ui/Badge";
 import type { SwingStructureResult } from "@/lib/evaluation/swingStructure";
@@ -7,13 +6,6 @@ import {
   slopeBandLabel,
   structureRegimeLabel,
 } from "@/lib/evaluation/swingStructure";
-import {
-  SWING_CHART_TOGGLE_META,
-  SWING_CHART_TOGGLE_ORDER,
-  anySwingChartVisible,
-  setSwingChartVisible,
-  type SwingChartToggleId,
-} from "@/lib/swingStructureStore";
 
 function regimeVariant(
   regime: string,
@@ -33,18 +25,11 @@ function slopeVariant(
 
 interface Props {
   structure: SwingStructureResult;
-  chartVisibility: Record<SwingChartToggleId, boolean>;
-  onChartVisibilityChange: () => void;
 }
 
-export function SwingStructurePanel({
-  structure,
-  chartVisibility,
-  onChartVisibilityChange,
-}: Props) {
+export function SwingStructurePanel({ structure }: Props) {
   const { current, swings, transitions, leftRight, quality, streaks } = structure;
   const labeled = swings.filter((s) => s.label);
-  const chartEnabled = anySwingChartVisible(chartVisibility);
   const q = quality.current;
 
   const breakdownText = (side: "bullish" | "bearish") => {
@@ -55,18 +40,13 @@ export function SwingStructurePanel({
     return parts.length ? parts.join(" · ") : null;
   };
 
-  const toggle = (id: SwingChartToggleId, visible: boolean) => {
-    setSwingChartVisible(id, visible);
-    onChartVisibilityChange();
-  };
-
   return (
     <Card>
       <SectionTitle>스윙 구조 (HH/HL)</SectionTitle>
       <p className="mb-3 text-xs text-text-tertiary">
         fractal ±{leftRight}봉 · 라벨 {labeled.length}개
         {transitions.length > 0 && ` · 전환 ${transitions.length}회`}
-        {chartEnabled && " · 차트 마커 표시 중"}
+        {" · 차트 표시는 사이드바"}
       </p>
 
       <div className="mb-4 rounded-md border border-border bg-bg px-3 py-2.5 text-left">
@@ -149,49 +129,6 @@ export function SwingStructurePanel({
         {q.caution && (
           <p className="mt-2 text-xs leading-relaxed text-negative">{q.caution}</p>
         )}
-      </div>
-
-      <div className="mb-5 text-left">
-        <p className="text-xs font-medium text-text-secondary">차트 마커</p>
-        <p className="mt-1 text-xs text-text-tertiary">
-          기본적으로 꺼져 있습니다. HH+HL 연속 / LL+LH 연속·전환을 보고 싶은
-          항목만 켜세요.
-        </p>
-        <ul className="mt-3 space-y-2">
-          {SWING_CHART_TOGGLE_ORDER.map((id) => {
-            const meta = SWING_CHART_TOGGLE_META[id];
-            const enabled = chartVisibility[id];
-            return (
-              <li
-                key={id}
-                className={clsx(
-                  "rounded-md border px-3 py-2 transition-colors",
-                  enabled ? "border-accent/40 bg-accent/5" : "border-border bg-bg",
-                )}
-              >
-                <label className="flex cursor-pointer items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={enabled}
-                    className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
-                    onChange={(e) => toggle(id, e.target.checked)}
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-medium text-text-primary">
-                        {meta.labelKo}
-                      </span>
-                      <span className="text-xs text-text-tertiary">{meta.label}</span>
-                    </span>
-                    <span className="mt-1 block text-xs leading-relaxed text-text-secondary">
-                      {meta.description}
-                    </span>
-                  </span>
-                </label>
-              </li>
-            );
-          })}
-        </ul>
       </div>
 
       <div className="mb-4 text-left">

@@ -30,13 +30,21 @@ import {
 } from "@/lib/dataLoader";
 import { validateFreshness as checkFresh } from "@/lib/validation";
 import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
-import { getEffectiveIndicatorsConfig } from "@/lib/configStore";
+import {
+  getEffectiveIndicatorsConfig,
+  getIndicatorConfig,
+} from "@/lib/configStore";
 import { CandlePatternPanel } from "@/components/CandlePatternPanel";
 import { SwingStructurePanel } from "@/components/SwingStructurePanel";
 import { SupportResistancePanel } from "@/components/SupportResistancePanel";
+import { ChartSidebar } from "@/components/ChartSidebar";
 import { getChartPatternVisibility } from "@/lib/candlePatternStore";
 import { getSwingChartVisibility } from "@/lib/swingStructureStore";
 import { getSrChartVisibility } from "@/lib/srZoneStore";
+import {
+  getIndicatorOverlayVisibility,
+  isVolumeOverlayVisible,
+} from "@/lib/indicatorOverlayStore";
 import { DataNotFoundError, errorMessage } from "@/lib/errors";
 import type {
   BacktestResult,
@@ -71,9 +79,7 @@ export function HomePage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [configTick, setConfigTick] = useState(0);
-  const [patternChartTick, setPatternChartTick] = useState(0);
-  const [structureChartTick, setStructureChartTick] = useState(0);
-  const [srChartTick, setSrChartTick] = useState(0);
+  const [chartVisTick, setChartVisTick] = useState(0);
   const [backtest, setBacktest] = useState<BacktestResult | undefined>();
   const [catalog, setCatalog] = useState<IndexFile | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
@@ -162,15 +168,29 @@ export function HomePage() {
   );
   const chartPatternVisibility = useMemo(
     () => getChartPatternVisibility(),
-    [patternChartTick],
+    [chartVisTick],
   );
   const chartStructureVisibility = useMemo(
     () => getSwingChartVisibility(),
-    [structureChartTick],
+    [chartVisTick],
   );
   const chartSrVisibility = useMemo(
     () => getSrChartVisibility(),
-    [srChartTick],
+    [chartVisTick],
+  );
+  const maVisibility = useMemo(() => {
+    const smaPeriods =
+      (getIndicatorConfig("sma")?.params.periods as number[]) ?? [];
+    const emaPeriods =
+      (getIndicatorConfig("ema")?.params.periods as number[]) ?? [];
+    return {
+      sma: getIndicatorOverlayVisibility("sma", smaPeriods),
+      ema: getIndicatorOverlayVisibility("ema", emaPeriods),
+    };
+  }, [chartVisTick, configTick]);
+  const showVolume = useMemo(
+    () => isVolumeOverlayVisible(),
+    [chartVisTick],
   );
 
   const freshness = quote ? checkFresh(quote, timeframe) : null;
@@ -350,45 +370,44 @@ export function HomePage() {
               )}
               <p className="text-left text-xs text-text-tertiary">{statusDetail}</p>
               <div id="export-root" className="space-y-6">
-                <CandleChart
-                  bars={evaluation!.bars}
-                  timeframe={timeframe}
-                  patterns={evaluation!.patterns ?? undefined}
-                  chartPatternVisibility={chartPatternVisibility}
-                  structure={evaluation!.structure ?? undefined}
-                  chartStructureVisibility={chartStructureVisibility}
-                  supportResistance={evaluation!.supportResistance ?? undefined}
-                  chartSrVisibility={chartSrVisibility}
-                  indicators={evaluation!.indicators}
-                />
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+                  <div className="min-w-0 flex-1">
+                    <CandleChart
+                      bars={evaluation!.bars}
+                      timeframe={timeframe}
+                      patterns={evaluation!.patterns ?? undefined}
+                      chartPatternVisibility={chartPatternVisibility}
+                      structure={evaluation!.structure ?? undefined}
+                      chartStructureVisibility={chartStructureVisibility}
+                      supportResistance={
+                        evaluation!.supportResistance ?? undefined
+                      }
+                      chartSrVisibility={chartSrVisibility}
+                      indicators={evaluation!.indicators}
+                      maVisibility={maVisibility}
+                      showVolume={showVolume}
+                    />
+                  </div>
+                  <ChartSidebar
+                    className="w-full shrink-0 lg:sticky lg:top-4 lg:w-64"
+                    visibilityTick={chartVisTick}
+                    onVisibilityChange={() => setChartVisTick((n) => n + 1)}
+                  />
+                </div>
                 <div className="grid gap-6 xl:grid-cols-2">
                   <VolumePanel snapshot={evaluation!.volume} />
                   {evaluation!.score && <ScoreCard score={evaluation!.score} />}
                   <IndicatorPanel results={evaluation!.indicators} />
                   {evaluation!.structure && (
-                    <SwingStructurePanel
-                      structure={evaluation!.structure}
-                      chartVisibility={chartStructureVisibility}
-                      onChartVisibilityChange={() =>
-                        setStructureChartTick((n) => n + 1)
-                      }
-                    />
+                    <SwingStructurePanel structure={evaluation!.structure} />
                   )}
                   {evaluation!.supportResistance && (
                     <SupportResistancePanel
                       sr={evaluation!.supportResistance}
-                      chartVisibility={chartSrVisibility}
-                      onChartVisibilityChange={() => setSrChartTick((n) => n + 1)}
                     />
                   )}
                   {evaluation!.patterns && (
-                    <CandlePatternPanel
-                      patterns={evaluation!.patterns}
-                      chartVisibility={chartPatternVisibility}
-                      onChartVisibilityChange={() =>
-                        setPatternChartTick((n) => n + 1)
-                      }
-                    />
+                    <CandlePatternPanel patterns={evaluation!.patterns} />
                   )}
                 </div>
                 <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />

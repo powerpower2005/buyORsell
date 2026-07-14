@@ -1,15 +1,10 @@
-import clsx from "clsx";
 import { Card, SectionTitle } from "./ui/Card";
 import { Badge } from "./ui/Badge";
-import type { CandlePatternId, CandlePatternResult } from "@/lib/evaluation/candlePatterns";
+import type { CandlePatternResult } from "@/lib/evaluation/candlePatterns";
 import {
   CANDLE_PATTERN_META,
   CANDLE_PATTERN_ORDER,
 } from "@/lib/candlePatternMeta";
-import {
-  anyChartPatternVisible,
-  setChartPatternVisible,
-} from "@/lib/candlePatternStore";
 
 function dirVariant(d: string): "positive" | "negative" | "muted" {
   if (d === "bullish") return "positive";
@@ -19,22 +14,10 @@ function dirVariant(d: string): "positive" | "negative" | "muted" {
 
 interface Props {
   patterns: CandlePatternResult;
-  chartVisibility: Record<CandlePatternId, boolean>;
-  onChartVisibilityChange: () => void;
 }
 
-export function CandlePatternPanel({
-  patterns,
-  chartVisibility,
-  onChartVisibilityChange,
-}: Props) {
+export function CandlePatternPanel({ patterns }: Props) {
   const { onLatestBar, recent, latestBarDate, lookbackBars } = patterns;
-  const chartEnabled = anyChartPatternVisible(chartVisibility);
-
-  const toggleChartPattern = (id: CandlePatternId, visible: boolean) => {
-    setChartPatternVisible(id, visible);
-    onChartVisibilityChange();
-  };
 
   return (
     <Card>
@@ -42,48 +25,23 @@ export function CandlePatternPanel({
       <p className="mb-3 text-xs text-text-tertiary">
         전체 {lookbackBars}봉 검사 · 마지막 봉 {latestBarDate}
         {recent.length > 0 && ` · ${recent.length}건 감지`}
-        {chartEnabled && " · 차트에 마커 표시 중"}
+        {" · 차트 표시는 사이드바"}
       </p>
 
-      <div className="mb-5 text-left">
-        <p className="text-xs font-medium text-text-secondary">차트 마커</p>
-        <p className="mt-1 text-xs text-text-tertiary">
-          기본적으로 차트에는 표시하지 않습니다. 보고 싶은 패턴만 켜세요.
-        </p>
-        <ul className="mt-3 space-y-3">
+      <div className="mb-4 text-left">
+        <p className="text-xs font-medium text-text-secondary">패턴 설명</p>
+        <ul className="mt-2 max-h-40 space-y-2 overflow-y-auto">
           {CANDLE_PATTERN_ORDER.map((id) => {
             const meta = CANDLE_PATTERN_META[id];
-            const enabled = chartVisibility[id];
             return (
-              <li
-                key={id}
-                className={clsx(
-                  "rounded-md border px-3 py-2.5 transition-colors",
-                  enabled ? "border-accent/40 bg-accent/5" : "border-border bg-bg",
-                )}
-              >
-                <label className="flex cursor-pointer items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={enabled}
-                    className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
-                    onChange={(e) => toggleChartPattern(id, e.target.checked)}
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-medium text-text-primary">
-                        {meta.labelKo}
-                      </span>
-                      <span className="text-xs text-text-tertiary">{meta.label}</span>
-                      <Badge variant={dirVariant(meta.typicalDirection)}>
-                        {meta.typicalDirection}
-                      </Badge>
-                    </span>
-                    <span className="mt-1 block text-xs leading-relaxed text-text-secondary">
-                      {meta.description}
-                    </span>
-                  </span>
-                </label>
+              <li key={id} className="text-xs text-text-secondary">
+                <span className="font-medium text-text-primary">
+                  {meta.labelKo}
+                </span>
+                <span className="text-text-tertiary"> ({meta.label})</span>
+                <span className="mt-0.5 block leading-relaxed text-text-tertiary">
+                  {meta.description}
+                </span>
               </li>
             );
           })}
