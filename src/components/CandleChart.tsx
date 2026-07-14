@@ -164,8 +164,8 @@ export function CandleChart({
       ctx.textBaseline = "middle";
       const label =
         zone.kind === "support"
-          ? `S ${zone.low.toFixed(2)}-${zone.high.toFixed(2)}`
-          : `R ${zone.low.toFixed(2)}-${zone.high.toFixed(2)}`;
+          ? `S×${zone.quality.touchEvents} ${zone.low.toFixed(2)}-${zone.high.toFixed(2)} [${zone.quality.grade}]`
+          : `R×${zone.quality.touchEvents} ${zone.low.toFixed(2)}-${zone.high.toFixed(2)} [${zone.quality.grade}]`;
       ctx.fillText(label, 8, top + bandH / 2);
     }
   };
@@ -451,8 +451,8 @@ export function CandleChart({
                     style={{ backgroundColor: SR_ZONE_COLORS[z.kind].stroke }}
                   />
                   <span className="tabular-nums text-text-tertiary">
-                    {z.kind === "support" ? "S" : "R"} {z.low.toFixed(2)}–
-                    {z.high.toFixed(2)}
+                    {z.kind === "support" ? "S" : "R"}×{z.quality.touchEvents}{" "}
+                    {z.low.toFixed(2)}–{z.high.toFixed(2)} ({z.quality.grade})
                   </span>
                 </span>
               ))}
