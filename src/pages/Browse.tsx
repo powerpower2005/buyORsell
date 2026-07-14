@@ -287,10 +287,7 @@ export function BrowsePage() {
                     indicators={evaluation!.indicators}
                   />
                   <div className="grid gap-6 xl:grid-cols-2">
-                    <VolumePanel
-                      snapshot={evaluation!.volume}
-                      timeframe={selected.timeframe as Timeframe}
-                    />
+                    <VolumePanel snapshot={evaluation!.volume} />
                     {evaluation!.score && <ScoreCard score={evaluation!.score} />}
                     <IndicatorPanel results={evaluation!.indicators} />
                     {evaluation!.patterns && (

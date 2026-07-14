@@ -8,11 +8,6 @@ import {
   patternsToChartMarkers,
   visiblePatternLegend,
 } from "@/lib/chart/patternMarkers";
-import {
-  computeVolumeAverages,
-  getVolumeMaPeriods,
-  volumeMaColor,
-} from "@/lib/evaluation/volumeMa";
 import { Card } from "./ui/Card";
 
 interface Props {
@@ -56,15 +51,9 @@ export function CandleChart({
   const chartRef = useRef<IChartApi | null>(null);
   const candleRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volumeRef = useRef<ISeriesApi<"Histogram"> | null>(null);
-  const maRefs = useRef<Map<number, ISeriesApi<"Line">>>(new Map());
   const overlayRefs = useRef<Map<string, ISeriesApi<"Line">>>(new Map());
   const height = useViewportChartHeight(heightProp);
 
-  const periods = useMemo(() => getVolumeMaPeriods(timeframe), [timeframe]);
-  const volumeSnapshot = useMemo(
-    () => computeVolumeAverages(bars, periods),
-    [bars, periods],
-  );
   const patternMarkers = useMemo(
     () =>
       patternsToChartMarkers(
@@ -85,7 +74,10 @@ export function CandleChart({
     if (!containerRef.current) return;
 
     const chart = createChart(containerRef.current, {
-      width: containerRef.current.clientWidth || containerRef.current.parentElement?.clientWidth || 600,
+      width:
+        containerRef.current.clientWidth ||
+        containerRef.current.parentElement?.clientWidth ||
+        600,
       height,
       layout: {
         background: { color: "#252525" },
@@ -119,21 +111,9 @@ export function CandleChart({
       borderColor: "#3a3a3c",
     });
 
-    const maLines = new Map<number, ISeriesApi<"Line">>();
-    for (const period of getVolumeMaPeriods(timeframe)) {
-      const line = chart.addLineSeries({
-        priceScaleId: "volume",
-        color: volumeMaColor(period),
-        lineWidth: period <= 7 ? 2 : 1,
-        title: `Vol MA${period}`,
-      });
-      maLines.set(period, line);
-    }
-
     chartRef.current = chart;
     candleRef.current = candles;
     volumeRef.current = volume;
-    maRefs.current = maLines;
     overlayRefs.current = new Map();
 
     const ro = new ResizeObserver(() => {
@@ -149,11 +129,8 @@ export function CandleChart({
       chartRef.current = null;
       candleRef.current = null;
       volumeRef.current = null;
-      maRefs.current = new Map();
       overlayRefs.current = new Map();
     };
-    // Recreate only when timeframe changes — height is applied separately so candle
-    // data is not wiped by a remount without a follow-up setData.
   }, [timeframe]);
 
   useEffect(() => {
@@ -269,38 +246,12 @@ export function CandleChart({
         })),
       );
 
-      const active = new Set(
-        volumeSnapshot.averages.filter((a) => a.available).map((a) => a.period),
-      );
-      for (const period of periods) {
-        const line = maRefs.current.get(period);
-        if (!line) continue;
-        if (!active.has(period)) {
-          line.setData([]);
-          line.applyOptions({ visible: false });
-          continue;
-        }
-        line.applyOptions({ visible: true });
-      }
-
-      for (const avg of volumeSnapshot.averages) {
-        if (!avg.available) continue;
-        const line = maRefs.current.get(avg.period);
-        if (!line) continue;
-        line.setData(
-          avg.series.map((p) => ({
-            time: p.date as `${number}-${number}-${number}`,
-            value: p.value,
-          })),
-        );
-      }
-
       candleRef.current.setMarkers(patternMarkers);
       chartRef.current?.timeScale().fitContent();
     } catch (err) {
       console.error("CandleChart setData failed:", err);
     }
-  }, [bars, volumeSnapshot, patternMarkers, periods, timeframe]);
+  }, [bars, patternMarkers, timeframe]);
 
   return (
     <Card className="overflow-hidden p-3 sm:p-4">
@@ -326,18 +277,6 @@ export function CandleChart({
               ))}
             </div>
           )}
-          <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
-            <span>거래량:</span>
-            {periods.map((p) => (
-              <span key={p} className="flex items-center gap-1">
-                <span
-                  className="inline-block h-2 w-4 rounded-sm"
-                  style={{ backgroundColor: volumeMaColor(p) }}
-                />
-                MA{p}
-              </span>
-            ))}
-          </div>
           {patternLegend.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
               <span>캔들 패턴 ({patternMarkers.length}):</span>
