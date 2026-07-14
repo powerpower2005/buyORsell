@@ -36,6 +36,28 @@ export interface StructureCurrent {
   summary: string;
 }
 
+/** Unbroken HH/HL (or LL/LH) run until the opposite family appears. */
+export interface LabelFamilyStreak {
+  /** Labels still in progress at the series end (0 if last label is the other family). */
+  current: number;
+  /** Longest unbroken run over the full history. */
+  max: number;
+  /** Count of each label inside the current run. */
+  currentBreakdown: Partial<Record<SwingLabel, number>>;
+  fromDate: string | null;
+  toDate: string | null;
+}
+
+export interface StructureStreaks {
+  /** HH/HL consecutive without LL/LH. */
+  bullish: LabelFamilyStreak;
+  /** LL/LH consecutive without HH/HL. */
+  bearish: LabelFamilyStreak;
+  /** Which family the latest labeled swing belongs to. */
+  active: "bullish" | "bearish" | null;
+  summary: string;
+}
+
 /** Quality of one swing leg (pivot → next pivot). */
 export interface SwingLegQuality {
   fromDate: string;
@@ -88,6 +110,7 @@ export interface SwingStructureResult {
   swings: SwingPoint[];
   transitions: StructureTransition[];
   current: StructureCurrent;
+  streaks: StructureStreaks;
   quality: StructureQuality;
 }
 
@@ -136,6 +159,105 @@ function summaryFor(current: Omit<StructureCurrent, "summary">): string {
   const h = current.lastHighLabel ?? "—";
   const l = current.lastLowLabel ?? "—";
   return `혼합/중립 (${h}, ${l})`;
+}
+
+function isBullishLabel(label: SwingLabel): boolean {
+  return label === "HH" || label === "HL";
+}
+
+function emptyFamilyStreak(): LabelFamilyStreak {
+  return {
+    current: 0,
+    max: 0,
+    currentBreakdown: {},
+    fromDate: null,
+    toDate: null,
+  };
+}
+
+function emptyStreaks(summary = "데이터 부족"): StructureStreaks {
+  return {
+    bullish: emptyFamilyStreak(),
+    bearish: emptyFamilyStreak(),
+    active: null,
+    summary,
+  };
+}
+
+function streakSummary(streaks: Omit<StructureStreaks, "summary">): string {
+  if (streaks.active === "bullish" && streaks.bullish.current > 0) {
+    return `HH/HL ${streaks.bullish.current}연속 (최장 ${streaks.bullish.max})`;
+  }
+  if (streaks.active === "bearish" && streaks.bearish.current > 0) {
+    return `LL/LH ${streaks.bearish.current}연속 (최장 ${streaks.bearish.max})`;
+  }
+  return `HH/HL 최장 ${streaks.bullish.max} · LL/LH 최장 ${streaks.bearish.max}`;
+}
+
+/**
+ * Count unbroken HH/HL runs (stopped by LL/LH) and LL/LH runs (stopped by HH/HL).
+ */
+export function computeLabelStreaks(swings: SwingPoint[]): StructureStreaks {
+  const labeled = swings.filter(
+    (s): s is SwingPoint & { label: SwingLabel } => s.label != null,
+  );
+  if (!labeled.length) return emptyStreaks("라벨 없음");
+
+  let bullMax = 0;
+  let bearMax = 0;
+  let run = 0;
+  let runSide: "bullish" | "bearish" | null = null;
+
+  for (const s of labeled) {
+    const side = isBullishLabel(s.label) ? "bullish" : "bearish";
+    if (side === runSide) {
+      run += 1;
+    } else {
+      runSide = side;
+      run = 1;
+    }
+    if (side === "bullish") bullMax = Math.max(bullMax, run);
+    else bearMax = Math.max(bearMax, run);
+  }
+
+  const lastLabel = labeled[labeled.length - 1].label;
+  const active: "bullish" | "bearish" = isBullishLabel(lastLabel)
+    ? "bullish"
+    : "bearish";
+
+  let current = 0;
+  for (let i = labeled.length - 1; i >= 0; i--) {
+    const side = isBullishLabel(labeled[i].label) ? "bullish" : "bearish";
+    if (side !== active) break;
+    current += 1;
+  }
+  const runStart = labeled[labeled.length - current];
+  const runEnd = labeled[labeled.length - 1];
+  const breakdown: Partial<Record<SwingLabel, number>> = {};
+  for (let i = labeled.length - current; i < labeled.length; i++) {
+    const lab = labeled[i].label;
+    breakdown[lab] = (breakdown[lab] ?? 0) + 1;
+  }
+
+  const bullish = emptyFamilyStreak();
+  bullish.max = bullMax;
+  const bearish = emptyFamilyStreak();
+  bearish.max = bearMax;
+
+  if (active === "bullish") {
+    bullish.current = current;
+    bullish.currentBreakdown = breakdown;
+    bullish.fromDate = runStart.date;
+    bullish.toDate = runEnd.date;
+  } else {
+    bearish.current = current;
+    bearish.currentBreakdown = breakdown;
+    bearish.fromDate = runStart.date;
+    bearish.toDate = runEnd.date;
+  }
+
+  const base = { bullish, bearish, active };
+  return { ...base, summary: streakSummary(base) };
 }
 
 function trueRange(bars: OHLCVBar[], i: number): number {
@@ -451,6 +573,7 @@ export function detectSwingStructure(
         lastLowLabel: null,
         summary: "데이터 부족",
       },
+      streaks: emptyStreaks(),
       quality: emptyQuality(atrPeriod, idealMin, idealMax),
     };
   }
@@ -533,6 +656,7 @@ export function detectSwingStructure(
 
   const legs = buildLegs(bars, swings, atrPeriod, idealMin, idealMax);
   const qualityCurrent = aggregateCurrentQuality(legs, idealMin, idealMax);
+  const streaks = computeLabelStreaks(swings);
 
   return {
     leftRight: n,
@@ -542,6 +666,7 @@ export function detectSwingStructure(
       ...currentBase,
       summary: summaryFor(currentBase),
     },
+    streaks,
     quality: {
       atrPeriod,
       idealSlopeMinDeg: idealMin,

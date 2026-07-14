@@ -42,10 +42,18 @@ export function SwingStructurePanel({
   chartVisibility,
   onChartVisibilityChange,
 }: Props) {
-  const { current, swings, transitions, leftRight, quality } = structure;
+  const { current, swings, transitions, leftRight, quality, streaks } = structure;
   const labeled = swings.filter((s) => s.label);
   const chartEnabled = anySwingChartVisible(chartVisibility);
   const q = quality.current;
+
+  const breakdownText = (side: "bullish" | "bearish") => {
+    const b = streaks[side].currentBreakdown;
+    const parts = (Object.entries(b) as [string, number][])
+      .filter(([, n]) => n > 0)
+      .map(([lab, n]) => `${lab} ${n}`);
+    return parts.length ? parts.join(" · ") : null;
+  };
 
   const toggle = (id: SwingChartToggleId, visible: boolean) => {
     setSwingChartVisible(id, visible);
@@ -73,6 +81,47 @@ export function SwingStructurePanel({
           최근 고 {current.lastHighLabel ?? "—"} · 최근 저{" "}
           {current.lastLowLabel ?? "—"}
         </p>
+      </div>
+
+      <div className="mb-4 rounded-md border border-border bg-bg px-3 py-2.5 text-left">
+        <p className="text-xs text-text-tertiary">
+          라벨 연속 (반대 가족 LL·LH / HH·HL을 만나기 전)
+        </p>
+        <div className="mt-1 flex flex-wrap items-center gap-2">
+          <Badge
+            variant={
+              streaks.active === "bullish"
+                ? "positive"
+                : streaks.active === "bearish"
+                  ? "negative"
+                  : "muted"
+            }
+          >
+            {streaks.summary}
+          </Badge>
+        </div>
+        <div className="mt-2 grid gap-1 text-xs text-text-tertiary sm:grid-cols-2">
+          <p>
+            HH/HL 현재 {streaks.bullish.current}연속
+            {streaks.bullish.current > 0 && breakdownText("bullish")
+              ? ` (${breakdownText("bullish")})`
+              : ""}
+            {" · "}최장 {streaks.bullish.max}
+            {streaks.bullish.fromDate && streaks.bullish.current > 0
+              ? ` · ${streaks.bullish.fromDate}~${streaks.bullish.toDate}`
+              : ""}
+          </p>
+          <p>
+            LL/LH 현재 {streaks.bearish.current}연속
+            {streaks.bearish.current > 0 && breakdownText("bearish")
+              ? ` (${breakdownText("bearish")})`
+              : ""}
+            {" · "}최장 {streaks.bearish.max}
+            {streaks.bearish.fromDate && streaks.bearish.current > 0
+              ? ` · ${streaks.bearish.fromDate}~${streaks.bearish.toDate}`
+              : ""}
+          </p>
+        </div>
       </div>
 
       <div className="mb-4 rounded-md border border-border bg-bg px-3 py-2.5 text-left">
