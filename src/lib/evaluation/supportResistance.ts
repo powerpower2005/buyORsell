@@ -1,4 +1,4 @@
-import type { OHLCVBar } from "../types";
+import type { OHLCVBar, Timeframe } from "../types";
 import { requireNonEmptyArray } from "../require";
 
 export type SrZoneKind = "support" | "resistance";
@@ -59,7 +59,10 @@ export interface SrZone {
 export interface SupportResistanceResult {
   leftRight: number;
   atrPeriod: number;
+  /** @deprecated Prefer maxZonePct; kept for older UI text. */
   clusterAtrMult: number;
+  /** Max half-width of a zone as a fraction of mid (0.02 = ±2%). */
+  maxZonePct: number;
   zones: SrZone[];
 }
 
@@ -67,13 +70,21 @@ export interface DetectSrOptions {
   leftRight?: number;
   atrPeriod?: number;
   clusterAtrMult?: number;
+  /** Cap zone to mid ± this fraction. Defaults by timeframe (1d → ±2%). */
+  maxZonePct?: number;
+  timeframe?: Timeframe;
   minTouches?: number;
   maxZones?: number;
 }
 
 const DEFAULT_LEFT_RIGHT = 3;
 const DEFAULT_ATR_PERIOD = 14;
-const DEFAULT_CLUSTER_ATR = 0.4;
+/** How much of ATR is used as the "typical noise" half-width before % cap. */
+const DEFAULT_CLUSTER_ATR = 0.35;
+/** Daily default: zone half-width capped at ±2% of mid. */
+const DEFAULT_MAX_ZONE_PCT = 0.02;
+/** Hairline floors at ±0.4% so a band is still visible. */
+const MIN_ZONE_HALF_PCT = 0.004;
 const DEFAULT_MIN_TOUCHES = 2;
 const DEFAULT_MAX_ZONES = 8;
 const VOLUME_BASELINE = 20;
@@ -83,6 +94,15 @@ const BOUNCE_LOOKAHEAD = 8;
 const TOUCH_IDEAL_MIN = 2;
 const TOUCH_IDEAL_MAX = 4;
 const TOUCH_BUSY_MAX = 7;
+
+/** Hard % cap by timeframe so a "zone" stays a tight band. */
+export function defaultMaxZonePct(timeframe?: Timeframe): number {
+  if (timeframe === "1w") return 0.035;
+  if (timeframe === "4h" || timeframe === "1h" || timeframe === "15m") {
+    return 0.015;
+  }
+  return DEFAULT_MAX_ZONE_PCT; // 1d → ±2%
+}
 
 function trueRange(bars: OHLCVBar[], i: number): number {
   const bar = bars[i];
@@ -140,10 +160,26 @@ type Cluster = {
   indices: number[];
 };
 
-function clusterPivots(pivots: Pivot[], tol: number): Cluster[] {
+function clusterPivots(
+  pivots: Pivot[],
+  atrTol: number,
+  maxHalfPct: number,
+): Cluster[] {
   if (!pivots.length) return [];
   const sorted = [...pivots].sort((a, b) => a.price - b.price);
   const clusters: Cluster[] = [];
+
+  const wouldFit = (prices: number[], next: number): boolean => {
+    const all = [...prices, next];
+    const lo = Math.min(...all);
+    const hi = Math.max(...all);
+    const mid = all.reduce((s, x) => s + x, 0) / all.length;
+    const maxSpan = 2 * mid * maxHalfPct;
+    if (hi - lo > maxSpan + 1e-9) return false;
+    const tol = Math.min(atrTol, mid * maxHalfPct);
+    const curMid = prices.reduce((s, x) => s + x, 0) / prices.length;
+    return Math.abs(next - curMid) <= tol || next - Math.max(...prices) <= tol;
+  };
 
   for (const p of sorted) {
     const last = clusters[clusters.length - 1];
@@ -156,9 +192,7 @@ function clusterPivots(pivots: Pivot[], tol: number): Cluster[] {
       });
       continue;
     }
-    const mid =
-      last.prices.reduce((s, x) => s + x, 0) / last.prices.length;
-    if (Math.abs(p.price - mid) <= tol || p.price - Math.max(...last.prices) <= tol) {
+    if (wouldFit(last.prices, p.price)) {
       last.prices.push(p.price);
       last.kinds.push(p.kind);
       last.dates.push(p.date);
@@ -178,7 +212,6 @@ function clusterPivots(pivots: Pivot[], tol: number): Cluster[] {
     const prev = merged[merged.length - 1];
     if (!prev) {
       merged.push({
-        ...c,
         prices: [...c.prices],
         kinds: [...c.kinds],
         dates: [...c.dates],
@@ -186,9 +219,15 @@ function clusterPivots(pivots: Pivot[], tol: number): Cluster[] {
       });
       continue;
     }
+    const combined = [...prev.prices, ...c.prices];
+    const lo = Math.min(...combined);
+    const hi = Math.max(...combined);
+    const mid = combined.reduce((s, x) => s + x, 0) / combined.length;
+    const maxSpan = 2 * mid * maxHalfPct;
     const prevMid = prev.prices.reduce((s, x) => s + x, 0) / prev.prices.length;
     const curMid = c.prices.reduce((s, x) => s + x, 0) / c.prices.length;
-    if (Math.abs(curMid - prevMid) <= tol * 1.25) {
+    const mergeTol = Math.min(atrTol, mid * maxHalfPct) * 1.25;
+    if (hi - lo <= maxSpan + 1e-9 && Math.abs(curMid - prevMid) <= mergeTol) {
       prev.prices.push(...c.prices);
       prev.kinds.push(...c.kinds);
       prev.dates.push(...c.dates);
@@ -203,6 +242,28 @@ function clusterPivots(pivots: Pivot[], tol: number): Cluster[] {
     }
   }
   return merged;
+}
+
+/** Clamp band to mid ± maxHalfPct; keep tighter natural width when possible. */
+function clampZoneWidth(
+  rawLow: number,
+  rawHigh: number,
+  mid: number,
+  maxHalfPct: number,
+): { low: number; high: number } {
+  const maxHalf = mid * maxHalfPct;
+  const minHalf = mid * MIN_ZONE_HALF_PCT;
+  let low = Math.max(rawLow, mid - maxHalf);
+  let high = Math.min(rawHigh, mid + maxHalf);
+  if (high < low) {
+    low = mid - maxHalf;
+    high = mid + maxHalf;
+  }
+  if (high - low < 2 * minHalf) {
+    low = mid - minHalf;
+    high = mid + minHalf;
+  }
+  return { low, high };
 }
 
 function relationToPrice(
@@ -483,6 +544,8 @@ export function detectSupportResistance(
   const leftRight = options?.leftRight ?? DEFAULT_LEFT_RIGHT;
   const atrPeriod = options?.atrPeriod ?? DEFAULT_ATR_PERIOD;
   const clusterAtrMult = options?.clusterAtrMult ?? DEFAULT_CLUSTER_ATR;
+  const maxZonePct =
+    options?.maxZonePct ?? defaultMaxZonePct(options?.timeframe);
   const minTouches = options?.minTouches ?? DEFAULT_MIN_TOUCHES;
   const maxZones = options?.maxZones ?? DEFAULT_MAX_ZONES;
 
@@ -490,6 +553,7 @@ export function detectSupportResistance(
     leftRight,
     atrPeriod,
     clusterAtrMult,
+    maxZonePct,
     zones: [],
   };
 
@@ -497,7 +561,7 @@ export function detectSupportResistance(
   if (bars.length < minLen) return empty;
 
   const atr = atrLatest(bars, atrPeriod);
-  const tol = atr * clusterAtrMult;
+  const atrTol = atr * clusterAtrMult;
   const lastClose = bars[bars.length - 1].close;
 
   const pivots: Pivot[] = [];
@@ -520,22 +584,17 @@ export function detectSupportResistance(
     }
   }
 
-  const clusters = clusterPivots(pivots, tol);
+  const clusters = clusterPivots(pivots, atrTol, maxZonePct);
   const zones: SrZone[] = [];
 
   for (const c of clusters) {
     const pivotTouches = c.prices.length;
     if (pivotTouches < minTouches) continue;
 
-    let low = Math.min(...c.prices);
-    let high = Math.max(...c.prices);
-    let mid = c.prices.reduce((s, x) => s + x, 0) / c.prices.length;
-
-    const minWidth = atr * 0.25;
-    if (high - low < minWidth) {
-      low = mid - minWidth / 2;
-      high = mid + minWidth / 2;
-    }
+    const rawLow = Math.min(...c.prices);
+    const rawHigh = Math.max(...c.prices);
+    const mid = c.prices.reduce((s, x) => s + x, 0) / c.prices.length;
+    const { low, high } = clampZoneWidth(rawLow, rawHigh, mid, maxZonePct);
 
     const highTouches = c.kinds.filter((k) => k === "high").length;
     const lowTouches = c.kinds.filter((k) => k === "low").length;
@@ -581,6 +640,7 @@ export function detectSupportResistance(
     leftRight,
     atrPeriod,
     clusterAtrMult,
+    maxZonePct,
     zones: zones.slice(0, maxZones),
   };
 }

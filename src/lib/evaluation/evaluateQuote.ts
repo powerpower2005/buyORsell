@@ -149,7 +149,9 @@ export function evaluateQuote(
   let supportResistance: SupportResistanceResult | null = null;
   if (!fatalError) {
     try {
-      supportResistance = detectSupportResistance(prepared);
+      supportResistance = detectSupportResistance(prepared, {
+        timeframe,
+      });
     } catch (err) {
       const fatal = absorbError(err, warnings);
       if (fatal) fatalError = fatal;

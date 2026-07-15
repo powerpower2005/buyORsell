@@ -18,8 +18,9 @@ export function SupportResistancePanel({ sr }: Props) {
     <Card>
       <SectionTitle>수평 지지·저항</SectionTitle>
       <p className="mb-3 text-xs text-text-tertiary">
-        스윙 고/저 클러스터 · 허용폭 ATR×{sr.clusterAtrMult} · 존{" "}
-        {sr.zones.length}개 · 차트 표시는 사이드바
+        스윙 고/저 클러스터 · 가격대 최대 중간가 ±
+        {(sr.maxZonePct * 100).toFixed(0)}% · 존 {sr.zones.length}개 · 차트
+        표시는 사이드바
       </p>
       <p className="mb-4 text-xs leading-relaxed text-text-tertiary">
         품질은 캔들 터치(2–4회 적정, 과다 시 돌파 위험), 터치 후 반등/거부 폭,
