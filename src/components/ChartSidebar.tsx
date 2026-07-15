@@ -29,6 +29,28 @@ import {
   getSrChartVisibility,
   setSrChartVisible,
 } from "@/lib/srZoneStore";
+import {
+  TRENDLINE_CHART_TOGGLE_META,
+  TRENDLINE_CHART_TOGGLE_ORDER,
+  getTrendlineChartVisibility,
+  setTrendlineChartVisible,
+  type TrendlineChartToggleId,
+} from "@/lib/trendlineStore";
+import {
+  FIB_LEVEL_COLORS,
+  FIB_RETRACEMENT_LEVELS,
+  clearFibRetracement,
+  fibLevelLabel,
+  getFibLevelVisibility,
+  getFibPendingLow,
+  getFibRetracement,
+  isFibDrawMode,
+  setAllFibLevelsVisible,
+  setFibDrawMode,
+  setFibLevelVisible,
+  setFibPendingLow,
+  type FibLevelRatio,
+} from "@/lib/fibonacciStore";
 import type { CandlePatternId } from "@/lib/evaluation/candlePatterns";
 import type { SwingChartToggleId } from "@/lib/swingStructureStore";
 import type { SrChartToggleId } from "@/lib/srZoneStore";
@@ -172,7 +194,9 @@ export function ChartSidebar({
     ema: true,
     swing: false,
     sr: false,
+    trendlines: true,
     patterns: false,
+    fib: true,
     volume: true,
   });
 
@@ -199,6 +223,11 @@ export function ChartSidebar({
   const swingVis = useMemo(() => getSwingChartVisibility(), [visibilityTick]);
   const srVis = useMemo(() => getSrChartVisibility(), [visibilityTick]);
   const volumeVis = useMemo(() => isVolumeOverlayVisible(), [visibilityTick]);
+  const fibVis = useMemo(() => getFibLevelVisibility(), [visibilityTick]);
+  const fibDraw = useMemo(() => isFibDrawMode(), [visibilityTick]);
+  const fibRet = useMemo(() => getFibRetracement(), [visibilityTick]);
+  const fibPending = useMemo(() => getFibPendingLow(), [visibilityTick]);
+  const tlVis = useMemo(() => getTrendlineChartVisibility(), [visibilityTick]);
 
   const bump = (fn: () => void) => {
     fn();
@@ -218,6 +247,12 @@ export function ChartSidebar({
   const srState = groupState(SR_CHART_TOGGLE_ORDER.map((id) => srVis[id]));
   const patternState = groupState(
     CANDLE_PATTERN_ORDER.map((id) => patternVis[id]),
+  );
+  const fibState = groupState(
+    FIB_RETRACEMENT_LEVELS.map((r) => fibVis[r]),
+  );
+  const tlState = groupState(
+    TRENDLINE_CHART_TOGGLE_ORDER.map((id) => tlVis[id]),
   );
 
   return (
@@ -345,6 +380,34 @@ export function ChartSidebar({
         </Group>
 
         <Group
+          title="동적 추세선"
+          open={open.trendlines}
+          onToggleOpen={() => toggleOpen("trendlines")}
+          checked={tlState.checked}
+          indeterminate={tlState.indeterminate}
+          onToggleAll={(next) =>
+            bump(() => {
+              for (const id of TRENDLINE_CHART_TOGGLE_ORDER) {
+                setTrendlineChartVisible(id, next);
+              }
+            })
+          }
+        >
+          {TRENDLINE_CHART_TOGGLE_ORDER.map((id: TrendlineChartToggleId) => (
+            <Leaf
+              key={id}
+              label={TRENDLINE_CHART_TOGGLE_META[id].labelKo}
+              hint={TRENDLINE_CHART_TOGGLE_META[id].description}
+              color={id === "ascending" ? "#34d399" : "#fb7185"}
+              checked={tlVis[id]}
+              onChange={(next) =>
+                bump(() => setTrendlineChartVisible(id, next))
+              }
+            />
+          ))}
+        </Group>
+
+        <Group
           title="지지·저항"
           open={open.sr}
           onToggleOpen={() => toggleOpen("sr")}
@@ -367,6 +430,76 @@ export function ChartSidebar({
             />
           ))}
         </Group>
+
+        <div className="border-b border-border">
+          <Group
+            title="피보나치 되돌림"
+            open={open.fib}
+            onToggleOpen={() => toggleOpen("fib")}
+            checked={fibState.checked}
+            indeterminate={fibState.indeterminate}
+            onToggleAll={(next) => bump(() => setAllFibLevelsVisible(next))}
+          >
+            {FIB_RETRACEMENT_LEVELS.map((ratio: FibLevelRatio) => (
+              <Leaf
+                key={ratio}
+                label={fibLevelLabel(ratio)}
+                color={FIB_LEVEL_COLORS[ratio]}
+                checked={fibVis[ratio]}
+                onChange={(next) =>
+                  bump(() => setFibLevelVisible(ratio, next))
+                }
+              />
+            ))}
+            <div className="mt-2 space-y-1.5 px-1.5">
+              <button
+                type="button"
+                className={clsx(
+                  "w-full rounded-md border px-2 py-1.5 text-left text-xs font-medium",
+                  fibDraw
+                    ? "border-accent bg-accent/15 text-accent"
+                    : "border-border bg-bg text-text-secondary hover:border-accent/40",
+                )}
+                onClick={() =>
+                  bump(() => {
+                    const next = !fibDraw;
+                    setFibDrawMode(next);
+                    if (next) {
+                      setFibPendingLow(null);
+                    } else {
+                      setFibPendingLow(null);
+                    }
+                  })
+                }
+              >
+                {fibDraw
+                  ? fibPending
+                    ? "그리기 중 · 고점 클릭"
+                    : "그리기 중 · 저점 클릭"
+                  : "차트에서 저점→고점 그리기"}
+              </button>
+              {(fibRet || fibPending) && (
+                <button
+                  type="button"
+                  className="w-full rounded-md border border-border bg-bg px-2 py-1.5 text-left text-xs text-text-tertiary hover:text-negative"
+                  onClick={() =>
+                    bump(() => {
+                      clearFibRetracement();
+                      setFibPendingLow(null);
+                      setFibDrawMode(false);
+                    })
+                  }
+                >
+                  피보나치 지우기
+                </button>
+              )}
+              <p className="text-[10px] leading-snug text-text-tertiary">
+                저점 클릭 후 고점 클릭. 피보 레벨이 지지·저항에 겹치면
+                Confluence로 강조됩니다.
+              </p>
+            </div>
+          </Group>
+        </div>
 
         <Group
           title="캔들 패턴"

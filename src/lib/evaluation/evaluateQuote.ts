@@ -26,6 +26,10 @@ import {
   detectSupportResistance,
   type SupportResistanceResult,
 } from "./supportResistance";
+import {
+  detectTrendlines,
+  type TrendlineResult,
+} from "./trendlines";
 
 export interface QuoteEvaluation {
   indicators: IndicatorResults;
@@ -35,6 +39,7 @@ export interface QuoteEvaluation {
   patterns: CandlePatternResult | null;
   structure: SwingStructureResult | null;
   supportResistance: SupportResistanceResult | null;
+  trendlines: TrendlineResult | null;
   warnings: string[];
   fatalError: string | null;
   /** Bars actually used after lookback / maxBars / cadence cleanup. */
@@ -97,6 +102,7 @@ export function evaluateQuote(
       patterns: null,
       structure: null,
       supportResistance: null,
+      trendlines: null,
       warnings,
       fatalError: "No OHLCV bars available",
       bars: [],
@@ -158,6 +164,16 @@ export function evaluateQuote(
     }
   }
 
+  let trendlines: TrendlineResult | null = null;
+  if (!fatalError) {
+    try {
+      trendlines = detectTrendlines(prepared);
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
   return {
     indicators,
     score,
@@ -166,6 +182,7 @@ export function evaluateQuote(
     patterns,
     structure,
     supportResistance,
+    trendlines,
     warnings,
     fatalError,
     bars: prepared,

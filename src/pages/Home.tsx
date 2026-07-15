@@ -45,6 +45,12 @@ import {
   getIndicatorOverlayVisibility,
   isVolumeOverlayVisible,
 } from "@/lib/indicatorOverlayStore";
+import {
+  getFibLevelVisibility,
+  getFibRetracement,
+  isFibDrawMode,
+} from "@/lib/fibonacciStore";
+import { getTrendlineChartVisibility } from "@/lib/trendlineStore";
 import { DataNotFoundError, errorMessage } from "@/lib/errors";
 import type {
   BacktestResult,
@@ -190,6 +196,16 @@ export function HomePage() {
   }, [chartVisTick, configTick]);
   const showVolume = useMemo(
     () => isVolumeOverlayVisible(),
+    [chartVisTick],
+  );
+  const fibDrawMode = useMemo(() => isFibDrawMode(), [chartVisTick]);
+  const fibRetracement = useMemo(() => getFibRetracement(), [chartVisTick]);
+  const fibLevelVisibility = useMemo(
+    () => getFibLevelVisibility(),
+    [chartVisTick],
+  );
+  const chartTrendlineVisibility = useMemo(
+    () => getTrendlineChartVisibility(),
     [chartVisTick],
   );
 
@@ -383,9 +399,15 @@ export function HomePage() {
                         evaluation!.supportResistance ?? undefined
                       }
                       chartSrVisibility={chartSrVisibility}
+                      trendlines={evaluation!.trendlines ?? undefined}
+                      chartTrendlineVisibility={chartTrendlineVisibility}
                       indicators={evaluation!.indicators}
                       maVisibility={maVisibility}
                       showVolume={showVolume}
+                      fibDrawMode={fibDrawMode}
+                      fibRetracement={fibRetracement}
+                      fibLevelVisibility={fibLevelVisibility}
+                      onFibChange={() => setChartVisTick((n) => n + 1)}
                     />
                   </div>
                   <ChartSidebar
