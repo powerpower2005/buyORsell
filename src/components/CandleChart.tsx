@@ -55,6 +55,10 @@ interface Props {
   chartSrVisibility?: Record<SrChartToggleId, boolean>;
   trendlines?: TrendlineResult;
   chartTrendlineVisibility?: Record<TrendlineChartToggleId, boolean>;
+  /** Per-line visibility keyed by Trendline.id. Missing id defaults to true. */
+  chartTrendlineLineVisibility?: Record<string, boolean>;
+  /** Resolved per-line colors keyed by Trendline.id. */
+  chartTrendlineColors?: Record<string, string>;
   indicators?: IndicatorResults;
   /** Per-period SMA/EMA line visibility. Missing period defaults to true. */
   maVisibility?: {
@@ -100,6 +104,8 @@ export function CandleChart({
   chartSrVisibility,
   trendlines,
   chartTrendlineVisibility,
+  chartTrendlineLineVisibility,
+  chartTrendlineColors,
   indicators,
   maVisibility,
   showVolume = true,
@@ -169,13 +175,17 @@ export function CandleChart({
         TrendlineChartToggleId,
         boolean
       >);
+    const lineVis = chartTrendlineLineVisibility ?? {};
+    const keep = (line: Trendline) => lineVis[line.id] ?? true;
     const out: Trendline[] = [];
-    if (vis.ascending) out.push(...trendlines.ascending);
-    if (vis.descending) out.push(...trendlines.descending);
+    if (vis.ascending) out.push(...trendlines.ascending.filter(keep));
+    if (vis.descending) out.push(...trendlines.descending.filter(keep));
     return out;
-  }, [trendlines, chartTrendlineVisibility]);
+  }, [trendlines, chartTrendlineVisibility, chartTrendlineLineVisibility]);
   const trendlinesRef = useRef(visibleTrendlines);
   trendlinesRef.current = visibleTrendlines;
+  const trendlineColorsRef = useRef(chartTrendlineColors ?? {});
+  trendlineColorsRef.current = chartTrendlineColors ?? {};
 
   const patternLegend = useMemo(
     () =>
@@ -244,16 +254,6 @@ export function CandleChart({
       ctx.lineTo(width, y2);
       ctx.stroke();
       ctx.setLineDash([]);
-
-      ctx.fillStyle = colors.label;
-      ctx.font = "11px Pretendard, sans-serif";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      const label =
-        zone.kind === "support"
-          ? `S×${zone.quality.touchEvents} ${zone.low.toFixed(2)}-${zone.high.toFixed(2)} [${zone.quality.grade}]`
-          : `R×${zone.quality.touchEvents} ${zone.low.toFixed(2)}-${zone.high.toFixed(2)} [${zone.quality.grade}]`;
-      ctx.fillText(label, 8, top + bandH / 2);
     }
 
     // Dynamic trendlines
@@ -272,7 +272,8 @@ export function CandleChart({
       const y2 = series.priceToCoordinate(line.y2);
       const yEnd = series.priceToCoordinate(line.yAtEnd);
       if (x1 == null || y1 == null || yEnd == null) continue;
-      const color = TRENDLINE_COLORS[line.kind];
+      const color =
+        trendlineColorsRef.current[line.id] ?? TRENDLINE_COLORS[line.kind];
       ctx.strokeStyle = color;
       ctx.lineWidth = line.broken ? 1 : 2;
       ctx.setLineDash(line.broken ? [4, 4] : []);
@@ -294,15 +295,6 @@ export function CandleChart({
         ctx.arc(x2, y2, 3, 0, Math.PI * 2);
         ctx.fill();
       }
-
-      ctx.font = "10px Pretendard, sans-serif";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "bottom";
-      const tag =
-        line.kind === "ascending"
-          ? `TL↑ ${line.touches}t`
-          : `TL↓ ${line.touches}t`;
-      ctx.fillText(tag, x1 + 4, y1 - 2);
     }
 
     // ── Fibonacci retracement ─────────────────────────────────────────────────
@@ -335,11 +327,6 @@ export function CandleChart({
           ctx.lineTo(width, y0);
           ctx.stroke();
           ctx.restore();
-          ctx.fillStyle = "rgba(255,255,255,0.45)";
-          ctx.font = "10px Pretendard, sans-serif";
-          ctx.textAlign = "right";
-          ctx.textBaseline = "bottom";
-          ctx.fillText(`0%  ${fib.high.price.toFixed(2)}`, width - 4, y0 - 2);
         }
 
         // 100% guide at low price
@@ -354,11 +341,6 @@ export function CandleChart({
           ctx.lineTo(width, y100);
           ctx.stroke();
           ctx.restore();
-          ctx.fillStyle = "rgba(255,255,255,0.45)";
-          ctx.font = "10px Pretendard, sans-serif";
-          ctx.textAlign = "right";
-          ctx.textBaseline = "top";
-          ctx.fillText(`100%  ${fib.low.price.toFixed(2)}`, width - 4, y100 + 2);
         }
 
         // Confluence highlight bands (full width, gold/amber)
@@ -383,17 +365,6 @@ export function CandleChart({
           ctx.lineTo(width, cfTop + cfH);
           ctx.stroke();
           ctx.restore();
-
-          ctx.fillStyle = FIB_CONFLUENCE_COLOR;
-          ctx.font = "bold 10px Pretendard, sans-serif";
-          ctx.textAlign = "left";
-          ctx.textBaseline = "middle";
-          const srLabel = hit.zoneKind === "support" ? "S" : "R";
-          ctx.fillText(
-            `CF ${fibLevelLabel(hit.ratio)} + ${srLabel}`,
-            8,
-            cfTop + cfH / 2,
-          );
         }
 
         // Fib level lines (dashed, from xStart to right edge)
@@ -420,16 +391,6 @@ export function CandleChart({
           ctx.lineTo(width, yFib);
           ctx.stroke();
           ctx.restore();
-
-          ctx.fillStyle = color;
-          ctx.font = `${hasConf ? "bold " : ""}10px Pretendard, sans-serif`;
-          ctx.textAlign = "right";
-          ctx.textBaseline = "bottom";
-          ctx.fillText(
-            `${fibLevelLabel(ratio)}  ${fibPrice.toFixed(2)}`,
-            width - 4,
-            yFib - 2,
-          );
         }
       }
     }
@@ -740,7 +701,13 @@ export function CandleChart({
   useEffect(() => {
     drawChartOverlays();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fibRetracement, fibLevelVisibility, visibleTrendlines, srZones]);
+  }, [
+    fibRetracement,
+    fibLevelVisibility,
+    visibleTrendlines,
+    srZones,
+    chartTrendlineColors,
+  ]);
 
   // ─── Fib draw mode lifecycle ───────────────────────────────────────────────
 
@@ -841,25 +808,36 @@ export function CandleChart({
           {visibleTrendlines.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
               <span>동적 추세선 ({visibleTrendlines.length}):</span>
-              {visibleTrendlines.map((line) => (
-                <span key={line.id} className="flex items-center gap-1.5">
-                  <span
-                    className="inline-block h-0.5 w-4 rounded-sm"
-                    style={{ backgroundColor: TRENDLINE_COLORS[line.kind] }}
-                  />
-                  <span className="tabular-nums text-text-tertiary">
-                    {line.kind === "ascending" ? "↑" : "↓"} 터치 {line.touches}{" "}
-                    · 점수 {line.score}
-                    {line.broken ? " · 이탈" : ""}
+              {visibleTrendlines.map((line) => {
+                const siblings =
+                  line.kind === "ascending"
+                    ? (trendlines?.ascending ?? [])
+                    : (trendlines?.descending ?? []);
+                const index = siblings.findIndex((l) => l.id === line.id);
+                const color =
+                  chartTrendlineColors?.[line.id] ??
+                  TRENDLINE_COLORS[line.kind];
+                return (
+                  <span key={line.id} className="flex items-center gap-1.5">
+                    <span
+                      className="inline-block h-0.5 w-4 rounded-sm"
+                      style={{ backgroundColor: color }}
+                    />
+                    <span className="tabular-nums text-text-tertiary">
+                      {line.kind === "ascending" ? "↑" : "↓"}
+                      {index >= 0 ? ` #${index + 1}` : ""} · 터치{" "}
+                      {line.touches} · 점수 {line.score}
+                      {line.broken ? " · 이탈" : ""}
+                    </span>
                   </span>
-                </span>
-              ))}
+                );
+              })}
             </div>
           )}
           {srZones.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
               <span>지지·저항 가격대 ({srZones.length}):</span>
-              {srZones.slice(0, 6).map((z) => (
+              {srZones.map((z) => (
                 <span key={z.id} className="flex items-center gap-1.5">
                   <span
                     className="inline-block h-2 w-4 rounded-sm"

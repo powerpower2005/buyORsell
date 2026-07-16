@@ -50,7 +50,11 @@ import {
   getFibRetracement,
   isFibDrawMode,
 } from "@/lib/fibonacciStore";
-import { getTrendlineChartVisibility } from "@/lib/trendlineStore";
+import {
+  getTrendlineChartVisibility,
+  getTrendlineLineColors,
+  getTrendlineLineVisibility,
+} from "@/lib/trendlineStore";
 import { DataNotFoundError, errorMessage } from "@/lib/errors";
 import type {
   BacktestResult,
@@ -215,6 +219,25 @@ export function HomePage() {
   const evaluation = quote
     ? evaluateQuote(quote.ohlcv, timeframe, indicatorConfig)
     : null;
+
+  const trendlineIdsKey = evaluation?.trendlines
+    ? [
+        ...evaluation.trendlines.ascending.map((l) => l.id),
+        ...evaluation.trendlines.descending.map((l) => l.id),
+      ].join("|")
+    : "";
+  const chartTrendlineLineVisibility = useMemo(
+    () =>
+      getTrendlineLineVisibility(
+        trendlineIdsKey ? trendlineIdsKey.split("|") : [],
+      ),
+    [trendlineIdsKey, chartVisTick],
+  );
+  const chartTrendlineColors = useMemo(() => {
+    const tl = evaluation?.trendlines;
+    if (!tl) return {};
+    return getTrendlineLineColors([...tl.ascending, ...tl.descending]);
+  }, [trendlineIdsKey, chartVisTick]);
 
   const resultStatus: AnalysisStatus | "ready" = (() => {
     if (loading) return "loading";
@@ -401,6 +424,10 @@ export function HomePage() {
                       chartSrVisibility={chartSrVisibility}
                       trendlines={evaluation!.trendlines ?? undefined}
                       chartTrendlineVisibility={chartTrendlineVisibility}
+                      chartTrendlineLineVisibility={
+                        chartTrendlineLineVisibility
+                      }
+                      chartTrendlineColors={chartTrendlineColors}
                       indicators={evaluation!.indicators}
                       maVisibility={maVisibility}
                       showVolume={showVolume}
@@ -414,6 +441,7 @@ export function HomePage() {
                     className="w-full shrink-0 lg:sticky lg:top-4 lg:w-64"
                     visibilityTick={chartVisTick}
                     onVisibilityChange={() => setChartVisTick((n) => n + 1)}
+                    trendlines={evaluation!.trendlines}
                   />
                 </div>
                 <div className="grid gap-6 xl:grid-cols-2">

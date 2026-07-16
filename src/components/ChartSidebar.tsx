@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import clsx from "clsx";
+import { ColorSwatchPicker } from "@/components/ColorSwatchPicker";
 import { getIndicatorConfig } from "@/lib/configStore";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 import {
@@ -32,8 +33,16 @@ import {
 import {
   TRENDLINE_CHART_TOGGLE_META,
   TRENDLINE_CHART_TOGGLE_ORDER,
+  TRENDLINE_COLOR_OPTIONS,
   getTrendlineChartVisibility,
+  getTrendlineKindColors,
+  getTrendlineLineColors,
+  getTrendlineLineVisibility,
   setTrendlineChartVisible,
+  setTrendlineKindColor,
+  setTrendlineLineColor,
+  setTrendlineLineVisible,
+  setTrendlineLinesVisible,
   type TrendlineChartToggleId,
 } from "@/lib/trendlineStore";
 import {
@@ -54,12 +63,26 @@ import {
 import type { CandlePatternId } from "@/lib/evaluation/candlePatterns";
 import type { SwingChartToggleId } from "@/lib/swingStructureStore";
 import type { SrChartToggleId } from "@/lib/srZoneStore";
+import type { Trendline, TrendlineResult } from "@/lib/evaluation/trendlines";
+
+const EMPTY_TRENDLINES: Trendline[] = [];
 
 interface Props {
   /** Bumps when any visibility store changes (parent tick). */
   visibilityTick: number;
   onVisibilityChange: () => void;
+  /** Current evaluation trendlines for per-line toggles. */
+  trendlines?: TrendlineResult | null;
   className?: string;
+}
+
+function trendlineLeafLabel(line: Trendline, index: number): string {
+  const arrow = line.kind === "ascending" ? "↑" : "↓";
+  return `${arrow} #${index + 1} · 터치 ${line.touches} · 점수 ${line.score}`;
+}
+
+function trendlineLeafHint(line: Trendline): string {
+  return line.broken ? "이탈됨" : `${line.date1} → ${line.date2}`;
 }
 
 function TriCheckbox({
@@ -137,38 +160,56 @@ function Leaf({
   onChange,
   color,
   hint,
+  colorValue,
+  onColorChange,
+  colorOptions,
 }: {
   label: string;
   checked: boolean;
   onChange: (next: boolean) => void;
   color?: string;
   hint?: string;
+  colorValue?: string;
+  onColorChange?: (color: string) => void;
+  colorOptions?: readonly string[];
 }) {
   return (
-    <label className="flex cursor-pointer items-start gap-2 rounded px-1.5 py-1 hover:bg-surface-elevated/60">
-      <input
-        type="checkbox"
-        className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-accent"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-      />
-      <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-1.5 text-xs text-text-secondary">
-          {color && (
-            <span
-              className="inline-block h-0.5 w-3 rounded-sm"
-              style={{ backgroundColor: color }}
-            />
-          )}
-          <span className="truncate">{label}</span>
-        </span>
-        {hint && (
-          <span className="mt-0.5 block text-[10px] leading-snug text-text-tertiary">
-            {hint}
+    <div className="rounded px-1.5 py-1 hover:bg-surface-elevated/60">
+      <label className="flex cursor-pointer items-start gap-2">
+        <input
+          type="checkbox"
+          className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-accent"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-1.5 text-xs text-text-secondary">
+            {color && (
+              <span
+                className="inline-block h-0.5 w-3 rounded-sm"
+                style={{ backgroundColor: color }}
+              />
+            )}
+            <span className="truncate">{label}</span>
           </span>
-        )}
-      </span>
-    </label>
+          {hint && (
+            <span className="mt-0.5 block text-[10px] leading-snug text-text-tertiary">
+              {hint}
+            </span>
+          )}
+        </span>
+      </label>
+      {colorValue && onColorChange && (
+        <div className="mt-1.5 pl-5">
+          <ColorSwatchPicker
+            value={colorValue}
+            onChange={onColorChange}
+            options={colorOptions}
+            size="sm"
+          />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -186,6 +227,7 @@ function groupState(values: boolean[]): {
 export function ChartSidebar({
   visibilityTick,
   onVisibilityChange,
+  trendlines,
   className,
 }: Props) {
   const [open, setOpen] = useState<Record<string, boolean>>({
@@ -195,6 +237,8 @@ export function ChartSidebar({
     swing: false,
     sr: false,
     trendlines: true,
+    tlAscending: true,
+    tlDescending: true,
     patterns: false,
     fib: true,
     volume: true,
@@ -228,6 +272,28 @@ export function ChartSidebar({
   const fibRet = useMemo(() => getFibRetracement(), [visibilityTick]);
   const fibPending = useMemo(() => getFibPendingLow(), [visibilityTick]);
   const tlVis = useMemo(() => getTrendlineChartVisibility(), [visibilityTick]);
+  const tlKindColors = useMemo(
+    () => getTrendlineKindColors(),
+    [visibilityTick],
+  );
+  const ascendingLines = trendlines?.ascending ?? EMPTY_TRENDLINES;
+  const descendingLines = trendlines?.descending ?? EMPTY_TRENDLINES;
+  const allTrendlineIdsKey = [
+    ...ascendingLines.map((l) => l.id),
+    ...descendingLines.map((l) => l.id),
+  ].join("|");
+  const tlLineVis = useMemo(
+    () =>
+      getTrendlineLineVisibility(
+        allTrendlineIdsKey ? allTrendlineIdsKey.split("|") : [],
+      ),
+    [allTrendlineIdsKey, visibilityTick],
+  );
+  const tlLineColors = useMemo(
+    () =>
+      getTrendlineLineColors([...ascendingLines, ...descendingLines]),
+    [allTrendlineIdsKey, visibilityTick],
+  );
 
   const bump = (fn: () => void) => {
     fn();
@@ -236,6 +302,30 @@ export function ChartSidebar({
 
   const toggleOpen = (key: string) =>
     setOpen((s) => ({ ...s, [key]: !s[key] }));
+
+  const kindLineState = (kind: TrendlineChartToggleId, lines: Trendline[]) => {
+    if (lines.length <= 1) {
+      return groupState([tlVis[kind]]);
+    }
+    if (!tlVis[kind]) {
+      return { checked: false, indeterminate: false };
+    }
+    return groupState(lines.map((l) => tlLineVis[l.id] ?? true));
+  };
+
+  const setKindVisible = (
+    kind: TrendlineChartToggleId,
+    lines: Trendline[],
+    next: boolean,
+  ) => {
+    setTrendlineChartVisible(kind, next);
+    if (lines.length > 1) {
+      setTrendlineLinesVisible(
+        lines.map((l) => l.id),
+        next,
+      );
+    }
+  };
 
   const smaVals = smaPeriods.map((p) => smaVis[p]);
   const emaVals = emaPeriods.map((p) => emaVis[p]);
@@ -251,9 +341,24 @@ export function ChartSidebar({
   const fibState = groupState(
     FIB_RETRACEMENT_LEVELS.map((r) => fibVis[r]),
   );
-  const tlState = groupState(
-    TRENDLINE_CHART_TOGGLE_ORDER.map((id) => tlVis[id]),
-  );
+  const ascState = kindLineState("ascending", ascendingLines);
+  const descState = kindLineState("descending", descendingLines);
+  const tlAggregateVals: boolean[] = [];
+  for (const kind of TRENDLINE_CHART_TOGGLE_ORDER) {
+    const lines = kind === "ascending" ? ascendingLines : descendingLines;
+    if (lines.length > 1) {
+      if (!tlVis[kind]) {
+        tlAggregateVals.push(false);
+      } else {
+        for (const line of lines) {
+          tlAggregateVals.push(tlLineVis[line.id] ?? true);
+        }
+      }
+    } else {
+      tlAggregateVals.push(tlVis[kind]);
+    }
+  }
+  const tlState = groupState(tlAggregateVals);
 
   return (
     <aside
@@ -387,24 +492,102 @@ export function ChartSidebar({
           indeterminate={tlState.indeterminate}
           onToggleAll={(next) =>
             bump(() => {
-              for (const id of TRENDLINE_CHART_TOGGLE_ORDER) {
-                setTrendlineChartVisible(id, next);
-              }
+              setKindVisible("ascending", ascendingLines, next);
+              setKindVisible("descending", descendingLines, next);
             })
           }
         >
-          {TRENDLINE_CHART_TOGGLE_ORDER.map((id: TrendlineChartToggleId) => (
-            <Leaf
-              key={id}
-              label={TRENDLINE_CHART_TOGGLE_META[id].labelKo}
-              hint={TRENDLINE_CHART_TOGGLE_META[id].description}
-              color={id === "ascending" ? "#34d399" : "#fb7185"}
-              checked={tlVis[id]}
-              onChange={(next) =>
-                bump(() => setTrendlineChartVisible(id, next))
-              }
-            />
-          ))}
+          {TRENDLINE_CHART_TOGGLE_ORDER.map((id: TrendlineChartToggleId) => {
+            const lines =
+              id === "ascending" ? ascendingLines : descendingLines;
+            const kindColor = tlKindColors[id];
+            const openKey = id === "ascending" ? "tlAscending" : "tlDescending";
+            const state = id === "ascending" ? ascState : descState;
+
+            if (lines.length > 1) {
+              return (
+                <Group
+                  key={id}
+                  title={TRENDLINE_CHART_TOGGLE_META[id].labelKo}
+                  open={open[openKey]}
+                  onToggleOpen={() => toggleOpen(openKey)}
+                  checked={state.checked}
+                  indeterminate={state.indeterminate}
+                  colorDot={kindColor}
+                  onToggleAll={(next) =>
+                    bump(() => setKindVisible(id, lines, next))
+                  }
+                >
+                  <div className="mb-1 px-1.5">
+                    <p className="mb-1 text-[10px] text-text-tertiary">
+                      기본 색상
+                    </p>
+                    <ColorSwatchPicker
+                      value={kindColor}
+                      options={TRENDLINE_COLOR_OPTIONS}
+                      size="sm"
+                      onChange={(c) =>
+                        bump(() => setTrendlineKindColor(id, c))
+                      }
+                    />
+                  </div>
+                  {lines.map((line, i) => {
+                    const lineColor = tlLineColors[line.id] ?? kindColor;
+                    return (
+                      <Leaf
+                        key={line.id}
+                        label={trendlineLeafLabel(line, i)}
+                        hint={trendlineLeafHint(line)}
+                        color={lineColor}
+                        checked={
+                          tlVis[id] && (tlLineVis[line.id] ?? true)
+                        }
+                        colorValue={lineColor}
+                        colorOptions={TRENDLINE_COLOR_OPTIONS}
+                        onColorChange={(c) =>
+                          bump(() => setTrendlineLineColor(line.id, c))
+                        }
+                        onChange={(next) =>
+                          bump(() => {
+                            if (next && !tlVis[id]) {
+                              setTrendlineChartVisible(id, true);
+                            }
+                            setTrendlineLineVisible(line.id, next);
+                          })
+                        }
+                      />
+                    );
+                  })}
+                </Group>
+              );
+            }
+
+            const singleColor =
+              lines[0] != null
+                ? (tlLineColors[lines[0].id] ?? kindColor)
+                : kindColor;
+
+            return (
+              <Leaf
+                key={id}
+                label={TRENDLINE_CHART_TOGGLE_META[id].labelKo}
+                hint={TRENDLINE_CHART_TOGGLE_META[id].description}
+                color={singleColor}
+                checked={tlVis[id]}
+                colorValue={singleColor}
+                colorOptions={TRENDLINE_COLOR_OPTIONS}
+                onColorChange={(c) =>
+                  bump(() => {
+                    setTrendlineKindColor(id, c);
+                    if (lines[0]) setTrendlineLineColor(lines[0].id, c);
+                  })
+                }
+                onChange={(next) =>
+                  bump(() => setTrendlineChartVisible(id, next))
+                }
+              />
+            );
+          })}
         </Group>
 
         <Group
