@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-17T02:08:21.201Z",
+  "updatedAt": "2026-07-17T08:01:13.860Z",
   "entries": [
     {
       "ticker": "000660:KRX",
       "timeframe": "1d",
       "path": "data/000660-KRX/1d.json",
-      "fetchedAt": "2026-07-17T02:07:31.743Z",
+      "fetchedAt": "2026-07-17T08:00:24.472Z",
       "lastBarDate": "2026-07-13",
       "barCount": 481
     },
@@ -14,7 +14,7 @@
       "ticker": "NVDA:NASDAQ",
       "timeframe": "1d",
       "path": "data/NVDA-NASDAQ/1d.json",
-      "fetchedAt": "2026-07-17T02:07:48.298Z",
+      "fetchedAt": "2026-07-17T08:00:41.073Z",
       "lastBarDate": "2026-07-13",
       "barCount": 498
     },
@@ -22,7 +22,7 @@
       "ticker": "KOSPI:KRX",
       "timeframe": "1d",
       "path": "data/KOSPI-KRX/1d.json",
-      "fetchedAt": "2026-07-17T02:08:04.734Z",
+      "fetchedAt": "2026-07-17T08:00:57.479Z",
       "lastBarDate": "2026-07-10",
       "barCount": 482
     },
@@ -30,7 +30,7 @@
       "ticker": "NDX:INDEXNASDAQ",
       "timeframe": "1d",
       "path": "data/NDX-INDEXNASDAQ/1d.json",
-      "fetchedAt": "2026-07-17T02:08:21.195Z",
+      "fetchedAt": "2026-07-17T08:01:13.856Z",
       "lastBarDate": "2026-07-10",
       "barCount": 498
     }
