@@ -38,6 +38,7 @@ import { CandlePatternPanel } from "@/components/CandlePatternPanel";
 import { SwingStructurePanel } from "@/components/SwingStructurePanel";
 import { SupportResistancePanel } from "@/components/SupportResistancePanel";
 import { ChartSidebar } from "@/components/ChartSidebar";
+import { formatTickerLabel } from "@/lib/tickerNames";
 import { getChartPatternVisibility } from "@/lib/candlePatternStore";
 import { getSwingChartVisibility } from "@/lib/swingStructureStore";
 import { getSrChartVisibility } from "@/lib/srZoneStore";
@@ -325,7 +326,9 @@ export function HomePage() {
             <Card className="space-y-4">
               <SectionTitle>2. 작업 선택</SectionTitle>
               <p className="text-sm text-text-secondary">
-                <strong className="text-text-primary">{inputParsed.ticker}</strong>
+                <strong className="text-text-primary">
+                  {formatTickerLabel(inputParsed.ticker)}
+                </strong>
               </p>
 
               <TimeframeTabs
@@ -395,7 +398,7 @@ export function HomePage() {
             <div className="text-left">
               <p className="text-xs text-text-tertiary">분석 중</p>
               <p className="text-lg font-semibold">
-                {ticker} · {timeframe}
+                {formatTickerLabel(ticker)} · {timeframe}
               </p>
             </div>
             <Button variant="ghost" onClick={backToSetup}>

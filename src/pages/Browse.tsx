@@ -13,6 +13,7 @@ import { CandlePatternPanel } from "@/components/CandlePatternPanel";
 import { SwingStructurePanel } from "@/components/SwingStructurePanel";
 import { SupportResistancePanel } from "@/components/SupportResistancePanel";
 import { ChartSidebar } from "@/components/ChartSidebar";
+import { formatTickerLabel } from "@/lib/tickerNames";
 import { getChartPatternVisibility } from "@/lib/candlePatternStore";
 import { getSwingChartVisibility } from "@/lib/swingStructureStore";
 import { getSrChartVisibility } from "@/lib/srZoneStore";
@@ -313,7 +314,9 @@ export function BrowsePage() {
                           : "text-text-secondary hover:bg-surface-elevated hover:text-text-primary",
                       )}
                     >
-                      <span className="font-medium">{e.ticker}</span>
+                      <span className="font-medium">
+                        {formatTickerLabel(e.ticker)}
+                      </span>
                       <span
                         className={clsx(
                           "mt-0.5 block text-xs",
@@ -338,7 +341,9 @@ export function BrowsePage() {
           ) : (
             <>
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-semibold">{selected.ticker}</h2>
+                <h2 className="text-lg font-semibold">
+                  {formatTickerLabel(selected.ticker)}
+                </h2>
                 <span className="text-sm text-text-tertiary">{selected.timeframe}</span>
                 {freshness && (
                   <Badge variant={freshness.status === "fresh" ? "fresh" : "stale"}>

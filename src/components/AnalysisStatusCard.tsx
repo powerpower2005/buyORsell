@@ -1,5 +1,6 @@
 import { buildFetchIssueUrl } from "@/lib/issueUrl";
 import { describeFetchSchedule } from "@/lib/fetchSchedule";
+import { formatTickerLabel } from "@/lib/tickerNames";
 import { Button } from "./ui/Button";
 
 export type AnalysisStatus =
@@ -45,7 +46,10 @@ export function AnalysisStatusCard({
       <p className="mt-2 text-sm text-text-secondary">{HINTS[status]}</p>
 
       <p className="mt-3 text-sm text-text-tertiary">
-        <strong className="text-text-secondary">{ticker}</strong> · {timeframe}
+        <strong className="text-text-secondary">
+          {formatTickerLabel(ticker)}
+        </strong>{" "}
+        · {timeframe}
       </p>
 
       {detail && (

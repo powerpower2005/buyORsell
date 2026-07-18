@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { formatTickerLabel } from "@/lib/tickerNames";
 
 interface Props {
   tickers: string[];
@@ -41,7 +42,7 @@ export function WatchlistSidebar({
                   : "bg-surface-elevated text-text-secondary hover:text-text-primary",
               )}
             >
-              {t}
+              {formatTickerLabel(t)}
             </button>
           ))}
         </div>

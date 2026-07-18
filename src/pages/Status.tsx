@@ -6,6 +6,7 @@ import { Badge } from "../components/ui/Badge";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { validateFreshness } from "@/lib/validation";
 import { errorMessage } from "@/lib/errors";
+import { formatTickerLabel } from "@/lib/tickerNames";
 import type { Timeframe } from "@/lib/types";
 
 export function StatusPage() {
@@ -60,7 +61,9 @@ export function StatusPage() {
               return (
                 <li key={`${e.ticker}-${e.timeframe}`} className="text-sm">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{e.ticker}</span>
+                    <span className="font-medium">
+                      {formatTickerLabel(e.ticker)}
+                    </span>
                     <span className="text-text-tertiary">{e.timeframe}</span>
                     {rowErr ? (
                       <Badge variant="negative">error</Badge>
