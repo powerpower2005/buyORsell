@@ -32,7 +32,8 @@ function hitToMarker(hit: CandlePatternHit): SeriesMarker<Time> {
     position,
     shape,
     color,
-    text: CANDLE_PATTERN_META[hit.id].markerText,
+    // Labels live in the below-chart legend only.
+    text: "",
     id: `${hit.id}-${hit.barIndex}`,
     size: 1,
   };

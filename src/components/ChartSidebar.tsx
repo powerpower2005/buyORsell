@@ -75,20 +75,34 @@ import {
   type TrendlineChartToggleId,
 } from "@/lib/trendlineStore";
 import {
+  FIB_EXTRA_META,
+  FIB_EXTRA_ORDER,
   FIB_LEVEL_COLORS,
   FIB_RETRACEMENT_LEVELS,
   clearFibRetracement,
   fibLevelLabel,
+  getFibExtraVisibility,
   getFibLevelVisibility,
   getFibPendingLow,
   getFibRetracement,
   isFibDrawMode,
+  setAllFibExtrasVisible,
   setAllFibLevelsVisible,
   setFibDrawMode,
+  setFibExtraVisible,
   setFibLevelVisible,
   setFibPendingLow,
+  type FibExtraId,
   type FibLevelRatio,
 } from "@/lib/fibonacciStore";
+import {
+  AUX_INDICATOR_META,
+  AUX_INDICATOR_ORDER,
+  getAuxIndicatorVisibility,
+  setAuxIndicatorGroupVisible,
+  setAuxIndicatorVisible,
+  type AuxIndicatorId,
+} from "@/lib/auxIndicatorStore";
 import type { CandlePatternId } from "@/lib/evaluation/candlePatterns";
 import type { SwingChartToggleId } from "@/lib/swingStructureStore";
 import type { SrChartToggleId } from "@/lib/srZoneStore";
@@ -274,6 +288,9 @@ export function ChartSidebar({
     patterns: false,
     classicalPatterns: true,
     fib: true,
+    fibLevels: true,
+    fibExtras: true,
+    aux: true,
     volume: true,
   });
 
@@ -312,6 +329,8 @@ export function ChartSidebar({
   const srVis = useMemo(() => getSrChartVisibility(), [visibilityTick]);
   const volumeVis = useMemo(() => isVolumeOverlayVisible(), [visibilityTick]);
   const fibVis = useMemo(() => getFibLevelVisibility(), [visibilityTick]);
+  const fibExtraVis = useMemo(() => getFibExtraVisibility(), [visibilityTick]);
+  const auxVis = useMemo(() => getAuxIndicatorVisibility(), [visibilityTick]);
   const fibDraw = useMemo(() => isFibDrawMode(), [visibilityTick]);
   const fibRet = useMemo(() => getFibRetracement(), [visibilityTick]);
   const fibPending = useMemo(() => getFibPendingLow(), [visibilityTick]);
@@ -390,9 +409,17 @@ export function ChartSidebar({
   const classicalPatternState = groupState(
     CHART_PATTERN_ORDER.map((id) => classicalPatternVis[id]),
   );
-  const fibState = groupState(
+  const fibLevelState = groupState(
     FIB_RETRACEMENT_LEVELS.map((r) => fibVis[r]),
   );
+  const fibExtraState = groupState(
+    FIB_EXTRA_ORDER.map((id) => fibExtraVis[id]),
+  );
+  const fibState = groupState([
+    ...FIB_RETRACEMENT_LEVELS.map((r) => fibVis[r]),
+    ...FIB_EXTRA_ORDER.map((id) => fibExtraVis[id]),
+  ]);
+  const auxState = groupState(AUX_INDICATOR_ORDER.map((id) => auxVis[id]));
   const ascState = kindLineState("ascending", ascendingLines);
   const descState = kindLineState("descending", descendingLines);
   const tlAggregateVals: boolean[] = [];
@@ -736,19 +763,53 @@ export function ChartSidebar({
             onToggleOpen={() => toggleOpen("fib")}
             checked={fibState.checked}
             indeterminate={fibState.indeterminate}
-            onToggleAll={(next) => bump(() => setAllFibLevelsVisible(next))}
+            onToggleAll={(next) =>
+              bump(() => {
+                setAllFibLevelsVisible(next);
+                setAllFibExtrasVisible(next);
+              })
+            }
           >
-            {FIB_RETRACEMENT_LEVELS.map((ratio: FibLevelRatio) => (
-              <Leaf
-                key={ratio}
-                label={fibLevelLabel(ratio)}
-                color={FIB_LEVEL_COLORS[ratio]}
-                checked={fibVis[ratio]}
-                onChange={(next) =>
-                  bump(() => setFibLevelVisible(ratio, next))
-                }
-              />
-            ))}
+            <Group
+              title="되돌림 레벨"
+              open={open.fibLevels}
+              onToggleOpen={() => toggleOpen("fibLevels")}
+              checked={fibLevelState.checked}
+              indeterminate={fibLevelState.indeterminate}
+              onToggleAll={(next) => bump(() => setAllFibLevelsVisible(next))}
+            >
+              {FIB_RETRACEMENT_LEVELS.map((ratio: FibLevelRatio) => (
+                <Leaf
+                  key={ratio}
+                  label={fibLevelLabel(ratio)}
+                  color={FIB_LEVEL_COLORS[ratio]}
+                  checked={fibVis[ratio]}
+                  onChange={(next) =>
+                    bump(() => setFibLevelVisible(ratio, next))
+                  }
+                />
+              ))}
+            </Group>
+            <Group
+              title="차트 표현"
+              open={open.fibExtras}
+              onToggleOpen={() => toggleOpen("fibExtras")}
+              checked={fibExtraState.checked}
+              indeterminate={fibExtraState.indeterminate}
+              onToggleAll={(next) => bump(() => setAllFibExtrasVisible(next))}
+            >
+              {FIB_EXTRA_ORDER.map((id: FibExtraId) => (
+                <Leaf
+                  key={id}
+                  label={FIB_EXTRA_META[id].labelKo}
+                  hint={FIB_EXTRA_META[id].description}
+                  checked={fibExtraVis[id]}
+                  onChange={(next) =>
+                    bump(() => setFibExtraVisible(id, next))
+                  }
+                />
+              ))}
+            </Group>
             <div className="mt-2 space-y-1.5 px-1.5">
               <button
                 type="button"
@@ -762,11 +823,7 @@ export function ChartSidebar({
                   bump(() => {
                     const next = !fibDraw;
                     setFibDrawMode(next);
-                    if (next) {
-                      setFibPendingLow(null);
-                    } else {
-                      setFibPendingLow(null);
-                    }
+                    setFibPendingLow(null);
                   })
                 }
               >
@@ -792,12 +849,33 @@ export function ChartSidebar({
                 </button>
               )}
               <p className="text-[10px] leading-snug text-text-tertiary">
-                저점 클릭 후 고점 클릭. 피보 레벨이 지지·저항에 겹치면
-                Confluence로 강조됩니다.
+                저점 클릭 후 고점 클릭. 가격 숫자는 차트 아래 범례에만
+                표시됩니다.
               </p>
             </div>
           </Group>
         </div>
+
+        <Group
+          title="보조 지표 (값)"
+          open={open.aux}
+          onToggleOpen={() => toggleOpen("aux")}
+          checked={auxState.checked}
+          indeterminate={auxState.indeterminate}
+          onToggleAll={(next) => bump(() => setAuxIndicatorGroupVisible(next))}
+        >
+          {AUX_INDICATOR_ORDER.map((id: AuxIndicatorId) => (
+            <Leaf
+              key={id}
+              label={AUX_INDICATOR_META[id].labelKo}
+              hint={AUX_INDICATOR_META[id].description}
+              checked={auxVis[id]}
+              onChange={(next) =>
+                bump(() => setAuxIndicatorVisible(id, next))
+              }
+            />
+          ))}
+        </Group>
 
         <Group
           title="차트 패턴"

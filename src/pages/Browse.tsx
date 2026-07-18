@@ -25,10 +25,12 @@ import {
 import { getBbStrategyVisibility } from "@/lib/bbStrategyStore";
 import { getClassicalChartPatternVisibility } from "@/lib/chartPatternStore";
 import {
+  getFibExtraVisibility,
   getFibLevelVisibility,
   getFibRetracement,
   isFibDrawMode,
 } from "@/lib/fibonacciStore";
+import { getAuxIndicatorVisibility } from "@/lib/auxIndicatorStore";
 import {
   getTrendlineChartVisibility,
   getTrendlineLineColors,
@@ -180,6 +182,14 @@ export function BrowsePage() {
   const fibRetracement = useMemo(() => getFibRetracement(), [chartVisTick]);
   const fibLevelVisibility = useMemo(
     () => getFibLevelVisibility(),
+    [chartVisTick],
+  );
+  const fibExtraVisibility = useMemo(
+    () => getFibExtraVisibility(),
+    [chartVisTick],
+  );
+  const auxIndicatorVisibility = useMemo(
+    () => getAuxIndicatorVisibility(),
     [chartVisTick],
   );
   const chartTrendlineVisibility = useMemo(
@@ -406,6 +416,8 @@ export function BrowsePage() {
                         fibDrawMode={fibDrawMode}
                         fibRetracement={fibRetracement}
                         fibLevelVisibility={fibLevelVisibility}
+                        fibExtraVisibility={fibExtraVisibility}
+                        auxIndicatorVisibility={auxIndicatorVisibility}
                         onFibChange={() => setChartVisTick((n) => n + 1)}
                       />
                     </div>

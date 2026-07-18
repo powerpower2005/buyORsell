@@ -6,7 +6,6 @@ import type {
 import {
   BB_STRATEGY_META,
   BB_STRATEGY_ORDER,
-  bbStrategyMarkerText,
   type BbStrategyId,
 } from "@/lib/bbStrategyMeta";
 import { directionColor } from "@/lib/candlePatternMeta";
@@ -30,7 +29,8 @@ function hitToMarker(hit: BbStrategyHit): SeriesMarker<Time> {
     position,
     shape,
     color: directionColor(hit.direction),
-    text: bbStrategyMarkerText(hit.id, hit.direction),
+    // Labels live in the below-chart legend only.
+    text: "",
     id: `bbstrat-${hit.id}-${hit.barIndex}`,
     size: 1,
   };

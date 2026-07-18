@@ -18,6 +18,25 @@ export interface FibRetracement {
 const LEVELS_KEY = "gf:config:fib-levels";
 const DRAW_KEY = "gf:config:fib-draw-mode";
 const ANCHORS_KEY = "gf:config:fib-anchors";
+const EXTRAS_KEY = "gf:config:fib-extras";
+
+export type FibExtraId = "anchors" | "confluence";
+
+export const FIB_EXTRA_ORDER: FibExtraId[] = ["anchors", "confluence"];
+
+export const FIB_EXTRA_META: Record<
+  FibExtraId,
+  { labelKo: string; description: string }
+> = {
+  anchors: {
+    labelKo: "0% / 100% 가이드",
+    description: "고점·저점 기준선 (차트 선만, 숫자는 아래 범례).",
+  },
+  confluence: {
+    labelKo: "Confluence 강조",
+    description: "피보 레벨이 지지·저항에 겹칠 때 밴드 강조.",
+  },
+};
 
 type LevelOverrides = Partial<Record<string, boolean>>;
 
@@ -60,6 +79,44 @@ export function setAllFibLevelsVisible(visible: boolean): void {
     overrides[levelKey(ratio)] = visible;
   }
   saveLevelOverrides(overrides);
+}
+
+type ExtraOverrides = Partial<Record<FibExtraId, boolean>>;
+
+function loadExtraOverrides(): ExtraOverrides {
+  try {
+    const raw = localStorage.getItem(EXTRAS_KEY);
+    return raw ? (JSON.parse(raw) as ExtraOverrides) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveExtraOverrides(overrides: ExtraOverrides): void {
+  localStorage.setItem(EXTRAS_KEY, JSON.stringify(overrides));
+}
+
+/** Default on. */
+export function getFibExtraVisibility(): Record<FibExtraId, boolean> {
+  const overrides = loadExtraOverrides();
+  return {
+    anchors: overrides.anchors ?? true,
+    confluence: overrides.confluence ?? true,
+  };
+}
+
+export function setFibExtraVisible(id: FibExtraId, visible: boolean): void {
+  const overrides = loadExtraOverrides();
+  overrides[id] = visible;
+  saveExtraOverrides(overrides);
+}
+
+export function setAllFibExtrasVisible(visible: boolean): void {
+  const overrides = loadExtraOverrides();
+  for (const id of FIB_EXTRA_ORDER) {
+    overrides[id] = visible;
+  }
+  saveExtraOverrides(overrides);
 }
 
 export function isFibDrawMode(): boolean {

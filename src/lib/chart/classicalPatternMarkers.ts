@@ -7,7 +7,6 @@ import type {
 import {
   CHART_PATTERN_META,
   CHART_PATTERN_ORDER,
-  chartPatternMarkerText,
   type ChartPatternId,
 } from "@/lib/chartPatternMeta";
 import { directionColor } from "@/lib/candlePatternMeta";
@@ -31,7 +30,8 @@ function hitToMarker(hit: ChartPatternHit): SeriesMarker<Time> {
     position,
     shape,
     color: directionColor(hit.direction),
-    text: chartPatternMarkerText(hit.id, hit.direction),
+    // Labels live in the below-chart legend only.
+    text: "",
     id: `cpat-${hit.instanceKey}`,
     size: 1,
   };

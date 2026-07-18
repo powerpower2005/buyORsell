@@ -62,10 +62,21 @@ import {
   setFibPendingLow,
   setFibRetracement,
   type FibAnchor,
+  type FibExtraId,
   type FibLevelRatio,
   type FibRetracement,
 } from "@/lib/fibonacciStore";
+import {
+  AUX_INDICATOR_META,
+  AUX_INDICATOR_ORDER,
+  type AuxIndicatorId,
+} from "@/lib/auxIndicatorStore";
 import { Card } from "./ui/Card";
+
+function fmtLegend(value: number | null | undefined, digits = 2): string {
+  if (value == null || Number.isNaN(value)) return "—";
+  return value.toFixed(digits);
+}
 
 interface Props {
   bars: OHLCVBar[];
@@ -99,6 +110,10 @@ interface Props {
   fibDrawMode?: boolean;
   fibRetracement?: FibRetracement | null;
   fibLevelVisibility?: Record<FibLevelRatio, boolean>;
+  /** 0%/100% guides and confluence band visibility. Missing defaults to true. */
+  fibExtraVisibility?: Partial<Record<FibExtraId, boolean>>;
+  /** Below-chart oscillator value toggles. Missing defaults to true. */
+  auxIndicatorVisibility?: Partial<Record<AuxIndicatorId, boolean>>;
   onFibChange?: () => void;
 }
 
@@ -147,6 +162,8 @@ export function CandleChart({
   fibDrawMode,
   fibRetracement,
   fibLevelVisibility,
+  fibExtraVisibility,
+  auxIndicatorVisibility,
   onFibChange,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -169,6 +186,10 @@ export function CandleChart({
     fibLevelVisibility,
   );
   fibLevelsRef.current = fibLevelVisibility;
+  const fibExtrasRef = useRef<Partial<Record<FibExtraId, boolean>> | undefined>(
+    fibExtraVisibility,
+  );
+  fibExtrasRef.current = fibExtraVisibility;
   const onFibChangeRef = useRef<(() => void) | undefined>(onFibChange);
   onFibChangeRef.current = onFibChange;
 
@@ -281,11 +302,23 @@ export function CandleChart({
   const classicalInstancesRef = useRef(visibleClassicalInstances);
   classicalInstancesRef.current = visibleClassicalInstances;
 
+  const showFibAnchors = fibExtraVisibility?.anchors !== false;
+  const showFibConfluence = fibExtraVisibility?.confluence !== false;
+
   const fibConfluences = useMemo(() => {
-    if (!fibRetracement || fibRetracement.high.price <= fibRetracement.low.price)
+    if (
+      !showFibConfluence ||
+      !fibRetracement ||
+      fibRetracement.high.price <= fibRetracement.low.price
+    )
       return [];
     return findFibConfluences(fibRetracement, srZones, fibLevelVisibility);
-  }, [fibRetracement, srZones, fibLevelVisibility]);
+  }, [
+    fibRetracement,
+    srZones,
+    fibLevelVisibility,
+    showFibConfluence,
+  ]);
 
   // ─── Overlay draw ──────────────────────────────────────────────────────────
 
@@ -429,36 +462,42 @@ export function CandleChart({
 
       if (xLow != null && xHigh != null) {
         const xStart = Math.min(xLow, xHigh);
+        const extras = fibExtrasRef.current;
+        const drawAnchors = extras?.anchors !== false;
+        const drawConfluence = extras?.confluence !== false;
 
-        const confluences = findFibConfluences(fib, srZonesRef.current, levelVis);
+        const confluences = drawConfluence
+          ? findFibConfluences(fib, srZonesRef.current, levelVis)
+          : [];
         const confluenceRatios = new Set(confluences.map((c) => c.ratio));
 
-        // 0% guide at high price
-        const y0 = series.priceToCoordinate(fib.high.price);
-        if (y0 != null) {
-          ctx.save();
-          ctx.strokeStyle = "rgba(255,255,255,0.28)";
-          ctx.lineWidth = 1;
-          ctx.setLineDash([6, 4]);
-          ctx.beginPath();
-          ctx.moveTo(xStart, y0);
-          ctx.lineTo(width, y0);
-          ctx.stroke();
-          ctx.restore();
-        }
+        // 0% / 100% guides (no price text — values live in legend)
+        if (drawAnchors) {
+          const y0 = series.priceToCoordinate(fib.high.price);
+          if (y0 != null) {
+            ctx.save();
+            ctx.strokeStyle = "rgba(255,255,255,0.28)";
+            ctx.lineWidth = 1;
+            ctx.setLineDash([6, 4]);
+            ctx.beginPath();
+            ctx.moveTo(xStart, y0);
+            ctx.lineTo(width, y0);
+            ctx.stroke();
+            ctx.restore();
+          }
 
-        // 100% guide at low price
-        const y100 = series.priceToCoordinate(fib.low.price);
-        if (y100 != null) {
-          ctx.save();
-          ctx.strokeStyle = "rgba(255,255,255,0.28)";
-          ctx.lineWidth = 1;
-          ctx.setLineDash([6, 4]);
-          ctx.beginPath();
-          ctx.moveTo(xStart, y100);
-          ctx.lineTo(width, y100);
-          ctx.stroke();
-          ctx.restore();
+          const y100 = series.priceToCoordinate(fib.low.price);
+          if (y100 != null) {
+            ctx.save();
+            ctx.strokeStyle = "rgba(255,255,255,0.28)";
+            ctx.lineWidth = 1;
+            ctx.setLineDash([6, 4]);
+            ctx.beginPath();
+            ctx.moveTo(xStart, y100);
+            ctx.lineTo(width, y100);
+            ctx.stroke();
+            ctx.restore();
+          }
         }
 
         // Confluence highlight bands (full width, gold/amber)
@@ -569,11 +608,15 @@ export function CandleChart({
       borderVisible: false,
       wickUpColor: "#00c471",
       wickDownColor: "#f04452",
+      lastValueVisible: false,
+      priceLineVisible: false,
     });
 
     const volume = chart.addHistogramSeries({
       priceScaleId: "volume",
       priceFormat: { type: "volume" },
+      lastValueVisible: false,
+      priceLineVisible: false,
     });
 
     chart.priceScale("volume").applyOptions({
@@ -707,14 +750,21 @@ export function CandleChart({
           line = chart.addLineSeries({
             color: resolvePeriodColor(colors, period, i),
             lineWidth,
-            title: key.toUpperCase(),
+            // Keep labels off the canvas; values live in the below-chart legend.
+            title: "",
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
           });
           overlayRefs.current.set(key, line);
         } else {
           line.applyOptions({
             color: resolvePeriodColor(colors, period, i),
             visible: true,
-            title: key.toUpperCase(),
+            title: "",
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
           });
         }
 
@@ -744,14 +794,28 @@ export function CandleChart({
 
         const color = resolveBbBandColor(colors, band);
         const lineWidth: 1 | 2 = band === "middle" ? 2 : 1;
-        const title = `BB ${meta.label}`;
 
         let line = overlayRefs.current.get(key);
         if (!line) {
-          line = chart.addLineSeries({ color, lineWidth, title });
+          line = chart.addLineSeries({
+            color,
+            lineWidth,
+            title: "",
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          });
           overlayRefs.current.set(key, line);
         } else {
-          line.applyOptions({ color, lineWidth, visible: true, title });
+          line.applyOptions({
+            color,
+            lineWidth,
+            visible: true,
+            title: "",
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          });
         }
 
         line.setData(
@@ -781,12 +845,14 @@ export function CandleChart({
       const periods = (cfg.params.periods as number[]) ?? [];
       const colors = parsePeriodColors(cfg.params.colors);
       const periodVis = maVisibility?.[pluginId];
+      const out = indicators.indicators[pluginId];
       periods.forEach((period, i) => {
         if (!(periodVis?.[period] ?? true)) return;
         const key = `${pluginId}:${period}`;
-        if (!indicators.indicators[pluginId]?.series[key]?.length) return;
+        if (!out?.series[key]?.length) return;
+        const latest = out.latest[key];
         items.push({
-          label: `${pluginId.toUpperCase()} ${period}`,
+          label: `${pluginId.toUpperCase()} ${period} · ${fmtLegend(latest)}`,
           color: resolvePeriodColor(colors, period, i),
         });
       });
@@ -800,8 +866,9 @@ export function CandleChart({
         if (!(bbVisibility?.[band] ?? true)) continue;
         const meta = BB_BAND_META[band];
         if (!bbOut.series[meta.seriesKey]?.length) continue;
+        const latest = bbOut.latest[meta.seriesKey];
         items.push({
-          label: `BB ${meta.labelKo}`,
+          label: `BB ${meta.labelKo} · ${fmtLegend(latest)}`,
           color: resolveBbBandColor(colors, band),
         });
       }
@@ -809,6 +876,175 @@ export function CandleChart({
 
     return items;
   }, [indicators, maVisibility, bbVisibility]);
+
+  const auxIndicatorLegend = useMemo(() => {
+    if (!indicators) return [];
+    const items: { id: AuxIndicatorId; label: string; value: string }[] = [];
+
+    for (const id of AUX_INDICATOR_ORDER) {
+      if (auxIndicatorVisibility?.[id] === false) continue;
+      const meta = AUX_INDICATOR_META[id];
+
+      if (id === "rsi") {
+        const cfg = getIndicatorConfig("rsi");
+        if (!cfg?.enabled) continue;
+        const period = (cfg.params.period as number | undefined) ?? 14;
+        const val = indicators.indicators.rsi?.latest.rsi;
+        if (val == null && !indicators.indicators.rsi) continue;
+        items.push({
+          id,
+          label: `${meta.labelKo}(${period})`,
+          value: fmtLegend(val),
+        });
+        continue;
+      }
+
+      if (id === "macd") {
+        const cfg = getIndicatorConfig("macd");
+        if (!cfg?.enabled) continue;
+        const val = indicators.indicators.macd?.latest.macdHist;
+        if (val == null && !indicators.indicators.macd) continue;
+        items.push({
+          id,
+          label: meta.labelKo,
+          value: fmtLegend(val, 4),
+        });
+        continue;
+      }
+
+      if (id === "mfi") {
+        const cfg = getIndicatorConfig("mfi");
+        if (!cfg?.enabled) continue;
+        const period = (cfg.params.period as number | undefined) ?? 14;
+        const val = indicators.indicators.mfi?.latest.mfi;
+        if (val == null && !indicators.indicators.mfi) continue;
+        items.push({
+          id,
+          label: `${meta.labelKo}(${period})`,
+          value: fmtLegend(val),
+        });
+        continue;
+      }
+
+      if (id === "atr") {
+        const cfg = getIndicatorConfig("atr");
+        if (!cfg?.enabled) continue;
+        const val = indicators.indicators.atr?.latest.atr;
+        if (val == null && !indicators.indicators.atr) continue;
+        items.push({
+          id,
+          label: meta.labelKo,
+          value: fmtLegend(val),
+        });
+        continue;
+      }
+
+      if (id === "bbPercentB") {
+        const cfg = getIndicatorConfig("bb");
+        if (!cfg?.enabled) continue;
+        const val = indicators.indicators.bb?.latest.bbPercentB;
+        if (val == null && !indicators.indicators.bb) continue;
+        items.push({
+          id,
+          label: meta.labelKo,
+          value: fmtLegend(val, 3),
+        });
+      }
+    }
+
+    return items;
+  }, [indicators, auxIndicatorVisibility]);
+
+  const patternHitLegend = useMemo(() => {
+    if (!patterns?.recent.length || !chartPatternVisibility) return [];
+    return patterns.recent
+      .filter((hit) => chartPatternVisibility[hit.id])
+      .slice(-8)
+      .reverse()
+      .map((hit) => ({
+        key: `${hit.id}-${hit.barIndex}`,
+        text: hit.label,
+        detail: hit.date,
+        color:
+          hit.direction === "bullish"
+            ? "#00c471"
+            : hit.direction === "bearish"
+              ? "#f04452"
+              : "#8b95a1",
+      }));
+  }, [patterns, chartPatternVisibility]);
+
+  const bbStrategyHitLegend = useMemo(() => {
+    if (!bbStrategies?.recent.length || !chartBbStrategyVisibility) return [];
+    return bbStrategies.recent
+      .filter((hit) => chartBbStrategyVisibility[hit.id])
+      .slice(-8)
+      .reverse()
+      .map((hit) => ({
+        key: `${hit.id}-${hit.barIndex}`,
+        text: hit.label,
+        detail: `${hit.date} · ${hit.summary}`,
+        color:
+          hit.direction === "bullish"
+            ? "#00c471"
+            : hit.direction === "bearish"
+              ? "#f04452"
+              : "#8b95a1",
+      }));
+  }, [bbStrategies, chartBbStrategyVisibility]);
+
+  const classicalHitLegend = useMemo(() => {
+    if (!classicalPatterns?.recent.length || !chartClassicalPatternVisibility)
+      return [];
+    return classicalPatterns.recent
+      .filter((hit) => chartClassicalPatternVisibility[hit.id])
+      .slice(-8)
+      .reverse()
+      .map((hit) => ({
+        key: hit.instanceKey,
+        text: hit.label,
+        detail: `${hit.date} · ${hit.summary}`,
+        color: CHART_PATTERN_META[hit.id].color,
+      }));
+  }, [classicalPatterns, chartClassicalPatternVisibility]);
+
+  const structureHitLegend = useMemo(() => {
+    if (!structure || !chartStructureVisibility) return [];
+    const items: { key: string; text: string; detail: string; color: string }[] =
+      [];
+    const swings = structure.swings
+      .filter((s) => s.label && chartStructureVisibility[s.label])
+      .slice(-6);
+    for (const s of swings) {
+      if (!s.label) continue;
+      const bullish = s.label === "HH" || s.label === "HL";
+      items.push({
+        key: `swing-${s.label}-${s.barIndex}`,
+        text: s.label,
+        detail: `${s.date} · ${s.price.toFixed(2)}`,
+        color: bullish ? "#00c471" : "#f04452",
+      });
+    }
+    for (const t of structure.transitions.slice(-4)) {
+      if (t.to === "bullish" && chartStructureVisibility.bullish_transition) {
+        items.push({
+          key: `tr-bull-${t.barIndex}`,
+          text: "↑BULL",
+          detail: t.date,
+          color: "#00c471",
+        });
+      }
+      if (t.to === "bearish" && chartStructureVisibility.bearish_transition) {
+        items.push({
+          key: `tr-bear-${t.barIndex}`,
+          text: "↓BEAR",
+          detail: t.date,
+          color: "#f04452",
+        });
+      }
+    }
+    return items;
+  }, [structure, chartStructureVisibility]);
 
   // ─── Bars data update ──────────────────────────────────────────────────────
 
@@ -871,6 +1107,7 @@ export function CandleChart({
   }, [
     fibRetracement,
     fibLevelVisibility,
+    fibExtraVisibility,
     visibleTrendlines,
     srZones,
     chartTrendlineColors,
@@ -933,84 +1170,147 @@ export function CandleChart({
                     className="inline-block h-0.5 w-4 rounded-sm"
                     style={{ backgroundColor: item.color }}
                   />
-                  {item.label}
+                  <span className="tabular-nums">{item.label}</span>
                 </span>
               ))}
             </div>
           )}
 
-          {patternLegend.length > 0 && (
+          {auxIndicatorLegend.length > 0 && (
+            <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
+              <span>보조 지표:</span>
+              {auxIndicatorLegend.map((item) => (
+                <span key={item.id} className="tabular-nums text-text-tertiary">
+                  {item.label} {item.value}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {patternHitLegend.length > 0 ? (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>캔들 패턴 ({patternLegend.length}):</span>
-              {patternLegend.map((item) => (
-                <span key={item.text} className="flex items-center gap-1.5">
+              <span>캔들 패턴 ({patternHitLegend.length}):</span>
+              {patternHitLegend.map((item) => (
+                <span key={item.key} className="flex items-center gap-1.5">
                   <span
-                    className="inline-flex min-w-[1.75rem] justify-center rounded px-1 font-mono text-[10px] font-semibold"
+                    className="font-mono text-[10px] font-semibold"
                     style={{ color: item.color }}
                   >
                     {item.text}
                   </span>
-                  <span className="text-text-tertiary">{item.label}</span>
+                  <span className="tabular-nums text-text-tertiary">
+                    {item.detail}
+                  </span>
                 </span>
               ))}
             </div>
+          ) : (
+            patternLegend.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span>캔들 패턴:</span>
+                {patternLegend.map((item) => (
+                  <span key={item.text} className="text-text-tertiary">
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            )
           )}
 
-          {structureLegend.length > 0 && (
+          {structureHitLegend.length > 0 ? (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
               <span>스윙 구조:</span>
-              {structureLegend.map((item) => (
-                <span key={item.text} className="flex items-center gap-1.5">
+              {structureHitLegend.map((item) => (
+                <span key={item.key} className="flex items-center gap-1.5">
                   <span
-                    className="inline-flex min-w-[1.75rem] justify-center rounded px-1 font-mono text-[10px] font-semibold"
+                    className="font-mono text-[10px] font-semibold"
                     style={{ color: item.color }}
                   >
                     {item.text}
                   </span>
-                  <span className="text-text-tertiary">{item.label}</span>
+                  <span className="tabular-nums text-text-tertiary">
+                    {item.detail}
+                  </span>
                 </span>
               ))}
             </div>
+          ) : (
+            structureLegend.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span>스윙 구조:</span>
+                {structureLegend.map((item) => (
+                  <span key={item.text} className="text-text-tertiary">
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            )
           )}
 
-          {bbStrategyLegend.length > 0 && (
+          {bbStrategyHitLegend.length > 0 ? (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
               <span>BB 전략:</span>
-              {bbStrategyLegend.map((item) => (
-                <span
-                  key={`${item.text}-${item.label}`}
-                  className="flex items-center gap-1.5"
-                >
+              {bbStrategyHitLegend.map((item) => (
+                <span key={item.key} className="flex items-center gap-1.5">
                   <span
-                    className="inline-flex min-w-[1.75rem] justify-center rounded px-1 font-mono text-[10px] font-semibold"
+                    className="font-mono text-[10px] font-semibold"
                     style={{ color: item.color }}
                   >
                     {item.text}
                   </span>
-                  <span className="text-text-tertiary">{item.label}</span>
+                  <span className="tabular-nums text-text-tertiary">
+                    {item.detail}
+                  </span>
                 </span>
               ))}
             </div>
+          ) : (
+            bbStrategyLegend.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span>BB 전략:</span>
+                {bbStrategyLegend.map((item) => (
+                  <span
+                    key={`${item.text}-${item.label}`}
+                    className="text-text-tertiary"
+                  >
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            )
           )}
 
-          {classicalPatternLegend.length > 0 && (
+          {classicalHitLegend.length > 0 ? (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
               <span>차트 패턴:</span>
-              {classicalPatternLegend.map((item) => (
-                <span
-                  key={`${item.text}-${item.label}`}
-                  className="flex items-center gap-1.5"
-                >
+              {classicalHitLegend.map((item) => (
+                <span key={item.key} className="flex items-center gap-1.5">
                   <span
-                    className="inline-flex min-w-[2.5rem] justify-center rounded px-1 font-mono text-[10px] font-semibold"
+                    className="font-mono text-[10px] font-semibold"
                     style={{ color: item.color }}
                   >
                     {item.text}
                   </span>
-                  <span className="text-text-tertiary">{item.label}</span>
+                  <span className="tabular-nums text-text-tertiary">
+                    {item.detail}
+                  </span>
                 </span>
               ))}
             </div>
+          ) : (
+            classicalPatternLegend.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span>차트 패턴:</span>
+                {classicalPatternLegend.map((item) => (
+                  <span
+                    key={`${item.text}-${item.label}`}
+                    className="text-text-tertiary"
+                  >
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            )
           )}
 
           {visibleTrendlines.length > 0 && (
@@ -1063,6 +1363,16 @@ export function CandleChart({
           {hasFib && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
               <span>피보나치 되돌림:</span>
+              {showFibAnchors && (
+                <>
+                  <span className="tabular-nums text-text-tertiary">
+                    0% {fibRetracement!.high.price.toFixed(2)} ({fibRetracement!.high.date})
+                  </span>
+                  <span className="tabular-nums text-text-tertiary">
+                    100% {fibRetracement!.low.price.toFixed(2)} ({fibRetracement!.low.date})
+                  </span>
+                </>
+              )}
               {FIB_RETRACEMENT_LEVELS.filter(
                 (r) => fibLevelVisibility?.[r] !== false,
               ).map((ratio) => (

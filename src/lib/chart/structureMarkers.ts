@@ -25,7 +25,8 @@ function swingMarkers(
       position: s.kind === "high" ? "aboveBar" : "belowBar",
       shape: s.kind === "high" ? "arrowDown" : "arrowUp",
       color: LABEL_COLOR[s.label],
-      text: s.label,
+      // Labels live in the below-chart legend only.
+      text: "",
       id: `swing-${s.label}-${s.barIndex}`,
       size: 1,
     });
@@ -50,7 +51,7 @@ function transitionMarkers(
         position: (toBull ? "belowBar" : "aboveBar") as SeriesMarker<Time>["position"],
         shape: (toBull ? "arrowUp" : "arrowDown") as SeriesMarker<Time>["shape"],
         color: toBull ? "#00c471" : "#f04452",
-        text: toBull ? "↑BULL" : "↓BEAR",
+        text: "",
         id: `transition-${t.to}-${t.barIndex}`,
         size: 2,
       };
