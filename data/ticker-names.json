@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-07-18T00:00:00.000Z",
+  "names": {
+    "000660:KRX": "SK하이닉스",
+    "005930:KRX": "삼성전자",
+    "035420:KRX": "NAVER",
+    "035720:KRX": "카카오",
+    "KOSPI:KRX": "코스피",
+    "KOSDAQ:KRX": "코스닥",
+    "NVDA:NASDAQ": "NVIDIA",
+    "AAPL:NASDAQ": "Apple",
+    "MSFT:NASDAQ": "Microsoft",
+    "TSLA:NASDAQ": "Tesla",
+    "AMZN:NASDAQ": "Amazon",
+    "GOOGL:NASDAQ": "Alphabet",
+    "META:NASDAQ": "Meta",
+    "NDX:INDEXNASDAQ": "나스닥100",
+    ".IXIC:INDEXNASDAQ": "나스닥 종합",
+    "DJI:INDEXDJX": "다우존스",
+    "SPX:INDEXSP": "S&P 500"
+  }
+}

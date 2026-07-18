@@ -18,9 +18,15 @@ const quoteSchema = JSON.parse(
 const indexSchema = JSON.parse(
   fs.readFileSync(path.join(ROOT, "schemas/index.schema.json"), "utf8"),
 );
+const tickerNamesSchema = JSON.parse(
+  fs.readFileSync(path.join(ROOT, "schemas/ticker-names.schema.json"), "utf8"),
+);
 
 const validateQuote = ajv.compile(quoteSchema);
 const validateIndex = ajv.compile(indexSchema);
+const validateTickerNames = ajv.compile(tickerNamesSchema);
+
+const SKIP_QUOTE_FILES = new Set(["index.json", "ticker-names.json"]);
 
 let failed = false;
 
@@ -41,7 +47,11 @@ function walkQuotes(dir) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory() && entry.name !== ".meta") {
       walkQuotes(full);
-    } else if (entry.isFile() && entry.name.endsWith(".json") && entry.name !== "index.json") {
+    } else if (
+      entry.isFile() &&
+      entry.name.endsWith(".json") &&
+      !SKIP_QUOTE_FILES.has(entry.name)
+    ) {
       checkFile(full, validateQuote, "quote");
     }
   }
@@ -52,6 +62,11 @@ walkQuotes(path.join(ROOT, "data"));
 const indexPath = path.join(ROOT, "data/index.json");
 if (fs.existsSync(indexPath)) {
   checkFile(indexPath, validateIndex, "index");
+}
+
+const tickerNamesPath = path.join(ROOT, "data/ticker-names.json");
+if (fs.existsSync(tickerNamesPath)) {
+  checkFile(tickerNamesPath, validateTickerNames, "ticker-names");
 }
 
 process.exit(failed ? 1 : 0);

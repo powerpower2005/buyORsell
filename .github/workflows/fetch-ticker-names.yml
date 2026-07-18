@@ -1,0 +1,61 @@
+name: Fetch Ticker Names
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Re-fetch names even when already present"
+        type: boolean
+        required: false
+        default: false
+      ticker:
+        description: "Optional single ticker (e.g. 000660:KRX). Empty = all index tickers"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-ticker-names
+  cancel-in-progress: false
+
+jobs:
+  fetch-names:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm ci
+
+      - name: Fetch display names via Sheets
+        env:
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          FORCE: ${{ inputs.force && 'true' || 'false' }}
+        run: |
+          ARGS=()
+          if [ "${{ inputs.force }}" = "true" ]; then
+            ARGS+=(--force)
+          fi
+          TICKER="${{ inputs.ticker }}"
+          if [ -n "$TICKER" ]; then
+            ARGS+=(--ticker "$TICKER")
+          fi
+          node scripts/fetch-ticker-names.mjs "${ARGS[@]}"
+
+      - name: Commit ticker names
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/ticker-names.json
+          if git diff --staged --quiet; then
+            echo "No ticker name changes"
+          else
+            git commit -m "data: update ticker display names"
+            git push
+          fi

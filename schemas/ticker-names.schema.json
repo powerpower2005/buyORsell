@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ticker-names.schema.json",
+  "type": "object",
+  "required": ["schemaVersion", "updatedAt", "names"],
+  "properties": {
+    "schemaVersion": { "type": "integer" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "names": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    }
+  }
+}
