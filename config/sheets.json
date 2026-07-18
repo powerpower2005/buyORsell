@@ -2,7 +2,7 @@
   "worksheetBarsFetch": "BarsFetch-v1",
   "formulaSep": ",",
   "scratchCol": "Z",
-  "rowStride": 300,
+  "rowStride": 700,
   "poll": {
     "initialWaitSec": 15,
     "attempts": 12,
