@@ -185,7 +185,13 @@ export const bbPlugin: IndicatorPlugin = {
     if (bars.length < period) {
       return {
         series: {} as Record<string, SeriesPoint[]>,
-        latest: { bbUpper: null, bbMiddle: null, bbLower: null },
+        latest: {
+          bbUpper: null,
+          bbMiddle: null,
+          bbLower: null,
+          bbPercentB: null,
+          bbBandwidth: null,
+        },
         skipped: [`bb requires ${period} bars, got ${bars.length}`],
       };
     }

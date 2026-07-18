@@ -32,10 +32,7 @@ export const TRENDLINE_COLORS = {
 export const TRENDLINE_COLOR_OPTIONS: readonly string[] = [
   TRENDLINE_COLORS.ascending,
   TRENDLINE_COLORS.descending,
-  ...INDICATOR_COLOR_OPTIONS.filter(
-    (c) =>
-      c !== TRENDLINE_COLORS.ascending && c !== TRENDLINE_COLORS.descending,
-  ),
+  ...INDICATOR_COLOR_OPTIONS,
 ];
 
 const STORAGE_KEY = "gf:config:trendlines-chart";
