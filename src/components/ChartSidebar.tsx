@@ -103,6 +103,12 @@ import {
   setAuxIndicatorVisible,
   type AuxIndicatorId,
 } from "@/lib/auxIndicatorStore";
+import {
+  getSidebarOpenState,
+  toggleSidebarOpenKey,
+  type SidebarOpenKey,
+  type SidebarOpenState,
+} from "@/lib/sidebarOpenStore";
 import type { CandlePatternId } from "@/lib/evaluation/candlePatterns";
 import type { SwingChartToggleId } from "@/lib/swingStructureStore";
 import type { SrChartToggleId } from "@/lib/srZoneStore";
@@ -273,26 +279,7 @@ export function ChartSidebar({
   trendlines,
   className,
 }: Props) {
-  const [open, setOpen] = useState<Record<string, boolean>>({
-    ma: true,
-    sma: true,
-    ema: true,
-    bb: true,
-    bbBands: true,
-    bbStrategies: true,
-    swing: false,
-    sr: false,
-    trendlines: true,
-    tlAscending: true,
-    tlDescending: true,
-    patterns: false,
-    classicalPatterns: true,
-    fib: true,
-    fibLevels: true,
-    fibExtras: true,
-    aux: true,
-    volume: true,
-  });
+  const [open, setOpen] = useState<SidebarOpenState>(() => getSidebarOpenState());
 
   const smaCfg = useMemo(() => getIndicatorConfig("sma"), [visibilityTick]);
   const emaCfg = useMemo(() => getIndicatorConfig("ema"), [visibilityTick]);
@@ -363,8 +350,8 @@ export function ChartSidebar({
     onVisibilityChange();
   };
 
-  const toggleOpen = (key: string) =>
-    setOpen((s) => ({ ...s, [key]: !s[key] }));
+  const toggleOpen = (key: SidebarOpenKey) =>
+    setOpen(toggleSidebarOpenKey(key));
 
   const kindLineState = (kind: TrendlineChartToggleId, lines: Trendline[]) => {
     if (lines.length <= 1) {
@@ -373,7 +360,7 @@ export function ChartSidebar({
     if (!tlVis[kind]) {
       return { checked: false, indeterminate: false };
     }
-    return groupState(lines.map((l) => tlLineVis[l.id] ?? true));
+    return groupState(lines.map((l) => tlLineVis[l.id] ?? false));
   };
 
   const setKindVisible = (
@@ -430,7 +417,7 @@ export function ChartSidebar({
         tlAggregateVals.push(false);
       } else {
         for (const line of lines) {
-          tlAggregateVals.push(tlLineVis[line.id] ?? true);
+          tlAggregateVals.push(tlLineVis[line.id] ?? false);
         }
       }
     } else {
@@ -682,7 +669,7 @@ export function ChartSidebar({
                         hint={trendlineLeafHint(line)}
                         color={lineColor}
                         checked={
-                          tlVis[id] && (tlLineVis[line.id] ?? true)
+                          tlVis[id] && (tlLineVis[line.id] ?? false)
                         }
                         colorValue={lineColor}
                         colorOptions={TRENDLINE_COLOR_OPTIONS}

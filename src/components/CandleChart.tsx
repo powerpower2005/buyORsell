@@ -157,7 +157,7 @@ export function CandleChart({
   chartBbStrategyVisibility,
   classicalPatterns,
   chartClassicalPatternVisibility,
-  showVolume = true,
+  showVolume = false,
   height: heightProp,
   fibDrawMode,
   fibRetracement,
@@ -251,7 +251,7 @@ export function CandleChart({
         boolean
       >);
     const lineVis = chartTrendlineLineVisibility ?? {};
-    const keep = (line: Trendline) => lineVis[line.id] ?? true;
+    const keep = (line: Trendline) => lineVis[line.id] ?? false;
     const out: Trendline[] = [];
     if (vis.ascending) out.push(...trendlines.ascending.filter(keep));
     if (vis.descending) out.push(...trendlines.descending.filter(keep));
@@ -302,8 +302,8 @@ export function CandleChart({
   const classicalInstancesRef = useRef(visibleClassicalInstances);
   classicalInstancesRef.current = visibleClassicalInstances;
 
-  const showFibAnchors = fibExtraVisibility?.anchors !== false;
-  const showFibConfluence = fibExtraVisibility?.confluence !== false;
+  const showFibAnchors = fibExtraVisibility?.anchors === true;
+  const showFibConfluence = fibExtraVisibility?.confluence === true;
 
   const fibConfluences = useMemo(() => {
     if (
@@ -463,8 +463,8 @@ export function CandleChart({
       if (xLow != null && xHigh != null) {
         const xStart = Math.min(xLow, xHigh);
         const extras = fibExtrasRef.current;
-        const drawAnchors = extras?.anchors !== false;
-        const drawConfluence = extras?.confluence !== false;
+        const drawAnchors = extras?.anchors === true;
+        const drawConfluence = extras?.confluence === true;
 
         const confluences = drawConfluence
           ? findFibConfluences(fib, srZonesRef.current, levelVis)
@@ -526,7 +526,7 @@ export function CandleChart({
 
         // Fib level lines (dashed, from xStart to right edge)
         for (const ratio of FIB_RETRACEMENT_LEVELS) {
-          if (levelVis && levelVis[ratio] === false) continue;
+          if (!levelVis || levelVis[ratio] !== true) continue;
           const fibPrice = fibRetracementPrice(
             fib.low.price,
             fib.high.price,
@@ -741,7 +741,7 @@ export function CandleChart({
         const key = `${prefix}:${period}`;
         const points = out.series[key];
         if (!points?.length) return;
-        const visible = periodVis?.[period] ?? true;
+        const visible = periodVis?.[period] ?? false;
         if (!visible) return;
         wanted.add(key);
 
@@ -785,7 +785,7 @@ export function CandleChart({
     if (bbCfg?.enabled && bbOut) {
       const colors = parsePeriodColors(bbCfg.params.colors);
       for (const band of BB_BAND_ORDER) {
-        if (!(bbVisibility?.[band] ?? true)) continue;
+        if (!(bbVisibility?.[band] ?? false)) continue;
         const meta = BB_BAND_META[band];
         const key = bbOverlayKey(band);
         const points = bbOut.series[meta.seriesKey];
@@ -847,7 +847,7 @@ export function CandleChart({
       const periodVis = maVisibility?.[pluginId];
       const out = indicators.indicators[pluginId];
       periods.forEach((period, i) => {
-        if (!(periodVis?.[period] ?? true)) return;
+        if (!(periodVis?.[period] ?? false)) return;
         const key = `${pluginId}:${period}`;
         if (!out?.series[key]?.length) return;
         const latest = out.latest[key];
@@ -863,7 +863,7 @@ export function CandleChart({
     if (bbCfg?.enabled && bbOut) {
       const colors = parsePeriodColors(bbCfg.params.colors);
       for (const band of BB_BAND_ORDER) {
-        if (!(bbVisibility?.[band] ?? true)) continue;
+        if (!(bbVisibility?.[band] ?? false)) continue;
         const meta = BB_BAND_META[band];
         if (!bbOut.series[meta.seriesKey]?.length) continue;
         const latest = bbOut.latest[meta.seriesKey];
@@ -882,7 +882,7 @@ export function CandleChart({
     const items: { id: AuxIndicatorId; label: string; value: string }[] = [];
 
     for (const id of AUX_INDICATOR_ORDER) {
-      if (auxIndicatorVisibility?.[id] === false) continue;
+      if (auxIndicatorVisibility?.[id] !== true) continue;
       const meta = AUX_INDICATOR_META[id];
 
       if (id === "rsi") {
@@ -1374,7 +1374,7 @@ export function CandleChart({
                 </>
               )}
               {FIB_RETRACEMENT_LEVELS.filter(
-                (r) => fibLevelVisibility?.[r] !== false,
+                (r) => fibLevelVisibility?.[r] === true,
               ).map((ratio) => (
                 <span key={ratio} className="flex items-center gap-1.5">
                   <span

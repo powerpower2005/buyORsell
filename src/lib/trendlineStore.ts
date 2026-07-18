@@ -97,7 +97,7 @@ function saveLineColors(overrides: LineColorOverrides): void {
   localStorage.setItem(LINE_COLOR_KEY, JSON.stringify(overrides));
 }
 
-/** Default on so auto-detected lines are visible. */
+/** Default off — opt-in trendline overlays. */
 export function getTrendlineChartVisibility(): Record<
   TrendlineChartToggleId,
   boolean
@@ -105,7 +105,7 @@ export function getTrendlineChartVisibility(): Record<
   const overrides = loadOverrides();
   const out = {} as Record<TrendlineChartToggleId, boolean>;
   for (const id of TRENDLINE_CHART_TOGGLE_ORDER) {
-    out[id] = overrides[id] ?? true;
+    out[id] = overrides[id] ?? false;
   }
   return out;
 }
@@ -119,10 +119,10 @@ export function setTrendlineChartVisible(
   saveOverrides(overrides);
 }
 
-/** Per-line visibility keyed by Trendline.id. Missing id defaults to visible. */
+/** Per-line visibility keyed by Trendline.id. Missing id defaults to hidden. */
 export function isTrendlineLineVisible(lineId: string): boolean {
   const overrides = loadLineOverrides();
-  return overrides[lineId] ?? true;
+  return overrides[lineId] ?? false;
 }
 
 export function getTrendlineLineVisibility(

@@ -53,12 +53,12 @@ function saveOverrides(overrides: Overrides): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
 }
 
-/** Default on so values appear under the chart when available. */
+/** Default off — opt-in below-chart values. */
 export function getAuxIndicatorVisibility(): Record<AuxIndicatorId, boolean> {
   const overrides = loadOverrides();
   const out = {} as Record<AuxIndicatorId, boolean>;
   for (const id of AUX_INDICATOR_ORDER) {
-    out[id] = overrides[id] ?? true;
+    out[id] = overrides[id] ?? false;
   }
   return out;
 }

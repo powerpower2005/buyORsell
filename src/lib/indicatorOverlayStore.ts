@@ -6,7 +6,7 @@ import {
 
 const STORAGE_KEY = "gf:config:indicator-overlays";
 
-/** Series key like `sma:20` / `ema:12` / `bb:upper`. Default visible when unset. */
+/** Series key like `sma:20` / `ema:12` / `bb:upper`. Default off when unset. */
 type Overrides = Record<string, boolean>;
 
 function loadOverrides(): Overrides {
@@ -35,7 +35,7 @@ export function isIndicatorOverlayVisible(
 ): boolean {
   const key = overlaySeriesKey(pluginId, period);
   const overrides = loadOverrides();
-  return overrides[key] ?? true;
+  return overrides[key] ?? false;
 }
 
 export function getIndicatorOverlayVisibility(
@@ -73,7 +73,7 @@ export function setIndicatorOverlayGroupVisible(
 
 export function isBbOverlayVisible(band: BbBandId): boolean {
   const overrides = loadOverrides();
-  return overrides[bbOverlayKey(band)] ?? true;
+  return overrides[bbOverlayKey(band)] ?? false;
 }
 
 export function getBbOverlayVisibility(): Record<BbBandId, boolean> {
@@ -103,10 +103,10 @@ const VOLUME_KEY = "gf:config:chart-volume";
 export function isVolumeOverlayVisible(): boolean {
   try {
     const raw = localStorage.getItem(VOLUME_KEY);
-    if (raw == null) return true;
+    if (raw == null) return false;
     return JSON.parse(raw) === true;
   } catch {
-    return true;
+    return false;
   }
 }
 

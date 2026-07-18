@@ -57,12 +57,12 @@ function saveLevelOverrides(overrides: LevelOverrides): void {
   localStorage.setItem(LEVELS_KEY, JSON.stringify(overrides));
 }
 
-/** Enabled fib ratios; default all on. */
+/** Enabled fib ratios; default all off. */
 export function getFibLevelVisibility(): Record<FibLevelRatio, boolean> {
   const overrides = loadLevelOverrides();
   const out = {} as Record<FibLevelRatio, boolean>;
   for (const ratio of FIB_RETRACEMENT_LEVELS) {
-    out[ratio] = overrides[levelKey(ratio)] ?? true;
+    out[ratio] = overrides[levelKey(ratio)] ?? false;
   }
   return out;
 }
@@ -96,12 +96,12 @@ function saveExtraOverrides(overrides: ExtraOverrides): void {
   localStorage.setItem(EXTRAS_KEY, JSON.stringify(overrides));
 }
 
-/** Default on. */
+/** Default off. */
 export function getFibExtraVisibility(): Record<FibExtraId, boolean> {
   const overrides = loadExtraOverrides();
   return {
-    anchors: overrides.anchors ?? true,
-    confluence: overrides.confluence ?? true,
+    anchors: overrides.anchors ?? false,
+    confluence: overrides.confluence ?? false,
   };
 }
 
@@ -221,7 +221,7 @@ export function findFibConfluences(
   const hits: FibConfluenceHit[] = [];
 
   for (const ratio of FIB_RETRACEMENT_LEVELS) {
-    if (levelVisibility && levelVisibility[ratio] === false) continue;
+    if (levelVisibility?.[ratio] !== true) continue;
     const fibPrice = fibRetracementPrice(fib.low.price, fib.high.price, ratio);
     const buf = fibPrice * bufferPct;
 
