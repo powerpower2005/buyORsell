@@ -2,6 +2,11 @@ import { Card, SectionTitle } from "./ui/Card";
 import type { IndicatorResults } from "@/lib/types";
 import { Badge } from "./ui/Badge";
 import { getIndicatorConfig } from "@/lib/configStore";
+import {
+  BB_BAND_META,
+  BB_BAND_ORDER,
+  resolveBbBandColor,
+} from "@/lib/bbOverlay";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 
 function fmt(value: number | null | undefined, digits = 2): string {
@@ -80,11 +85,33 @@ export function IndicatorPanel({ results }: { results: IndicatorResults }) {
     }
   }
 
-  const bbMid = results.indicators.bb?.latest.bbMiddle;
-  if (bbMid != null) {
-    metrics.push({ label: "BB Middle", value: fmt(bbMid) });
+  const bbColors = parsePeriodColors(bbCfg?.params.colors);
+  for (const band of BB_BAND_ORDER) {
+    const seriesKey = BB_BAND_META[band].seriesKey;
+    const val = results.indicators.bb?.latest[seriesKey];
+    const label = `BB ${BB_BAND_META[band].labelKo}`;
+    const color = resolveBbBandColor(bbColors, band);
+    if (val != null) {
+      metrics.push({ label, value: fmt(val), color });
+    } else if (bbCfg?.enabled) {
+      metrics.push({ label, value: "데이터 부족", muted: true, color });
+    }
+  }
+
+  const bbPct = results.indicators.bb?.latest.bbPercentB;
+  if (bbPct != null) {
+    metrics.push({ label: "%B", value: fmt(bbPct, 3) });
   } else if (bbCfg?.enabled) {
-    metrics.push({ label: "BB Middle", value: "데이터 부족", muted: true });
+    metrics.push({ label: "%B", value: "데이터 부족", muted: true });
+  }
+
+  const mfiCfg = getIndicatorConfig("mfi");
+  const mfiPeriod = (mfiCfg?.params.period as number | undefined) ?? 14;
+  const mfi = results.indicators.mfi?.latest.mfi;
+  if (mfi != null) {
+    metrics.push({ label: `MFI(${mfiPeriod})`, value: fmt(mfi) });
+  } else if (mfiCfg?.enabled) {
+    metrics.push({ label: `MFI(${mfiPeriod})`, value: "데이터 부족", muted: true });
   }
 
   const atr = results.indicators.atr?.latest.atr;

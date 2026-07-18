@@ -42,9 +42,12 @@ import { getChartPatternVisibility } from "@/lib/candlePatternStore";
 import { getSwingChartVisibility } from "@/lib/swingStructureStore";
 import { getSrChartVisibility } from "@/lib/srZoneStore";
 import {
+  getBbOverlayVisibility,
   getIndicatorOverlayVisibility,
   isVolumeOverlayVisible,
 } from "@/lib/indicatorOverlayStore";
+import { getBbStrategyVisibility } from "@/lib/bbStrategyStore";
+import { getClassicalChartPatternVisibility } from "@/lib/chartPatternStore";
 import {
   getFibLevelVisibility,
   getFibRetracement,
@@ -198,6 +201,18 @@ export function HomePage() {
       ema: getIndicatorOverlayVisibility("ema", emaPeriods),
     };
   }, [chartVisTick, configTick]);
+  const bbVisibility = useMemo(
+    () => getBbOverlayVisibility(),
+    [chartVisTick],
+  );
+  const chartBbStrategyVisibility = useMemo(
+    () => getBbStrategyVisibility(),
+    [chartVisTick],
+  );
+  const chartClassicalPatternVisibility = useMemo(
+    () => getClassicalChartPatternVisibility(),
+    [chartVisTick],
+  );
   const showVolume = useMemo(
     () => isVolumeOverlayVisible(),
     [chartVisTick],
@@ -430,6 +445,15 @@ export function HomePage() {
                       chartTrendlineColors={chartTrendlineColors}
                       indicators={evaluation!.indicators}
                       maVisibility={maVisibility}
+                      bbVisibility={bbVisibility}
+                      bbStrategies={evaluation!.bbStrategies ?? undefined}
+                      chartBbStrategyVisibility={chartBbStrategyVisibility}
+                      classicalPatterns={
+                        evaluation!.classicalPatterns ?? undefined
+                      }
+                      chartClassicalPatternVisibility={
+                        chartClassicalPatternVisibility
+                      }
                       showVolume={showVolume}
                       fibDrawMode={fibDrawMode}
                       fibRetracement={fibRetracement}

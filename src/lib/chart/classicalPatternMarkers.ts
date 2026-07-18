@@ -1,0 +1,73 @@
+import type { SeriesMarker, Time } from "lightweight-charts";
+import type {
+  ChartPatternHit,
+  ChartPatternInstance,
+  ChartPatternResult,
+} from "@/lib/evaluation/chartPatterns";
+import {
+  CHART_PATTERN_META,
+  CHART_PATTERN_ORDER,
+  chartPatternMarkerText,
+  type ChartPatternId,
+} from "@/lib/chartPatternMeta";
+import { directionColor } from "@/lib/candlePatternMeta";
+
+function hitToMarker(hit: ChartPatternHit): SeriesMarker<Time> {
+  const position =
+    hit.direction === "bullish"
+      ? "belowBar"
+      : hit.direction === "bearish"
+        ? "aboveBar"
+        : "inBar";
+  const shape =
+    hit.direction === "bullish"
+      ? "arrowUp"
+      : hit.direction === "bearish"
+        ? "arrowDown"
+        : "circle";
+
+  return {
+    time: hit.date as Time,
+    position,
+    shape,
+    color: directionColor(hit.direction),
+    text: chartPatternMarkerText(hit.id, hit.direction),
+    id: `cpat-${hit.instanceKey}`,
+    size: 1,
+  };
+}
+
+export function classicalPatternsToChartMarkers(
+  patterns: ChartPatternResult | undefined,
+  visibility: Record<ChartPatternId, boolean>,
+): SeriesMarker<Time>[] {
+  if (!patterns?.recent.length) return [];
+  return [...patterns.recent]
+    .filter((hit) => visibility[hit.id])
+    .sort((a, b) => {
+      const byDate = a.date.localeCompare(b.date);
+      return byDate !== 0 ? byDate : a.barIndex - b.barIndex;
+    })
+    .map(hitToMarker);
+}
+
+export function visibleClassicalPatternLegend(
+  visibility: Record<ChartPatternId, boolean>,
+): { text: string; label: string; color: string }[] {
+  return CHART_PATTERN_ORDER.filter((id) => visibility[id]).map((id) => {
+    const meta = CHART_PATTERN_META[id];
+    return {
+      text: `${meta.markerBull}/${meta.markerBear}`,
+      label: meta.labelKo,
+      color: meta.color,
+    };
+  });
+}
+
+export function visibleClassicalPatternInstances(
+  patterns: ChartPatternResult | undefined,
+  visibility: Record<ChartPatternId, boolean>,
+): ChartPatternInstance[] {
+  if (!patterns?.instances.length) return [];
+  return patterns.instances.filter((inst) => visibility[inst.id]);
+}

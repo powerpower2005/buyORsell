@@ -43,10 +43,16 @@ export function saveOverrides(
 
 function mergeIndicatorsConfig(): IndicatorsConfig {
   const o = loadOverrides();
-  return deepMerge(
+  const merged = deepMerge(
     indicatorsBase as IndicatorsConfig,
     (o.indicators ?? {}) as DeepPartial<IndicatorsConfig>,
   );
+  // Stale overrides may omit newly added plugins; keep base definitions.
+  const have = new Set(merged.indicators.map((item) => item.id));
+  for (const baseItem of (indicatorsBase as IndicatorsConfig).indicators) {
+    if (!have.has(baseItem.id)) merged.indicators.push(baseItem);
+  }
+  return merged;
 }
 
 function persistIndicators(mutator: (config: IndicatorsConfig) => IndicatorsConfig): void {
@@ -137,6 +143,18 @@ export function setIndicatorPeriodColor(
 ): void {
   updateIndicatorItem(id, (item) => {
     const colors = { ...periodColorsOf(item), [String(period)]: color };
+    return { ...item, params: { ...item.params, colors } };
+  });
+}
+
+/** Named color key in params.colors (e.g. bb upper/middle/lower). */
+export function setIndicatorNamedColor(
+  id: string,
+  name: string,
+  color: string,
+): void {
+  updateIndicatorItem(id, (item) => {
+    const colors = { ...periodColorsOf(item), [name]: color };
     return { ...item, params: { ...item.params, colors } };
   });
 }

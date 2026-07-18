@@ -12,6 +12,13 @@ import type { TrendlineResult } from "@/lib/evaluation/trendlines";
 import { getIndicatorConfig } from "@/lib/configStore";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 import {
+  BB_BAND_META,
+  BB_BAND_ORDER,
+  bbOverlayKey,
+  resolveBbBandColor,
+  type BbBandId,
+} from "@/lib/bbOverlay";
+import {
   patternsToChartMarkers,
   visiblePatternLegend,
 } from "@/lib/chart/patternMarkers";
@@ -19,6 +26,22 @@ import {
   structureToChartMarkers,
   visibleStructureLegend,
 } from "@/lib/chart/structureMarkers";
+import {
+  bbStrategiesToChartMarkers,
+  visibleBbStrategyLegend,
+} from "@/lib/chart/bbStrategyMarkers";
+import {
+  classicalPatternsToChartMarkers,
+  visibleClassicalPatternInstances,
+  visibleClassicalPatternLegend,
+} from "@/lib/chart/classicalPatternMarkers";
+import type { BbStrategyResult } from "@/lib/evaluation/bbStrategies";
+import type { BbStrategyId } from "@/lib/bbStrategyMeta";
+import type { ChartPatternResult } from "@/lib/evaluation/chartPatterns";
+import {
+  CHART_PATTERN_META,
+  type ChartPatternId,
+} from "@/lib/chartPatternMeta";
 import { SR_ZONE_COLORS, visibleSrZones } from "@/lib/chart/srZoneOverlay";
 import type { SwingChartToggleId } from "@/lib/swingStructureStore";
 import type { SrChartToggleId } from "@/lib/srZoneStore";
@@ -65,6 +88,12 @@ interface Props {
     sma?: Record<number, boolean>;
     ema?: Record<number, boolean>;
   };
+  /** Per-band Bollinger visibility. Missing band defaults to true. */
+  bbVisibility?: Partial<Record<BbBandId, boolean>>;
+  bbStrategies?: BbStrategyResult;
+  chartBbStrategyVisibility?: Record<BbStrategyId, boolean>;
+  classicalPatterns?: ChartPatternResult;
+  chartClassicalPatternVisibility?: Record<ChartPatternId, boolean>;
   showVolume?: boolean;
   height?: number;
   fibDrawMode?: boolean;
@@ -108,6 +137,11 @@ export function CandleChart({
   chartTrendlineColors,
   indicators,
   maVisibility,
+  bbVisibility,
+  bbStrategies,
+  chartBbStrategyVisibility,
+  classicalPatterns,
+  chartClassicalPatternVisibility,
   showVolume = true,
   height: heightProp,
   fibDrawMode,
@@ -149,12 +183,32 @@ export function CandleChart({
       structure,
       chartStructureVisibility ?? ({} as Record<SwingChartToggleId, boolean>),
     );
-    return [...patternMs, ...structureMs].sort((a, b) => {
-      const byDate = String(a.time).localeCompare(String(b.time));
-      if (byDate !== 0) return byDate;
-      return String(a.id).localeCompare(String(b.id));
-    });
-  }, [patterns, chartPatternVisibility, structure, chartStructureVisibility]);
+    const bbStratMs = bbStrategiesToChartMarkers(
+      bbStrategies,
+      chartBbStrategyVisibility ?? ({} as Record<BbStrategyId, boolean>),
+    );
+    const classicalMs = classicalPatternsToChartMarkers(
+      classicalPatterns,
+      chartClassicalPatternVisibility ??
+        ({} as Record<ChartPatternId, boolean>),
+    );
+    return [...patternMs, ...structureMs, ...bbStratMs, ...classicalMs].sort(
+      (a, b) => {
+        const byDate = String(a.time).localeCompare(String(b.time));
+        if (byDate !== 0) return byDate;
+        return String(a.id).localeCompare(String(b.id));
+      },
+    );
+  }, [
+    patterns,
+    chartPatternVisibility,
+    structure,
+    chartStructureVisibility,
+    bbStrategies,
+    chartBbStrategyVisibility,
+    classicalPatterns,
+    chartClassicalPatternVisibility,
+  ]);
 
   const srZones = useMemo(
     () =>
@@ -201,6 +255,31 @@ export function CandleChart({
         : [],
     [chartStructureVisibility],
   );
+  const bbStrategyLegend = useMemo(
+    () =>
+      chartBbStrategyVisibility
+        ? visibleBbStrategyLegend(chartBbStrategyVisibility)
+        : [],
+    [chartBbStrategyVisibility],
+  );
+  const classicalPatternLegend = useMemo(
+    () =>
+      chartClassicalPatternVisibility
+        ? visibleClassicalPatternLegend(chartClassicalPatternVisibility)
+        : [],
+    [chartClassicalPatternVisibility],
+  );
+  const visibleClassicalInstances = useMemo(
+    () =>
+      visibleClassicalPatternInstances(
+        classicalPatterns,
+        chartClassicalPatternVisibility ??
+          ({} as Record<ChartPatternId, boolean>),
+      ),
+    [classicalPatterns, chartClassicalPatternVisibility],
+  );
+  const classicalInstancesRef = useRef(visibleClassicalInstances);
+  classicalInstancesRef.current = visibleClassicalInstances;
 
   const fibConfluences = useMemo(() => {
     if (!fibRetracement || fibRetracement.high.price <= fibRetracement.low.price)
@@ -293,6 +372,45 @@ export function CandleChart({
       if (x2 != null && y2 != null) {
         ctx.beginPath();
         ctx.arc(x2, y2, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Classical chart pattern geometry
+    for (const inst of classicalInstancesRef.current) {
+      const color = CHART_PATTERN_META[inst.id].color;
+      for (const s of inst.segments) {
+        const sx = chart
+          .timeScale()
+          .timeToCoordinate(s.date1 as `${number}-${number}-${number}`);
+        const ex = chart
+          .timeScale()
+          .timeToCoordinate(s.date2 as `${number}-${number}-${number}`);
+        const sy = series.priceToCoordinate(s.y1);
+        const ey = series.priceToCoordinate(s.y2);
+        if (sx == null || ex == null || sy == null || ey == null) continue;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = s.role === "neckline" ? 2 : 1.25;
+        ctx.globalAlpha = inst.status === "forming" ? 0.55 : 0.9;
+        ctx.setLineDash(
+          s.role === "neckline" || inst.status === "forming" ? [5, 3] : [],
+        );
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 1;
+      }
+      for (const p of inst.pivots) {
+        const px = chart
+          .timeScale()
+          .timeToCoordinate(p.date as `${number}-${number}-${number}`);
+        const py = series.priceToCoordinate(p.price);
+        if (px == null || py == null) continue;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
         ctx.fill();
       }
     }
@@ -555,7 +673,7 @@ export function CandleChart({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [height]);
 
-  // ─── MA overlays ───────────────────────────────────────────────────────────
+  // ─── MA / BB overlays ──────────────────────────────────────────────────────
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -612,13 +730,46 @@ export function CandleChart({
     drawGroup("sma", "sma", 2);
     drawGroup("ema", "ema", 1);
 
+    const bbCfg = getIndicatorConfig("bb");
+    const bbOut = indicators.indicators.bb;
+    if (bbCfg?.enabled && bbOut) {
+      const colors = parsePeriodColors(bbCfg.params.colors);
+      for (const band of BB_BAND_ORDER) {
+        if (!(bbVisibility?.[band] ?? true)) continue;
+        const meta = BB_BAND_META[band];
+        const key = bbOverlayKey(band);
+        const points = bbOut.series[meta.seriesKey];
+        if (!points?.length) continue;
+        wanted.add(key);
+
+        const color = resolveBbBandColor(colors, band);
+        const lineWidth: 1 | 2 = band === "middle" ? 2 : 1;
+        const title = `BB ${meta.label}`;
+
+        let line = overlayRefs.current.get(key);
+        if (!line) {
+          line = chart.addLineSeries({ color, lineWidth, title });
+          overlayRefs.current.set(key, line);
+        } else {
+          line.applyOptions({ color, lineWidth, visible: true, title });
+        }
+
+        line.setData(
+          points.map((p) => ({
+            time: p.date as `${number}-${number}-${number}`,
+            value: p.value,
+          })),
+        );
+      }
+    }
+
     for (const [key, line] of overlayRefs.current) {
       if (!wanted.has(key)) {
         line.setData([]);
         line.applyOptions({ visible: false });
       }
     }
-  }, [indicators, timeframe, maVisibility]);
+  }, [indicators, timeframe, maVisibility, bbVisibility]);
 
   const overlayLegend = useMemo(() => {
     if (!indicators) return [];
@@ -640,8 +791,24 @@ export function CandleChart({
         });
       });
     }
+
+    const bbCfg = getIndicatorConfig("bb");
+    const bbOut = indicators.indicators.bb;
+    if (bbCfg?.enabled && bbOut) {
+      const colors = parsePeriodColors(bbCfg.params.colors);
+      for (const band of BB_BAND_ORDER) {
+        if (!(bbVisibility?.[band] ?? true)) continue;
+        const meta = BB_BAND_META[band];
+        if (!bbOut.series[meta.seriesKey]?.length) continue;
+        items.push({
+          label: `BB ${meta.labelKo}`,
+          color: resolveBbBandColor(colors, band),
+        });
+      }
+    }
+
     return items;
-  }, [indicators, maVisibility]);
+  }, [indicators, maVisibility, bbVisibility]);
 
   // ─── Bars data update ──────────────────────────────────────────────────────
 
@@ -707,6 +874,7 @@ export function CandleChart({
     visibleTrendlines,
     srZones,
     chartTrendlineColors,
+    visibleClassicalInstances,
   ]);
 
   // ─── Fib draw mode lifecycle ───────────────────────────────────────────────
@@ -758,7 +926,7 @@ export function CandleChart({
         <div className="mt-3 space-y-2 border-t border-border pt-3">
           {overlayLegend.length > 0 && (
             <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
-              <span>이동평균:</span>
+              <span>지표 오버레이:</span>
               {overlayLegend.map((item) => (
                 <span key={item.label} className="flex items-center gap-1">
                   <span
@@ -795,6 +963,46 @@ export function CandleChart({
                 <span key={item.text} className="flex items-center gap-1.5">
                   <span
                     className="inline-flex min-w-[1.75rem] justify-center rounded px-1 font-mono text-[10px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.text}
+                  </span>
+                  <span className="text-text-tertiary">{item.label}</span>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {bbStrategyLegend.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>BB 전략:</span>
+              {bbStrategyLegend.map((item) => (
+                <span
+                  key={`${item.text}-${item.label}`}
+                  className="flex items-center gap-1.5"
+                >
+                  <span
+                    className="inline-flex min-w-[1.75rem] justify-center rounded px-1 font-mono text-[10px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.text}
+                  </span>
+                  <span className="text-text-tertiary">{item.label}</span>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {classicalPatternLegend.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>차트 패턴:</span>
+              {classicalPatternLegend.map((item) => (
+                <span
+                  key={`${item.text}-${item.label}`}
+                  className="flex items-center gap-1.5"
+                >
+                  <span
+                    className="inline-flex min-w-[2.5rem] justify-center rounded px-1 font-mono text-[10px] font-semibold"
                     style={{ color: item.color }}
                   >
                     {item.text}

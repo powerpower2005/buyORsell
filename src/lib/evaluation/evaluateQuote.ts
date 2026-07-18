@@ -30,6 +30,14 @@ import {
   detectTrendlines,
   type TrendlineResult,
 } from "./trendlines";
+import {
+  detectBbStrategies,
+  type BbStrategyResult,
+} from "./bbStrategies";
+import {
+  detectChartPatterns,
+  type ChartPatternResult,
+} from "./chartPatterns";
 
 export interface QuoteEvaluation {
   indicators: IndicatorResults;
@@ -40,6 +48,8 @@ export interface QuoteEvaluation {
   structure: SwingStructureResult | null;
   supportResistance: SupportResistanceResult | null;
   trendlines: TrendlineResult | null;
+  bbStrategies: BbStrategyResult | null;
+  classicalPatterns: ChartPatternResult | null;
   warnings: string[];
   fatalError: string | null;
   /** Bars actually used after lookback / maxBars / cadence cleanup. */
@@ -103,6 +113,8 @@ export function evaluateQuote(
       structure: null,
       supportResistance: null,
       trendlines: null,
+      bbStrategies: null,
+      classicalPatterns: null,
       warnings,
       fatalError: "No OHLCV bars available",
       bars: [],
@@ -174,6 +186,26 @@ export function evaluateQuote(
     }
   }
 
+  let bbStrategies: BbStrategyResult | null = null;
+  if (!fatalError) {
+    try {
+      bbStrategies = detectBbStrategies(prepared, indicators);
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
+  let classicalPatterns: ChartPatternResult | null = null;
+  if (!fatalError) {
+    try {
+      classicalPatterns = detectChartPatterns(prepared);
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
   return {
     indicators,
     score,
@@ -183,6 +215,8 @@ export function evaluateQuote(
     structure,
     supportResistance,
     trendlines,
+    bbStrategies,
+    classicalPatterns,
     warnings,
     fatalError,
     bars: prepared,

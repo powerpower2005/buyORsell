@@ -1,6 +1,12 @@
+import {
+  BB_BAND_ORDER,
+  bbOverlayKey,
+  type BbBandId,
+} from "./bbOverlay";
+
 const STORAGE_KEY = "gf:config:indicator-overlays";
 
-/** Series key like `sma:20` / `ema:12`. Default visible when unset. */
+/** Series key like `sma:20` / `ema:12` / `bb:upper`. Default visible when unset. */
 type Overrides = Record<string, boolean>;
 
 function loadOverrides(): Overrides {
@@ -61,6 +67,33 @@ export function setIndicatorOverlayGroupVisible(
   const overrides = loadOverrides();
   for (const p of periods) {
     overrides[overlaySeriesKey(pluginId, p)] = visible;
+  }
+  saveOverrides(overrides);
+}
+
+export function isBbOverlayVisible(band: BbBandId): boolean {
+  const overrides = loadOverrides();
+  return overrides[bbOverlayKey(band)] ?? true;
+}
+
+export function getBbOverlayVisibility(): Record<BbBandId, boolean> {
+  const out = {} as Record<BbBandId, boolean>;
+  for (const band of BB_BAND_ORDER) {
+    out[band] = isBbOverlayVisible(band);
+  }
+  return out;
+}
+
+export function setBbOverlayVisible(band: BbBandId, visible: boolean): void {
+  const overrides = loadOverrides();
+  overrides[bbOverlayKey(band)] = visible;
+  saveOverrides(overrides);
+}
+
+export function setBbOverlayGroupVisible(visible: boolean): void {
+  const overrides = loadOverrides();
+  for (const band of BB_BAND_ORDER) {
+    overrides[bbOverlayKey(band)] = visible;
   }
   saveOverrides(overrides);
 }

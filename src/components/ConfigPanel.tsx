@@ -8,9 +8,15 @@ import {
   setIndicatorEnabled,
   setIndicatorParam,
   setIndicatorPeriodAt,
+  setIndicatorNamedColor,
   setIndicatorPeriodColor,
   setIndicatorThreshold,
 } from "@/lib/configStore";
+import {
+  BB_BAND_META,
+  BB_BAND_ORDER,
+  resolveBbBandColor,
+} from "@/lib/bbOverlay";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 import { Button } from "./ui/Button";
 import { ConfigError } from "@/lib/errors";
@@ -189,6 +195,7 @@ export function ConfigPanel({ onChange }: Props) {
   const rsi = find("rsi");
   const macd = find("macd");
   const bb = find("bb");
+  const mfi = find("mfi");
   const atr = find("atr");
 
   if (!sma || !ema || !rsi || !macd || !bb || !atr) {
@@ -357,7 +364,49 @@ export function ConfigPanel({ onChange }: Props) {
               patch();
             }}
           />
+          <div className="space-y-3 pt-1">
+            {BB_BAND_ORDER.map((band) => {
+              const colors = parsePeriodColors(bb.params.colors);
+              const color = resolveBbBandColor(colors, band);
+              return (
+                <div key={band}>
+                  <p className="mb-1.5 text-xs text-text-tertiary">
+                    {BB_BAND_META[band].labelKo} 색상
+                  </p>
+                  <ColorSwatchPicker
+                    value={color}
+                    onChange={(c) => {
+                      setIndicatorNamedColor("bb", band, c);
+                      patch();
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </IndicatorSection>
+
+        {mfi && (
+          <IndicatorSection
+            title="MFI"
+            enabled={mfi.enabled}
+            onEnabledChange={(v) => {
+              setIndicatorEnabled("mfi", v);
+              patch();
+            }}
+          >
+            <NumInput
+              label="Period"
+              value={requireNumber(mfi.params.period, "mfi.period")}
+              min={5}
+              max={50}
+              onChange={(v) => {
+                setIndicatorParam("mfi", "period", v);
+                patch();
+              }}
+            />
+          </IndicatorSection>
+        )}
 
         <IndicatorSection
           title="ATR"

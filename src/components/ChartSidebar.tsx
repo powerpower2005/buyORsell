@@ -4,8 +4,27 @@ import { ColorSwatchPicker } from "@/components/ColorSwatchPicker";
 import { getIndicatorConfig } from "@/lib/configStore";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 import {
+  BB_BAND_META,
+  BB_BAND_ORDER,
+  resolveBbBandColor,
+  type BbBandId,
+} from "@/lib/bbOverlay";
+import {
+  BB_STRATEGY_META,
+  BB_STRATEGY_ORDER,
+  type BbStrategyId,
+} from "@/lib/bbStrategyMeta";
+import {
+  getBbStrategyVisibility,
+  setBbStrategyGroupVisible,
+  setBbStrategyVisible,
+} from "@/lib/bbStrategyStore";
+import {
+  getBbOverlayVisibility,
   getIndicatorOverlayVisibility,
   isVolumeOverlayVisible,
+  setBbOverlayGroupVisible,
+  setBbOverlayVisible,
   setIndicatorOverlayGroupVisible,
   setIndicatorOverlayVisible,
   setVolumeOverlayVisible,
@@ -18,6 +37,16 @@ import {
   getChartPatternVisibility,
   setChartPatternVisible,
 } from "@/lib/candlePatternStore";
+import {
+  CHART_PATTERN_META,
+  CHART_PATTERN_ORDER,
+  type ChartPatternId,
+} from "@/lib/chartPatternMeta";
+import {
+  getClassicalChartPatternVisibility,
+  setClassicalChartPatternGroupVisible,
+  setClassicalChartPatternVisible,
+} from "@/lib/chartPatternStore";
 import {
   SWING_CHART_TOGGLE_META,
   SWING_CHART_TOGGLE_ORDER,
@@ -234,23 +263,29 @@ export function ChartSidebar({
     ma: true,
     sma: true,
     ema: true,
+    bb: true,
+    bbBands: true,
+    bbStrategies: true,
     swing: false,
     sr: false,
     trendlines: true,
     tlAscending: true,
     tlDescending: true,
     patterns: false,
+    classicalPatterns: true,
     fib: true,
     volume: true,
   });
 
   const smaCfg = useMemo(() => getIndicatorConfig("sma"), [visibilityTick]);
   const emaCfg = useMemo(() => getIndicatorConfig("ema"), [visibilityTick]);
+  const bbCfg = useMemo(() => getIndicatorConfig("bb"), [visibilityTick]);
 
   const smaPeriods = (smaCfg?.params.periods as number[]) ?? [];
   const emaPeriods = (emaCfg?.params.periods as number[]) ?? [];
   const smaColors = parsePeriodColors(smaCfg?.params.colors);
   const emaColors = parsePeriodColors(emaCfg?.params.colors);
+  const bbColors = parsePeriodColors(bbCfg?.params.colors);
 
   const smaVis = useMemo(
     () => getIndicatorOverlayVisibility("sma", smaPeriods),
@@ -260,8 +295,17 @@ export function ChartSidebar({
     () => getIndicatorOverlayVisibility("ema", emaPeriods),
     [emaPeriods.join(","), visibilityTick],
   );
+  const bbVis = useMemo(() => getBbOverlayVisibility(), [visibilityTick]);
+  const bbStratVis = useMemo(
+    () => getBbStrategyVisibility(),
+    [visibilityTick],
+  );
   const patternVis = useMemo(
     () => getChartPatternVisibility(),
+    [visibilityTick],
+  );
+  const classicalPatternVis = useMemo(
+    () => getClassicalChartPatternVisibility(),
     [visibilityTick],
   );
   const swingVis = useMemo(() => getSwingChartVisibility(), [visibilityTick]);
@@ -329,14 +373,22 @@ export function ChartSidebar({
 
   const smaVals = smaPeriods.map((p) => smaVis[p]);
   const emaVals = emaPeriods.map((p) => emaVis[p]);
+  const bbVals = BB_BAND_ORDER.map((band) => bbVis[band]);
+  const bbStratVals = BB_STRATEGY_ORDER.map((id) => bbStratVis[id]);
   const maVals = [...smaVals, ...emaVals];
   const maState = groupState(maVals);
   const smaState = groupState(smaVals);
   const emaState = groupState(emaVals);
+  const bbBandState = groupState(bbVals);
+  const bbStratState = groupState(bbStratVals);
+  const bbState = groupState([...bbVals, ...bbStratVals]);
   const swingState = groupState(SWING_CHART_TOGGLE_ORDER.map((id) => swingVis[id]));
   const srState = groupState(SR_CHART_TOGGLE_ORDER.map((id) => srVis[id]));
   const patternState = groupState(
     CANDLE_PATTERN_ORDER.map((id) => patternVis[id]),
+  );
+  const classicalPatternState = groupState(
+    CHART_PATTERN_ORDER.map((id) => classicalPatternVis[id]),
   );
   const fibState = groupState(
     FIB_RETRACEMENT_LEVELS.map((r) => fibVis[r]),
@@ -444,6 +496,69 @@ export function ChartSidebar({
             )}
           </Group>
         </Group>
+
+        {bbCfg?.enabled !== false && (
+          <Group
+            title="볼린저 밴드"
+            open={open.bb}
+            onToggleOpen={() => toggleOpen("bb")}
+            checked={bbState.checked}
+            indeterminate={bbState.indeterminate}
+            onToggleAll={(next) =>
+              bump(() => {
+                setBbOverlayGroupVisible(next);
+                setBbStrategyGroupVisible(next);
+              })
+            }
+          >
+            <Group
+              title="밴드"
+              open={open.bbBands}
+              onToggleOpen={() => toggleOpen("bbBands")}
+              checked={bbBandState.checked}
+              indeterminate={bbBandState.indeterminate}
+              onToggleAll={(next) =>
+                bump(() => setBbOverlayGroupVisible(next))
+              }
+            >
+              {BB_BAND_ORDER.map((band: BbBandId) => (
+                <Leaf
+                  key={band}
+                  label={`BB ${BB_BAND_META[band].labelKo}`}
+                  hint={BB_BAND_META[band].label}
+                  color={resolveBbBandColor(bbColors, band)}
+                  checked={bbVis[band]}
+                  onChange={(next) =>
+                    bump(() => setBbOverlayVisible(band, next))
+                  }
+                />
+              ))}
+            </Group>
+
+            <Group
+              title="전략"
+              open={open.bbStrategies}
+              onToggleOpen={() => toggleOpen("bbStrategies")}
+              checked={bbStratState.checked}
+              indeterminate={bbStratState.indeterminate}
+              onToggleAll={(next) =>
+                bump(() => setBbStrategyGroupVisible(next))
+              }
+            >
+              {BB_STRATEGY_ORDER.map((id: BbStrategyId) => (
+                <Leaf
+                  key={id}
+                  label={BB_STRATEGY_META[id].labelKo}
+                  hint={BB_STRATEGY_META[id].description}
+                  checked={bbStratVis[id]}
+                  onChange={(next) =>
+                    bump(() => setBbStrategyVisible(id, next))
+                  }
+                />
+              ))}
+            </Group>
+          </Group>
+        )}
 
         <div className="border-b border-border px-2.5 py-2">
           <label className="flex cursor-pointer items-center gap-2">
@@ -683,6 +798,30 @@ export function ChartSidebar({
             </div>
           </Group>
         </div>
+
+        <Group
+          title="차트 패턴"
+          open={open.classicalPatterns}
+          onToggleOpen={() => toggleOpen("classicalPatterns")}
+          checked={classicalPatternState.checked}
+          indeterminate={classicalPatternState.indeterminate}
+          onToggleAll={(next) =>
+            bump(() => setClassicalChartPatternGroupVisible(next))
+          }
+        >
+          {CHART_PATTERN_ORDER.map((id: ChartPatternId) => (
+            <Leaf
+              key={id}
+              label={CHART_PATTERN_META[id].labelKo}
+              hint={CHART_PATTERN_META[id].description}
+              color={CHART_PATTERN_META[id].color}
+              checked={classicalPatternVis[id]}
+              onChange={(next) =>
+                bump(() => setClassicalChartPatternVisible(id, next))
+              }
+            />
+          ))}
+        </Group>
 
         <Group
           title="캔들 패턴"

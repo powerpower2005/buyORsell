@@ -38,8 +38,23 @@
     {
       "id": "bb",
       "enabled": true,
-      "params": { "period": 20, "stdDev": 2 },
-      "timeframes": ["1d"]
+      "params": {
+        "period": 20,
+        "stdDev": 2,
+        "colors": {
+          "upper": "#6366f1",
+          "middle": "#eab308",
+          "lower": "#818cf8"
+        }
+      },
+      "timeframes": ["1h", "4h", "1d", "1w"],
+      "outputs": ["line"]
+    },
+    {
+      "id": "mfi",
+      "enabled": true,
+      "params": { "period": 14 },
+      "timeframes": ["1h", "4h", "1d", "1w"]
     },
     {
       "id": "atr",

@@ -1,4 +1,12 @@
-import { SMA, EMA, RSI, MACD, BollingerBands, ATR } from "technicalindicators";
+import {
+  SMA,
+  EMA,
+  RSI,
+  MACD,
+  BollingerBands,
+  ATR,
+  MFI,
+} from "technicalindicators";
 
 import type { SeriesPoint } from "../../types";
 
@@ -189,18 +197,62 @@ export const bbPlugin: IndicatorPlugin = {
     const pad = c.length - vals.length;
     const sliceD = d.slice(pad);
     const last = requireDefined(vals.at(-1), "bb last value");
+    const pbVals: number[] = [];
+    const bwVals: number[] = [];
+    for (let i = 0; i < vals.length; i++) {
+      const v = vals[i];
+      const width = v.upper - v.lower;
+      pbVals.push(width > 0 ? (c[pad + i] - v.lower) / width : NaN);
+      bwVals.push(v.middle > 0 ? width / v.middle : NaN);
+    }
 
     return {
       series: {
         bbUpper: alignSeries(sliceD, vals.map((v) => v.upper)),
         bbMiddle: alignSeries(sliceD, vals.map((v) => v.middle)),
         bbLower: alignSeries(sliceD, vals.map((v) => v.lower)),
+        bbPercentB: alignSeries(sliceD, pbVals),
+        bbBandwidth: alignSeries(sliceD, bwVals),
       },
       latest: {
         bbUpper: optionalLatest(last.upper),
         bbMiddle: optionalLatest(last.middle),
         bbLower: optionalLatest(last.lower),
+        bbPercentB: optionalLatest(pbVals.at(-1)),
+        bbBandwidth: optionalLatest(bwVals.at(-1)),
       },
+    };
+  },
+};
+
+export const mfiPlugin: IndicatorPlugin = {
+  id: "mfi",
+  minBars: (p) => requireNumber(p.period, "mfi.period") + 1,
+  compute(bars, params) {
+    const period = requireNumber(params.period, "mfi.period");
+    const minBars = period + 1;
+    if (bars.length < minBars) {
+      return {
+        series: {} as Record<string, SeriesPoint[]>,
+        latest: { mfi: null },
+        skipped: [`mfi requires ${minBars} bars, got ${bars.length}`],
+      };
+    }
+
+    const d = dates(bars);
+    const vals = MFI.calculate({
+      period,
+      high: bars.map((b) => b.high),
+      low: bars.map((b) => b.low),
+      close: bars.map((b) => b.close),
+      volume: bars.map((b) => b.volume),
+    });
+    const pad = bars.length - vals.length;
+    const aligned = alignSeries(d.slice(pad), vals);
+
+    return {
+      series: { mfi: aligned },
+      latest: { mfi: optionalLatest(vals.at(-1)) },
     };
   },
 };
@@ -241,6 +293,7 @@ export const allPlugins = [
   rsiPlugin,
   macdPlugin,
   bbPlugin,
+  mfiPlugin,
   atrPlugin,
 ];
 
