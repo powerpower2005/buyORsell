@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { IndicatorConfigForm } from "./IndicatorConfigForm";
 import { Button } from "./ui/Button";
-import { Card } from "./ui/Card";
 
 interface Props {
   open: boolean;
@@ -9,6 +8,7 @@ interface Props {
   onChange: () => void;
 }
 
+/** Right-edge settings drawer (collapsible sidebar). */
 export function IndicatorConfigModal({ open, onClose, onChange }: Props) {
   useEffect(() => {
     if (!open) return;
@@ -27,19 +27,21 @@ export function IndicatorConfigModal({ open, onClose, onChange }: Props) {
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-3 sm:items-center sm:p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="indicator-config-title"
-      onClick={onClose}
-    >
-      <Card
-        className="flex max-h-[min(90vh,840px)] w-full max-w-lg flex-col overflow-hidden text-left"
-        onClick={(e) => e.stopPropagation()}
+    <div className="fixed inset-0 z-50 flex justify-end" role="presentation">
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/50"
+        aria-label="기술 지표 설정 닫기"
+        onClick={onClose}
+      />
+      <aside
+        className="relative z-10 flex h-full w-full max-w-md flex-col border-l border-border bg-surface shadow-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="indicator-config-title"
       >
-        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border pb-3">
-          <div>
+        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3">
+          <div className="min-w-0">
             <h2
               id="indicator-config-title"
               className="text-base font-semibold text-text-primary"
@@ -50,14 +52,19 @@ export function IndicatorConfigModal({ open, onClose, onChange }: Props) {
               기간·색상·사용 여부 (차트 레이어 on/off와 별개)
             </p>
           </div>
-          <Button variant="ghost" className="shrink-0 px-2 py-1" onClick={onClose}>
-            닫기
+          <Button
+            variant="ghost"
+            className="shrink-0 px-2 py-1 text-xs"
+            onClick={onClose}
+            title="사이드바 접기"
+          >
+            접기
           </Button>
         </div>
-        <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-0.5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
           <IndicatorConfigForm onChange={onChange} />
         </div>
-      </Card>
+      </aside>
     </div>
   );
 }

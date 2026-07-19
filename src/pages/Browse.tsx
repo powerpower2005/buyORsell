@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import clsx from "clsx";
+import {
+  isBrowseTickerListCollapsed,
+  setBrowseTickerListCollapsed,
+} from "@/lib/sidebarOpenStore";
 import { loadIndex, loadQuote } from "@/lib/dataLoader";
 import { validateFreshness } from "@/lib/validation";
 import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
@@ -75,6 +79,14 @@ export function BrowsePage() {
   const [configTick, setConfigTick] = useState(0);
   const [chartVisTick, setChartVisTick] = useState(0);
   const [indicatorConfigOpen, setIndicatorConfigOpen] = useState(false);
+  const [tickerListCollapsed, setTickerListCollapsed] = useState(() =>
+    isBrowseTickerListCollapsed(),
+  );
+
+  const setTickerListCollapsedPersisted = (next: boolean) => {
+    setBrowseTickerListCollapsed(next);
+    setTickerListCollapsed(next);
+  };
 
   const entries = useMemo(
     () =>
@@ -296,55 +308,85 @@ export function BrowsePage() {
         <TimeframeTabs value={timeframe} onChange={onTimeframeChange} />
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,200px)_minmax(0,1fr)]">
-        <Card>
-          <SectionTitle>수집된 종목</SectionTitle>
-          {!entries.length ? (
-            <p className="text-sm text-text-secondary">
-              {timeframe} 데이터가 없습니다.{" "}
-              <Link to="/" className="text-accent">
-                홈
-              </Link>
-              에서 Issue로 수집을 요청하세요.
-            </p>
-          ) : (
-            <ul className="space-y-1">
-              {entries.map((e) => {
-                const active =
-                  selected?.ticker === e.ticker &&
-                  selected?.timeframe === e.timeframe;
-                return (
-                  <li key={`${e.ticker}-${e.timeframe}`}>
-                    <button
-                      type="button"
-                      onClick={() => selectEntry(e)}
-                      className={clsx(
-                        "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
-                        active
-                          ? "bg-accent text-white"
-                          : "text-text-secondary hover:bg-surface-elevated hover:text-text-primary",
-                      )}
-                    >
-                      <span className="font-medium">
-                        {formatTickerLabel(e.ticker)}
-                      </span>
-                      <span
+      <div
+        className={clsx(
+          "grid gap-6",
+          tickerListCollapsed
+            ? "lg:grid-cols-[auto_minmax(0,1fr)]"
+            : "lg:grid-cols-[minmax(0,200px)_minmax(0,1fr)]",
+        )}
+      >
+        {tickerListCollapsed ? (
+          <aside className="lg:sticky lg:top-4">
+            <button
+              type="button"
+              className="rounded-xl border border-border bg-surface px-2.5 py-3 text-[11px] font-medium text-text-secondary shadow-sm hover:border-accent/40 hover:text-text-primary lg:[writing-mode:vertical-rl]"
+              onClick={() => setTickerListCollapsedPersisted(false)}
+              title="수집된 종목 펼치기"
+            >
+              수집된 종목
+            </button>
+          </aside>
+        ) : (
+          <Card className="lg:sticky lg:top-4 lg:self-start">
+            <div className="mb-3 flex items-start justify-between gap-2">
+              <SectionTitle>수집된 종목</SectionTitle>
+              <button
+                type="button"
+                className="shrink-0 rounded-md border border-border px-2 py-1 text-[10px] font-medium text-text-tertiary hover:border-accent/40 hover:text-text-primary"
+                onClick={() => setTickerListCollapsedPersisted(true)}
+                title="수집된 종목 접기"
+              >
+                접기
+              </button>
+            </div>
+            {!entries.length ? (
+              <p className="text-sm text-text-secondary">
+                {timeframe} 데이터가 없습니다.{" "}
+                <Link to="/" className="text-accent">
+                  홈
+                </Link>
+                에서 Issue로 수집을 요청하세요.
+              </p>
+            ) : (
+              <ul className="max-h-[min(70vh,640px)] space-y-1 overflow-y-auto">
+                {entries.map((e) => {
+                  const active =
+                    selected?.ticker === e.ticker &&
+                    selected?.timeframe === e.timeframe;
+                  return (
+                    <li key={`${e.ticker}-${e.timeframe}`}>
+                      <button
+                        type="button"
+                        onClick={() => selectEntry(e)}
                         className={clsx(
-                          "mt-0.5 block text-xs",
-                          active ? "text-white/80" : "text-text-tertiary",
+                          "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
+                          active
+                            ? "bg-accent text-white"
+                            : "text-text-secondary hover:bg-surface-elevated hover:text-text-primary",
                         )}
                       >
-                        {e.barCount} bars · {e.lastBarDate}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </Card>
+                        <span className="font-medium">
+                          {formatTickerLabel(e.ticker)}
+                        </span>
+                        <span
+                          className={clsx(
+                            "mt-0.5 block text-xs",
+                            active ? "text-white/80" : "text-text-tertiary",
+                          )}
+                        >
+                          {e.barCount} bars · {e.lastBarDate}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </Card>
+        )}
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           {!selected ? (
             <Card>
               <p className="text-sm text-text-secondary">왼쪽에서 종목을 선택하세요.</p>
@@ -383,8 +425,8 @@ export function BrowsePage() {
                     <PartialDataBanner warnings={evaluation!.warnings} />
                   )}
                   <p className="text-xs text-text-tertiary">{statusDetail}</p>
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-                    <div className="min-w-0 flex-1">
+                  <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start">
+                    <div className="min-w-0 w-full flex-1">
                       <CandleChart
                         bars={evaluation!.bars}
                         timeframe={selected.timeframe as Timeframe}
@@ -423,7 +465,6 @@ export function BrowsePage() {
                       />
                     </div>
                     <ChartSidebar
-                      className="w-full shrink-0 lg:sticky lg:top-4 lg:w-64"
                       visibilityTick={chartVisTick}
                       onVisibilityChange={() => setChartVisTick((n) => n + 1)}
                       onOpenIndicatorConfig={() => setIndicatorConfigOpen(true)}

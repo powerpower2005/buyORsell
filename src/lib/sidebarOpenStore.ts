@@ -67,18 +67,42 @@ export function toggleSidebarOpenKey(key: SidebarOpenKey): SidebarOpenState {
 }
 
 const COLLAPSED_KEY = "gf:config:chart-sidebar-collapsed";
+const WATCHLIST_COLLAPSED_KEY = "gf:config:watchlist-collapsed";
+const BROWSE_LIST_COLLAPSED_KEY = "gf:config:browse-ticker-list-collapsed";
 
-/** Whole sidebar dock collapsed for a wider chart. Default expanded. */
-export function isChartSidebarCollapsed(): boolean {
+function readCollapsedFlag(key: string, defaultValue = false): boolean {
   try {
-    const raw = localStorage.getItem(COLLAPSED_KEY);
-    if (raw == null) return false;
+    const raw = localStorage.getItem(key);
+    if (raw == null) return defaultValue;
     return JSON.parse(raw) === true;
   } catch {
-    return false;
+    return defaultValue;
   }
+}
+
+/** Whole chart-layer sidebar dock collapsed for a wider chart. Default expanded. */
+export function isChartSidebarCollapsed(): boolean {
+  return readCollapsedFlag(COLLAPSED_KEY, false);
 }
 
 export function setChartSidebarCollapsed(collapsed: boolean): void {
   localStorage.setItem(COLLAPSED_KEY, JSON.stringify(collapsed));
+}
+
+/** Home 「수집된 종목」 chip strip. */
+export function isWatchlistCollapsed(): boolean {
+  return readCollapsedFlag(WATCHLIST_COLLAPSED_KEY, false);
+}
+
+export function setWatchlistCollapsed(collapsed: boolean): void {
+  localStorage.setItem(WATCHLIST_COLLAPSED_KEY, JSON.stringify(collapsed));
+}
+
+/** Browse left ticker list. */
+export function isBrowseTickerListCollapsed(): boolean {
+  return readCollapsedFlag(BROWSE_LIST_COLLAPSED_KEY, false);
+}
+
+export function setBrowseTickerListCollapsed(collapsed: boolean): void {
+  localStorage.setItem(BROWSE_LIST_COLLAPSED_KEY, JSON.stringify(collapsed));
 }

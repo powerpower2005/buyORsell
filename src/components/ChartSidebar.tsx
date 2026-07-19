@@ -438,16 +438,15 @@ export function ChartSidebar({
   const tlState = groupState(tlAggregateVals);
 
   if (collapsed) {
+    // Out of flex flow so the chart can use the full row width.
     return (
       <aside
-        className={clsx(
-          "flex shrink-0 flex-row items-stretch gap-2 lg:sticky lg:top-4 lg:w-11 lg:flex-col",
-          className,
-        )}
+        className="absolute right-2 top-2 z-20 flex flex-col gap-1.5"
+        aria-label="접힌 차트 사이드바"
       >
         <button
           type="button"
-          className="flex flex-1 items-center justify-center rounded-xl border border-border bg-surface px-3 py-2 text-xs font-medium text-text-secondary hover:border-accent/40 hover:text-text-primary lg:flex-none lg:px-2 lg:py-3 lg:[writing-mode:vertical-rl]"
+          className="rounded-lg border border-border bg-surface/95 px-2.5 py-1.5 text-[11px] font-medium text-text-secondary shadow-sm backdrop-blur hover:border-accent/40 hover:text-text-primary"
           onClick={() => setCollapsedPersisted(false)}
           title="차트 레이어 펼치기"
         >
@@ -456,11 +455,11 @@ export function ChartSidebar({
         {onOpenIndicatorConfig && (
           <button
             type="button"
-            className="flex flex-1 items-center justify-center rounded-xl border border-border bg-surface px-3 py-2 text-xs font-medium text-text-secondary hover:border-accent/40 hover:text-text-primary lg:flex-none lg:px-2 lg:py-3 lg:[writing-mode:vertical-rl]"
+            className="rounded-lg border border-accent/40 bg-accent/15 px-2.5 py-1.5 text-[11px] font-medium text-accent shadow-sm backdrop-blur hover:bg-accent/25"
             onClick={onOpenIndicatorConfig}
             title="기술 지표 설정"
           >
-            지표 설정
+            지표
           </button>
         )}
       </aside>
@@ -470,7 +469,7 @@ export function ChartSidebar({
   return (
     <aside
       className={clsx(
-        "rounded-xl border border-border bg-surface text-left",
+        "w-full shrink-0 rounded-xl border border-border bg-surface text-left lg:sticky lg:top-4 lg:w-64",
         className,
       )}
     >

@@ -438,8 +438,8 @@ export function HomePage() {
               )}
               <p className="text-left text-xs text-text-tertiary">{statusDetail}</p>
               <div id="export-root" className="space-y-6">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-                  <div className="min-w-0 flex-1">
+                <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start">
+                  <div className="min-w-0 w-full flex-1">
                     <CandleChart
                       bars={evaluation!.bars}
                       timeframe={timeframe}
@@ -478,7 +478,6 @@ export function HomePage() {
                     />
                   </div>
                   <ChartSidebar
-                    className="w-full shrink-0 lg:sticky lg:top-4 lg:w-64"
                     visibilityTick={chartVisTick}
                     onVisibilityChange={() => setChartVisTick((n) => n + 1)}
                     onOpenIndicatorConfig={() => setIndicatorConfigOpen(true)}
