@@ -18,6 +18,11 @@ import {
   BB_BAND_ORDER,
   resolveBbBandColor,
 } from "@/lib/bbOverlay";
+import {
+  ICHIMOKU_LINE_ORDER,
+  ICHIMOKU_PART_META,
+  resolveIchimokuColor,
+} from "@/lib/ichimokuOverlay";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 import {
   INDICATOR_HELP,
@@ -37,6 +42,7 @@ export type IndicatorConfigSectionId =
   | "bb"
   | "mfi"
   | "atr"
+  | "ichimoku"
   | "all";
 
 export const INDICATOR_CONFIG_SECTION_LABEL: Record<
@@ -52,6 +58,7 @@ export const INDICATOR_CONFIG_SECTION_LABEL: Record<
   bb: "Bollinger Bands",
   mfi: "MFI",
   atr: "ATR",
+  ichimoku: "일목균형표",
 };
 
 interface Props {
@@ -317,6 +324,7 @@ export function IndicatorConfigForm({
   const bb = find("bb");
   const mfi = find("mfi");
   const atr = find("atr");
+  const ichimoku = find("ichimoku");
 
   if (!sma || !ema || !rsi || !macd || !bb || !atr) {
     throw new ConfigError("IndicatorConfigForm: missing indicator definitions");
@@ -339,7 +347,7 @@ export function IndicatorConfigForm({
 
   const indicatorWarnings = runtimeWarnings.filter(
     (w) =>
-      /SMA|EMA|RSI|MACD|BB|MFI|ATR|sma|ema|rsi|macd|bb|mfi|atr|점수 규칙/i.test(
+      /SMA|EMA|RSI|MACD|BB|MFI|ATR|ICHIMOKU|일목|sma|ema|rsi|macd|bb|mfi|atr|ichimoku|점수 규칙/i.test(
         w,
       ) || w.includes("봉"),
   );
@@ -635,6 +643,96 @@ export function IndicatorConfigForm({
               patch();
             }}
           />
+        </IndicatorSection>
+      )}
+
+      {ichimoku && show("ichimoku") && (
+        <IndicatorSection
+          title="일목균형표"
+          help={INDICATOR_HELP.ichimoku}
+          enabled={ichimoku.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("ichimoku", v);
+            patch();
+          }}
+        >
+          <NumInput
+            label="전환선 (Tenkan)"
+            help={PARAM_HELP["ichimoku.conversionPeriod"]}
+            value={requireNumber(
+              ichimoku.params.conversionPeriod,
+              "ichimoku.conversionPeriod",
+            )}
+            min={2}
+            max={50}
+            onChange={(v) => {
+              setIndicatorParam("ichimoku", "conversionPeriod", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="기준선 (Kijun)"
+            help={PARAM_HELP["ichimoku.basePeriod"]}
+            value={requireNumber(
+              ichimoku.params.basePeriod,
+              "ichimoku.basePeriod",
+            )}
+            min={2}
+            max={100}
+            onChange={(v) => {
+              setIndicatorParam("ichimoku", "basePeriod", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="선행스팬2 기간"
+            help={PARAM_HELP["ichimoku.spanPeriod"]}
+            value={requireNumber(
+              ichimoku.params.spanPeriod,
+              "ichimoku.spanPeriod",
+            )}
+            min={10}
+            max={120}
+            onChange={(v) => {
+              setIndicatorParam("ichimoku", "spanPeriod", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="이동 (Displacement)"
+            help={PARAM_HELP["ichimoku.displacement"]}
+            value={requireNumber(
+              ichimoku.params.displacement,
+              "ichimoku.displacement",
+            )}
+            min={1}
+            max={60}
+            onChange={(v) => {
+              setIndicatorParam("ichimoku", "displacement", v);
+              patch();
+            }}
+          />
+          <div className="space-y-3 pt-1">
+            {ICHIMOKU_LINE_ORDER.map((part) => {
+              const colors = parsePeriodColors(ichimoku.params.colors);
+              const color = resolveIchimokuColor(colors, part);
+              return (
+                <div key={part}>
+                  <p className="mb-1.5 flex items-center gap-1.5 text-xs text-text-tertiary">
+                    <span>{ICHIMOKU_PART_META[part].labelKo} 색상</span>
+                    <HelpTip help={PARAM_HELP["ichimoku.color"]} />
+                  </p>
+                  <ColorSwatchPicker
+                    value={color}
+                    onChange={(c) => {
+                      setIndicatorNamedColor("ichimoku", part, c);
+                      patch();
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </IndicatorSection>
       )}
 

@@ -3,6 +3,10 @@ import patternConfig from "../../../config/candle-patterns.json";
 import { patternLabel } from "../candlePatternMeta";
 import { InsufficientDataError } from "../errors";
 import { requireMinBars, requireNonEmptyArray } from "../require";
+import {
+  scoreSignalHits,
+  type SignalStatsMap,
+} from "./signalFollowThrough";
 
 export type CandlePatternId =
   | "doji"
@@ -28,6 +32,7 @@ export interface CandlePatternResult {
   latestBarDate: string;
   onLatestBar: CandlePatternHit[];
   recent: CandlePatternHit[];
+  stats: SignalStatsMap;
 }
 
 interface BarMetrics {
@@ -230,11 +235,13 @@ export function detectCandlePatterns(
   const lastIdx = bars.length - 1;
   const onLatestBar = recent.filter((p) => p.barIndex === lastIdx);
   const latestBar = bars[lastIdx];
+  const stats = scoreSignalHits(bars, recent);
 
   return {
     lookbackBars: bars.length - start,
     latestBarDate: latestBar.date,
     onLatestBar,
     recent,
+    stats,
   };
 }

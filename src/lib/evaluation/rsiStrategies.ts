@@ -5,6 +5,10 @@ import {
   RSI_STRATEGY_META,
   type RsiStrategyId,
 } from "../rsiStrategyMeta";
+import {
+  scoreSignalHits,
+  type SignalStatsMap,
+} from "./signalFollowThrough";
 
 export type { RsiStrategyId };
 
@@ -22,6 +26,7 @@ export interface RsiStrategyResult {
   latestBarDate: string;
   onLatestBar: RsiStrategyHit[];
   recent: RsiStrategyHit[];
+  stats: SignalStatsMap;
 }
 
 const DEFAULT_LOOKBACK = 120;
@@ -417,7 +422,9 @@ export function detectRsiStrategies(
     ...detectDoubleRsi(bars, start),
   ];
 
-  const recent = capPerStrategy(all.filter((h) => h.barIndex >= start));
+  const inWindow = all.filter((h) => h.barIndex >= start);
+  const stats = scoreSignalHits(bars, inWindow);
+  const recent = capPerStrategy(inWindow);
   const lastIdx = bars.length - 1;
   const onLatestBar = recent.filter((h) => h.barIndex === lastIdx);
 
@@ -426,5 +433,6 @@ export function detectRsiStrategies(
     latestBarDate: bars[lastIdx]?.date ?? "",
     onLatestBar,
     recent,
+    stats,
   };
 }

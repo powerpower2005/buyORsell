@@ -4,6 +4,10 @@ import {
   PATTERN_STRATEGY_META,
   type PatternStrategyId,
 } from "../patternStrategyMeta";
+import {
+  scoreSignalHits,
+  type SignalStatsMap,
+} from "./signalFollowThrough";
 
 export type { PatternStrategyId };
 
@@ -23,6 +27,7 @@ export interface PatternStrategyResult {
   latestBarDate: string;
   onLatestBar: PatternStrategyHit[];
   recent: PatternStrategyHit[];
+  stats: SignalStatsMap;
 }
 
 const MAX_HITS = 40;
@@ -173,6 +178,7 @@ export function detectPatternStrategies(
   }
 
   hits.sort((a, b) => a.barIndex - b.barIndex);
+  const stats = scoreSignalHits(bars, hits);
   const recent = hits.slice(-MAX_HITS);
   const lastIdx = bars.length - 1;
 
@@ -181,5 +187,6 @@ export function detectPatternStrategies(
     latestBarDate: bars[lastIdx]?.date ?? "",
     onLatestBar: recent.filter((h) => h.barIndex === lastIdx),
     recent,
+    stats,
   };
 }

@@ -59,14 +59,34 @@ import {
 } from "@/lib/bbStrategyStore";
 import {
   getBbOverlayVisibility,
+  getIchimokuOverlayVisibility,
   getIndicatorOverlayVisibility,
   isVolumeOverlayVisible,
   setBbOverlayGroupVisible,
   setBbOverlayVisible,
+  setIchimokuOverlayGroupVisible,
+  setIchimokuOverlayVisible,
   setIndicatorOverlayGroupVisible,
   setIndicatorOverlayVisible,
   setVolumeOverlayVisible,
 } from "@/lib/indicatorOverlayStore";
+import {
+  ICHIMOKU_PART_META,
+  ICHIMOKU_PART_ORDER,
+  resolveIchimokuColor,
+  type IchimokuPartId,
+} from "@/lib/ichimokuOverlay";
+import { ichimokuStrategyHelp } from "@/lib/ichimokuStrategyHelp";
+import {
+  ICHIMOKU_STRATEGY_META,
+  ICHIMOKU_STRATEGY_ORDER,
+  type IchimokuStrategyId,
+} from "@/lib/ichimokuStrategyMeta";
+import {
+  getIchimokuStrategyVisibility,
+  setIchimokuStrategyGroupVisible,
+  setIchimokuStrategyVisible,
+} from "@/lib/ichimokuStrategyStore";
 import {
   CANDLE_PATTERN_BIAS_ORDER,
   CANDLE_PATTERN_META,
@@ -142,7 +162,6 @@ import {
   AUX_INDICATOR_META,
   AUX_INDICATOR_ORDER,
   getAuxIndicatorVisibility,
-  setAuxIndicatorGroupVisible,
   setAuxIndicatorVisible,
   type AuxIndicatorId,
 } from "@/lib/auxIndicatorStore";
@@ -158,6 +177,12 @@ import type { CandlePatternId } from "@/lib/evaluation/candlePatterns";
 import type { SwingChartToggleId } from "@/lib/swingStructureStore";
 import type { SrChartToggleId } from "@/lib/srZoneStore";
 import type { Trendline, TrendlineResult } from "@/lib/evaluation/trendlines";
+import {
+  formatSignalRate,
+  signalRateTitle,
+  type SignalStat,
+  type SignalStatsBundle,
+} from "@/lib/evaluation/signalFollowThrough";
 
 const EMPTY_TRENDLINES: Trendline[] = [];
 
@@ -171,7 +196,16 @@ interface Props {
   onEditIndicator?: (section: IndicatorConfigSectionId) => void;
   /** Current evaluation trendlines for per-line toggles. */
   trendlines?: TrendlineResult | null;
+  /** Follow-through % for patterns/strategies on this ticker. */
+  signalStats?: SignalStatsBundle | null;
   className?: string;
+}
+
+function rateClass(stat: SignalStat | undefined): string {
+  if (!stat || stat.ratePct == null) return "text-text-tertiary";
+  if (stat.ratePct >= 55) return "text-positive";
+  if (stat.ratePct >= 40) return "text-accent";
+  return "text-negative";
 }
 
 function trendlineLeafLabel(line: Trendline, index: number): string {
@@ -183,29 +217,50 @@ function trendlineLeafHint(line: Trendline): string {
   return line.broken ? "이탈됨" : `${line.date1} → ${line.date2}`;
 }
 
-function TriCheckbox({
-  checked,
-  indeterminate,
+/** Unified visibility control for every chart layer row. */
+function OnOffSwitch({
+  on,
+  partial,
   onChange,
+  label,
 }: {
-  checked: boolean;
-  indeterminate?: boolean;
+  on: boolean;
+  /** Some children on — switch looks mixed; click turns all off. */
+  partial?: boolean;
   onChange: (next: boolean) => void;
+  label?: string;
 }) {
-  const isPartial = Boolean(indeterminate) && !checked;
+  const isPartial = Boolean(partial) && !on;
+  const active = on || isPartial;
   return (
-    <input
-      type="checkbox"
-      className="h-3.5 w-3.5 shrink-0 accent-accent"
-      checked={checked}
-      ref={(el) => {
-        if (el) el.indeterminate = isPartial;
+    <button
+      type="button"
+      role="switch"
+      aria-checked={isPartial ? "mixed" : on}
+      aria-label={label ?? (on ? "켜짐" : "꺼짐")}
+      title={isPartial ? "일부 켜짐 · 클릭하면 모두 끔" : on ? "켜짐" : "꺼짐"}
+      className={clsx(
+        "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors",
+        on
+          ? "border-accent/50 bg-accent"
+          : isPartial
+            ? "border-accent/40 bg-accent/40"
+            : "border-border bg-bg",
+      )}
+      onClick={(e) => {
+        e.stopPropagation();
+        // Partial → off; on → off; off → on.
+        onChange(!(on || isPartial));
       }}
-      onChange={() => {
-        // Only two outcomes: on or off. Partial (indeterminate) → off.
-        onChange(!(checked || isPartial));
-      }}
-    />
+    >
+      <span
+        className={clsx(
+          "absolute top-0.5 h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-[left]",
+          active ? "left-[18px]" : "left-0.5",
+        )}
+      />
+      <span className="sr-only">{on ? "ON" : isPartial ? "일부" : "OFF"}</span>
+    </button>
   );
 }
 
@@ -235,6 +290,8 @@ function Group({
   colorDot,
   onEdit,
   help,
+  /** Nested groups skip the outer border so nesting stays clean. */
+  nested,
 }: {
   title: string;
   open: boolean;
@@ -246,33 +303,46 @@ function Group({
   colorDot?: string;
   onEdit?: () => void;
   help?: HelpContent;
+  nested?: boolean;
 }) {
   return (
-    <div className="border-b border-border last:border-b-0">
+    <div className={clsx(!nested && "border-b border-border last:border-b-0")}>
       <div className="flex items-center gap-2 px-2.5 py-2">
-        <TriCheckbox
-          checked={checked}
-          indeterminate={indeterminate}
-          onChange={onToggleAll}
-        />
         <button
           type="button"
           className="flex min-w-0 flex-1 items-center gap-1.5 text-left text-xs font-medium text-text-primary"
           onClick={onToggleOpen}
         >
-          <span className="text-text-tertiary">{open ? "▾" : "▸"}</span>
+          <span className="w-3 shrink-0 text-text-tertiary">
+            {open ? "▾" : "▸"}
+          </span>
           {colorDot && (
             <span
-              className="inline-block h-1.5 w-3 rounded-sm"
+              className="inline-block h-1.5 w-3 shrink-0 rounded-sm"
               style={{ backgroundColor: colorDot }}
             />
           )}
           <span className="truncate">{title}</span>
         </button>
+        <OnOffSwitch
+          on={checked}
+          partial={indeterminate}
+          onChange={onToggleAll}
+          label={`${title} 표시`}
+        />
         {help && <HelpTip help={help} />}
         {onEdit && <EditLink onClick={onEdit} />}
       </div>
-      {open && <div className="space-y-0.5 pb-2 pl-7 pr-2">{children}</div>}
+      {open && (
+        <div
+          className={clsx(
+            "space-y-0.5 pb-2 pr-2",
+            nested ? "pl-3" : "pl-5",
+          )}
+        >
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -298,6 +368,7 @@ function Leaf({
   color,
   hint,
   bias,
+  rateStat,
   colorValue,
   onColorChange,
   colorOptions,
@@ -310,45 +381,57 @@ function Leaf({
   color?: string;
   hint?: string;
   bias?: PatternBias;
+  /** Historical follow-through on this ticker (pattern/strategy). */
+  rateStat?: SignalStat;
   colorValue?: string;
   onColorChange?: (color: string) => void;
   colorOptions?: readonly string[];
   onEdit?: () => void;
   help?: HelpContent;
 }) {
+  const rateText = formatSignalRate(rateStat);
+  const rateTitle = signalRateTitle(rateStat);
   return (
     <div className="rounded px-1.5 py-1 hover:bg-surface-elevated/60">
-      <div className="flex items-start gap-1">
-        <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-2">
-          <input
-            type="checkbox"
-            className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-accent"
-            checked={checked}
-            onChange={(e) => onChange(e.target.checked)}
-          />
-          <span className="min-w-0 flex-1">
-            <span className="flex items-center gap-1.5 text-xs text-text-secondary">
-              {color && (
-                <span
-                  className="inline-block h-0.5 w-3 rounded-sm"
-                  style={{ backgroundColor: color }}
-                />
-              )}
-              <span className="truncate">{label}</span>
-              {bias && <BiasBadge bias={bias} />}
-            </span>
-            {hint && (
-              <span className="mt-0.5 block text-[10px] leading-snug text-text-tertiary">
-                {hint}
+      <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+            {color && (
+              <span
+                className="inline-block h-0.5 w-3 shrink-0 rounded-sm"
+                style={{ backgroundColor: color }}
+              />
+            )}
+            <span className="truncate">{label}</span>
+            {bias && <BiasBadge bias={bias} />}
+            {rateStat != null && (
+              <span
+                className={clsx(
+                  "shrink-0 tabular-nums text-[10px] font-semibold",
+                  rateClass(rateStat),
+                )}
+                title={rateTitle}
+              >
+                {rateText ?? "—"}
               </span>
             )}
-          </span>
-        </label>
+          </div>
+          {hint && (
+            <p className="mt-0.5 text-[10px] leading-snug text-text-tertiary">
+              {hint}
+            </p>
+          )}
+        </div>
+        <OnOffSwitch
+          on={checked}
+          onChange={onChange}
+          label={`${label} 표시`}
+        />
         {help && <HelpTip help={help} />}
         {onEdit && <EditLink onClick={onEdit} />}
       </div>
       {colorValue && onColorChange && (
-        <div className="mt-1.5 pl-5">
+        <div className="mt-1.5">
           <ColorSwatchPicker
             value={colorValue}
             onChange={onColorChange}
@@ -378,11 +461,13 @@ export function ChartSidebar({
   onVisibilityChange,
   onEditIndicator,
   trendlines,
+  signalStats,
   className,
 }: Props) {
   const [open, setOpen] = useState<SidebarOpenState>(() => getSidebarOpenState());
   const [collapsed, setCollapsed] = useState(() => isChartSidebarCollapsed());
   const refreshTick = visibilityTick + configTick;
+  const stats = signalStats ?? null;
 
   const smaCfg = useMemo(() => getIndicatorConfig("sma"), [refreshTick]);
   const emaCfg = useMemo(() => getIndicatorConfig("ema"), [refreshTick]);
@@ -405,6 +490,13 @@ export function ChartSidebar({
   const bbVis = useMemo(() => getBbOverlayVisibility(), [refreshTick]);
   const bbStratVis = useMemo(
     () => getBbStrategyVisibility(),
+    [refreshTick],
+  );
+  const ichiCfg = useMemo(() => getIndicatorConfig("ichimoku"), [refreshTick]);
+  const ichiColors = parsePeriodColors(ichiCfg?.params.colors);
+  const ichiVis = useMemo(() => getIchimokuOverlayVisibility(), [refreshTick]);
+  const ichiStratVis = useMemo(
+    () => getIchimokuStrategyVisibility(),
     [refreshTick],
   );
   const patternVis = useMemo(
@@ -505,6 +597,11 @@ export function ChartSidebar({
   const bbStratState = groupState(bbStratVals);
   // Parent BB checkbox follows bands only (strategies stay in their subgroup).
   const bbState = bbBandState;
+  const ichiPartVals = ICHIMOKU_PART_ORDER.map((id) => ichiVis[id]);
+  const ichiStratVals = ICHIMOKU_STRATEGY_ORDER.map((id) => ichiStratVis[id]);
+  const ichiPartState = groupState(ichiPartVals);
+  const ichiStratState = groupState(ichiStratVals);
+  const ichiRootState = groupState([...ichiPartVals, ...ichiStratVals]);
   const swingState = groupState(SWING_CHART_TOGGLE_ORDER.map((id) => swingVis[id]));
   const srState = groupState(SR_CHART_TOGGLE_ORDER.map((id) => srVis[id]));
   const patternState = groupState(
@@ -516,9 +613,11 @@ export function ChartSidebar({
   const patternStratState = groupState(
     PATTERN_STRATEGY_ORDER.map((id) => patternStratVis[id]),
   );
-  const rsiStratState = groupState(
-    RSI_STRATEGY_ORDER.map((id) => rsiStratVis[id]),
-  );
+  const rsiStratVals = RSI_STRATEGY_ORDER.map((id) => rsiStratVis[id]);
+  const rsiStratState = groupState(rsiStratVals);
+  const rsiRootState = groupState([auxVis.rsi, ...rsiStratVals]);
+  const auxOtherIds = AUX_INDICATOR_ORDER.filter((id) => id !== "rsi");
+  const auxOtherState = groupState(auxOtherIds.map((id) => auxVis[id]));
   const classicalRootState = groupState([
     ...CHART_PATTERN_ORDER.map((id) => classicalPatternVis[id]),
     ...PATTERN_STRATEGY_ORDER.map((id) => patternStratVis[id]),
@@ -533,7 +632,8 @@ export function ChartSidebar({
     ...FIB_RETRACEMENT_LEVELS.map((r) => fibVis[r]),
     ...FIB_EXTRA_ORDER.map((id) => fibExtraVis[id]),
   ]);
-  const auxState = groupState(AUX_INDICATOR_ORDER.map((id) => auxVis[id]));
+  // RSI lives in its own top-level group; aux group is the other panes.
+  const auxState = auxOtherState;
   const ascState = kindLineState("ascending", ascendingLines);
   const descState = kindLineState("descending", descendingLines);
   const tlAggregateVals: boolean[] = [];
@@ -599,7 +699,7 @@ export function ChartSidebar({
           <div className="min-w-0">
             <p className="text-xs font-semibold text-text-primary">차트 레이어</p>
             <p className="mt-0.5 text-[10px] text-text-tertiary">
-              체크 = 표시 · Edit = 기간·색상
+              ON/OFF = 표시 · Edit = 기간·색상
             </p>
           </div>
           <button
@@ -632,6 +732,7 @@ export function ChartSidebar({
           }
         >
           <Group
+            nested
             title="SMA"
             open={open.sma}
             onToggleOpen={() => toggleOpen("sma")}
@@ -664,6 +765,7 @@ export function ChartSidebar({
           </Group>
 
           <Group
+            nested
             title="EMA"
             open={open.ema}
             onToggleOpen={() => toggleOpen("ema")}
@@ -709,6 +811,7 @@ export function ChartSidebar({
           }
         >
             <Group
+              nested
               title="밴드"
               open={open.bbBands}
               onToggleOpen={() => toggleOpen("bbBands")}
@@ -740,6 +843,7 @@ export function ChartSidebar({
             </Group>
 
             <Group
+              nested
               title="전략"
               open={open.bbStrategies}
               onToggleOpen={() => toggleOpen("bbStrategies")}
@@ -755,6 +859,13 @@ export function ChartSidebar({
                   key={id}
                   label={BB_STRATEGY_META[id].labelKo}
                   checked={bbStratVis[id]}
+                  rateStat={
+                    stats?.bbStrategy[id] ?? {
+                      samples: 0,
+                      wins: 0,
+                      ratePct: null,
+                    }
+                  }
                   help={bbStrategyHelp(id)}
                   onChange={(next) =>
                     bump(() => setBbStrategyVisible(id, next))
@@ -764,18 +875,98 @@ export function ChartSidebar({
             </Group>
         </Group>
 
+        <Group
+          title="일목균형표"
+          open={open.ichimoku}
+          onToggleOpen={() => toggleOpen("ichimoku")}
+          checked={ichiRootState.checked}
+          indeterminate={ichiRootState.indeterminate}
+          help={CHART_LAYER_HELP.ichimoku}
+          onEdit={
+            onEditIndicator ? () => onEditIndicator("ichimoku") : undefined
+          }
+          onToggleAll={(next) =>
+            bump(() => {
+              setIchimokuOverlayGroupVisible(next);
+              setIchimokuStrategyGroupVisible(next);
+            })
+          }
+        >
+          <Group
+            nested
+            title="구성 요소"
+            open={open.ichimokuParts}
+            onToggleOpen={() => toggleOpen("ichimokuParts")}
+            checked={ichiPartState.checked}
+            indeterminate={ichiPartState.indeterminate}
+            help={CHART_LAYER_HELP.ichimokuParts}
+            onToggleAll={(next) =>
+              bump(() => setIchimokuOverlayGroupVisible(next))
+            }
+          >
+            {ICHIMOKU_PART_ORDER.map((part: IchimokuPartId) => (
+              <Leaf
+                key={part}
+                label={ICHIMOKU_PART_META[part].labelKo}
+                color={
+                  part === "cloud"
+                    ? "#22c55e"
+                    : resolveIchimokuColor(ichiColors, part)
+                }
+                checked={ichiVis[part]}
+                help={
+                  part === "cloud"
+                    ? CHART_LAYER_HELP.ichimokuParts
+                    : CHART_LAYER_HELP.ichimoku
+                }
+                onChange={(next) =>
+                  bump(() => setIchimokuOverlayVisible(part, next))
+                }
+              />
+            ))}
+          </Group>
+          <Group
+            nested
+            title="전략"
+            open={open.ichimokuStrategies}
+            onToggleOpen={() => toggleOpen("ichimokuStrategies")}
+            checked={ichiStratState.checked}
+            indeterminate={ichiStratState.indeterminate}
+            help={CHART_LAYER_HELP.ichimokuStrategies}
+            onToggleAll={(next) =>
+              bump(() => setIchimokuStrategyGroupVisible(next))
+            }
+          >
+            {ICHIMOKU_STRATEGY_ORDER.map((id: IchimokuStrategyId) => (
+              <Leaf
+                key={id}
+                label={ICHIMOKU_STRATEGY_META[id].labelKo}
+                checked={ichiStratVis[id]}
+                rateStat={
+                  stats?.ichimokuStrategy[id] ?? {
+                    samples: 0,
+                    wins: 0,
+                    ratePct: null,
+                  }
+                }
+                help={ichimokuStrategyHelp(id)}
+                onChange={(next) =>
+                  bump(() => setIchimokuStrategyVisible(id, next))
+                }
+              />
+            ))}
+          </Group>
+        </Group>
+
         <div className="flex items-center gap-2 border-b border-border px-2.5 py-2">
-          <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-2">
-            <input
-              type="checkbox"
-              className="h-3.5 w-3.5 accent-accent"
-              checked={volumeVis}
-              onChange={(e) =>
-                bump(() => setVolumeOverlayVisible(e.target.checked))
-              }
-            />
-            <span className="text-xs font-medium text-text-primary">거래량</span>
-          </label>
+          <span className="min-w-0 flex-1 truncate text-xs font-medium text-text-primary">
+            거래량
+          </span>
+          <OnOffSwitch
+            on={volumeVis}
+            onChange={(next) => bump(() => setVolumeOverlayVisible(next))}
+            label="거래량 표시"
+          />
           <HelpTip help={CHART_LAYER_HELP.volume} />
         </div>
 
@@ -829,6 +1020,7 @@ export function ChartSidebar({
             if (lines.length > 1) {
               return (
                 <Group
+                  nested
                   key={id}
                   title={TRENDLINE_CHART_TOGGLE_META[id].labelKo}
                   open={open[openKey]}
@@ -939,109 +1131,157 @@ export function ChartSidebar({
           ))}
         </Group>
 
-        <div className="border-b border-border">
+        <Group
+          title="피보나치 되돌림"
+          open={open.fib}
+          onToggleOpen={() => toggleOpen("fib")}
+          checked={fibState.checked}
+          indeterminate={fibState.indeterminate}
+          help={CHART_LAYER_HELP.fib}
+          onToggleAll={(next) =>
+            bump(() => {
+              setAllFibLevelsVisible(next);
+              setAllFibExtrasVisible(next);
+            })
+          }
+        >
           <Group
-            title="피보나치 되돌림"
-            open={open.fib}
-            onToggleOpen={() => toggleOpen("fib")}
-            checked={fibState.checked}
-            indeterminate={fibState.indeterminate}
-            help={CHART_LAYER_HELP.fib}
-            onToggleAll={(next) =>
+            nested
+            title="되돌림 레벨"
+            open={open.fibLevels}
+            onToggleOpen={() => toggleOpen("fibLevels")}
+            checked={fibLevelState.checked}
+            indeterminate={fibLevelState.indeterminate}
+            help={CHART_LAYER_HELP.fibLevels}
+            onToggleAll={(next) => bump(() => setAllFibLevelsVisible(next))}
+          >
+            {FIB_RETRACEMENT_LEVELS.map((ratio: FibLevelRatio) => (
+              <Leaf
+                key={ratio}
+                label={fibLevelLabel(ratio)}
+                color={FIB_LEVEL_COLORS[ratio]}
+                checked={fibVis[ratio]}
+                help={fibLevelHelp(ratio)}
+                onChange={(next) =>
+                  bump(() => setFibLevelVisible(ratio, next))
+                }
+              />
+            ))}
+          </Group>
+          <Group
+            nested
+            title="차트 표현"
+            open={open.fibExtras}
+            onToggleOpen={() => toggleOpen("fibExtras")}
+            checked={fibExtraState.checked}
+            indeterminate={fibExtraState.indeterminate}
+            help={CHART_LAYER_HELP.fibExtras}
+            onToggleAll={(next) => bump(() => setAllFibExtrasVisible(next))}
+          >
+            {FIB_EXTRA_ORDER.map((id: FibExtraId) => (
+              <Leaf
+                key={id}
+                label={FIB_EXTRA_META[id].labelKo}
+                checked={fibExtraVis[id]}
+                help={fibExtraHelp(id)}
+                onChange={(next) =>
+                  bump(() => setFibExtraVisible(id, next))
+                }
+              />
+            ))}
+          </Group>
+          <Leaf
+            label={
+              fibDraw
+                ? fibPending
+                  ? "그리기 모드 · 고점 클릭"
+                  : "그리기 모드 · 저점 클릭"
+                : "차트에서 그리기"
+            }
+            hint="저점→고점 클릭. 가격은 차트 아래 범례에 표시됩니다."
+            checked={fibDraw}
+            onChange={(next) =>
               bump(() => {
-                setAllFibLevelsVisible(next);
-                setAllFibExtrasVisible(next);
+                setFibDrawMode(next);
+                setFibPendingLow(null);
               })
             }
+          />
+          {(fibRet || fibPending) && (
+            <button
+              type="button"
+              className="mx-1.5 mt-0.5 w-[calc(100%-0.75rem)] rounded-md border border-border bg-bg px-2 py-1.5 text-left text-xs text-text-tertiary hover:text-negative"
+              onClick={() =>
+                bump(() => {
+                  clearFibRetracement();
+                  setFibPendingLow(null);
+                  setFibDrawMode(false);
+                })
+              }
+            >
+              피보나치 지우기
+            </button>
+          )}
+        </Group>
+
+        <Group
+          title="RSI"
+          open={open.rsi}
+          onToggleOpen={() => toggleOpen("rsi")}
+          checked={rsiRootState.checked}
+          indeterminate={rsiRootState.indeterminate}
+          help={INDICATOR_HELP.rsi}
+          onEdit={
+            onEditIndicator ? () => onEditIndicator("rsi") : undefined
+          }
+          onToggleAll={(next) =>
+            bump(() => {
+              setAuxIndicatorVisible("rsi", next);
+              setRsiStrategyGroupVisible(next);
+            })
+          }
+        >
+          <Leaf
+            label="패널"
+            checked={auxVis.rsi}
+            help={auxHelp("rsi")}
+            onChange={(next) => bump(() => setAuxIndicatorVisible("rsi", next))}
+            onEdit={
+              onEditIndicator ? () => onEditIndicator("rsi") : undefined
+            }
+          />
+          <Group
+            nested
+            title="전략"
+            open={open.rsiStrategies}
+            onToggleOpen={() => toggleOpen("rsiStrategies")}
+            checked={rsiStratState.checked}
+            indeterminate={rsiStratState.indeterminate}
+            help={CHART_LAYER_HELP.rsiStrategies}
+            onToggleAll={(next) =>
+              bump(() => setRsiStrategyGroupVisible(next))
+            }
           >
-            <Group
-              title="되돌림 레벨"
-              open={open.fibLevels}
-              onToggleOpen={() => toggleOpen("fibLevels")}
-              checked={fibLevelState.checked}
-              indeterminate={fibLevelState.indeterminate}
-              help={CHART_LAYER_HELP.fibLevels}
-              onToggleAll={(next) => bump(() => setAllFibLevelsVisible(next))}
-            >
-              {FIB_RETRACEMENT_LEVELS.map((ratio: FibLevelRatio) => (
-                <Leaf
-                  key={ratio}
-                  label={fibLevelLabel(ratio)}
-                  color={FIB_LEVEL_COLORS[ratio]}
-                  checked={fibVis[ratio]}
-                  help={fibLevelHelp(ratio)}
-                  onChange={(next) =>
-                    bump(() => setFibLevelVisible(ratio, next))
+            {RSI_STRATEGY_ORDER.map((id: RsiStrategyId) => (
+              <Leaf
+                key={id}
+                label={RSI_STRATEGY_META[id].labelKo}
+                checked={rsiStratVis[id]}
+                rateStat={
+                  stats?.rsiStrategy[id] ?? {
+                    samples: 0,
+                    wins: 0,
+                    ratePct: null,
                   }
-                />
-              ))}
-            </Group>
-            <Group
-              title="차트 표현"
-              open={open.fibExtras}
-              onToggleOpen={() => toggleOpen("fibExtras")}
-              checked={fibExtraState.checked}
-              indeterminate={fibExtraState.indeterminate}
-              help={CHART_LAYER_HELP.fibExtras}
-              onToggleAll={(next) => bump(() => setAllFibExtrasVisible(next))}
-            >
-              {FIB_EXTRA_ORDER.map((id: FibExtraId) => (
-                <Leaf
-                  key={id}
-                  label={FIB_EXTRA_META[id].labelKo}
-                  checked={fibExtraVis[id]}
-                  help={fibExtraHelp(id)}
-                  onChange={(next) =>
-                    bump(() => setFibExtraVisible(id, next))
-                  }
-                />
-              ))}
-            </Group>
-            <div className="mt-2 space-y-1.5 px-1.5">
-              <button
-                type="button"
-                className={clsx(
-                  "w-full rounded-md border px-2 py-1.5 text-left text-xs font-medium",
-                  fibDraw
-                    ? "border-accent bg-accent/15 text-accent"
-                    : "border-border bg-bg text-text-secondary hover:border-accent/40",
-                )}
-                onClick={() =>
-                  bump(() => {
-                    const next = !fibDraw;
-                    setFibDrawMode(next);
-                    setFibPendingLow(null);
-                  })
                 }
-              >
-                {fibDraw
-                  ? fibPending
-                    ? "그리기 중 · 고점 클릭"
-                    : "그리기 중 · 저점 클릭"
-                  : "차트에서 저점→고점 그리기"}
-              </button>
-              {(fibRet || fibPending) && (
-                <button
-                  type="button"
-                  className="w-full rounded-md border border-border bg-bg px-2 py-1.5 text-left text-xs text-text-tertiary hover:text-negative"
-                  onClick={() =>
-                    bump(() => {
-                      clearFibRetracement();
-                      setFibPendingLow(null);
-                      setFibDrawMode(false);
-                    })
-                  }
-                >
-                  피보나치 지우기
-                </button>
-              )}
-              <p className="text-[10px] leading-snug text-text-tertiary">
-                저점 클릭 후 고점 클릭. 가격 숫자는 차트 아래 범례에만
-                표시됩니다.
-              </p>
-            </div>
+                help={rsiStrategyHelp(id)}
+                onChange={(next) =>
+                  bump(() => setRsiStrategyVisible(id, next))
+                }
+              />
+            ))}
           </Group>
-        </div>
+        </Group>
 
         <Group
           title="보조 지표 (패널)"
@@ -1050,16 +1290,19 @@ export function ChartSidebar({
           checked={auxState.checked}
           indeterminate={auxState.indeterminate}
           help={CHART_LAYER_HELP.aux}
-          onToggleAll={(next) => bump(() => setAuxIndicatorGroupVisible(next))}
+          onToggleAll={(next) =>
+            bump(() => {
+              for (const id of auxOtherIds) {
+                setAuxIndicatorVisible(id, next);
+              }
+            })
+          }
         >
-          {AUX_INDICATOR_ORDER.map((id: AuxIndicatorId) => {
+          {auxOtherIds.map((id: AuxIndicatorId) => {
             const editSection: IndicatorConfigSectionId | null =
               id === "bbPercentB"
                 ? "bb"
-                : id === "rsi" ||
-                    id === "macd" ||
-                    id === "mfi" ||
-                    id === "atr"
+                : id === "macd" || id === "mfi" || id === "atr"
                   ? id
                   : null;
             return (
@@ -1082,30 +1325,6 @@ export function ChartSidebar({
         </Group>
 
         <Group
-          title="RSI 전략"
-          open={open.rsiStrategies}
-          onToggleOpen={() => toggleOpen("rsiStrategies")}
-          checked={rsiStratState.checked}
-          indeterminate={rsiStratState.indeterminate}
-          help={CHART_LAYER_HELP.rsiStrategies}
-          onToggleAll={(next) =>
-            bump(() => setRsiStrategyGroupVisible(next))
-          }
-        >
-          {RSI_STRATEGY_ORDER.map((id: RsiStrategyId) => (
-            <Leaf
-              key={id}
-              label={RSI_STRATEGY_META[id].labelKo}
-              checked={rsiStratVis[id]}
-              help={rsiStrategyHelp(id)}
-              onChange={(next) =>
-                bump(() => setRsiStrategyVisible(id, next))
-              }
-            />
-          ))}
-        </Group>
-
-        <Group
           title="차트 패턴"
           open={open.classicalPatterns}
           onToggleOpen={() => toggleOpen("classicalPatterns")}
@@ -1120,6 +1339,7 @@ export function ChartSidebar({
           }
         >
           <Group
+            nested
             title="패턴"
             open={open.classicalPatternShapes}
             onToggleOpen={() => toggleOpen("classicalPatternShapes")}
@@ -1144,6 +1364,7 @@ export function ChartSidebar({
               );
               return (
                 <Group
+                  nested
                   key={bias}
                   title={PATTERN_BIAS_META[bias].labelKo}
                   open={open[openKey]}
@@ -1165,6 +1386,13 @@ export function ChartSidebar({
                       color={CHART_PATTERN_META[id].color}
                       bias={bias}
                       checked={classicalPatternVis[id]}
+                      rateStat={
+                        stats?.chartPattern[id] ?? {
+                          samples: 0,
+                          wins: 0,
+                          ratePct: null,
+                        }
+                      }
                       help={classicalPatternHelp(id)}
                       onChange={(next) =>
                         bump(() => setClassicalChartPatternVisible(id, next))
@@ -1177,6 +1405,7 @@ export function ChartSidebar({
           </Group>
 
           <Group
+            nested
             title="전략"
             open={open.classicalPatternStrategies}
             onToggleOpen={() => toggleOpen("classicalPatternStrategies")}
@@ -1192,6 +1421,13 @@ export function ChartSidebar({
                 key={id}
                 label={PATTERN_STRATEGY_META[id].labelKo}
                 checked={patternStratVis[id]}
+                rateStat={
+                  stats?.patternStrategy[id] ?? {
+                    samples: 0,
+                    wins: 0,
+                    ratePct: null,
+                  }
+                }
                 help={patternStrategyHelp(id)}
                 onChange={(next) =>
                   bump(() => setPatternStrategyVisible(id, next))
@@ -1228,6 +1464,7 @@ export function ChartSidebar({
             const state = groupState(ids.map((id) => patternVis[id]));
             return (
               <Group
+                nested
                 key={bias}
                 title={PATTERN_BIAS_META[bias].labelKo}
                 open={open[openKey]}
@@ -1248,6 +1485,13 @@ export function ChartSidebar({
                     label={CANDLE_PATTERN_META[id].labelKo}
                     bias={bias}
                     checked={patternVis[id]}
+                    rateStat={
+                      stats?.candlePattern[id] ?? {
+                        samples: 0,
+                        wins: 0,
+                        ratePct: null,
+                      }
+                    }
                     help={candlePatternHelp(id)}
                     onChange={(next) =>
                       bump(() => setChartPatternVisible(id, next))

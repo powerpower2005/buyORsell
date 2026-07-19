@@ -13,6 +13,10 @@ import {
   priceOnFit,
   type Pivot,
 } from "./pivots";
+import {
+  scoreSignalHits,
+  type SignalStatsMap,
+} from "./signalFollowThrough";
 
 export interface PatternPoint {
   barIndex: number;
@@ -64,6 +68,7 @@ export interface ChartPatternResult {
   instances: ChartPatternInstance[];
   onLatestBar: ChartPatternHit[];
   recent: ChartPatternHit[];
+  stats: SignalStatsMap;
 }
 
 const DEFAULT_LOOKBACK = 160;
@@ -1144,6 +1149,25 @@ export function detectChartPatterns(
   ].filter((inst) => inst.endBar >= start);
 
   const instances = dedupeInstances(raw);
+  const stats = scoreSignalHits(
+    bars,
+    instances
+      .filter(
+        (inst) =>
+          inst.status === "confirmed" &&
+          inst.entryBar != null &&
+          inst.entryBar >= start &&
+          (inst.direction === "bullish" || inst.direction === "bearish"),
+      )
+      .map((inst) => ({
+        id: inst.id,
+        barIndex: inst.entryBar!,
+        direction: inst.direction,
+        targetPrice: inst.targetPrice,
+        stopPrice: inst.stopPrice,
+        horizon: 24,
+      })),
+  );
   const hits: ChartPatternHit[] = [];
   const hitCounts = new Map<ChartPatternId, number>();
   for (const inst of [...instances].sort(
@@ -1166,5 +1190,6 @@ export function detectChartPatterns(
     instances,
     onLatestBar: hits.filter((h) => h.barIndex === lastIdx),
     recent: hits,
+    stats,
   };
 }

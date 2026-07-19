@@ -3,6 +3,11 @@ import {
   bbOverlayKey,
   type BbBandId,
 } from "./bbOverlay";
+import {
+  ICHIMOKU_PART_ORDER,
+  ichimokuOverlayKey,
+  type IchimokuPartId,
+} from "./ichimokuOverlay";
 
 const STORAGE_KEY = "gf:config:indicator-overlays";
 
@@ -112,6 +117,39 @@ export function setBbOverlayGroupVisible(visible: boolean): void {
   const overrides = loadOverrides();
   for (const band of BB_BAND_ORDER) {
     overrides[bbOverlayKey(band)] = visible;
+  }
+  saveOverrides(overrides);
+}
+
+export function isIchimokuOverlayVisible(part: IchimokuPartId): boolean {
+  const overrides = loadOverrides();
+  return overrides[ichimokuOverlayKey(part)] ?? false;
+}
+
+export function getIchimokuOverlayVisibility(): Record<
+  IchimokuPartId,
+  boolean
+> {
+  const out = {} as Record<IchimokuPartId, boolean>;
+  for (const part of ICHIMOKU_PART_ORDER) {
+    out[part] = isIchimokuOverlayVisible(part);
+  }
+  return out;
+}
+
+export function setIchimokuOverlayVisible(
+  part: IchimokuPartId,
+  visible: boolean,
+): void {
+  const overrides = loadOverrides();
+  overrides[ichimokuOverlayKey(part)] = visible;
+  saveOverrides(overrides);
+}
+
+export function setIchimokuOverlayGroupVisible(visible: boolean): void {
+  const overrides = loadOverrides();
+  for (const part of ICHIMOKU_PART_ORDER) {
+    overrides[ichimokuOverlayKey(part)] = visible;
   }
   saveOverrides(overrides);
 }

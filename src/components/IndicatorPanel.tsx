@@ -121,6 +121,17 @@ export function IndicatorPanel({ results }: { results: IndicatorResults }) {
     metrics.push({ label: "ATR", value: "데이터 부족", muted: true });
   }
 
+  const ichiCfg = getIndicatorConfig("ichimoku");
+  const ichi = results.indicators.ichimoku?.latest;
+  if (ichi?.tenkan != null && ichi.kijun != null) {
+    metrics.push({
+      label: "일목 T/K",
+      value: `${fmt(ichi.tenkan)} / ${fmt(ichi.kijun)}`,
+    });
+  } else if (ichiCfg?.enabled) {
+    metrics.push({ label: "일목 T/K", value: "데이터 부족", muted: true });
+  }
+
   return (
     <Card>
       <SectionTitle>기술 지표</SectionTitle>

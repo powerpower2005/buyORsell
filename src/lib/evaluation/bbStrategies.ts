@@ -3,6 +3,10 @@ import {
   BB_STRATEGY_META,
   type BbStrategyId,
 } from "../bbStrategyMeta";
+import {
+  scoreSignalHits,
+  type SignalStatsMap,
+} from "./signalFollowThrough";
 
 export type { BbStrategyId };
 
@@ -20,6 +24,7 @@ export interface BbStrategyResult {
   latestBarDate: string;
   onLatestBar: BbStrategyHit[];
   recent: BbStrategyHit[];
+  stats: SignalStatsMap;
 }
 
 const DEFAULT_LOOKBACK = 120;
@@ -476,7 +481,9 @@ export function detectBbStrategies(
     ...detectDivergence(bars, frames, start),
   ];
 
-  const recent = capPerStrategy(all.filter((h) => h.barIndex >= start));
+  const inWindow = all.filter((h) => h.barIndex >= start);
+  const stats = scoreSignalHits(bars, inWindow);
+  const recent = capPerStrategy(inWindow);
   const lastIdx = bars.length - 1;
   const onLatestBar = recent.filter((h) => h.barIndex === lastIdx);
 
@@ -485,5 +492,6 @@ export function detectBbStrategies(
     latestBarDate: bars[lastIdx]?.date ?? "",
     onLatestBar,
     recent,
+    stats,
   };
 }

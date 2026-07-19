@@ -45,6 +45,7 @@ import { getSwingChartVisibility } from "@/lib/swingStructureStore";
 import { getSrChartVisibility } from "@/lib/srZoneStore";
 import {
   getBbOverlayVisibility,
+  getIchimokuOverlayVisibility,
   getIndicatorOverlayVisibility,
   isVolumeOverlayVisible,
 } from "@/lib/indicatorOverlayStore";
@@ -52,6 +53,7 @@ import { getBbStrategyVisibility } from "@/lib/bbStrategyStore";
 import { getClassicalChartPatternVisibility } from "@/lib/chartPatternStore";
 import { getPatternStrategyVisibility } from "@/lib/patternStrategyStore";
 import { getRsiStrategyVisibility } from "@/lib/rsiStrategyStore";
+import { getIchimokuStrategyVisibility } from "@/lib/ichimokuStrategyStore";
 import {
   getFibExtraVisibility,
   getFibLevelVisibility,
@@ -228,6 +230,14 @@ export function HomePage() {
   );
   const chartRsiStrategyVisibility = useMemo(
     () => getRsiStrategyVisibility(),
+    [chartVisTick],
+  );
+  const ichimokuVisibility = useMemo(
+    () => getIchimokuOverlayVisibility(),
+    [chartVisTick],
+  );
+  const chartIchimokuStrategyVisibility = useMemo(
+    () => getIchimokuStrategyVisibility(),
     [chartVisTick],
   );
   const showVolume = useMemo(
@@ -491,6 +501,13 @@ export function HomePage() {
                       }
                       rsiStrategies={evaluation!.rsiStrategies ?? undefined}
                       chartRsiStrategyVisibility={chartRsiStrategyVisibility}
+                      ichimokuVisibility={ichimokuVisibility}
+                      ichimokuStrategies={
+                        evaluation!.ichimokuStrategies ?? undefined
+                      }
+                      chartIchimokuStrategyVisibility={
+                        chartIchimokuStrategyVisibility
+                      }
                       showVolume={showVolume}
                       fibDrawMode={fibDrawMode}
                       fibRetracement={fibRetracement}
@@ -509,6 +526,7 @@ export function HomePage() {
                       setIndicatorConfigOpen(true);
                     }}
                     trendlines={evaluation!.trendlines}
+                    signalStats={evaluation!.signalStats}
                   />
                 </div>
                 <IndicatorConfigModal

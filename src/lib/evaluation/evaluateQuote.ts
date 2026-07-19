@@ -46,7 +46,15 @@ import {
   detectRsiStrategies,
   type RsiStrategyResult,
 } from "./rsiStrategies";
+import {
+  detectIchimokuStrategies,
+  type IchimokuStrategyResult,
+} from "./ichimokuStrategies";
 import { getIndicatorConfig } from "../configStore";
+import {
+  EMPTY_SIGNAL_STATS,
+  type SignalStatsBundle,
+} from "./signalFollowThrough";
 
 export interface QuoteEvaluation {
   indicators: IndicatorResults;
@@ -61,6 +69,9 @@ export interface QuoteEvaluation {
   classicalPatterns: ChartPatternResult | null;
   patternStrategies: PatternStrategyResult | null;
   rsiStrategies: RsiStrategyResult | null;
+  ichimokuStrategies: IchimokuStrategyResult | null;
+  /** Follow-through rates by pattern/strategy id (this ticker window). */
+  signalStats: SignalStatsBundle;
   warnings: string[];
   fatalError: string | null;
   /** Bars actually used after lookback / maxBars / cadence cleanup. */
@@ -128,6 +139,8 @@ export function evaluateQuote(
       classicalPatterns: null,
       patternStrategies: null,
       rsiStrategies: null,
+      ichimokuStrategies: null,
+      signalStats: EMPTY_SIGNAL_STATS,
       warnings,
       fatalError: "No OHLCV bars available",
       bars: [],
@@ -243,6 +256,29 @@ export function evaluateQuote(
     }
   }
 
+  let ichimokuStrategies: IchimokuStrategyResult | null = null;
+  if (!fatalError) {
+    try {
+      const ichiCfg = getIndicatorConfig("ichimoku");
+      ichimokuStrategies = detectIchimokuStrategies(prepared, indicators, {
+        displacement:
+          (ichiCfg?.params.displacement as number | undefined) ?? 26,
+      });
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
+  const signalStats: SignalStatsBundle = {
+    candlePattern: patterns?.stats ?? {},
+    chartPattern: classicalPatterns?.stats ?? {},
+    patternStrategy: patternStrategies?.stats ?? {},
+    bbStrategy: bbStrategies?.stats ?? {},
+    rsiStrategy: rsiStrategies?.stats ?? {},
+    ichimokuStrategy: ichimokuStrategies?.stats ?? {},
+  };
+
   return {
     indicators,
     score,
@@ -256,6 +292,8 @@ export function evaluateQuote(
     classicalPatterns,
     patternStrategies,
     rsiStrategies,
+    ichimokuStrategies,
+    signalStats,
     warnings,
     fatalError,
     bars: prepared,

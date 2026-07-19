@@ -9,6 +9,9 @@ export const SIDEBAR_OPEN_KEYS = [
   "bb",
   "bbBands",
   "bbStrategies",
+  "ichimoku",
+  "ichimokuParts",
+  "ichimokuStrategies",
   "swing",
   "sr",
   "trendlines",
@@ -28,6 +31,7 @@ export const SIDEBAR_OPEN_KEYS = [
   "fibLevels",
   "fibExtras",
   "aux",
+  "rsi",
   "rsiStrategies",
   "volume",
 ] as const;

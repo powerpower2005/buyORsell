@@ -77,6 +77,19 @@ import {
   rsiStrategiesToChartMarkers,
   visibleRsiStrategyLegend,
 } from "@/lib/chart/rsiStrategyMarkers";
+import {
+  ichimokuStrategiesToChartMarkers,
+  visibleIchimokuStrategyLegend,
+} from "@/lib/chart/ichimokuStrategyMarkers";
+import type { IchimokuStrategyResult } from "@/lib/evaluation/ichimokuStrategies";
+import type { IchimokuStrategyId } from "@/lib/ichimokuStrategyMeta";
+import {
+  ICHIMOKU_LINE_ORDER,
+  ICHIMOKU_PART_META,
+  ichimokuOverlayKey,
+  resolveIchimokuColor,
+  type IchimokuPartId,
+} from "@/lib/ichimokuOverlay";
 import type { ChartPatternResult } from "@/lib/evaluation/chartPatterns";
 import {
   CHART_PATTERN_META,
@@ -170,6 +183,9 @@ interface Props {
   bbVisibility?: Partial<Record<BbBandId, boolean>>;
   bbStrategies?: BbStrategyResult;
   chartBbStrategyVisibility?: Record<BbStrategyId, boolean>;
+  ichimokuVisibility?: Partial<Record<IchimokuPartId, boolean>>;
+  ichimokuStrategies?: IchimokuStrategyResult;
+  chartIchimokuStrategyVisibility?: Record<IchimokuStrategyId, boolean>;
   classicalPatterns?: ChartPatternResult;
   chartClassicalPatternVisibility?: Record<ChartPatternId, boolean>;
   patternStrategies?: PatternStrategyResult;
@@ -226,6 +242,9 @@ export function CandleChart({
   bbVisibility,
   bbStrategies,
   chartBbStrategyVisibility,
+  ichimokuVisibility,
+  ichimokuStrategies,
+  chartIchimokuStrategyVisibility,
   classicalPatterns,
   chartClassicalPatternVisibility,
   patternStrategies,
@@ -355,6 +374,11 @@ export function CandleChart({
       rsiStrategies,
       chartRsiStrategyVisibility ?? ({} as Record<RsiStrategyId, boolean>),
     );
+    const ichiStratMs = ichimokuStrategiesToChartMarkers(
+      ichimokuStrategies,
+      chartIchimokuStrategyVisibility ??
+        ({} as Record<IchimokuStrategyId, boolean>),
+    );
     return [
       ...patternMs,
       ...structureMs,
@@ -362,6 +386,7 @@ export function CandleChart({
       ...classicalMs,
       ...patternStratMs,
       ...rsiStratMs,
+      ...ichiStratMs,
     ].sort((a, b) => {
       const byDate = String(a.time).localeCompare(String(b.time));
       if (byDate !== 0) return byDate;
@@ -380,6 +405,8 @@ export function CandleChart({
     chartPatternStrategyVisibility,
     rsiStrategies,
     chartRsiStrategyVisibility,
+    ichimokuStrategies,
+    chartIchimokuStrategyVisibility,
   ]);
 
   const barHighlights = useMemo(
@@ -408,6 +435,24 @@ export function CandleChart({
   );
   const srZonesRef = useRef(srZones);
   srZonesRef.current = srZones;
+
+  const kumoCloudRef = useRef<{
+    visible: boolean;
+    spanA: { date: string; value: number }[];
+    spanB: { date: string; value: number }[];
+  }>({ visible: false, spanA: [], spanB: [] });
+
+  useEffect(() => {
+    const cfg = getIndicatorConfig("ichimoku");
+    const out = indicators?.indicators.ichimoku;
+    const showCloud =
+      (ichimokuVisibility?.cloud ?? false) && !!cfg?.enabled && !!out;
+    kumoCloudRef.current = {
+      visible: showCloud,
+      spanA: out?.series.spanA ?? [],
+      spanB: out?.series.spanB ?? [],
+    };
+  }, [indicators, ichimokuVisibility]);
 
   const visibleTrendlines = useMemo(() => {
     if (!trendlines) return [] as Trendline[];
@@ -471,6 +516,13 @@ export function CandleChart({
         ? visibleRsiStrategyLegend(chartRsiStrategyVisibility)
         : [],
     [chartRsiStrategyVisibility],
+  );
+  const ichimokuStrategyLegend = useMemo(
+    () =>
+      chartIchimokuStrategyVisibility
+        ? visibleIchimokuStrategyLegend(chartIchimokuStrategyVisibility)
+        : [],
+    [chartIchimokuStrategyVisibility],
   );
   const patternStrategyHitLegend = useMemo(() => {
     if (!patternStrategies?.recent.length || !chartPatternStrategyVisibility)
@@ -546,6 +598,53 @@ export function CandleChart({
     ctx.beginPath();
     ctx.rect(0, 0, width, pane0H);
     ctx.clip();
+
+    // ── Ichimoku Kumo (cloud) ────────────────────────────────────────────────
+    const kumo = kumoCloudRef.current;
+    if (kumo.visible && kumo.spanA.length && kumo.spanB.length) {
+      const bMap = new Map(kumo.spanB.map((p) => [p.date, p.value]));
+      const pts: { date: string; a: number; b: number }[] = [];
+      for (const p of kumo.spanA) {
+        const bv = bMap.get(p.date);
+        if (bv == null) continue;
+        pts.push({ date: p.date, a: p.value, b: bv });
+      }
+      for (let i = 1; i < pts.length; i++) {
+        const p0 = pts[i - 1]!;
+        const p1 = pts[i]!;
+        const x0 = chart
+          .timeScale()
+          .timeToCoordinate(p0.date as `${number}-${number}-${number}`);
+        const x1 = chart
+          .timeScale()
+          .timeToCoordinate(p1.date as `${number}-${number}-${number}`);
+        const yA0 = series.priceToCoordinate(p0.a);
+        const yB0 = series.priceToCoordinate(p0.b);
+        const yA1 = series.priceToCoordinate(p1.a);
+        const yB1 = series.priceToCoordinate(p1.b);
+        if (
+          x0 == null ||
+          x1 == null ||
+          yA0 == null ||
+          yB0 == null ||
+          yA1 == null ||
+          yB1 == null
+        ) {
+          continue;
+        }
+        const bull = p1.a >= p1.b;
+        ctx.fillStyle = bull
+          ? "rgba(34, 197, 94, 0.16)"
+          : "rgba(239, 68, 68, 0.16)";
+        ctx.beginPath();
+        ctx.moveTo(x0, yA0);
+        ctx.lineTo(x1, yA1);
+        ctx.lineTo(x1, yB1);
+        ctx.lineTo(x0, yB0);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
 
     // ── S/R zone bands ────────────────────────────────────────────────────────
     for (const zone of srZonesRef.current) {
@@ -1057,10 +1156,32 @@ export function CandleChart({
         const key = bbOverlayKey(band);
         const points = bbOut.series[meta.seriesKey];
         if (!points?.length) continue;
+        const bbWidth: 1 | 2 = band === "middle" ? 2 : 1;
         upsertLine(key, points, {
           color: resolveBbBandColor(colors, band),
-          lineWidth: band === "middle" ? 2 : 1,
+          lineWidth: bbWidth,
           visible: bbVisibility?.[band] ?? false,
+        });
+      }
+    }
+
+    const ichiCfg = getIndicatorConfig("ichimoku");
+    const ichiOut = indicators.indicators.ichimoku;
+    if (ichiCfg?.enabled && ichiOut) {
+      const colors = parsePeriodColors(ichiCfg.params.colors);
+      for (const part of ICHIMOKU_LINE_ORDER) {
+        const meta = ICHIMOKU_PART_META[part];
+        const seriesKey = meta.seriesKey;
+        if (!seriesKey) continue;
+        const key = ichimokuOverlayKey(part);
+        const points = ichiOut.series[seriesKey];
+        if (!points?.length) continue;
+        const lineWidth: 1 | 2 =
+          part === "kijun" || part === "tenkan" ? 2 : 1;
+        upsertLine(key, points, {
+          color: resolveIchimokuColor(colors, part),
+          lineWidth,
+          visible: ichimokuVisibility?.[part] ?? false,
         });
       }
     }
@@ -1075,7 +1196,14 @@ export function CandleChart({
       overlayRefs.current.delete(key);
     }
     // Re-read periods/colors from config each run (localStorage may change via modal).
-  }, [indicators, timeframe, maVisibility, bbVisibility, bars.length]);
+  }, [
+    indicators,
+    timeframe,
+    maVisibility,
+    bbVisibility,
+    ichimokuVisibility,
+    bars.length,
+  ]);
 
   // ─── Secondary panes: volume + oscillators (native multi-pane) ─────────────
 
@@ -1138,11 +1266,12 @@ export function CandleChart({
 
       for (const avg of volumeSnapshot.averages) {
         if (!avg.available || !avg.series.length) continue;
+        const volMaWidth: 1 | 2 = avg.period <= 7 ? 2 : 1;
         const line = chart.addSeries(
           LineSeries,
           {
             color: volumeMaColor(avg.period),
-            lineWidth: avg.period <= 7 ? 2 : 1,
+            lineWidth: volMaWidth,
             lastValueVisible: false,
             priceLineVisible: false,
             crosshairMarkerVisible: false,
@@ -1170,7 +1299,7 @@ export function CandleChart({
         const addRsiLine = (
           key: string,
           color: string,
-          width: number,
+          width: 1 | 2,
           data: ReturnType<typeof toLineData>,
         ) => {
           const series = chart.addSeries(
@@ -1511,6 +1640,26 @@ export function CandleChart({
       }));
   }, [rsiStrategies, chartRsiStrategyVisibility]);
 
+  const ichimokuStrategyHitLegend = useMemo(() => {
+    if (!ichimokuStrategies?.recent.length || !chartIchimokuStrategyVisibility)
+      return [];
+    return ichimokuStrategies.recent
+      .filter((hit) => chartIchimokuStrategyVisibility[hit.id])
+      .slice(-8)
+      .reverse()
+      .map((hit) => ({
+        key: `${hit.id}-${hit.barIndex}`,
+        text: hit.label,
+        detail: `${hit.date} · ${hit.summary}`,
+        color:
+          hit.direction === "bullish"
+            ? "#00c471"
+            : hit.direction === "bearish"
+              ? "#f04452"
+              : "#8b95a1",
+      }));
+  }, [ichimokuStrategies, chartIchimokuStrategyVisibility]);
+
   const classicalHitLegend = useMemo(() => {
     if (!classicalPatterns?.recent.length || !chartClassicalPatternVisibility)
       return [];
@@ -1656,6 +1805,8 @@ export function CandleChart({
     srZones,
     chartTrendlineColors,
     visibleClassicalInstances,
+    ichimokuVisibility,
+    indicators,
   ]);
 
   // ─── Fib draw mode lifecycle ───────────────────────────────────────────────
@@ -2009,6 +2160,39 @@ export function CandleChart({
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
                 <span>RSI 전략:</span>
                 {rsiStrategyLegend.map((item) => (
+                  <span
+                    key={`${item.text}-${item.label}`}
+                    className="text-text-tertiary"
+                  >
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            )
+          )}
+
+          {ichimokuStrategyHitLegend.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>일목 전략:</span>
+              {ichimokuStrategyHitLegend.map((item) => (
+                <span key={item.key} className="flex items-center gap-1.5">
+                  <span
+                    className="font-mono text-[10px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.text}
+                  </span>
+                  <span className="tabular-nums text-text-tertiary">
+                    {item.detail}
+                  </span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            ichimokuStrategyLegend.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span>일목 전략:</span>
+                {ichimokuStrategyLegend.map((item) => (
                   <span
                     key={`${item.text}-${item.label}`}
                     className="text-text-tertiary"

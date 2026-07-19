@@ -61,6 +61,25 @@
       "enabled": false,
       "params": { "period": 14 },
       "timeframes": ["1d"]
+    },
+    {
+      "id": "ichimoku",
+      "enabled": true,
+      "params": {
+        "conversionPeriod": 9,
+        "basePeriod": 26,
+        "spanPeriod": 52,
+        "displacement": 26,
+        "colors": {
+          "tenkan": "#ef4444",
+          "kijun": "#3b82f6",
+          "chikou": "#a855f7",
+          "spanA": "#22c55e",
+          "spanB": "#f97316"
+        }
+      },
+      "timeframes": ["1h", "4h", "1d", "1w"],
+      "outputs": ["line"]
     }
   ],
   "signals": [

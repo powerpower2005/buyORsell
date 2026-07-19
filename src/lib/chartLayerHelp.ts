@@ -117,15 +117,39 @@ export const CHART_LAYER_HELP = {
     title: "볼린저 전략 마커",
     summary:
       "밴드 터치·돌파·스퀴즈·다이버전스 등 규칙 기반 신호를 차트에 마커로 표시합니다.",
-    tip: "전략마다 횡보/추세 가정이 다릅니다. 마커는 참고용이며 단독 진입 근거로 쓰기보다 맥락과 함께 보세요.",
+    tip: "옆 %는 이 종목 최근 구간에서 신호가 목표(+1.5%)·손절(-1.5%) 기준으로 방향대로 풀린 비율입니다. 표본 3건 미만은 — 표시.",
+  },
+  ichimoku: {
+    title: "일목균형표",
+    summary: INDICATOR_HELP.ichimoku.summary,
+    howToFind: INDICATOR_HELP.ichimoku.howToFind,
+    higherLabel: INDICATOR_HELP.ichimoku.higherLabel,
+    lowerLabel: INDICATOR_HELP.ichimoku.lowerLabel,
+    higher: INDICATOR_HELP.ichimoku.higher,
+    lower: INDICATOR_HELP.ichimoku.lower,
+    tip: INDICATOR_HELP.ichimoku.tip,
+  },
+  ichimokuParts: {
+    title: "일목 구성 요소",
+    summary:
+      "전환선·기준선·후행스팬·선행스팬1·2·구름층을 각각 켜고 끌 수 있습니다.",
+    tip: "구름층은 양운(녹색 계열)·음운(붉은 계열)으로 채워지며, 두꺼울수록 지지/저항 신뢰도가 커집니다.",
+  },
+  ichimokuStrategies: {
+    title: "일목 전략 마커",
+    summary:
+      "TK 호전·역전, 후행스팬 교차, 구름 비틀림, 구름 돌파, 4신호 추세 전환, 돌파·지지저항 매매를 각각 따로 표시합니다.",
+    howToFind:
+      "일목 선을 켠 뒤 아래 전략을 개별 체크하세요. 한 전략으로 합치지 않습니다.",
+    tip: "옆 %는 이 종목 최근 구간 추적 성공률입니다(목표·손절 ±1.5%, 표본 3건↑). 후행·구름 신호와 추세선을 함께 보세요.",
   },
   rsiStrategies: {
     title: "RSI 전략 마커",
     summary:
       "고전 70/30, 슈퍼 RSI 유동 과매수·과매도, 수렴→중심선 돌파, 다이버전스, 이중 RSI 교차를 각각 따로 표시합니다.",
     howToFind:
-      "보조 지표에서 RSI를 켠 뒤 아래 RSI 전략을 개별 체크하세요. 한 전략으로 합치지 않고 켜고 끌 수 있습니다.",
-    tip: "고전 과매수·과매도는 박스권, 이중 RSI는 추세장, 슈퍼 RSI는 유동 기준에 유리한 편입니다. 환경에 맞게 골라 쓰세요.",
+      "사이드바 RSI → 전략에서 개별로 켜세요. 패널(RSI 표시)과 전략 마커는 따로 조절합니다.",
+    tip: "옆 %는 이 종목 최근 구간 추적 성공률입니다. 고전 OB/OS는 박스권, 이중 RSI는 추세장에 유리한 편입니다.",
   },
   classicalPatterns: {
     title: "차트 패턴",
@@ -139,7 +163,7 @@ export const CHART_LAYER_HELP = {
       "목선·저항을 돌파하면 패턴 방향(롱/숏) 신호가 확인된 것으로 보는 경우가 많습니다.",
     lower:
       "돌파에 실패하거나 패턴 구조를 깨면 신호가 무효·반대로 해석되는 경우가 많습니다.",
-    tip: "모양(패턴)과 진입 규칙(전략)을 나눠 켜면 차트 읽기가 쉬워집니다.",
+    tip: "옆 %는 이 종목에서 완성된 패턴이 목표가·손절가(또는 ±1.5%) 기준으로 방향대로 간 비율입니다. 표본 부족 시 —.",
   },
   patternStrategies: {
     title: "차트 패턴 전략",
@@ -151,7 +175,7 @@ export const CHART_LAYER_HELP = {
     lowerLabel: "실패 시",
     higher: "전략 조건이 충족되면 해당 방향 진입 후보로 표시합니다.",
     lower: "리테스트 실패·거래량 미달은 해당 전략 마커가 나오지 않거나 무효로 봅니다.",
-    tip: "패턴 토글과 독립입니다. 모양은 켜고 진입 규칙만 골라 볼 수 있습니다.",
+    tip: "옆 %는 이 종목 최근 구간 추적 성공률입니다. 패턴 토글과 독립이라 모양만 켜고 진입 규칙만 골라 볼 수 있습니다.",
   },
   candlePatterns: {
     title: "캔들 패턴",
@@ -163,7 +187,7 @@ export const CHART_LAYER_HELP = {
       "다음 봉이 패턴 방향으로 확인되면(종가·고저 돌파) 신호 신뢰도가 올라가는 편입니다.",
     lower:
       "패턴 고·저점이 깨지면 신호가 무효화될 수 있습니다. 단독 진입보다 맥락과 함께 보세요.",
-    tip: "캔들 패턴은 단기 심리 힌트입니다. 추세·지지저항과 맞을 때 더 의미 있는 경우가 많습니다.",
+    tip: "옆 %는 이 종목에서 패턴 이후 ±1.5% 목표·손절 기준 성공률입니다(표본 3건↑). 추세·지지와 맞을 때 더 의미 있습니다.",
   },
   bbUpper: {
     title: "볼린저 상단 밴드",

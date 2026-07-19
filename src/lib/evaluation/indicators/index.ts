@@ -350,6 +350,148 @@ export const atrPlugin: IndicatorPlugin = {
   },
 };
 
+function donchianMid(
+  highs: number[],
+  lows: number[],
+  end: number,
+  period: number,
+): number | null {
+  if (end < period - 1) return null;
+  let hi = -Infinity;
+  let lo = Infinity;
+  for (let i = end - period + 1; i <= end; i++) {
+    hi = Math.max(hi, highs[i]!);
+    lo = Math.min(lo, lows[i]!);
+  }
+  if (!Number.isFinite(hi) || !Number.isFinite(lo)) return null;
+  return (hi + lo) / 2;
+}
+
+/** Average step between bar timestamps (ms); fallback 1 day. */
+function avgBarStepMs(bars: { date: string }[]): number {
+  const n = Math.min(bars.length, 40);
+  if (n < 2) return 86_400_000;
+  let sum = 0;
+  let count = 0;
+  for (let i = bars.length - n + 1; i < bars.length; i++) {
+    const a = Date.parse(bars[i - 1]!.date);
+    const b = Date.parse(bars[i]!.date);
+    if (!Number.isFinite(a) || !Number.isFinite(b) || b <= a) continue;
+    sum += b - a;
+    count += 1;
+  }
+  return count > 0 ? sum / count : 86_400_000;
+}
+
+function formatBarDate(ms: number, sample: string): string {
+  const d = new Date(ms);
+  // Preserve YYYY-MM-DD when sample is date-only (UTC calendar).
+  if (/^\d{4}-\d{2}-\d{2}$/.test(sample)) {
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(d.getUTCDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+  return d.toISOString().slice(0, 19);
+}
+
+function plotDateAt(
+  bars: { date: string }[],
+  index: number,
+  stepMs: number,
+): string {
+  if (index < bars.length) return bars[index]!.date;
+  const last = bars[bars.length - 1]!;
+  const lastMs = Date.parse(last.date);
+  const ahead = index - (bars.length - 1);
+  return formatBarDate(lastMs + ahead * stepMs, last.date);
+}
+
+export const ichimokuPlugin: IndicatorPlugin = {
+  id: "ichimoku",
+  minBars: (p) => {
+    const span = requireNumber(p.spanPeriod, "ichimoku.spanPeriod");
+    const disp = requireNumber(p.displacement, "ichimoku.displacement");
+    return span + disp;
+  },
+  compute(bars, params) {
+    const conversionPeriod = requireNumber(
+      params.conversionPeriod,
+      "ichimoku.conversionPeriod",
+    );
+    const basePeriod = requireNumber(params.basePeriod, "ichimoku.basePeriod");
+    const spanPeriod = requireNumber(params.spanPeriod, "ichimoku.spanPeriod");
+    const displacement = requireNumber(
+      params.displacement,
+      "ichimoku.displacement",
+    );
+    const need = spanPeriod;
+    if (bars.length < need) {
+      return {
+        series: {} as Record<string, SeriesPoint[]>,
+        latest: {
+          tenkan: null,
+          kijun: null,
+          spanA: null,
+          spanB: null,
+          chikou: null,
+          displacement,
+        },
+        skipped: [`ichimoku requires ${need} bars, got ${bars.length}`],
+      };
+    }
+
+    const highs = bars.map((b) => b.high);
+    const lows = bars.map((b) => b.low);
+    const stepMs = avgBarStepMs(bars);
+
+    const tenkan: SeriesPoint[] = [];
+    const kijun: SeriesPoint[] = [];
+    const spanA: SeriesPoint[] = [];
+    const spanB: SeriesPoint[] = [];
+    const chikou: SeriesPoint[] = [];
+
+    for (let i = 0; i < bars.length; i++) {
+      const t = donchianMid(highs, lows, i, conversionPeriod);
+      const k = donchianMid(highs, lows, i, basePeriod);
+      if (t != null) tenkan.push({ date: bars[i]!.date, value: t });
+      if (k != null) kijun.push({ date: bars[i]!.date, value: k });
+
+      const sB = donchianMid(highs, lows, i, spanPeriod);
+      if (t != null && k != null && sB != null) {
+        const sA = (t + k) / 2;
+        const plotDate = plotDateAt(bars, i + displacement, stepMs);
+        spanA.push({ date: plotDate, value: sA });
+        spanB.push({ date: plotDate, value: sB });
+      }
+
+      if (i >= displacement) {
+        chikou.push({
+          date: bars[i - displacement]!.date,
+          value: bars[i]!.close,
+        });
+      }
+    }
+
+    // Latest cloud at last bar date (displaced values already on that date).
+    const lastDate = bars[bars.length - 1]!.date;
+    const lastSpanA = [...spanA].reverse().find((p) => p.date <= lastDate);
+    const lastSpanB = [...spanB].reverse().find((p) => p.date <= lastDate);
+
+    return {
+      series: { tenkan, kijun, spanA, spanB, chikou },
+      latest: {
+        tenkan: optionalLatest(tenkan.at(-1)?.value),
+        kijun: optionalLatest(kijun.at(-1)?.value),
+        spanA: optionalLatest(lastSpanA?.value),
+        spanB: optionalLatest(lastSpanB?.value),
+        chikou: optionalLatest(chikou.at(-1)?.value),
+        displacement,
+      },
+    };
+  },
+};
+
 export const allPlugins = [
   smaPlugin,
   emaPlugin,
@@ -358,6 +500,7 @@ export const allPlugins = [
   bbPlugin,
   mfiPlugin,
   atrPlugin,
+  ichimokuPlugin,
 ];
 
 export { hasOutput as indicatorHasOutput };
