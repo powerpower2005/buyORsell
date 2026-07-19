@@ -30,6 +30,8 @@ import { requireNumber } from "@/lib/require";
 
 interface Props {
   onChange: () => void;
+  /** Evaluation warnings (e.g. not enough bars for SMA period). */
+  runtimeWarnings?: string[];
 }
 
 function LabelWithHelp({
@@ -66,7 +68,8 @@ function NumInput({
   min: number;
   max: number;
   step?: number;
-  onChange: (v: number) => void;
+  /** Return false to reject the edit and restore the previous value. */
+  onChange: (v: number) => boolean | void;
   help?: HelpContent;
 }) {
   const [draft, setDraft] = useState(() =>
@@ -84,8 +87,16 @@ function NumInput({
       return;
     }
     const next = clampNum(n, min, max);
+    if (next === value) {
+      setDraft(String(value));
+      return;
+    }
+    const accepted = onChange(next);
+    if (accepted === false) {
+      setDraft(Number.isFinite(value) ? String(value) : "");
+      return;
+    }
     setDraft(String(next));
-    if (next !== value) onChange(next);
   };
 
   return (
@@ -169,6 +180,7 @@ function PeriodListEditor({
   max,
   maxCount = 8,
   onChange,
+  onNotice,
 }: {
   indicatorId: string;
   title: string;
@@ -178,6 +190,7 @@ function PeriodListEditor({
   max: number;
   maxCount?: number;
   onChange: () => void;
+  onNotice: (message: string | null, kind?: "error" | "info") => void;
 }) {
   return (
     <div className="space-y-3">
@@ -198,6 +211,7 @@ function PeriodListEditor({
                 className="text-xs text-text-tertiary hover:text-negative disabled:opacity-30"
                 onClick={() => {
                   removeIndicatorPeriod(indicatorId, i);
+                  onNotice(null);
                   onChange();
                 }}
               >
@@ -211,7 +225,17 @@ function PeriodListEditor({
               min={min}
               max={max}
               onChange={(v) => {
-                setIndicatorPeriodAt(indicatorId, i, v);
+                const result = setIndicatorPeriodAt(indicatorId, i, v);
+                if (!result.ok) {
+                  onNotice(result.error, "error");
+                  return false;
+                }
+                onNotice(
+                  result.changed
+                    ? `${title} Period가 ${v}(으)로 적용되었습니다. 사이드바 레이어가 켜집니다.`
+                    : null,
+                  "info",
+                );
                 onChange();
               }}
             />
@@ -246,9 +270,13 @@ function PeriodListEditor({
 }
 
 /** SMA/EMA/RSI/… period·색·사용 CRUD. Parent remounts via onChange tick. */
-export function IndicatorConfigForm({ onChange }: Props) {
+export function IndicatorConfigForm({ onChange, runtimeWarnings = [] }: Props) {
   const cfg = getEffectiveIndicatorsConfig();
   const find = (id: string) => cfg.indicators.find((i) => i.id === id);
+  const [notice, setNotice] = useState<{
+    message: string;
+    kind: "error" | "info";
+  } | null>(null);
 
   const sma = find("sma");
   const ema = find("ema");
@@ -268,13 +296,49 @@ export function IndicatorConfigForm({ onChange }: Props) {
   const emaColors = parsePeriodColors(ema.params.colors);
 
   const patch = () => onChange();
+  const onNotice = (message: string | null, kind: "error" | "info" = "info") => {
+    setNotice(message ? { message, kind } : null);
+  };
+
+  const indicatorWarnings = runtimeWarnings.filter(
+    (w) =>
+      /SMA|EMA|RSI|MACD|BB|MFI|ATR|sma|ema|rsi|macd|bb|mfi|atr/i.test(w) ||
+      w.includes("봉"),
+  );
 
   return (
     <div className="space-y-3 text-left">
       <p className="text-xs text-text-tertiary">
-        브라우저에 저장됩니다. 변경 즉시 점수·지표·차트에 반영됩니다. 「?」를
-        누르면 지표·설정값 설명을 볼 수 있습니다.
+        브라우저에 저장됩니다. 숫자 변경은 Enter 또는 포커스 아웃 시 반영됩니다.
+        「?」를 누르면 지표·설정값 설명을 볼 수 있습니다.
       </p>
+
+      {notice && (
+        <div
+          className={
+            notice.kind === "error"
+              ? "rounded-md border border-negative/40 bg-negative/10 px-3 py-2 text-xs text-negative"
+              : "rounded-md border border-accent/40 bg-accent/10 px-3 py-2 text-xs text-accent"
+          }
+          role={notice.kind === "error" ? "alert" : "status"}
+        >
+          {notice.message}
+        </div>
+      )}
+
+      {indicatorWarnings.length > 0 && (
+        <div
+          className="rounded-md border border-negative/40 bg-negative/10 px-3 py-2 text-xs text-negative"
+          role="alert"
+        >
+          <p className="font-semibold">차트/계산 오류</p>
+          <ul className="mt-1.5 list-disc space-y-1 pl-4 text-text-secondary">
+            {indicatorWarnings.map((w) => (
+              <li key={w}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <IndicatorSection
         title="SMA"
@@ -293,6 +357,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
           min={2}
           max={250}
           onChange={patch}
+          onNotice={onNotice}
         />
       </IndicatorSection>
 
@@ -313,6 +378,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
           min={2}
           max={100}
           onChange={patch}
+          onNotice={onNotice}
         />
       </IndicatorSection>
 

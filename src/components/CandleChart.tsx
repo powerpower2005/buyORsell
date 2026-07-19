@@ -833,7 +833,8 @@ export function CandleChart({
         line.applyOptions({ visible: false });
       }
     }
-  }, [indicators, timeframe, maVisibility, bbVisibility]);
+    // Re-read periods/colors from config each run (localStorage may change via modal).
+  }, [indicators, timeframe, maVisibility, bbVisibility, bars.length]);
 
   const overlayLegend = useMemo(() => {
     if (!indicators) return [];

@@ -121,6 +121,8 @@ const EMPTY_TRENDLINES: Trendline[] = [];
 interface Props {
   /** Bumps when any visibility store changes (parent tick). */
   visibilityTick: number;
+  /** Also bump when indicator config (periods/colors) changes. */
+  configTick?: number;
   onVisibilityChange: () => void;
   /** Opens SMA/EMA/… CRUD modal (parent-owned). */
   onOpenIndicatorConfig?: () => void;
@@ -279,6 +281,7 @@ function groupState(values: boolean[]): {
 
 export function ChartSidebar({
   visibilityTick,
+  configTick = 0,
   onVisibilityChange,
   onOpenIndicatorConfig,
   trendlines,
@@ -286,10 +289,11 @@ export function ChartSidebar({
 }: Props) {
   const [open, setOpen] = useState<SidebarOpenState>(() => getSidebarOpenState());
   const [collapsed, setCollapsed] = useState(() => isChartSidebarCollapsed());
+  const refreshTick = visibilityTick + configTick;
 
-  const smaCfg = useMemo(() => getIndicatorConfig("sma"), [visibilityTick]);
-  const emaCfg = useMemo(() => getIndicatorConfig("ema"), [visibilityTick]);
-  const bbCfg = useMemo(() => getIndicatorConfig("bb"), [visibilityTick]);
+  const smaCfg = useMemo(() => getIndicatorConfig("sma"), [refreshTick]);
+  const emaCfg = useMemo(() => getIndicatorConfig("ema"), [refreshTick]);
+  const bbCfg = useMemo(() => getIndicatorConfig("bb"), [refreshTick]);
 
   const smaPeriods = (smaCfg?.params.periods as number[]) ?? [];
   const emaPeriods = (emaCfg?.params.periods as number[]) ?? [];
@@ -299,38 +303,38 @@ export function ChartSidebar({
 
   const smaVis = useMemo(
     () => getIndicatorOverlayVisibility("sma", smaPeriods),
-    [smaPeriods.join(","), visibilityTick],
+    [smaPeriods.join(","), refreshTick],
   );
   const emaVis = useMemo(
     () => getIndicatorOverlayVisibility("ema", emaPeriods),
-    [emaPeriods.join(","), visibilityTick],
+    [emaPeriods.join(","), refreshTick],
   );
-  const bbVis = useMemo(() => getBbOverlayVisibility(), [visibilityTick]);
+  const bbVis = useMemo(() => getBbOverlayVisibility(), [refreshTick]);
   const bbStratVis = useMemo(
     () => getBbStrategyVisibility(),
-    [visibilityTick],
+    [refreshTick],
   );
   const patternVis = useMemo(
     () => getChartPatternVisibility(),
-    [visibilityTick],
+    [refreshTick],
   );
   const classicalPatternVis = useMemo(
     () => getClassicalChartPatternVisibility(),
-    [visibilityTick],
+    [refreshTick],
   );
-  const swingVis = useMemo(() => getSwingChartVisibility(), [visibilityTick]);
-  const srVis = useMemo(() => getSrChartVisibility(), [visibilityTick]);
-  const volumeVis = useMemo(() => isVolumeOverlayVisible(), [visibilityTick]);
-  const fibVis = useMemo(() => getFibLevelVisibility(), [visibilityTick]);
-  const fibExtraVis = useMemo(() => getFibExtraVisibility(), [visibilityTick]);
-  const auxVis = useMemo(() => getAuxIndicatorVisibility(), [visibilityTick]);
-  const fibDraw = useMemo(() => isFibDrawMode(), [visibilityTick]);
-  const fibRet = useMemo(() => getFibRetracement(), [visibilityTick]);
-  const fibPending = useMemo(() => getFibPendingLow(), [visibilityTick]);
-  const tlVis = useMemo(() => getTrendlineChartVisibility(), [visibilityTick]);
+  const swingVis = useMemo(() => getSwingChartVisibility(), [refreshTick]);
+  const srVis = useMemo(() => getSrChartVisibility(), [refreshTick]);
+  const volumeVis = useMemo(() => isVolumeOverlayVisible(), [refreshTick]);
+  const fibVis = useMemo(() => getFibLevelVisibility(), [refreshTick]);
+  const fibExtraVis = useMemo(() => getFibExtraVisibility(), [refreshTick]);
+  const auxVis = useMemo(() => getAuxIndicatorVisibility(), [refreshTick]);
+  const fibDraw = useMemo(() => isFibDrawMode(), [refreshTick]);
+  const fibRet = useMemo(() => getFibRetracement(), [refreshTick]);
+  const fibPending = useMemo(() => getFibPendingLow(), [refreshTick]);
+  const tlVis = useMemo(() => getTrendlineChartVisibility(), [refreshTick]);
   const tlKindColors = useMemo(
     () => getTrendlineKindColors(),
-    [visibilityTick],
+    [refreshTick],
   );
   const ascendingLines = trendlines?.ascending ?? EMPTY_TRENDLINES;
   const descendingLines = trendlines?.descending ?? EMPTY_TRENDLINES;
@@ -343,12 +347,12 @@ export function ChartSidebar({
       getTrendlineLineVisibility(
         allTrendlineIdsKey ? allTrendlineIdsKey.split("|") : [],
       ),
-    [allTrendlineIdsKey, visibilityTick],
+    [allTrendlineIdsKey, refreshTick],
   );
   const tlLineColors = useMemo(
     () =>
       getTrendlineLineColors([...ascendingLines, ...descendingLines]),
-    [allTrendlineIdsKey, visibilityTick],
+    [allTrendlineIdsKey, refreshTick],
   );
 
   const bump = (fn: () => void) => {

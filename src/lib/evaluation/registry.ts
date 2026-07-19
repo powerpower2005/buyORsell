@@ -206,7 +206,7 @@ export function computeAll(
 
     if (bars.length < min) {
       skipped.push(
-        `Indicator ${item.id} requires ${min} bars, got ${bars.length}`,
+        `${item.id.toUpperCase()}: 최소 봉 ${min}개 필요 · 현재 ${bars.length}개라 계산을 건너뜁니다`,
       );
       continue;
     }

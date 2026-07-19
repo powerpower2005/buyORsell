@@ -2,7 +2,10 @@ import indicatorsBase from "../../config/indicators.json";
 import scoringBase from "../../config/scoring.json";
 import type { IndicatorsConfig, IndicatorConfigItem } from "./evaluation/types";
 import { nextDefaultPeriodColor, parsePeriodColors } from "./indicatorColors";
-import { remapIndicatorOverlayPeriod } from "./indicatorOverlayStore";
+import {
+  remapIndicatorOverlayPeriod,
+  setIndicatorOverlayVisible,
+} from "./indicatorOverlayStore";
 
 const OVERRIDE_KEY = "gf:config:overrides";
 
@@ -90,16 +93,30 @@ export function setIndicatorParam(
   }));
 }
 
+export type PeriodUpdateResult =
+  | { ok: true; changed: boolean }
+  | { ok: false; error: string };
+
 export function setIndicatorPeriodAt(
   id: string,
   index: number,
   value: number,
-): void {
+): PeriodUpdateResult {
   let oldPeriod: number | undefined;
+  let applied = false;
+  let rejectReason: string | undefined;
+
   updateIndicatorItem(id, (item) => {
     const periods = [...(item.params.periods as number[])];
     oldPeriod = periods[index];
+    if (oldPeriod === value) return item;
+    // Avoid duplicate period keys (series / overlay toggles collide).
+    if (periods.some((p, i) => i !== index && p === value)) {
+      rejectReason = `${id.toUpperCase()} Period ${value}는 이미 사용 중입니다. 다른 값을 입력하세요.`;
+      return item;
+    }
     periods[index] = value;
+    applied = true;
     const colors = { ...periodColorsOf(item) };
     if (oldPeriod != null && colors[String(oldPeriod)] != null) {
       colors[String(value)] = colors[String(oldPeriod)];
@@ -110,17 +127,24 @@ export function setIndicatorPeriodAt(
       params: { ...item.params, periods, colors },
     };
   });
-  // Chart layer toggles are keyed by period; keep the line visible after rename.
+
+  if (rejectReason) return { ok: false, error: rejectReason };
+
+  // Chart layer toggles are keyed by period; turn the renamed line on.
   if (
+    applied &&
     (id === "sma" || id === "ema") &&
     oldPeriod != null &&
     Number.isFinite(oldPeriod)
   ) {
     remapIndicatorOverlayPeriod(id, oldPeriod, value);
   }
+
+  return { ok: true, changed: applied };
 }
 
 export function addIndicatorPeriod(id: string): void {
+  let added: number | undefined;
   updateIndicatorItem(id, (item) => {
     const periods = [...((item.params.periods as number[]) ?? [])];
     const colors = { ...periodColorsOf(item) };
@@ -129,21 +153,29 @@ export function addIndicatorPeriod(id: string): void {
     let candidate = next;
     while (periods.includes(candidate) && candidate <= 250) candidate += 5;
     periods.push(candidate);
+    added = candidate;
     colors[String(candidate)] = nextDefaultPeriodColor(colors, periods.length - 1);
     return { ...item, params: { ...item.params, periods, colors } };
   });
+  if ((id === "sma" || id === "ema") && added != null) {
+    setIndicatorOverlayVisible(id, added, true);
+  }
 }
 
 export function removeIndicatorPeriod(id: string, index: number): void {
+  let removed: number | undefined;
   updateIndicatorItem(id, (item) => {
     const periods = [...((item.params.periods as number[]) ?? [])];
     if (periods.length <= 1) return item;
-    const removed = periods[index];
+    removed = periods[index];
     periods.splice(index, 1);
     const colors = { ...periodColorsOf(item) };
     delete colors[String(removed)];
     return { ...item, params: { ...item.params, periods, colors } };
   });
+  if ((id === "sma" || id === "ema") && removed != null) {
+    setIndicatorOverlayVisible(id, removed, false);
+  }
 }
 
 export function setIndicatorPeriodColor(

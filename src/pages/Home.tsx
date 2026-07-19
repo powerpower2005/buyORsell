@@ -479,6 +479,7 @@ export function HomePage() {
                   </div>
                   <ChartSidebar
                     visibilityTick={chartVisTick}
+                    configTick={configTick}
                     onVisibilityChange={() => setChartVisTick((n) => n + 1)}
                     onOpenIndicatorConfig={() => setIndicatorConfigOpen(true)}
                     trendlines={evaluation!.trendlines}
@@ -487,7 +488,11 @@ export function HomePage() {
                 <IndicatorConfigModal
                   open={indicatorConfigOpen}
                   onClose={() => setIndicatorConfigOpen(false)}
-                  onChange={() => setConfigTick((n) => n + 1)}
+                  onChange={() => {
+                    setConfigTick((n) => n + 1);
+                    setChartVisTick((n) => n + 1);
+                  }}
+                  runtimeWarnings={evaluation?.warnings ?? []}
                 />
                 <div className="grid gap-6 xl:grid-cols-2">
                   <VolumePanel snapshot={evaluation!.volume} />

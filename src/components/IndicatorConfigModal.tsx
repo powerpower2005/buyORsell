@@ -6,10 +6,16 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onChange: () => void;
+  runtimeWarnings?: string[];
 }
 
 /** Right-edge settings drawer (collapsible sidebar). */
-export function IndicatorConfigModal({ open, onClose, onChange }: Props) {
+export function IndicatorConfigModal({
+  open,
+  onClose,
+  onChange,
+  runtimeWarnings,
+}: Props) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -62,7 +68,10 @@ export function IndicatorConfigModal({ open, onClose, onChange }: Props) {
           </Button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
-          <IndicatorConfigForm onChange={onChange} />
+          <IndicatorConfigForm
+            onChange={onChange}
+            runtimeWarnings={runtimeWarnings}
+          />
         </div>
       </aside>
     </div>

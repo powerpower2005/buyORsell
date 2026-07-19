@@ -73,7 +73,7 @@ export function setIndicatorOverlayGroupVisible(
 
 /**
  * When a period is renamed in config (e.g. SMA 3 → 120), move the chart
- * overlay toggle key. Unset/true → stay visible so the line does not vanish.
+ * overlay toggle key and force the new period on so the line appears.
  */
 export function remapIndicatorOverlayPeriod(
   pluginId: "sma" | "ema",
@@ -84,8 +84,7 @@ export function remapIndicatorOverlayPeriod(
   const overrides = loadOverrides();
   const fromKey = overlaySeriesKey(pluginId, fromPeriod);
   const toKey = overlaySeriesKey(pluginId, toPeriod);
-  const prev = overrides[fromKey];
-  overrides[toKey] = prev !== false;
+  overrides[toKey] = true;
   delete overrides[fromKey];
   saveOverrides(overrides);
 }

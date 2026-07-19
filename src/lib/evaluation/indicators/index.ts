@@ -53,7 +53,9 @@ export const smaPlugin: IndicatorPlugin = {
     for (const period of periods) {
       const key = `sma:${period}`;
       if (bars.length < period) {
-        skipped.push(`${key} requires ${period} bars, got ${bars.length}`);
+        skipped.push(
+          `SMA(${period}): 봉 ${period}개 필요 · 현재 ${bars.length}개라 차트에 그릴 수 없습니다`,
+        );
         latest[key] = null;
         continue;
       }
@@ -82,7 +84,9 @@ export const emaPlugin: IndicatorPlugin = {
     for (const period of periods) {
       const key = `ema:${period}`;
       if (bars.length < period) {
-        skipped.push(`${key} requires ${period} bars, got ${bars.length}`);
+        skipped.push(
+          `EMA(${period}): 봉 ${period}개 필요 · 현재 ${bars.length}개라 차트에 그릴 수 없습니다`,
+        );
         latest[key] = null;
         continue;
       }
