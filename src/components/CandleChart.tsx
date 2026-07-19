@@ -7,9 +7,11 @@ import {
   HistogramSeries,
   LineSeries,
   LineStyle,
+  type CandlestickData,
   type IChartApi,
   type ISeriesApi,
   type ISeriesMarkersPluginApi,
+  type MouseEventParams,
   type Time,
 } from "lightweight-charts";
 import type { OHLCVBar, Timeframe, IndicatorResults } from "@/lib/types";
@@ -94,9 +96,38 @@ import { Card } from "./ui/Card";
 
 type OscSeries = ISeriesApi<"Line"> | ISeriesApi<"Histogram">;
 
+type OhlcvReadout = {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+};
+
 function fmtLegend(value: number | null | undefined, digits = 2): string {
   if (value == null || Number.isNaN(value)) return "—";
   return value.toFixed(digits);
+}
+
+function fmtPrice(value: number): string {
+  if (!Number.isFinite(value)) return "—";
+  if (Math.abs(value) >= 1000) return value.toFixed(2);
+  if (Math.abs(value) >= 1) return value.toFixed(2);
+  return value.toFixed(4);
+}
+
+function isCandleData(
+  data: unknown,
+): data is CandlestickData<Time> {
+  return (
+    !!data &&
+    typeof data === "object" &&
+    "open" in data &&
+    "high" in data &&
+    "low" in data &&
+    "close" in data
+  );
 }
 
 interface Props {
@@ -239,6 +270,21 @@ export function CandleChart({
   onFibChangeRef.current = onFibChange;
 
   const [pickHint, setPickHint] = useState<string | null>(null);
+  const [hoverOhlcv, setHoverOhlcv] = useState<OhlcvReadout | null>(null);
+
+  const ohlcvReadout = useMemo((): OhlcvReadout | null => {
+    if (hoverOhlcv) return hoverOhlcv;
+    const last = bars.at(-1);
+    if (!last) return null;
+    return {
+      date: last.date,
+      open: last.open,
+      high: last.high,
+      low: last.low,
+      close: last.close,
+      volume: last.volume,
+    };
+  }, [hoverOhlcv, bars]);
 
   const chartMarkers = useMemo(() => {
     const patternMs = patternsToChartMarkers(
@@ -682,6 +728,34 @@ export function CandleChart({
     const onRange = () => drawChartOverlays();
     chart.timeScale().subscribeVisibleLogicalRangeChange(onRange);
 
+    const onCrosshairMove = (param: MouseEventParams<Time>) => {
+      if (
+        param.point === undefined ||
+        param.time === undefined ||
+        param.point.x < 0 ||
+        param.point.y < 0
+      ) {
+        setHoverOhlcv(null);
+        return;
+      }
+      const candleData = param.seriesData.get(candles);
+      if (!isCandleData(candleData)) {
+        setHoverOhlcv(null);
+        return;
+      }
+      const timeStr = String(param.time);
+      const bar = barsRef.current.find((b) => b.date === timeStr);
+      setHoverOhlcv({
+        date: timeStr,
+        open: candleData.open,
+        high: candleData.high,
+        low: candleData.low,
+        close: candleData.close,
+        volume: bar?.volume ?? 0,
+      });
+    };
+    chart.subscribeCrosshairMove(onCrosshairMove);
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const onClickHandler = (param: any) => {
       if (!fibDrawModeRef.current) return;
@@ -742,6 +816,7 @@ export function CandleChart({
 
     return () => {
       chart.timeScale().unsubscribeVisibleLogicalRangeChange(onRange);
+      chart.unsubscribeCrosshairMove(onCrosshairMove);
       chart.unsubscribeClick(onClickHandler);
       ro.disconnect();
       chart.remove();
@@ -752,6 +827,7 @@ export function CandleChart({
       markersRef.current = null;
       overlayRefs.current = new Map();
       oscSeriesRefs.current = new Map();
+      setHoverOhlcv(null);
     };
     // recreate chart on timeframe only; overlay redraw bound via other deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1430,6 +1506,55 @@ export function CandleChart({
             className="pointer-events-none absolute inset-0 z-[1]"
             aria-hidden
           />
+          {ohlcvReadout && (
+            <div
+              className="pointer-events-none absolute left-2 top-2 z-[2] rounded bg-black/55 px-2.5 py-1.5 text-[11px] leading-relaxed text-text-secondary backdrop-blur-[2px]"
+              aria-live="polite"
+            >
+              <div className="mb-0.5 tabular-nums text-text-tertiary">
+                {ohlcvReadout.date}
+              </div>
+              <div className="flex flex-wrap gap-x-2.5 gap-y-0.5 tabular-nums">
+                <span>
+                  O{" "}
+                  <span className="text-text-primary">
+                    {fmtPrice(ohlcvReadout.open)}
+                  </span>
+                </span>
+                <span>
+                  H{" "}
+                  <span className="text-text-primary">
+                    {fmtPrice(ohlcvReadout.high)}
+                  </span>
+                </span>
+                <span>
+                  L{" "}
+                  <span className="text-text-primary">
+                    {fmtPrice(ohlcvReadout.low)}
+                  </span>
+                </span>
+                <span>
+                  C{" "}
+                  <span
+                    style={{
+                      color:
+                        ohlcvReadout.close >= ohlcvReadout.open
+                          ? "#00c471"
+                          : "#f04452",
+                    }}
+                  >
+                    {fmtPrice(ohlcvReadout.close)}
+                  </span>
+                </span>
+                <span>
+                  V{" "}
+                  <span className="text-text-primary">
+                    {formatVolume(ohlcvReadout.volume)}
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-3 space-y-2 border-t border-border pt-3">
