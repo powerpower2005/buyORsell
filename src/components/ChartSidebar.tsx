@@ -438,15 +438,15 @@ export function ChartSidebar({
   const tlState = groupState(tlAggregateVals);
 
   if (collapsed) {
-    // Out of flex flow so the chart can use the full row width.
+    // Slim in-flow rail — keeps the chart full-height and avoids covering candles.
     return (
       <aside
-        className="absolute right-2 top-2 z-20 flex flex-col gap-1.5"
+        className="flex w-full shrink-0 flex-row gap-1.5 lg:sticky lg:top-4 lg:w-11 lg:flex-col"
         aria-label="접힌 차트 사이드바"
       >
         <button
           type="button"
-          className="rounded-lg border border-border bg-surface/95 px-2.5 py-1.5 text-[11px] font-medium text-text-secondary shadow-sm backdrop-blur hover:border-accent/40 hover:text-text-primary"
+          className="flex flex-1 items-center justify-center rounded-lg border border-border bg-surface px-2 py-2 text-[11px] font-medium text-text-secondary hover:border-accent/40 hover:text-text-primary lg:flex-none lg:px-1.5 lg:py-3 lg:[writing-mode:vertical-rl] lg:tracking-wide"
           onClick={() => setCollapsedPersisted(false)}
           title="차트 레이어 펼치기"
         >
@@ -455,7 +455,7 @@ export function ChartSidebar({
         {onOpenIndicatorConfig && (
           <button
             type="button"
-            className="rounded-lg border border-accent/40 bg-accent/15 px-2.5 py-1.5 text-[11px] font-medium text-accent shadow-sm backdrop-blur hover:bg-accent/25"
+            className="flex flex-1 items-center justify-center rounded-lg border border-accent/40 bg-accent/10 px-2 py-2 text-[11px] font-medium text-accent hover:bg-accent/20 lg:flex-none lg:px-1.5 lg:py-3 lg:[writing-mode:vertical-rl] lg:tracking-wide"
             onClick={onOpenIndicatorConfig}
             title="기술 지표 설정"
           >

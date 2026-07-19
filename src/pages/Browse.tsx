@@ -425,7 +425,7 @@ export function BrowsePage() {
                     <PartialDataBanner warnings={evaluation!.warnings} />
                   )}
                   <p className="text-xs text-text-tertiary">{statusDetail}</p>
-                  <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
                     <div className="min-w-0 w-full flex-1">
                       <CandleChart
                         bars={evaluation!.bars}

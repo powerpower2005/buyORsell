@@ -119,9 +119,9 @@ interface Props {
 
 function useViewportChartHeight(fixed?: number) {
   const compute = () =>
-    Math.min(780, Math.max(540, Math.round(window.innerHeight * 0.62)));
+    Math.min(920, Math.max(640, Math.round(window.innerHeight * 0.74)));
 
-  const [height, setHeight] = useState(fixed ?? 640);
+  const [height, setHeight] = useState(fixed ?? 720);
 
   useEffect(() => {
     if (fixed != null) {
@@ -1134,7 +1134,7 @@ export function CandleChart({
     !!fibRetracement && fibRetracement.high.price > fibRetracement.low.price;
 
   return (
-    <Card className="overflow-hidden p-3 sm:p-4">
+    <Card className="overflow-hidden p-2 sm:p-3">
       <div className="w-full text-left">
         {/* Pick hint banner */}
         {pickHint && (

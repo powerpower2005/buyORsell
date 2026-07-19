@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, SectionTitle } from "./ui/Card";
 import { Badge } from "./ui/Badge";
 import type { CandlePatternResult } from "@/lib/evaluation/candlePatterns";
@@ -5,6 +6,10 @@ import {
   CANDLE_PATTERN_META,
   CANDLE_PATTERN_ORDER,
 } from "@/lib/candlePatternMeta";
+import {
+  isCandlePatternHelpCollapsed,
+  setCandlePatternHelpCollapsed,
+} from "@/lib/sidebarOpenStore";
 
 function dirVariant(d: string): "positive" | "negative" | "muted" {
   if (d === "bullish") return "positive";
@@ -18,6 +23,14 @@ interface Props {
 
 export function CandlePatternPanel({ patterns }: Props) {
   const { onLatestBar, recent, latestBarDate, lookbackBars } = patterns;
+  const [helpCollapsed, setHelpCollapsed] = useState(() =>
+    isCandlePatternHelpCollapsed(),
+  );
+
+  const setHelpCollapsedPersisted = (next: boolean) => {
+    setCandlePatternHelpCollapsed(next);
+    setHelpCollapsed(next);
+  };
 
   return (
     <Card>
@@ -29,23 +42,35 @@ export function CandlePatternPanel({ patterns }: Props) {
       </p>
 
       <div className="mb-4 text-left">
-        <p className="text-xs font-medium text-text-secondary">패턴 설명</p>
-        <ul className="mt-2 max-h-40 space-y-2 overflow-y-auto">
-          {CANDLE_PATTERN_ORDER.map((id) => {
-            const meta = CANDLE_PATTERN_META[id];
-            return (
-              <li key={id} className="text-xs text-text-secondary">
-                <span className="font-medium text-text-primary">
-                  {meta.labelKo}
-                </span>
-                <span className="text-text-tertiary"> ({meta.label})</span>
-                <span className="mt-0.5 block leading-relaxed text-text-tertiary">
-                  {meta.description}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-medium text-text-secondary">패턴 설명</p>
+          <button
+            type="button"
+            className="shrink-0 rounded-md border border-border px-2 py-1 text-[10px] font-medium text-text-tertiary hover:border-accent/40 hover:text-text-primary"
+            onClick={() => setHelpCollapsedPersisted(!helpCollapsed)}
+            title={helpCollapsed ? "패턴 설명 펼치기" : "패턴 설명 접기"}
+          >
+            {helpCollapsed ? "펼치기" : "접기"}
+          </button>
+        </div>
+        {!helpCollapsed && (
+          <ul className="mt-2 max-h-40 space-y-2 overflow-y-auto">
+            {CANDLE_PATTERN_ORDER.map((id) => {
+              const meta = CANDLE_PATTERN_META[id];
+              return (
+                <li key={id} className="text-xs text-text-secondary">
+                  <span className="font-medium text-text-primary">
+                    {meta.labelKo}
+                  </span>
+                  <span className="text-text-tertiary"> ({meta.label})</span>
+                  <span className="mt-0.5 block leading-relaxed text-text-tertiary">
+                    {meta.description}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
 
       <div className="mb-4 text-left">

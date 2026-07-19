@@ -106,3 +106,18 @@ export function isBrowseTickerListCollapsed(): boolean {
 export function setBrowseTickerListCollapsed(collapsed: boolean): void {
   localStorage.setItem(BROWSE_LIST_COLLAPSED_KEY, JSON.stringify(collapsed));
 }
+
+const CANDLE_PATTERN_HELP_COLLAPSED_KEY =
+  "gf:config:candle-pattern-help-collapsed";
+
+/** CandlePatternPanel 「패턴 설명」 block. Default collapsed to save space. */
+export function isCandlePatternHelpCollapsed(): boolean {
+  return readCollapsedFlag(CANDLE_PATTERN_HELP_COLLAPSED_KEY, true);
+}
+
+export function setCandlePatternHelpCollapsed(collapsed: boolean): void {
+  localStorage.setItem(
+    CANDLE_PATTERN_HELP_COLLAPSED_KEY,
+    JSON.stringify(collapsed),
+  );
+}
