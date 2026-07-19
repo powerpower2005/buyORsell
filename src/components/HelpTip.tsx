@@ -102,6 +102,17 @@ export function HelpTip({ help, label }: Props) {
             </div>
           )}
 
+          {help.worksWith && (
+            <div className="mt-4 rounded-md border border-border/80 bg-bg px-3 py-2.5">
+              <p className="text-[11px] font-semibold text-text-primary">
+                같이 보면 좋은 것
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                {help.worksWith}
+              </p>
+            </div>
+          )}
+
           {help.tip && (
             <p className="mt-4 text-[11px] leading-relaxed text-text-tertiary">
               참고: {help.tip}

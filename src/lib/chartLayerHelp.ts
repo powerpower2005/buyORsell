@@ -24,6 +24,8 @@ export const CHART_LAYER_HELP = {
       "가격이 이동평균 위에 있으면 단기적으로 상승 우위·지지 후보로 보는 경우가 많습니다.",
     lower:
       "가격이 이동평균 아래에 있으면 하락 우위·저항 후보로 보는 경우가 많습니다.",
+    worksWith:
+      "스토캐·RSI 타점, MACD 0선, 지지·저항. 이평 방향과 오실레이터 신호가 같으면 신뢰↑.",
     tip: "단기·장기 선이 교차할 때(골든/데드 크로스) 추세 전환 힌트로 씁니다.",
   },
   volume: {
@@ -34,6 +36,8 @@ export const CHART_LAYER_HELP = {
       "거래량이 크면(또는 평균보다 크면) 그 방향의 움직임이 더 의미 있다고 보는 경우가 많습니다.",
     lower:
       "거래량이 작으면 가격이 움직여도 확신이 약한 ‘가벼운’ 움직임일 수 있습니다.",
+    worksWith:
+      "MACD·일목·추세선 돌파, 다이버전스 확인, MFI. 돌파·패턴 완성봉에 거래량이 붙으면 신뢰↑.",
     tip: "패널의 3/7/15/30 평균선과 비교해 최근 봉이 평소보다 붐비는지 확인하세요.",
   },
   swing: {
@@ -44,17 +48,23 @@ export const CHART_LAYER_HELP = {
       "고점·저점이 이전보다 높아지면(HH·HL) 상승 구조가 유지·강화되는 흐름으로 봅니다.",
     lower:
       "고점·저점이 이전보다 낮아지면(LH·LL) 하락 구조가 유지·강화되는 흐름으로 봅니다.",
+    worksWith:
+      "추세선, MACD/스토캐 다이버전스(가격 스윙과 지표 스윙 비교), 차트 패턴. 구조와 지표가 어긋나면 전환 후보.",
     tip: "HH+HL이면 상승 구조, LH+LL이면 하락 구조로 읽는 것이 기본입니다.",
   },
   trendlines: {
     title: "동적 추세선",
     summary:
-      "스윙 고·저점을 이은 상승 지지·하락 저항 선입니다. 터치·유지 점수가 높은 선이 우선 표시됩니다.",
+      "스윙 고·저점을 이은 상승 지지·하락 저항 선입니다. V1(기본)과 V2(품질) 알고리즘을 고를 수 있습니다.",
+    howToFind:
+      "사이드바 ‘동적 추세선’에서 V1/V2를 고른 뒤 상승·하락 선을 켜세요. V2는 반등·거래량·구조 필터로 선 수가 줄어듭니다.",
     higher:
       "가격이 상승 지지선 위에서 반응하면 상승 추세 유지, 하락 저항선을 돌파하면 하락 압력 완화로 봅니다.",
     lower:
       "상승 지지선이 깨지거나 하락 저항선 아래에서 막히면 추세 약화·지속 하락 쪽으로 봅니다.",
-    tip: "선이 깨지면(이탈) 추세 약화 또는 전환 후보로 봅니다.",
+    worksWith:
+      "MACD·시그널이 같은 방향으로 돌파하는지(MACD 돌파 전략), 거래량, 일목 구름. 선 이탈+지표 확인이 겹치면 신뢰↑.",
+    tip: "V1은 후보가 많고 빠르고, V2는 ‘지금 쓸 만한 선’ 위주입니다. 이탈된 선은 힌트로만 보세요.",
   },
   sr: {
     title: "지지·저항",
@@ -64,6 +74,8 @@ export const CHART_LAYER_HELP = {
       "저항을 돌파하거나 지지 위에서 버티면 상승 여력이 커진다고 보는 경우가 많습니다.",
     lower:
       "지지가 깨지거나 저항 아래에서 계속 막히면 하락·횡보 위험이 커진다고 보는 경우가 많습니다.",
+    worksWith:
+      "스토캐(과매도+지지 / 과매수+저항), RSI, 피보나치·일목 구름 가장자리. 존 반응과 오실레이터 탈출이 겹치면 신뢰↑.",
     tip: "터치가 많고 반등이 잘 나온 존일수록 더 강하게 보는 편입니다.",
   },
   fib: {
@@ -74,6 +86,8 @@ export const CHART_LAYER_HELP = {
       "되돌림이 얕을수록(예: 38.2% 근처에서 반등) 추세가 강한 편으로 해석하는 경우가 많습니다.",
     lower:
       "되돌림이 깊을수록(예: 61.8%~78.6%) 추세가 약하거나 전환 위험이 크다고 보는 경우가 많습니다.",
+    worksWith:
+      "지지·저항 존, SMA/EMA, RSI·스토캐 과매도 탈출. 레벨과 S/R·이평이 겹치는 자리가 반응하기 쉽습니다.",
     tip: "지지·저항 존과 겹치면(컨플루언스) 더 주목하는 경우가 많습니다.",
   },
   fibLevels: {
@@ -94,7 +108,9 @@ export const CHART_LAYER_HELP = {
     title: "보조 지표 (패널)",
     summary:
       "가격과 Y축이 다른 오실레이터·변동성 지표를 차트 아래 별도 섹션에 그립니다.",
-    tip: "RSI·MACD·MFI·ATR·%B는 가격 차트에 겹치지 않고 같은 시간축으로 함께 봅니다.",
+    worksWith:
+      "가격 차트의 이평·지지저항·추세선과 같이 보세요. 오실레이터만으로 방향을 정하기보다 ‘추세 필터 + 타점’으로 쓰는 편이 낫습니다.",
+    tip: "RSI·MACD·스토캐·MFI·ATR·%B는 가격 차트에 겹치지 않고 같은 시간축으로 함께 봅니다.",
   },
   bbPercentB: {
     title: "%B (볼린저 %B)",
@@ -104,6 +120,8 @@ export const CHART_LAYER_HELP = {
       "%B가 높을수록(1 근처·이상) 상단 밴드 근처·밖으로, 단기 과열·추세 가속 후보로 봅니다.",
     lower:
       "%B가 낮을수록(0 근처·이하) 하단 밴드 근처·밖으로, 단기 과매도·눌림 후보로 봅니다.",
+    worksWith:
+      "볼린저 밴드 선, RSI·스토캐. %B 극단 + 오실레이터 과열이 겹치면 되돌림·가속 판단에 도움이 됩니다.",
     tip: "밴드 자체와 함께 보면 ‘어디에 붙어 있는지’를 숫자로 확인할 수 있습니다.",
   },
   bbBands: {
@@ -111,12 +129,15 @@ export const CHART_LAYER_HELP = {
     summary: INDICATOR_HELP.bb.summary,
     higher: INDICATOR_HELP.bb.higher,
     lower: INDICATOR_HELP.bb.lower,
+    worksWith: INDICATOR_HELP.bb.worksWith,
     tip: INDICATOR_HELP.bb.tip,
   },
   bbStrategies: {
     title: "볼린저 전략 마커",
     summary:
       "밴드 터치·돌파·스퀴즈·다이버전스 등 규칙 기반 신호를 차트에 마커로 표시합니다.",
+    worksWith:
+      "RSI·스토캐(밴드 터치 확인), MACD(스퀴즈 후 방향), ATR(변동성). 밴드만 보지 말고 과열·추세 필터를 겹치세요.",
     tip: "옆 %는 이 종목 최근 구간에서 신호가 목표(+1.5%)·손절(-1.5%) 기준으로 방향대로 풀린 비율입니다. 표본 3건 미만은 — 표시.",
   },
   ichimoku: {
@@ -127,6 +148,7 @@ export const CHART_LAYER_HELP = {
     lowerLabel: INDICATOR_HELP.ichimoku.lowerLabel,
     higher: INDICATOR_HELP.ichimoku.higher,
     lower: INDICATOR_HELP.ichimoku.lower,
+    worksWith: INDICATOR_HELP.ichimoku.worksWith,
     tip: INDICATOR_HELP.ichimoku.tip,
   },
   ichimokuParts: {
@@ -141,6 +163,8 @@ export const CHART_LAYER_HELP = {
       "TK 호전·역전, 후행스팬 교차, 구름 비틀림, 구름 돌파, 4신호 추세 전환, 돌파·지지저항 매매를 각각 따로 표시합니다.",
     howToFind:
       "일목 선을 켠 뒤 아래 전략을 개별 체크하세요. 한 전략으로 합치지 않습니다.",
+    worksWith:
+      "거래량·추세선(돌파 확인), RSI/스토캐(구름 위 눌림 타점), 지지·저항과 구름 가장자리 겹침.",
     tip: "옆 %는 이 종목 최근 구간 추적 성공률입니다(목표·손절 ±1.5%, 표본 3건↑). 후행·구름 신호와 추세선을 함께 보세요.",
   },
   rsiStrategies: {
@@ -149,6 +173,8 @@ export const CHART_LAYER_HELP = {
       "고전 70/30, 슈퍼 RSI 유동 과매수·과매도, 수렴→중심선 돌파, 다이버전스, 이중 RSI 교차를 각각 따로 표시합니다.",
     howToFind:
       "사이드바 RSI → 전략에서 개별로 켜세요. 패널(RSI 표시)과 전략 마커는 따로 조절합니다.",
+    worksWith:
+      "MACD(방향·교차 확인), 볼린저·지지저항(위치), 이평(추세 필터). 고전 OB/OS는 특히 추세 필터와 같이 쓰세요.",
     tip: "옆 %는 이 종목 최근 구간 추적 성공률입니다. 고전 OB/OS는 박스권, 이중 RSI는 추세장에 유리한 편입니다.",
   },
   macdStrategies: {
@@ -157,6 +183,8 @@ export const CHART_LAYER_HELP = {
       "시그널 크로스, 0선·눌림, RSI 확인, 다이버전스, 추세 돌파를 각각 따로 표시합니다.",
     howToFind:
       "사이드바 MACD → 전략에서 개별로 켜세요. 패널과 전략 마커는 따로 조절합니다.",
+    worksWith:
+      "RSI 패널(과매수·과매도 확인 전략), 거래량, 추세선·스윙. 시그널 크로스는 0선 위치와 Hist를 같이 보면 휩쏘가 줄어듭니다.",
     tip: "옆 %는 이 종목 최근 구간 추적 성공률입니다. 0선 위/아래 크로스와 Hist를 함께 보면 휩쏘를 줄이는 데 도움이 됩니다.",
   },
   stochStrategies: {
@@ -165,6 +193,8 @@ export const CHART_LAYER_HELP = {
       "20이평 결합, 다이버전스, 지지·저항 반등, 3중 바닥을 각각 따로 표시합니다.",
     howToFind:
       "사이드바 스토캐스틱 → 전략에서 개별로 켜세요. 패널과 전략 마커는 따로 조절합니다.",
+    worksWith:
+      "SMA20 오버레이, 지지·저항 레이어, 거래량, MACD 0선. 전략 이름이 가리키는 레이어를 켜 두면 확인이 쉽습니다.",
     tip: "옆 %는 이 종목 최근 구간 추적 성공률입니다. 강한 추세장에서는 단순 과매수·과매도 진입을 피하세요.",
   },
   classicalPatterns: {
@@ -307,20 +337,22 @@ export function trendlineKindHelp(
   if (kind === "ascending") {
     return {
       title: "상승 추세선 (지지)",
-      summary: "스윙 저점을 이은 상승 지지선입니다.",
+      summary: "스윙 저점을 이은 상승 지지선입니다. V2는 반등·거래량 품질을 더 봅니다.",
       higher:
         "가격이 선 위에서 반응하면 상승 추세 유지·매수 관심 구간으로 봅니다.",
       lower:
         "선이 깨지면(이탈) 상승 추세 약화 또는 전환 후보로 봅니다.",
+      worksWith: "스토캐/RSI 과매도 탈출, MACD 0선 위, 거래량. 선 터치+오실레이터 확인이 겹치면 신뢰↑.",
     };
   }
   return {
     title: "하락 추세선 (저항)",
-    summary: "스윙 고점을 이은 하락 저항선입니다.",
+    summary: "스윙 고점을 이은 하락 저항선입니다. V2는 반등·거래량 품질을 더 봅니다.",
     higher:
       "선을 상향 돌파하면 하락 압력 완화·반등 후보로 봅니다.",
     lower:
       "가격이 선 아래에서 막히면 하락 추세 유지·매도 압력으로 봅니다.",
+    worksWith: "스토캐/RSI 과매수 이탈, MACD 0선 아래, 거래량. 저항 터치+오실레이터 확인이 겹치면 신뢰↑.",
   };
 }
 
@@ -447,16 +479,22 @@ export function bbStrategyHelp(id: string): HelpContent {
       title: "밴드 지지·저항",
       summary:
         "횡보 구간에서 하단 터치 매수·상단 터치 매도 아이디어입니다.",
+      worksWith:
+        "RSI·스토캐(과매도/과매수 확인), 이평·MACD(횡보인지 확인). 추세장에서는 밴드 터치만으로 역추세 진입을 피하세요.",
       tip: "추세가 강한 날에는 밴드 터치만으로 진입하면 역추세가 될 수 있습니다.",
     },
     band_breakout: {
       title: "밴드 돌파",
       summary: "추세 방향으로 밴드 돌파가 이어질 때 추세 추종 진입 아이디어입니다.",
+      worksWith:
+        "거래량, MACD 0선·Hist, ATR. 같은 방향 재돌파·거래량 동반을 보면 허위 돌파를 줄입니다.",
       tip: "첫 돌파보다 같은 방향 재돌파·거래량 동반을 보면 허위 돌파를 줄일 수 있습니다.",
     },
     squeeze: {
       title: "스퀴즈",
       summary: "밴드 폭이 좁아진 뒤 상·하단 돌파 방향으로 변동성 확대를 노립니다.",
+      worksWith:
+        "MACD Hist·슈퍼 RSI 수렴 돌파, ATR, 거래량. 가짜 돌파에 대비한 손절이 중요합니다.",
       tip: "헤드페이크(가짜 돌파)가 잦으니 손절과 확인 봉이 중요합니다.",
     },
     trend_follow: {
@@ -465,11 +503,15 @@ export function bbStrategyHelp(id: string): HelpContent {
         "%B와 MFI가 함께 극단일 때 그 방향으로 추세를 따라가는 신호입니다.",
       higher: "%B·MFI가 높으면 상승 추세 강도가 크다는 쪽으로 해석합니다.",
       lower: "%B·MFI가 낮으면 하락 추세 강도가 크다는 쪽으로 해석합니다.",
+      worksWith:
+        "이미 %B+MFI를 묶은 전략입니다. MACD 방향·이평이 같으면 추세 추종 신뢰↑.",
     },
     divergence: {
       title: "BB–RSI 다이버전스",
       summary:
         "밴드 터치와 RSI 방향이 어긋난 뒤 중심선 돌파 시 반전 후보로 봅니다.",
+      worksWith:
+        "RSI 패널, 스윙 구조, 지지·저항. 이미 BB+RSI를 쓰는 전략이라 위치·구조 확인을 더하세요.",
       tip: "다이버전스만으로 진입하기보다 구조·지지저항 확인과 함께 쓰는 편이 안전합니다.",
     },
   };

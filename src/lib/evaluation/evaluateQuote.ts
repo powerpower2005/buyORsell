@@ -28,8 +28,11 @@ import {
 } from "./supportResistance";
 import {
   detectTrendlines,
+  type TrendlineAlgoVersion,
   type TrendlineResult,
 } from "./trendlines";
+import { detectTrendlinesV2 } from "./trendlinesV2";
+import { getTrendlineAlgoVersion } from "../trendlineStore";
 import {
   detectBbStrategies,
   type BbStrategyResult,
@@ -126,6 +129,7 @@ export function evaluateQuote(
   bars: OHLCVBar[],
   timeframe: Timeframe,
   indicatorConfig: IndicatorsConfig,
+  options?: { trendlineAlgo?: TrendlineAlgoVersion },
 ): QuoteEvaluation {
   const warnings: string[] = [];
   let fatalError: string | null = null;
@@ -217,7 +221,12 @@ export function evaluateQuote(
   let trendlines: TrendlineResult | null = null;
   if (!fatalError) {
     try {
-      trendlines = detectTrendlines(prepared);
+      const algo =
+        options?.trendlineAlgo ?? getTrendlineAlgoVersion();
+      trendlines =
+        algo === "v2"
+          ? detectTrendlinesV2(prepared)
+          : detectTrendlines(prepared);
     } catch (err) {
       const fatal = absorbError(err, warnings);
       if (fatal) fatalError = fatal;

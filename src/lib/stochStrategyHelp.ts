@@ -13,6 +13,8 @@ export const STOCH_STRATEGY_HELP: Record<StochStrategyId, HelpContent> = {
     ...BREAK,
     higher: "SMA20 위 눌림 + 골든 → 롱. 손절은 최근 저점, 익절은 손익비 약 3:1 참고.",
     lower: "SMA20 아래 반등 + 데드 → 숏. 손절은 최근 고점.",
+    worksWith:
+      "SMA20(필수에 가깝음), MACD 0선(같은 방향인지), 거래량. 이미 이평 필터가 들어간 전략입니다.",
     tip: "과매도만 보고 바로 사지 마세요. 추세 필터(이평)가 핵심입니다.",
   },
   stoch_divergence: {
@@ -23,6 +25,8 @@ export const STOCH_STRATEGY_HELP: Record<StochStrategyId, HelpContent> = {
     ...BREAK,
     higher: "상승 다이버전스 + 골든 → 롱. 손절은 이전 저점.",
     lower: "하락 다이버전스 + 데드 → 숏. 손절은 이전 고점.",
+    worksWith:
+      "스윙 구조, 거래량, RSI·MACD 다이버전스, 지지·저항. K/D 교차 확인이 붙은 신호가 더 낫습니다.",
     tip: "다이버전스만으로 진입하지 말고 K/D 교차·거래량으로 확인하세요.",
   },
   stoch_sr_bounce: {
@@ -33,6 +37,8 @@ export const STOCH_STRATEGY_HELP: Record<StochStrategyId, HelpContent> = {
     ...BREAK,
     higher: "지지 재접촉 + %K 20 상향 → 롱.",
     lower: "저항 재접촉 + %K 80 하향 → 숏.",
+    worksWith:
+      "지지·저항 레이어(필수에 가깝음), SMA/추세 방향, 거래량, 피보나치 겹침. 존이 깨지지 않았는지 먼저 보세요.",
     tip: "존이 이미 깨진(broken) 구간은 신호가 약합니다.",
   },
   stoch_triple_bottom: {
@@ -43,6 +49,8 @@ export const STOCH_STRATEGY_HELP: Record<StochStrategyId, HelpContent> = {
     ...BREAK,
     higher: "3중 바닥 + 골든 → 롱. 익절은 손익비 약 3:1 참고.",
     lower: "3중 천장 + 데드 → 숏.",
+    worksWith:
+      "SMA20·MACD 0선(하락 추세가 꺾였는지), 거래량, 가격 차트 이중·삼중 바닥. 강한 하락장 중의 가짜 바닥을 걸러 줍니다.",
     tip: "강한 하락 추세 중의 ‘가짜 3중 바닥’을 피하려면 이평·거래량과 함께 보세요.",
   },
 };

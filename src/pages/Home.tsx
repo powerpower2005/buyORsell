@@ -64,6 +64,7 @@ import {
 } from "@/lib/fibonacciStore";
 import { getAuxIndicatorVisibility } from "@/lib/auxIndicatorStore";
 import {
+  getTrendlineAlgoVersion,
   getTrendlineChartVisibility,
   getTrendlineLineColors,
   getTrendlineLineVisibility,
@@ -276,10 +277,19 @@ export function HomePage() {
   const freshness = quote ? checkFresh(quote, timeframe) : null;
   const isStale = freshness?.status === "stale";
 
+  const trendlineAlgo = useMemo(
+    () => getTrendlineAlgoVersion(),
+    [configTick],
+  );
+
   const evaluation = useMemo(
     () =>
-      quote ? evaluateQuote(quote.ohlcv, timeframe, indicatorConfig) : null,
-    [quote, timeframe, indicatorConfig],
+      quote
+        ? evaluateQuote(quote.ohlcv, timeframe, indicatorConfig, {
+            trendlineAlgo,
+          })
+        : null,
+    [quote, timeframe, indicatorConfig, trendlineAlgo],
   );
 
   const trendlineIdsKey = evaluation?.trendlines
@@ -535,6 +545,7 @@ export function HomePage() {
                     visibilityTick={chartVisTick}
                     configTick={configTick}
                     onVisibilityChange={() => setChartVisTick((n) => n + 1)}
+                    onConfigChange={() => setConfigTick((n) => n + 1)}
                     onEditIndicator={(section) => {
                       setIndicatorConfigSection(section);
                       setIndicatorConfigOpen(true);

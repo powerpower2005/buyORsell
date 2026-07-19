@@ -1,6 +1,26 @@
 import { INDICATOR_COLOR_OPTIONS } from "./indicatorColors";
+import type { TrendlineAlgoVersion } from "./evaluation/trendlines";
 
 export type TrendlineChartToggleId = "ascending" | "descending";
+export type { TrendlineAlgoVersion };
+
+export const TRENDLINE_ALGO_ORDER: TrendlineAlgoVersion[] = ["v1", "v2"];
+
+export const TRENDLINE_ALGO_META: Record<
+  TrendlineAlgoVersion,
+  { labelKo: string; description: string }
+> = {
+  v1: {
+    labelKo: "V1 기본",
+    description:
+      "고정 스윙 피봇 두 점을 이은 뒤 터치·스팬·이탈 여부로 점수화합니다. 반응이 빠르고 선이 많이 잡힙니다.",
+  },
+  v2: {
+    labelKo: "V2 품질",
+    description:
+      "다중 스케일 피봇, HL/LH 구조, 반등 품질·거래량·선 위/아래 유지율을 반영해 투자에 쓸 만한 선만 남깁니다.",
+  },
+};
 
 export const TRENDLINE_CHART_TOGGLE_ORDER: TrendlineChartToggleId[] = [
   "ascending",
@@ -39,6 +59,7 @@ const STORAGE_KEY = "gf:config:trendlines-chart";
 const LINE_STORAGE_KEY = "gf:config:trendlines-lines";
 const KIND_COLOR_KEY = "gf:config:trendlines-kind-colors";
 const LINE_COLOR_KEY = "gf:config:trendlines-line-colors";
+const ALGO_STORAGE_KEY = "gf:config:trendlines-algo";
 
 type Overrides = Partial<Record<TrendlineChartToggleId, boolean>>;
 type LineOverrides = Record<string, boolean>;
@@ -199,4 +220,19 @@ export function setTrendlineLineColor(lineId: string, color: string): void {
   const overrides = loadLineColors();
   overrides[lineId] = color;
   saveLineColors(overrides);
+}
+
+/** Default v1 — opt into v2 quality filter. */
+export function getTrendlineAlgoVersion(): TrendlineAlgoVersion {
+  try {
+    const raw = localStorage.getItem(ALGO_STORAGE_KEY);
+    if (raw === "v1" || raw === "v2") return raw;
+  } catch {
+    /* ignore */
+  }
+  return "v1";
+}
+
+export function setTrendlineAlgoVersion(version: TrendlineAlgoVersion): void {
+  localStorage.setItem(ALGO_STORAGE_KEY, version);
 }

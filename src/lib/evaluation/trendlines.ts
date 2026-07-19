@@ -34,7 +34,10 @@ export interface Trendline {
   summary: string;
 }
 
+export type TrendlineAlgoVersion = "v1" | "v2";
+
 export interface TrendlineResult {
+  version: TrendlineAlgoVersion;
   leftRight: number;
   atrPeriod: number;
   epsilonAtrMult: number;
@@ -258,6 +261,7 @@ export function detectTrendlines(
   const maxGap = options?.maxAnchorGapBars ?? DEFAULT_MAX_GAP;
 
   const empty: TrendlineResult = {
+    version: "v1",
     leftRight,
     atrPeriod,
     epsilonAtrMult,
@@ -329,6 +333,7 @@ export function detectTrendlines(
   }
 
   return {
+    version: "v1",
     leftRight,
     atrPeriod,
     epsilonAtrMult,

@@ -148,15 +148,20 @@ import {
   TRENDLINE_CHART_TOGGLE_META,
   TRENDLINE_CHART_TOGGLE_ORDER,
   TRENDLINE_COLOR_OPTIONS,
+  getTrendlineAlgoVersion,
   getTrendlineChartVisibility,
   getTrendlineKindColors,
   getTrendlineLineColors,
   getTrendlineLineVisibility,
+  setTrendlineAlgoVersion,
   setTrendlineChartVisible,
   setTrendlineKindColor,
   setTrendlineLineColor,
   setTrendlineLineVisible,
   setTrendlineLinesVisible,
+  TRENDLINE_ALGO_META,
+  TRENDLINE_ALGO_ORDER,
+  type TrendlineAlgoVersion,
   type TrendlineChartToggleId,
 } from "@/lib/trendlineStore";
 import {
@@ -214,6 +219,8 @@ interface Props {
   /** Also bump when indicator config (periods/colors) changes. */
   configTick?: number;
   onVisibilityChange: () => void;
+  /** Bump parent evaluation when algo/settings that affect compute change. */
+  onConfigChange?: () => void;
   /** Open indicator editor for a chart-layer group / leaf. */
   onEditIndicator?: (section: IndicatorConfigSectionId) => void;
   /** Current evaluation trendlines for per-line toggles. */
@@ -236,7 +243,8 @@ function trendlineLeafLabel(line: Trendline, index: number): string {
 }
 
 function trendlineLeafHint(line: Trendline): string {
-  return line.broken ? "이탈됨" : `${line.date1} → ${line.date2}`;
+  const base = line.broken ? "이탈됨" : `${line.date1} → ${line.date2}`;
+  return line.summary.includes("V2") ? `${base} · V2` : base;
 }
 
 /** Unified visibility control for every chart layer row. */
@@ -481,6 +489,7 @@ export function ChartSidebar({
   visibilityTick,
   configTick = 0,
   onVisibilityChange,
+  onConfigChange,
   onEditIndicator,
   trendlines,
   signalStats,
@@ -490,6 +499,7 @@ export function ChartSidebar({
   const [collapsed, setCollapsed] = useState(() => isChartSidebarCollapsed());
   const refreshTick = visibilityTick + configTick;
   const stats = signalStats ?? null;
+  const tlAlgo = useMemo(() => getTrendlineAlgoVersion(), [refreshTick]);
 
   const smaCfg = useMemo(() => getIndicatorConfig("sma"), [refreshTick]);
   const emaCfg = useMemo(() => getIndicatorConfig("ema"), [refreshTick]);
@@ -1048,6 +1058,38 @@ export function ChartSidebar({
             })
           }
         >
+          <div className="mb-1.5 px-1.5">
+            <p className="mb-1 text-[10px] font-medium text-text-tertiary">
+              알고리즘
+              {trendlines?.version ? ` · 현재 ${trendlines.version.toUpperCase()}` : ""}
+            </p>
+            <div className="flex gap-1">
+              {TRENDLINE_ALGO_ORDER.map((ver: TrendlineAlgoVersion) => {
+                const active = tlAlgo === ver;
+                return (
+                  <button
+                    key={ver}
+                    type="button"
+                    title={TRENDLINE_ALGO_META[ver].description}
+                    className={clsx(
+                      "flex-1 rounded-md border px-1.5 py-1 text-[10px] font-semibold transition-colors",
+                      active
+                        ? "border-accent/60 bg-accent/15 text-accent"
+                        : "border-border bg-bg text-text-tertiary hover:text-text-secondary",
+                    )}
+                    onClick={() => {
+                      if (tlAlgo === ver) return;
+                      setTrendlineAlgoVersion(ver);
+                      onVisibilityChange();
+                      onConfigChange?.();
+                    }}
+                  >
+                    {TRENDLINE_ALGO_META[ver].labelKo}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           {TRENDLINE_CHART_TOGGLE_ORDER.map((id: TrendlineChartToggleId) => {
             const lines =
               id === "ascending" ? ascendingLines : descendingLines;

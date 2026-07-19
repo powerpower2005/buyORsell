@@ -13,6 +13,8 @@ export interface HelpContent {
   higherLabel?: string;
   /** Override for the lower block heading (e.g. 실패 시). */
   lowerLabel?: string;
+  /** Indicators / layers that commonly raise confidence when combined. */
+  worksWith?: string;
   tip?: string;
 }
 
@@ -25,6 +27,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
       "가격이 SMA 위에 있으면 단기 상승 우위·지지 후보로 보는 경우가 많습니다. 단기 SMA가 장기 SMA 위로 올라가면 강세 전환 힌트(골든크로스)로 봅니다.",
     lower:
       "가격이 SMA 아래에 있으면 단기 하락 우위·저항 후보로 보는 경우가 많습니다. 단기 SMA가 장기 SMA 아래로 내려가면 약세 전환 힌트(데드크로스)로 봅니다.",
+    worksWith:
+      "스토캐·RSI 타점(이평 위 눌림 후 골든), MACD 0선 방향, 지지·저항·피보나치와 겹치면 신뢰↑. SMA20은 스토캐 ‘20이평 결합’ 전략의 추세 필터로 자주 씁니다.",
     tip: "기간이 짧을수록 가격을 빠르게 따라가고, 길수록 완만한 추세선이 됩니다.",
   },
   ema: {
@@ -35,6 +39,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
       "가격·단기 EMA가 장기 EMA 위에 있으면 상승 모멘텀이 우세하다고 보는 경우가 많습니다.",
     lower:
       "가격·단기 EMA가 장기 EMA 아래에 있으면 하락 모멘텀이 우세하다고 보는 경우가 많습니다.",
+    worksWith:
+      "MACD(EMA 기반)와 방향이 같으면 추세 확인에 유리합니다. RSI/스토캐 과열이 이평 방향과 어긋나면 진입을 미루는 식으로 씁니다.",
     tip: "단기·장기 EMA를 함께 두면 추세 전환을 빨리 포착하는 데 도움이 됩니다.",
   },
   rsi: {
@@ -49,6 +55,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
       "고정 70 이상 또는 유동 상단 근처는 매수세 과열 후보입니다. 상승장에서는 기준선 자체가 위로 올라가 과매수가 오래 유지될 수 있습니다.",
     lower:
       "고정 30 이하 또는 유동 하단 근처는 매도 과열·반등 후보입니다. 하락장에서는 기준선이 아래로 내려가 과매도가 길게 갈 수 있습니다.",
+    worksWith:
+      "MACD(과매도 탈출 후 골든 등 ‘MACD+RSI’ 전략), 볼린저 상·하단 터치, 지지·저항, 거래량. 추세 필터로 SMA/EMA·MACD 0선을 같이 보면 조기 진입을 줄입니다.",
     tip: "고정 70/30만 기계적으로 쓰면 추세장에서 실패가 잦습니다. 유동 밴드·다이버전스·사이드바의 RSI 전략을 함께 보세요.",
   },
   macd: {
@@ -63,6 +71,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
       "MACD가 상승하며 0선 위이면 상승 추세 우위로 봅니다. 시그널 상향 돌파(골든)·Hist 확대는 매수 모멘텀 힌트입니다.",
     lower:
       "MACD가 하락하며 0선 아래이면 하락 추세 우위로 봅니다. 시그널 하향 돌파(데드)·Hist 음수 확대는 매도 모멘텀 힌트입니다.",
+    worksWith:
+      "RSI·스토캐(과열·타점), 거래량(돌파·다이버전스 확인), 추세선·스윙 구조. 0선 방향과 RSI 과매도/과매수 탈출이 겹치면 신뢰가 올라가는 편입니다.",
     tip: "MACD는 후행성이 있어 Hist·다이버전스·사이드바 MACD 전략으로 시점을 보완합니다.",
   },
   stoch: {
@@ -77,6 +87,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
       "80 이상(또는 K·D 모두 90 근처)은 과매수·하락 반전 후보입니다. 다만 강한 상승장에서는 과매수가 오래갈 수 있습니다.",
     lower:
       "20 이하(또는 K·D 모두 10 근처)는 과매도·반등 후보입니다. 강한 하락장에서는 과매도가 길게 갈 수 있습니다.",
+    worksWith:
+      "SMA20(추세 필터·사이드바 ‘20이평 결합’), 지지·저항, 거래량, MACD 0선 방향. 과매도+지지+이평 위가 겹칠 때 반등 신뢰↑.",
     tip: "50선 위 유지는 상승 우위, 아래는 하락 우위로 봅니다. 단순 OB/OS보다 이평·다이버전스·사이드바 전략과 함께 쓰세요.",
   },
   bb: {
@@ -87,6 +99,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
       "밴드가 넓어지면 변동성 확대입니다. 가격이 상단 근처·밖이면 단기 과열 또는 상승 가속 후보로 봅니다.",
     lower:
       "밴드가 좁아지면(스퀴즈) 변동성 축소·확장 전조로 봅니다. 가격이 하단 근처·밖이면 단기 과매도 또는 하락 가속 후보로 봅니다.",
+    worksWith:
+      "RSI·스토캐(밴드 터치+과열 확인), %B 패널, ATR(변동성 확대 시 손절 폭), MACD(스퀴즈 후 방향).",
     tip: "가격이 밴드 밖을 벗어나면 추세 가속 또는 되돌림 후보로 함께 봅니다.",
   },
   mfi: {
@@ -97,6 +111,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
       "MFI가 높을수록(예: 80 이상) 자금이 유입되며 단기 과열·과매수 쪽으로 봅니다.",
     lower:
       "MFI가 낮을수록(예: 20 이하) 자금이 유출되며 단기 과매도 쪽으로 봅니다.",
+    worksWith:
+      "RSI(가격 모멘텀 vs 자금 흐름 비교), 거래량 패널, MACD 다이버전스. RSI와 MFI가 같은 방향이면 과열·과매도 신뢰↑.",
     tip: "가격은 오르는데 MFI가 내려가면(다이버전스) 상승 힘이 약해질 수 있습니다.",
   },
   atr: {
@@ -107,6 +123,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
       "ATR이 크면 변동성이 큽니다. 손절·목표를 더 넓게 잡아야 휩쓸릴 위험이 줄어듭니다.",
     lower:
       "ATR이 작으면 변동성이 작아 조용한 구간입니다. 스퀴즈 이후 변동성 확대를 대비하기도 합니다.",
+    worksWith:
+      "볼린저 스퀴즈·돌파, 추세선·패턴 목표가, 스토캐/MACD 진입 후 손절·익절 거리 설정. 방향 신호와 짝을 이룹니다.",
     tip: "ATR은 방향(상승/하락)이 아니라 ‘크기’만 봅니다.",
   },
   ichimoku: {
@@ -121,6 +139,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
       "종가>전환선>기준선, 구름이 양운이고 가격이 구름 위면 상승 우위입니다. 전환선이 기준선을 상향 돌파(호전)하면 상승 전환 후보입니다.",
     lower:
       "종가<전환선<기준선, 구름이 음운이고 가격이 구름 아래면 하락 우위입니다. 전환선이 기준선을 하향 돌파(역전)하면 하락 전환 후보입니다.",
+    worksWith:
+      "거래량·추세선(구름 돌파 확인), RSI/스토캐(구름 위 눌림 타점), 지지·저항과 구름 가장자리 겹침. 호전+구름 위+거래량이면 신뢰↑.",
     tip: "기준선 방향이 핵심입니다. 기준선이 횡보할 때는 교차·돌파 신호를 보수적으로 보세요. 후행스팬·구름이 신뢰도가 높은 편입니다.",
   },
 };
