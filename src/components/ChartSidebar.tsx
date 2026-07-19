@@ -497,11 +497,16 @@ export function ChartSidebar({
   return (
     <aside
       className={clsx(
-        "w-full shrink-0 rounded-xl border border-border bg-surface text-left lg:sticky lg:top-4 lg:w-64",
+        // Match chart column height on desktop (parent uses items-stretch);
+        // scroll only the layer list so header stays pinned.
+        "flex w-full shrink-0 flex-col rounded-xl border border-border bg-surface text-left",
+        // Mobile: capped height. Desktop: stretch to the chart column height.
+        "max-h-[min(70vh,640px)] lg:h-full lg:max-h-none lg:min-h-0 lg:self-stretch",
+        "lg:sticky lg:top-4 lg:w-64",
         className,
       )}
     >
-      <div className="border-b border-border px-3 py-2.5">
+      <div className="shrink-0 border-b border-border px-3 py-2.5">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="text-xs font-semibold text-text-primary">차트 레이어</p>
@@ -520,7 +525,7 @@ export function ChartSidebar({
         </div>
       </div>
 
-      <div className="max-h-[min(70vh,640px)] overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto">
         <Group
           title="이동평균"
           open={open.ma}

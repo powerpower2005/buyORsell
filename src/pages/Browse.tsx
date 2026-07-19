@@ -432,7 +432,7 @@ export function BrowsePage() {
                   )}
                   <p className="text-xs text-text-tertiary">{statusDetail}</p>
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
-                    <div className="min-w-0 w-full flex-1">
+                    <div className="min-w-0 w-full flex-1 lg:min-h-0">
                       <CandleChart
                         bars={evaluation!.bars}
                         timeframe={selected.timeframe as Timeframe}

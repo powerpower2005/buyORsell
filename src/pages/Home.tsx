@@ -444,7 +444,7 @@ export function HomePage() {
               <p className="text-left text-xs text-text-tertiary">{statusDetail}</p>
               <div id="export-root" className="space-y-6">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
-                  <div className="min-w-0 w-full flex-1">
+                  <div className="min-w-0 w-full flex-1 lg:min-h-0">
                     <CandleChart
                       bars={evaluation!.bars}
                       timeframe={timeframe}
