@@ -38,6 +38,10 @@ import {
   detectChartPatterns,
   type ChartPatternResult,
 } from "./chartPatterns";
+import {
+  detectPatternStrategies,
+  type PatternStrategyResult,
+} from "./patternStrategies";
 
 export interface QuoteEvaluation {
   indicators: IndicatorResults;
@@ -50,6 +54,7 @@ export interface QuoteEvaluation {
   trendlines: TrendlineResult | null;
   bbStrategies: BbStrategyResult | null;
   classicalPatterns: ChartPatternResult | null;
+  patternStrategies: PatternStrategyResult | null;
   warnings: string[];
   fatalError: string | null;
   /** Bars actually used after lookback / maxBars / cadence cleanup. */
@@ -115,6 +120,7 @@ export function evaluateQuote(
       trendlines: null,
       bbStrategies: null,
       classicalPatterns: null,
+      patternStrategies: null,
       warnings,
       fatalError: "No OHLCV bars available",
       bars: [],
@@ -206,6 +212,16 @@ export function evaluateQuote(
     }
   }
 
+  let patternStrategies: PatternStrategyResult | null = null;
+  if (!fatalError) {
+    try {
+      patternStrategies = detectPatternStrategies(prepared, classicalPatterns);
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
   return {
     indicators,
     score,
@@ -217,6 +233,7 @@ export function evaluateQuote(
     trendlines,
     bbStrategies,
     classicalPatterns,
+    patternStrategies,
     warnings,
     fatalError,
     bars: prepared,

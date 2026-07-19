@@ -50,6 +50,7 @@ import {
 } from "@/lib/indicatorOverlayStore";
 import { getBbStrategyVisibility } from "@/lib/bbStrategyStore";
 import { getClassicalChartPatternVisibility } from "@/lib/chartPatternStore";
+import { getPatternStrategyVisibility } from "@/lib/patternStrategyStore";
 import {
   getFibExtraVisibility,
   getFibLevelVisibility,
@@ -218,6 +219,10 @@ export function HomePage() {
   );
   const chartClassicalPatternVisibility = useMemo(
     () => getClassicalChartPatternVisibility(),
+    [chartVisTick],
+  );
+  const chartPatternStrategyVisibility = useMemo(
+    () => getPatternStrategyVisibility(),
     [chartVisTick],
   );
   const showVolume = useMemo(
@@ -472,6 +477,12 @@ export function HomePage() {
                       }
                       chartClassicalPatternVisibility={
                         chartClassicalPatternVisibility
+                      }
+                      patternStrategies={
+                        evaluation!.patternStrategies ?? undefined
+                      }
+                      chartPatternStrategyVisibility={
+                        chartPatternStrategyVisibility
                       }
                       showVolume={showVolume}
                       fibDrawMode={fibDrawMode}

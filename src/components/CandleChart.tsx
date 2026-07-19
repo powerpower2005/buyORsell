@@ -47,7 +47,13 @@ import {
   visibleClassicalPatternInstances,
   visibleClassicalPatternLegend,
 } from "@/lib/chart/classicalPatternMarkers";
+import {
+  patternStrategiesToChartMarkers,
+  visiblePatternStrategyLegend,
+} from "@/lib/chart/patternStrategyMarkers";
 import { patternAccentColor } from "@/lib/candlePatternMeta";
+import type { PatternStrategyResult } from "@/lib/evaluation/patternStrategies";
+import type { PatternStrategyId } from "@/lib/patternStrategyMeta";
 import {
   buildOscPaneSpecs,
   fmtVolume,
@@ -160,6 +166,8 @@ interface Props {
   chartBbStrategyVisibility?: Record<BbStrategyId, boolean>;
   classicalPatterns?: ChartPatternResult;
   chartClassicalPatternVisibility?: Record<ChartPatternId, boolean>;
+  patternStrategies?: PatternStrategyResult;
+  chartPatternStrategyVisibility?: Record<PatternStrategyId, boolean>;
   showVolume?: boolean;
   height?: number;
   fibDrawMode?: boolean;
@@ -212,6 +220,8 @@ export function CandleChart({
   chartBbStrategyVisibility,
   classicalPatterns,
   chartClassicalPatternVisibility,
+  patternStrategies,
+  chartPatternStrategyVisibility,
   showVolume = false,
   height: heightProp,
   fibDrawMode,
@@ -326,13 +336,22 @@ export function CandleChart({
       chartClassicalPatternVisibility ??
         ({} as Record<ChartPatternId, boolean>),
     );
-    return [...patternMs, ...structureMs, ...bbStratMs, ...classicalMs].sort(
-      (a, b) => {
-        const byDate = String(a.time).localeCompare(String(b.time));
-        if (byDate !== 0) return byDate;
-        return String(a.id).localeCompare(String(b.id));
-      },
+    const patternStratMs = patternStrategiesToChartMarkers(
+      patternStrategies,
+      chartPatternStrategyVisibility ??
+        ({} as Record<PatternStrategyId, boolean>),
     );
+    return [
+      ...patternMs,
+      ...structureMs,
+      ...bbStratMs,
+      ...classicalMs,
+      ...patternStratMs,
+    ].sort((a, b) => {
+      const byDate = String(a.time).localeCompare(String(b.time));
+      if (byDate !== 0) return byDate;
+      return String(a.id).localeCompare(String(b.id));
+    });
   }, [
     patterns,
     chartPatternVisibility,
@@ -342,6 +361,8 @@ export function CandleChart({
     chartBbStrategyVisibility,
     classicalPatterns,
     chartClassicalPatternVisibility,
+    patternStrategies,
+    chartPatternStrategyVisibility,
   ]);
 
   const barHighlights = useMemo(
@@ -420,6 +441,27 @@ export function CandleChart({
         : [],
     [chartClassicalPatternVisibility],
   );
+  const patternStrategyLegend = useMemo(
+    () =>
+      chartPatternStrategyVisibility
+        ? visiblePatternStrategyLegend(chartPatternStrategyVisibility)
+        : [],
+    [chartPatternStrategyVisibility],
+  );
+  const patternStrategyHitLegend = useMemo(() => {
+    if (!patternStrategies?.recent.length || !chartPatternStrategyVisibility)
+      return [];
+    return patternStrategies.recent
+      .filter((hit) => chartPatternStrategyVisibility[hit.id])
+      .slice(-8)
+      .reverse()
+      .map((hit) => ({
+        key: `${hit.id}-${hit.instanceKey}-${hit.barIndex}`,
+        text: hit.label,
+        detail: `${hit.date} · ${hit.summary}`,
+        color: patternAccentColor(hit.direction),
+      }));
+  }, [patternStrategies, chartPatternStrategyVisibility]);
   const visibleClassicalInstances = useMemo(
     () =>
       visibleClassicalPatternInstances(
@@ -1806,6 +1848,42 @@ export function CandleChart({
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
                 <span>차트 패턴:</span>
                 {classicalPatternLegend.map((item) => (
+                  <span
+                    key={`${item.text}-${item.label}`}
+                    className="text-text-tertiary"
+                  >
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            )
+          )}
+
+          {patternStrategyHitLegend.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>패턴 전략:</span>
+              {patternStrategyHitLegend.map((item) => (
+                <span key={item.key} className="flex items-center gap-1.5">
+                  <span
+                    className="font-mono text-[10px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.text}
+                  </span>
+                  <span
+                    className="tabular-nums text-[11px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.detail}
+                  </span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            patternStrategyLegend.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span>패턴 전략:</span>
+                {patternStrategyLegend.map((item) => (
                   <span
                     key={`${item.text}-${item.label}`}
                     className="text-text-tertiary"

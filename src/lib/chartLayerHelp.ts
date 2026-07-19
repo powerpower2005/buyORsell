@@ -9,6 +9,7 @@ import {
   CHART_PATTERN_META,
   type ChartPatternId,
 } from "./chartPatternMeta";
+import { CHART_PATTERN_HELP } from "./chartPatternHelpDetail";
 import type { CandlePatternId } from "./evaluation/candlePatterns";
 import type { FibExtraId, FibLevelRatio } from "./fibonacciStore";
 import type { HelpContent } from "./indicatorHelp";
@@ -121,14 +122,28 @@ export const CHART_LAYER_HELP = {
   classicalPatterns: {
     title: "차트 패턴",
     summary:
-      "헤드앤숄더, 삼각수렴 등 고전적 가격 패턴을 탐지해 차트에 표시합니다. 롱·숏·양방향으로 구분해 둡니다.",
+      "쌍바닥·쐐기·삼각형·깃발 등 고전적 가격 ‘모양’을 탐지합니다. 아래 전략과 분리되어 있습니다.",
+    howToFind:
+      "스윙 고·저점으로 형태를 찾고, 목선·채널·저항 종가 돌파 시 ‘완성’으로 표시됩니다. 각 항목 ?의 ‘찾는 법’을 참고하세요.",
     higherLabel: "돌파 시",
     lowerLabel: "실패 시",
     higher:
       "목선·저항을 돌파하면 패턴 방향(롱/숏) 신호가 확인된 것으로 보는 경우가 많습니다.",
     lower:
       "돌파에 실패하거나 패턴 구조를 깨면 신호가 무효·반대로 해석되는 경우가 많습니다.",
-    tip: "패턴 완성·돌파 여부와 거래량을 함께 보면 허위 신호를 줄이는 데 도움이 됩니다.",
+    tip: "모양(패턴)과 진입 규칙(전략)을 나눠 켜면 차트 읽기가 쉬워집니다.",
+  },
+  patternStrategies: {
+    title: "차트 패턴 전략",
+    summary:
+      "탐지된 패턴 위에 얹는 매매 규칙입니다. 돌파 즉시 / 리테스트 / 거래량 확인 진입을 나눠 표시합니다.",
+    howToFind:
+      "패턴이 완성된 뒤, 선택한 전략 조건(돌파 봉·리테스트 확인 봉·거래량 배수)을 만족하는 봉에 마커가 생깁니다.",
+    higherLabel: "돌파 시",
+    lowerLabel: "실패 시",
+    higher: "전략 조건이 충족되면 해당 방향 진입 후보로 표시합니다.",
+    lower: "리테스트 실패·거래량 미달은 해당 전략 마커가 나오지 않거나 무효로 봅니다.",
+    tip: "패턴 토글과 독립입니다. 모양은 켜고 진입 규칙만 골라 볼 수 있습니다.",
   },
   candlePatterns: {
     title: "캔들 패턴",
@@ -329,43 +344,14 @@ const PATTERN_OUTCOME_LABELS = {
 } as const;
 
 export function classicalPatternHelp(id: ChartPatternId): HelpContent {
+  const detailed = CHART_PATTERN_HELP[id];
+  if (detailed) return detailed;
+
   const meta = CHART_PATTERN_META[id];
-  const isReversal = meta.category === "reversal";
-  const biasLabel =
-    meta.typicalDirection === "bullish"
-      ? "롱"
-      : meta.typicalDirection === "bearish"
-        ? "숏"
-        : "양방향";
-
-  let higher: string;
-  let lower: string;
-  if (meta.typicalDirection === "bullish") {
-    higher =
-      "목선·저항을 상향 돌파하면 롱 신호가 확인된 것으로 보는 경우가 많습니다.";
-    lower =
-      "돌파에 실패하거나 패턴 저점·지지가 깨지면 롱 신호가 무효화될 수 있습니다.";
-  } else if (meta.typicalDirection === "bearish") {
-    higher =
-      "목선·지지를 하향 돌파하면 숏 신호가 확인된 것으로 보는 경우가 많습니다.";
-    lower =
-      "하향 돌파에 실패하거나 패턴 고점·저항을 다시 돌파하면 숏 신호가 무효화될 수 있습니다.";
-  } else {
-    higher =
-      "깃대·목선 방향으로 돌파되면 그 방향(롱/숏) 신호가 확인된 것으로 봅니다.";
-    lower =
-      "돌파에 실패하거나 반대 방향으로 깨지면 패턴 해석을 보류·무효로 봅니다.";
-  }
-
   return {
-    title: `${meta.labelKo} (${biasLabel})`,
+    title: meta.labelKo,
     summary: meta.description,
     ...PATTERN_OUTCOME_LABELS,
-    higher,
-    lower,
-    tip: isReversal
-      ? "반전 패턴은 추세 끝에서 더 의미가 큽니다. 목선 돌파와 거래량을 함께 보세요."
-      : "지속 패턴은 기존 추세 방향 돌파가 확인될 때 더 의미가 큽니다.",
   };
 }
 

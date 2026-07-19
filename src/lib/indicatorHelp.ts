@@ -3,6 +3,8 @@
 export interface HelpContent {
   title: string;
   summary: string;
+  /** How to identify / scan for this item on the chart. */
+  howToFind?: string;
   /** Primary outcome block (default label: 값이 높아지면). */
   higher?: string;
   /** Secondary outcome block (default label: 값이 낮아지면). */

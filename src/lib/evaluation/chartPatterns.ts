@@ -155,6 +155,7 @@ function detectDoubleBottom(
 
       const scanTo = Math.min(bars.length - 1, b.idx + 25);
       const entry = crossedAbove(bars, b.idx + 1, scanTo, () => neck.price);
+      // Measured move: neckline − trough height projected above neckline.
       const target = neck.price + depth;
       const confirmed = entry != null;
       out.push({
@@ -179,12 +180,76 @@ function detectDoubleBottom(
           ),
         ],
         entryBar: entry,
-        stopPrice: Math.min(a.price, b.price),
+        // Curriculum: stop below the second trough.
+        stopPrice: b.price,
         targetPrice: target,
         score: confirmed ? 78 : 55,
         summary: confirmed
-          ? `쌍바닥 목선 돌파 · 목표 ${target.toFixed(2)}`
+          ? `쌍바닥 목선 돌파 · 목표 ${target.toFixed(2)} · 손절 ${b.price.toFixed(2)}`
           : "쌍바닥 형성 중 (목선 대기)",
+      });
+    }
+  }
+  return out;
+}
+
+function detectDoubleTop(
+  bars: OHLCVBar[],
+  lows: Pivot[],
+  highs: Pivot[],
+  atr: Array<number | null>,
+): ChartPatternInstance[] {
+  const out: ChartPatternInstance[] = [];
+  for (let i = 0; i < highs.length - 1; i++) {
+    for (let j = i + 1; j < highs.length; j++) {
+      const a = highs[i];
+      const b = highs[j];
+      if (b.idx - a.idx < 8 || b.idx - a.idx > 60) continue;
+      const tol = atrAt(atr, b.idx, a.price * 0.01) * 0.55;
+      if (!nearEqual(a.price, b.price, tol)) continue;
+      // Second peak should not meaningfully exceed the first.
+      if (b.price > a.price + tol * 0.25) continue;
+
+      const midLows = lows.filter((l) => l.idx > a.idx && l.idx < b.idx);
+      if (!midLows.length) continue;
+      const neck = midLows.reduce((best, l) =>
+        l.price < best.price ? l : best,
+      );
+      const height = Math.max(a.price, b.price) - neck.price;
+      if (height < tol * 1.2) continue;
+
+      const scanTo = Math.min(bars.length - 1, b.idx + 25);
+      const entry = crossedBelow(bars, b.idx + 1, scanTo, () => neck.price);
+      const target = neck.price - height;
+      const confirmed = entry != null;
+      out.push({
+        key: `double_top-${a.idx}-${b.idx}`,
+        id: "double_top",
+        direction: "bearish",
+        status: confirmed ? "confirmed" : "forming",
+        startBar: a.idx,
+        endBar: entry ?? b.idx,
+        pivots: [pt(a, "high1"), pt(neck, "neck"), pt(b, "high2")],
+        segments: [
+          seg(a, neck, "outline"),
+          seg(neck, b, "outline"),
+          seg(
+            { idx: neck.idx, date: neck.date, price: neck.price },
+            {
+              idx: entry ?? scanTo,
+              date: bars[entry ?? scanTo].date,
+              price: neck.price,
+            },
+            "neckline",
+          ),
+        ],
+        entryBar: entry,
+        stopPrice: Math.max(a.price, b.price),
+        targetPrice: target,
+        score: confirmed ? 78 : 55,
+        summary: confirmed
+          ? `쌍봉 목선 이탈 · 목표 ${target.toFixed(2)} · 손절 ${Math.max(a.price, b.price).toFixed(2)}`
+          : "쌍봉 형성 중 (목선 대기)",
       });
     }
   }
@@ -228,7 +293,8 @@ function detectCupAndHandle(
       if (!handleLows.length) continue;
       const handleLow = handleLows[0];
       const handleDepth = rightRim.price - handleLow.price;
-      if (handleDepth <= 0 || handleDepth > cupDepth * 0.5) continue;
+      // Curriculum: handle deeper than ~1/3 of cup raises failure odds.
+      if (handleDepth <= 0 || handleDepth > cupDepth / 3) continue;
 
       const breakLevel = rightRim.price;
       const scanTo = Math.min(bars.length - 1, handleLow.idx + 20);
@@ -344,7 +410,7 @@ function detectHeadAndShoulders(
         ),
       ],
       entryBar: entry,
-      stopPrice: rs.price,
+      stopPrice: Math.max(ls.price, rs.price, head.price),
       targetPrice: target,
       score: entry != null ? 80 : 58,
       summary:
@@ -409,7 +475,8 @@ function detectHeadAndShoulders(
         ),
       ],
       entryBar: entry,
-      stopPrice: rs.price,
+      // Curriculum: stop below the head (deepest trough).
+      stopPrice: head.price,
       targetPrice: target,
       score: entry != null ? 80 : 58,
       summary:
@@ -883,6 +950,144 @@ function detectPennant(
   return out;
 }
 
+/** Parallel-channel continuation after a pole (distinct from converging pennant). */
+function detectFlag(
+  bars: OHLCVBar[],
+  lows: Pivot[],
+  highs: Pivot[],
+  atr: Array<number | null>,
+): ChartPatternInstance[] {
+  const out: ChartPatternInstance[] = [];
+  const anchors = [...highs, ...lows]
+    .map((p) => p.idx)
+    .filter((idx, n, arr) => arr.indexOf(idx) === n)
+    .sort((a, b) => a - b);
+
+  for (const i of anchors) {
+    if (i < 8 || i >= bars.length - 10) continue;
+    const atrI = atrAt(atr, i, bars[i].close * 0.01);
+    for (const len of [5, 8, 12]) {
+      const start = i - len;
+      if (start < 1) continue;
+      const move = bars[i].close - bars[start].close;
+      const poleBull = move > atrI * 2.2;
+      const poleBear = move < -atrI * 2.2;
+      if (!poleBull && !poleBear) continue;
+
+      const hs = highs.filter((h) => h.idx > i && h.idx <= i + 22).slice(0, 3);
+      const ls = lows.filter((l) => l.idx > i && l.idx <= i + 22).slice(0, 3);
+      if (hs.length < 2 || ls.length < 2) continue;
+      const highFit = fitSlope(hs.map((p) => ({ idx: p.idx, price: p.price })));
+      const lowFit = fitSlope(ls.map((p) => ({ idx: p.idx, price: p.price })));
+      if (!highFit || !lowFit) continue;
+
+      // Parallel channel (not converging triangle).
+      const slopeDiff = Math.abs(highFit.slope - lowFit.slope);
+      if (slopeDiff > atrI * 0.08) continue;
+
+      const endIdx = Math.max(hs.at(-1)!.idx, ls.at(-1)!.idx);
+      const w0 =
+        priceOnFit(highFit, hs[0].idx) - priceOnFit(lowFit, ls[0].idx);
+      const w1 = priceOnFit(highFit, endIdx) - priceOnFit(lowFit, endIdx);
+      if (!(w0 > atrI * 0.5 && w1 > w0 * 0.55 && w1 < w0 * 1.35)) continue;
+
+      const poleH = Math.abs(move);
+      // Flag depth typically within ~1/2 of pole.
+      if (w0 > poleH * 0.55) continue;
+
+      const scanTo = Math.min(bars.length - 1, endIdx + 15);
+      if (poleBull) {
+        // Bull flag: mild downward/flat channel after rally.
+        if (!(highFit.slope <= atrI * 0.02 && lowFit.slope <= atrI * 0.02))
+          continue;
+        const levelAt = (idx: number) => priceOnFit(highFit, idx);
+        const entry = crossedAbove(bars, endIdx + 1, scanTo, levelAt);
+        const target =
+          (entry != null ? bars[entry].close : bars[endIdx].close) + poleH;
+        out.push({
+          key: `flag-bull-${start}-${endIdx}`,
+          id: "flag",
+          direction: "bullish",
+          status: entry != null ? "confirmed" : "forming",
+          startBar: start,
+          endBar: entry ?? endIdx,
+          pivots: [
+            {
+              barIndex: start,
+              date: bars[start].date,
+              price: bars[start].close,
+              role: "pole",
+            },
+            ...hs.map((h, n) => pt(h, `h${n + 1}`)),
+            ...ls.map((l, n) => pt(l, `l${n + 1}`)),
+          ],
+          segments: [
+            seg(
+              { idx: start, date: bars[start].date, price: bars[start].close },
+              { idx: i, date: bars[i].date, price: bars[i].close },
+              "outline",
+            ),
+            seg(hs[0], hs.at(-1)!, "resistance"),
+            seg(ls[0], ls.at(-1)!, "support"),
+          ],
+          entryBar: entry,
+          stopPrice: ls.at(-1)!.price,
+          targetPrice: target,
+          score: entry != null ? 72 : 50,
+          summary:
+            entry != null
+              ? `상승 깃발 돌파 · 목표 ${target.toFixed(2)}`
+              : "상승 깃발 형성 중",
+        });
+      } else {
+        // Bear flag: mild upward/flat channel after selloff.
+        if (!(highFit.slope >= -atrI * 0.02 && lowFit.slope >= -atrI * 0.02))
+          continue;
+        const levelAt = (idx: number) => priceOnFit(lowFit, idx);
+        const entry = crossedBelow(bars, endIdx + 1, scanTo, levelAt);
+        const target =
+          (entry != null ? bars[entry].close : bars[endIdx].close) - poleH;
+        out.push({
+          key: `flag-bear-${start}-${endIdx}`,
+          id: "flag",
+          direction: "bearish",
+          status: entry != null ? "confirmed" : "forming",
+          startBar: start,
+          endBar: entry ?? endIdx,
+          pivots: [
+            {
+              barIndex: start,
+              date: bars[start].date,
+              price: bars[start].close,
+              role: "pole",
+            },
+            ...hs.map((h, n) => pt(h, `h${n + 1}`)),
+            ...ls.map((l, n) => pt(l, `l${n + 1}`)),
+          ],
+          segments: [
+            seg(
+              { idx: start, date: bars[start].date, price: bars[start].close },
+              { idx: i, date: bars[i].date, price: bars[i].close },
+              "outline",
+            ),
+            seg(hs[0], hs.at(-1)!, "resistance"),
+            seg(ls[0], ls.at(-1)!, "support"),
+          ],
+          entryBar: entry,
+          stopPrice: hs.at(-1)!.price,
+          targetPrice: target,
+          score: entry != null ? 72 : 50,
+          summary:
+            entry != null
+              ? `하락 깃발 이탈 · 목표 ${target.toFixed(2)}`
+              : "하락 깃발 형성 중",
+        });
+      }
+    }
+  }
+  return out;
+}
+
 function dedupeInstances(instances: ChartPatternInstance[]): ChartPatternInstance[] {
   const byId = new Map<ChartPatternId, ChartPatternInstance[]>();
   const sorted = [...instances].sort((a, b) => b.score - a.score || b.endBar - a.endBar);
@@ -925,6 +1130,7 @@ export function detectChartPatterns(
 
   const raw = [
     ...detectDoubleBottom(bars, lows, highs, atr),
+    ...detectDoubleTop(bars, lows, highs, atr),
     ...detectCupAndHandle(bars, lows, highs, atr),
     ...detectHeadAndShoulders(bars, lows, highs, atr),
     ...detectTripleTop(bars, lows, highs, atr),
@@ -934,6 +1140,7 @@ export function detectChartPatterns(
     ...detectTriangles(bars, lows, highs, atr, "ascending_triangle"),
     ...detectTriangles(bars, lows, highs, atr, "descending_triangle"),
     ...detectPennant(bars, lows, highs, atr),
+    ...detectFlag(bars, lows, highs, atr),
   ].filter((inst) => inst.endBar >= start);
 
   const instances = dedupeInstances(raw);

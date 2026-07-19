@@ -16,6 +16,17 @@ import {
   swingHelp,
   trendlineKindHelp,
 } from "@/lib/chartLayerHelp";
+import { patternStrategyHelp } from "@/lib/patternStrategyHelp";
+import {
+  PATTERN_STRATEGY_META,
+  PATTERN_STRATEGY_ORDER,
+  type PatternStrategyId,
+} from "@/lib/patternStrategyMeta";
+import {
+  getPatternStrategyVisibility,
+  setPatternStrategyGroupVisible,
+  setPatternStrategyVisible,
+} from "@/lib/patternStrategyStore";
 import type { HelpContent } from "@/lib/indicatorHelp";
 import { INDICATOR_HELP } from "@/lib/indicatorHelp";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
@@ -393,6 +404,10 @@ export function ChartSidebar({
     () => getClassicalChartPatternVisibility(),
     [refreshTick],
   );
+  const patternStratVis = useMemo(
+    () => getPatternStrategyVisibility(),
+    [refreshTick],
+  );
   const swingVis = useMemo(() => getSwingChartVisibility(), [refreshTick]);
   const srVis = useMemo(() => getSrChartVisibility(), [refreshTick]);
   const volumeVis = useMemo(() => isVolumeOverlayVisible(), [refreshTick]);
@@ -483,6 +498,13 @@ export function ChartSidebar({
   const classicalPatternState = groupState(
     CHART_PATTERN_ORDER.map((id) => classicalPatternVis[id]),
   );
+  const patternStratState = groupState(
+    PATTERN_STRATEGY_ORDER.map((id) => patternStratVis[id]),
+  );
+  const classicalRootState = groupState([
+    ...CHART_PATTERN_ORDER.map((id) => classicalPatternVis[id]),
+    ...PATTERN_STRATEGY_ORDER.map((id) => patternStratVis[id]),
+  ]);
   const fibLevelState = groupState(
     FIB_RETRACEMENT_LEVELS.map((r) => fibVis[r]),
   );
@@ -1045,57 +1067,96 @@ export function ChartSidebar({
           title="차트 패턴"
           open={open.classicalPatterns}
           onToggleOpen={() => toggleOpen("classicalPatterns")}
-          checked={classicalPatternState.checked}
-          indeterminate={classicalPatternState.indeterminate}
+          checked={classicalRootState.checked}
+          indeterminate={classicalRootState.indeterminate}
           help={CHART_LAYER_HELP.classicalPatterns}
           onToggleAll={(next) =>
-            bump(() => setClassicalChartPatternGroupVisible(next))
+            bump(() => {
+              setClassicalChartPatternGroupVisible(next);
+              setPatternStrategyGroupVisible(next);
+            })
           }
         >
-          {CHART_PATTERN_BIAS_ORDER.map((bias) => {
-            const ids = chartPatternsByBias(bias);
-            if (!ids.length) return null;
-            const openKey =
-              bias === "bullish"
-                ? "classicalLong"
-                : bias === "bearish"
-                  ? "classicalShort"
-                  : "classicalBoth";
-            const state = groupState(
-              ids.map((id) => classicalPatternVis[id]),
-            );
-            return (
-              <Group
-                key={bias}
-                title={PATTERN_BIAS_META[bias].labelKo}
-                open={open[openKey]}
-                onToggleOpen={() => toggleOpen(openKey)}
-                checked={state.checked}
-                indeterminate={state.indeterminate}
-                onToggleAll={(next) =>
-                  bump(() => {
-                    for (const id of ids) {
-                      setClassicalChartPatternVisible(id, next);
-                    }
-                  })
+          <Group
+            title="패턴"
+            open={open.classicalPatternShapes}
+            onToggleOpen={() => toggleOpen("classicalPatternShapes")}
+            checked={classicalPatternState.checked}
+            indeterminate={classicalPatternState.indeterminate}
+            help={CHART_LAYER_HELP.classicalPatterns}
+            onToggleAll={(next) =>
+              bump(() => setClassicalChartPatternGroupVisible(next))
+            }
+          >
+            {CHART_PATTERN_BIAS_ORDER.map((bias) => {
+              const ids = chartPatternsByBias(bias);
+              if (!ids.length) return null;
+              const openKey =
+                bias === "bullish"
+                  ? "classicalLong"
+                  : bias === "bearish"
+                    ? "classicalShort"
+                    : "classicalBoth";
+              const state = groupState(
+                ids.map((id) => classicalPatternVis[id]),
+              );
+              return (
+                <Group
+                  key={bias}
+                  title={PATTERN_BIAS_META[bias].labelKo}
+                  open={open[openKey]}
+                  onToggleOpen={() => toggleOpen(openKey)}
+                  checked={state.checked}
+                  indeterminate={state.indeterminate}
+                  onToggleAll={(next) =>
+                    bump(() => {
+                      for (const id of ids) {
+                        setClassicalChartPatternVisible(id, next);
+                      }
+                    })
+                  }
+                >
+                  {ids.map((id: ChartPatternId) => (
+                    <Leaf
+                      key={id}
+                      label={CHART_PATTERN_META[id].labelKo}
+                      color={CHART_PATTERN_META[id].color}
+                      bias={bias}
+                      checked={classicalPatternVis[id]}
+                      help={classicalPatternHelp(id)}
+                      onChange={(next) =>
+                        bump(() => setClassicalChartPatternVisible(id, next))
+                      }
+                    />
+                  ))}
+                </Group>
+              );
+            })}
+          </Group>
+
+          <Group
+            title="전략"
+            open={open.classicalPatternStrategies}
+            onToggleOpen={() => toggleOpen("classicalPatternStrategies")}
+            checked={patternStratState.checked}
+            indeterminate={patternStratState.indeterminate}
+            help={CHART_LAYER_HELP.patternStrategies}
+            onToggleAll={(next) =>
+              bump(() => setPatternStrategyGroupVisible(next))
+            }
+          >
+            {PATTERN_STRATEGY_ORDER.map((id: PatternStrategyId) => (
+              <Leaf
+                key={id}
+                label={PATTERN_STRATEGY_META[id].labelKo}
+                checked={patternStratVis[id]}
+                help={patternStrategyHelp(id)}
+                onChange={(next) =>
+                  bump(() => setPatternStrategyVisible(id, next))
                 }
-              >
-                {ids.map((id: ChartPatternId) => (
-                  <Leaf
-                    key={id}
-                    label={CHART_PATTERN_META[id].labelKo}
-                    color={CHART_PATTERN_META[id].color}
-                    bias={bias}
-                    checked={classicalPatternVis[id]}
-                    help={classicalPatternHelp(id)}
-                    onChange={(next) =>
-                      bump(() => setClassicalChartPatternVisible(id, next))
-                    }
-                  />
-                ))}
-              </Group>
-            );
-          })}
+              />
+            ))}
+          </Group>
         </Group>
 
         <Group
