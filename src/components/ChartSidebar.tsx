@@ -1,8 +1,23 @@
 import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { ColorSwatchPicker } from "@/components/ColorSwatchPicker";
+import { HelpTip } from "@/components/HelpTip";
 import { getIndicatorConfig } from "@/lib/configStore";
 import type { IndicatorConfigSectionId } from "@/components/IndicatorConfigForm";
+import {
+  auxHelp,
+  bbStrategyHelp,
+  candlePatternHelp,
+  CHART_LAYER_HELP,
+  classicalPatternHelp,
+  fibExtraHelp,
+  fibLevelHelp,
+  srHelp,
+  swingHelp,
+  trendlineKindHelp,
+} from "@/lib/chartLayerHelp";
+import type { HelpContent } from "@/lib/indicatorHelp";
+import { INDICATOR_HELP } from "@/lib/indicatorHelp";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 import {
   BB_BAND_META,
@@ -188,6 +203,7 @@ function Group({
   children,
   colorDot,
   onEdit,
+  help,
 }: {
   title: string;
   open: boolean;
@@ -198,6 +214,7 @@ function Group({
   children: React.ReactNode;
   colorDot?: string;
   onEdit?: () => void;
+  help?: HelpContent;
 }) {
   return (
     <div className="border-b border-border last:border-b-0">
@@ -221,6 +238,7 @@ function Group({
           )}
           <span className="truncate">{title}</span>
         </button>
+        {help && <HelpTip help={help} />}
         {onEdit && <EditLink onClick={onEdit} />}
       </div>
       {open && <div className="space-y-0.5 pb-2 pl-7 pr-2">{children}</div>}
@@ -238,6 +256,7 @@ function Leaf({
   onColorChange,
   colorOptions,
   onEdit,
+  help,
 }: {
   label: string;
   checked: boolean;
@@ -248,6 +267,7 @@ function Leaf({
   onColorChange?: (color: string) => void;
   colorOptions?: readonly string[];
   onEdit?: () => void;
+  help?: HelpContent;
 }) {
   return (
     <div className="rounded px-1.5 py-1 hover:bg-surface-elevated/60">
@@ -276,6 +296,7 @@ function Leaf({
             )}
           </span>
         </label>
+        {help && <HelpTip help={help} />}
         {onEdit && <EditLink onClick={onEdit} />}
       </div>
       {colorValue && onColorChange && (
@@ -532,6 +553,7 @@ export function ChartSidebar({
           onToggleOpen={() => toggleOpen("ma")}
           checked={maState.checked}
           indeterminate={maState.indeterminate}
+          help={CHART_LAYER_HELP.ma}
           onEdit={
             onEditIndicator ? () => onEditIndicator("ma") : undefined
           }
@@ -548,6 +570,7 @@ export function ChartSidebar({
             onToggleOpen={() => toggleOpen("sma")}
             checked={smaState.checked}
             indeterminate={smaState.indeterminate}
+            help={INDICATOR_HELP.sma}
             onEdit={
               onEditIndicator ? () => onEditIndicator("sma") : undefined
             }
@@ -579,6 +602,7 @@ export function ChartSidebar({
             onToggleOpen={() => toggleOpen("ema")}
             checked={emaState.checked}
             indeterminate={emaState.indeterminate}
+            help={INDICATOR_HELP.ema}
             onEdit={
               onEditIndicator ? () => onEditIndicator("ema") : undefined
             }
@@ -611,6 +635,7 @@ export function ChartSidebar({
           onToggleOpen={() => toggleOpen("bb")}
           checked={bbState.checked}
           indeterminate={bbState.indeterminate}
+          help={INDICATOR_HELP.bb}
           onEdit={onEditIndicator ? () => onEditIndicator("bb") : undefined}
           onToggleAll={(next) =>
             bump(() => {
@@ -625,6 +650,7 @@ export function ChartSidebar({
               onToggleOpen={() => toggleOpen("bbBands")}
               checked={bbBandState.checked}
               indeterminate={bbBandState.indeterminate}
+              help={CHART_LAYER_HELP.bbBands}
               onToggleAll={(next) =>
                 bump(() => setBbOverlayGroupVisible(next))
               }
@@ -633,9 +659,15 @@ export function ChartSidebar({
                 <Leaf
                   key={band}
                   label={`BB ${BB_BAND_META[band].labelKo}`}
-                  hint={BB_BAND_META[band].label}
                   color={resolveBbBandColor(bbColors, band)}
                   checked={bbVis[band]}
+                  help={
+                    band === "upper"
+                      ? CHART_LAYER_HELP.bbUpper
+                      : band === "middle"
+                        ? CHART_LAYER_HELP.bbMiddle
+                        : CHART_LAYER_HELP.bbLower
+                  }
                   onChange={(next) =>
                     bump(() => setBbOverlayVisible(band, next))
                   }
@@ -649,6 +681,7 @@ export function ChartSidebar({
               onToggleOpen={() => toggleOpen("bbStrategies")}
               checked={bbStratState.checked}
               indeterminate={bbStratState.indeterminate}
+              help={CHART_LAYER_HELP.bbStrategies}
               onToggleAll={(next) =>
                 bump(() => setBbStrategyGroupVisible(next))
               }
@@ -657,8 +690,8 @@ export function ChartSidebar({
                 <Leaf
                   key={id}
                   label={BB_STRATEGY_META[id].labelKo}
-                  hint={BB_STRATEGY_META[id].description}
                   checked={bbStratVis[id]}
+                  help={bbStrategyHelp(id)}
                   onChange={(next) =>
                     bump(() => setBbStrategyVisible(id, next))
                   }
@@ -667,8 +700,8 @@ export function ChartSidebar({
             </Group>
         </Group>
 
-        <div className="border-b border-border px-2.5 py-2">
-          <label className="flex cursor-pointer items-center gap-2">
+        <div className="flex items-center gap-2 border-b border-border px-2.5 py-2">
+          <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-2">
             <input
               type="checkbox"
               className="h-3.5 w-3.5 accent-accent"
@@ -679,6 +712,7 @@ export function ChartSidebar({
             />
             <span className="text-xs font-medium text-text-primary">거래량</span>
           </label>
+          <HelpTip help={CHART_LAYER_HELP.volume} />
         </div>
 
         <Group
@@ -687,6 +721,7 @@ export function ChartSidebar({
           onToggleOpen={() => toggleOpen("swing")}
           checked={swingState.checked}
           indeterminate={swingState.indeterminate}
+          help={CHART_LAYER_HELP.swing}
           onToggleAll={(next) =>
             bump(() => {
               for (const id of SWING_CHART_TOGGLE_ORDER) {
@@ -699,8 +734,8 @@ export function ChartSidebar({
             <Leaf
               key={id}
               label={SWING_CHART_TOGGLE_META[id].labelKo}
-              hint={SWING_CHART_TOGGLE_META[id].label}
               checked={swingVis[id]}
+              help={swingHelp(id)}
               onChange={(next) => bump(() => setSwingChartVisible(id, next))}
             />
           ))}
@@ -712,6 +747,7 @@ export function ChartSidebar({
           onToggleOpen={() => toggleOpen("trendlines")}
           checked={tlState.checked}
           indeterminate={tlState.indeterminate}
+          help={CHART_LAYER_HELP.trendlines}
           onToggleAll={(next) =>
             bump(() => {
               setKindVisible("ascending", ascendingLines, next);
@@ -736,6 +772,7 @@ export function ChartSidebar({
                   checked={state.checked}
                   indeterminate={state.indeterminate}
                   colorDot={kindColor}
+                  help={trendlineKindHelp(id)}
                   onToggleAll={(next) =>
                     bump(() => setKindVisible(id, lines, next))
                   }
@@ -793,9 +830,9 @@ export function ChartSidebar({
               <Leaf
                 key={id}
                 label={TRENDLINE_CHART_TOGGLE_META[id].labelKo}
-                hint={TRENDLINE_CHART_TOGGLE_META[id].description}
                 color={singleColor}
                 checked={tlVis[id]}
+                help={trendlineKindHelp(id)}
                 colorValue={singleColor}
                 colorOptions={TRENDLINE_COLOR_OPTIONS}
                 onColorChange={(c) =>
@@ -818,6 +855,7 @@ export function ChartSidebar({
           onToggleOpen={() => toggleOpen("sr")}
           checked={srState.checked}
           indeterminate={srState.indeterminate}
+          help={CHART_LAYER_HELP.sr}
           onToggleAll={(next) =>
             bump(() => {
               for (const id of SR_CHART_TOGGLE_ORDER) {
@@ -831,6 +869,7 @@ export function ChartSidebar({
               key={id}
               label={SR_CHART_TOGGLE_META[id].labelKo}
               checked={srVis[id]}
+              help={srHelp(id)}
               onChange={(next) => bump(() => setSrChartVisible(id, next))}
             />
           ))}
@@ -843,6 +882,7 @@ export function ChartSidebar({
             onToggleOpen={() => toggleOpen("fib")}
             checked={fibState.checked}
             indeterminate={fibState.indeterminate}
+            help={CHART_LAYER_HELP.fib}
             onToggleAll={(next) =>
               bump(() => {
                 setAllFibLevelsVisible(next);
@@ -856,6 +896,7 @@ export function ChartSidebar({
               onToggleOpen={() => toggleOpen("fibLevels")}
               checked={fibLevelState.checked}
               indeterminate={fibLevelState.indeterminate}
+              help={CHART_LAYER_HELP.fibLevels}
               onToggleAll={(next) => bump(() => setAllFibLevelsVisible(next))}
             >
               {FIB_RETRACEMENT_LEVELS.map((ratio: FibLevelRatio) => (
@@ -864,6 +905,7 @@ export function ChartSidebar({
                   label={fibLevelLabel(ratio)}
                   color={FIB_LEVEL_COLORS[ratio]}
                   checked={fibVis[ratio]}
+                  help={fibLevelHelp(ratio)}
                   onChange={(next) =>
                     bump(() => setFibLevelVisible(ratio, next))
                   }
@@ -876,14 +918,15 @@ export function ChartSidebar({
               onToggleOpen={() => toggleOpen("fibExtras")}
               checked={fibExtraState.checked}
               indeterminate={fibExtraState.indeterminate}
+              help={CHART_LAYER_HELP.fibExtras}
               onToggleAll={(next) => bump(() => setAllFibExtrasVisible(next))}
             >
               {FIB_EXTRA_ORDER.map((id: FibExtraId) => (
                 <Leaf
                   key={id}
                   label={FIB_EXTRA_META[id].labelKo}
-                  hint={FIB_EXTRA_META[id].description}
                   checked={fibExtraVis[id]}
+                  help={fibExtraHelp(id)}
                   onChange={(next) =>
                     bump(() => setFibExtraVisible(id, next))
                   }
@@ -942,6 +985,7 @@ export function ChartSidebar({
           onToggleOpen={() => toggleOpen("aux")}
           checked={auxState.checked}
           indeterminate={auxState.indeterminate}
+          help={CHART_LAYER_HELP.aux}
           onToggleAll={(next) => bump(() => setAuxIndicatorGroupVisible(next))}
         >
           {AUX_INDICATOR_ORDER.map((id: AuxIndicatorId) => {
@@ -958,8 +1002,8 @@ export function ChartSidebar({
               <Leaf
                 key={id}
                 label={AUX_INDICATOR_META[id].labelKo}
-                hint={AUX_INDICATOR_META[id].description}
                 checked={auxVis[id]}
+                help={auxHelp(id)}
                 onChange={(next) =>
                   bump(() => setAuxIndicatorVisible(id, next))
                 }
@@ -979,6 +1023,7 @@ export function ChartSidebar({
           onToggleOpen={() => toggleOpen("classicalPatterns")}
           checked={classicalPatternState.checked}
           indeterminate={classicalPatternState.indeterminate}
+          help={CHART_LAYER_HELP.classicalPatterns}
           onToggleAll={(next) =>
             bump(() => setClassicalChartPatternGroupVisible(next))
           }
@@ -987,9 +1032,9 @@ export function ChartSidebar({
             <Leaf
               key={id}
               label={CHART_PATTERN_META[id].labelKo}
-              hint={CHART_PATTERN_META[id].description}
               color={CHART_PATTERN_META[id].color}
               checked={classicalPatternVis[id]}
+              help={classicalPatternHelp(id)}
               onChange={(next) =>
                 bump(() => setClassicalChartPatternVisible(id, next))
               }
@@ -1003,6 +1048,7 @@ export function ChartSidebar({
           onToggleOpen={() => toggleOpen("patterns")}
           checked={patternState.checked}
           indeterminate={patternState.indeterminate}
+          help={CHART_LAYER_HELP.candlePatterns}
           onToggleAll={(next) =>
             bump(() => {
               for (const id of CANDLE_PATTERN_ORDER) {
@@ -1015,8 +1061,8 @@ export function ChartSidebar({
             <Leaf
               key={id}
               label={CANDLE_PATTERN_META[id].labelKo}
-              hint={CANDLE_PATTERN_META[id].label}
               checked={patternVis[id]}
+              help={candlePatternHelp(id)}
               onChange={(next) => bump(() => setChartPatternVisible(id, next))}
             />
           ))}
