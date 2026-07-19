@@ -105,6 +105,8 @@ import {
 } from "@/lib/auxIndicatorStore";
 import {
   getSidebarOpenState,
+  isChartSidebarCollapsed,
+  setChartSidebarCollapsed,
   toggleSidebarOpenKey,
   type SidebarOpenKey,
   type SidebarOpenState,
@@ -120,6 +122,8 @@ interface Props {
   /** Bumps when any visibility store changes (parent tick). */
   visibilityTick: number;
   onVisibilityChange: () => void;
+  /** Opens SMA/EMA/… CRUD modal (parent-owned). */
+  onOpenIndicatorConfig?: () => void;
   /** Current evaluation trendlines for per-line toggles. */
   trendlines?: TrendlineResult | null;
   className?: string;
@@ -276,10 +280,12 @@ function groupState(values: boolean[]): {
 export function ChartSidebar({
   visibilityTick,
   onVisibilityChange,
+  onOpenIndicatorConfig,
   trendlines,
   className,
 }: Props) {
   const [open, setOpen] = useState<SidebarOpenState>(() => getSidebarOpenState());
+  const [collapsed, setCollapsed] = useState(() => isChartSidebarCollapsed());
 
   const smaCfg = useMemo(() => getIndicatorConfig("sma"), [visibilityTick]);
   const emaCfg = useMemo(() => getIndicatorConfig("ema"), [visibilityTick]);
@@ -352,6 +358,11 @@ export function ChartSidebar({
 
   const toggleOpen = (key: SidebarOpenKey) =>
     setOpen(toggleSidebarOpenKey(key));
+
+  const setCollapsedPersisted = (next: boolean) => {
+    setChartSidebarCollapsed(next);
+    setCollapsed(next);
+  };
 
   const kindLineState = (kind: TrendlineChartToggleId, lines: Trendline[]) => {
     if (lines.length <= 1) {
@@ -426,6 +437,36 @@ export function ChartSidebar({
   }
   const tlState = groupState(tlAggregateVals);
 
+  if (collapsed) {
+    return (
+      <aside
+        className={clsx(
+          "flex shrink-0 flex-row items-stretch gap-2 lg:sticky lg:top-4 lg:w-11 lg:flex-col",
+          className,
+        )}
+      >
+        <button
+          type="button"
+          className="flex flex-1 items-center justify-center rounded-xl border border-border bg-surface px-3 py-2 text-xs font-medium text-text-secondary hover:border-accent/40 hover:text-text-primary lg:flex-none lg:px-2 lg:py-3 lg:[writing-mode:vertical-rl]"
+          onClick={() => setCollapsedPersisted(false)}
+          title="차트 레이어 펼치기"
+        >
+          레이어
+        </button>
+        {onOpenIndicatorConfig && (
+          <button
+            type="button"
+            className="flex flex-1 items-center justify-center rounded-xl border border-border bg-surface px-3 py-2 text-xs font-medium text-text-secondary hover:border-accent/40 hover:text-text-primary lg:flex-none lg:px-2 lg:py-3 lg:[writing-mode:vertical-rl]"
+            onClick={onOpenIndicatorConfig}
+            title="기술 지표 설정"
+          >
+            지표 설정
+          </button>
+        )}
+      </aside>
+    );
+  }
+
   return (
     <aside
       className={clsx(
@@ -434,10 +475,31 @@ export function ChartSidebar({
       )}
     >
       <div className="border-b border-border px-3 py-2.5">
-        <p className="text-xs font-semibold text-text-primary">차트 레이어</p>
-        <p className="mt-0.5 text-[10px] text-text-tertiary">
-          켜고 끄기 · 자세한 분석은 아래 패널
-        </p>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-text-primary">차트 레이어</p>
+            <p className="mt-0.5 text-[10px] text-text-tertiary">
+              켜고 끄기 · 지표 기간/색은 「지표 설정」
+            </p>
+          </div>
+          <button
+            type="button"
+            className="shrink-0 rounded-md border border-border px-2 py-1 text-[10px] font-medium text-text-tertiary hover:border-accent/40 hover:text-text-primary"
+            onClick={() => setCollapsedPersisted(true)}
+            title="사이드바 접기"
+          >
+            접기
+          </button>
+        </div>
+        {onOpenIndicatorConfig && (
+          <button
+            type="button"
+            className="mt-2 w-full rounded-md border border-accent/40 bg-accent/10 px-2 py-1.5 text-left text-xs font-medium text-accent hover:bg-accent/20"
+            onClick={onOpenIndicatorConfig}
+          >
+            기술 지표 설정…
+          </button>
+        )}
       </div>
 
       <div className="max-h-[min(70vh,640px)] overflow-y-auto">

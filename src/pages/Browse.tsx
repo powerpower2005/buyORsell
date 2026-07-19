@@ -8,11 +8,11 @@ import {
   getEffectiveIndicatorsConfig,
   getIndicatorConfig,
 } from "@/lib/configStore";
-import { ConfigPanel } from "@/components/ConfigPanel";
 import { CandlePatternPanel } from "@/components/CandlePatternPanel";
 import { SwingStructurePanel } from "@/components/SwingStructurePanel";
 import { SupportResistancePanel } from "@/components/SupportResistancePanel";
 import { ChartSidebar } from "@/components/ChartSidebar";
+import { IndicatorConfigModal } from "@/components/IndicatorConfigModal";
 import { formatTickerLabel } from "@/lib/tickerNames";
 import { getChartPatternVisibility } from "@/lib/candlePatternStore";
 import { getSwingChartVisibility } from "@/lib/swingStructureStore";
@@ -74,6 +74,7 @@ export function BrowsePage() {
   const [loading, setLoading] = useState(false);
   const [configTick, setConfigTick] = useState(0);
   const [chartVisTick, setChartVisTick] = useState(0);
+  const [indicatorConfigOpen, setIndicatorConfigOpen] = useState(false);
 
   const entries = useMemo(
     () =>
@@ -425,9 +426,15 @@ export function BrowsePage() {
                       className="w-full shrink-0 lg:sticky lg:top-4 lg:w-64"
                       visibilityTick={chartVisTick}
                       onVisibilityChange={() => setChartVisTick((n) => n + 1)}
+                      onOpenIndicatorConfig={() => setIndicatorConfigOpen(true)}
                       trendlines={evaluation!.trendlines}
                     />
                   </div>
+                  <IndicatorConfigModal
+                    open={indicatorConfigOpen}
+                    onClose={() => setIndicatorConfigOpen(false)}
+                    onChange={() => setConfigTick((n) => n + 1)}
+                  />
                   <div className="grid gap-6 xl:grid-cols-2">
                     <VolumePanel snapshot={evaluation!.volume} />
                     {evaluation!.score && <ScoreCard score={evaluation!.score} />}
@@ -444,7 +451,6 @@ export function BrowsePage() {
                       <CandlePatternPanel patterns={evaluation!.patterns} />
                     )}
                   </div>
-                  <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />
                   <MTFAlignmentCard alignment={evaluation!.mtf} />
                 </div>
               )}

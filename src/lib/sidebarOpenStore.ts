@@ -65,3 +65,20 @@ export function toggleSidebarOpenKey(key: SidebarOpenKey): SidebarOpenState {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   return state;
 }
+
+const COLLAPSED_KEY = "gf:config:chart-sidebar-collapsed";
+
+/** Whole sidebar dock collapsed for a wider chart. Default expanded. */
+export function isChartSidebarCollapsed(): boolean {
+  try {
+    const raw = localStorage.getItem(COLLAPSED_KEY);
+    if (raw == null) return false;
+    return JSON.parse(raw) === true;
+  } catch {
+    return false;
+  }
+}
+
+export function setChartSidebarCollapsed(collapsed: boolean): void {
+  localStorage.setItem(COLLAPSED_KEY, JSON.stringify(collapsed));
+}

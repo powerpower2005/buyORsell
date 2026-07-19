@@ -12,8 +12,8 @@ import { CandleChart } from "@/components/CandleChart";
 import { VolumePanel } from "@/components/VolumePanel";
 import { ScoreCard } from "@/components/ScoreCard";
 import { IndicatorPanel } from "@/components/IndicatorPanel";
-import { ConfigPanel } from "@/components/ConfigPanel";
 import { ExportPanel } from "@/components/ExportPanel";
+import { IndicatorConfigModal } from "@/components/IndicatorConfigModal";
 import { WatchlistSidebar } from "@/components/WatchlistSidebar";
 import { MTFAlignmentCard } from "@/components/MTFAlignmentCard";
 import { StrategyBuilder } from "@/components/StrategyBuilder";
@@ -96,6 +96,7 @@ export function HomePage() {
   const [loading, setLoading] = useState(false);
   const [configTick, setConfigTick] = useState(0);
   const [chartVisTick, setChartVisTick] = useState(0);
+  const [indicatorConfigOpen, setIndicatorConfigOpen] = useState(false);
   const [backtest, setBacktest] = useState<BacktestResult | undefined>();
   const [catalog, setCatalog] = useState<IndexFile | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
@@ -480,9 +481,15 @@ export function HomePage() {
                     className="w-full shrink-0 lg:sticky lg:top-4 lg:w-64"
                     visibilityTick={chartVisTick}
                     onVisibilityChange={() => setChartVisTick((n) => n + 1)}
+                    onOpenIndicatorConfig={() => setIndicatorConfigOpen(true)}
                     trendlines={evaluation!.trendlines}
                   />
                 </div>
+                <IndicatorConfigModal
+                  open={indicatorConfigOpen}
+                  onClose={() => setIndicatorConfigOpen(false)}
+                  onChange={() => setConfigTick((n) => n + 1)}
+                />
                 <div className="grid gap-6 xl:grid-cols-2">
                   <VolumePanel snapshot={evaluation!.volume} />
                   {evaluation!.score && <ScoreCard score={evaluation!.score} />}
@@ -499,7 +506,6 @@ export function HomePage() {
                     <CandlePatternPanel patterns={evaluation!.patterns} />
                   )}
                 </div>
-                <ConfigPanel onChange={() => setConfigTick((n) => n + 1)} />
                 <MTFAlignmentCard alignment={evaluation!.mtf} />
                 <StrategyBuilder bars={evaluation!.bars} onResult={setBacktest} />
                 <ExportPanel
