@@ -302,9 +302,27 @@ export function IndicatorConfigForm({ onChange, runtimeWarnings = [] }: Props) {
 
   const indicatorWarnings = runtimeWarnings.filter(
     (w) =>
-      /SMA|EMA|RSI|MACD|BB|MFI|ATR|sma|ema|rsi|macd|bb|mfi|atr/i.test(w) ||
-      w.includes("봉"),
+      /SMA|EMA|RSI|MACD|BB|MFI|ATR|sma|ema|rsi|macd|bb|mfi|atr|점수 규칙/i.test(
+        w,
+      ) || w.includes("봉"),
   );
+
+  // Drop transient notices once parent re-evaluated (warnings list refreshed).
+  useEffect(() => {
+    if (!notice) return;
+    if (notice.kind === "info") {
+      const t = window.setTimeout(() => setNotice(null), 2500);
+      return () => window.clearTimeout(t);
+    }
+  }, [notice]);
+
+  useEffect(() => {
+    if (!notice || notice.kind !== "error") return;
+    if (indicatorWarnings.length === 0) {
+      setNotice(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runtimeWarnings.join("\n")]);
 
   return (
     <div className="space-y-3 text-left">

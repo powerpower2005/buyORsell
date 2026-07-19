@@ -131,6 +131,7 @@ export function setIndicatorPeriodAt(
   if (rejectReason) return { ok: false, error: rejectReason };
 
   // Chart layer toggles are keyed by period; turn the renamed line on.
+  // Chart overlay toggles only — scoring is independent of chart indicator periods.
   if (
     applied &&
     (id === "sma" || id === "ema") &&

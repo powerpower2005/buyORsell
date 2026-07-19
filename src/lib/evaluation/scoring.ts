@@ -1,12 +1,84 @@
+import { SMA, EMA, RSI, MACD, BollingerBands } from "technicalindicators";
 import type { OHLCVBar, ScoreBreakdown, ScoreResult } from "../types";
-
 import type { IndicatorResults } from "../types";
-
-import scoringConfig from "../../../config/scoring.json";
-
+import { getEffectiveScoringConfig } from "../configStore";
 import { ConfigError, InsufficientDataError } from "../errors";
-
 import { requireDefined, requireNonEmptyArray, requireNumber } from "../require";
+
+/** Scoring computes its own series — not tied to chart indicator toggles/periods. */
+function latestSma(bars: OHLCVBar[], period: number): number | null {
+  if (bars.length < period) return null;
+  const vals = SMA.calculate({
+    period,
+    values: bars.map((b) => b.close),
+  });
+  const v = vals.at(-1);
+  return v == null || Number.isNaN(v) ? null : v;
+}
+
+function latestEma(bars: OHLCVBar[], period: number): number | null {
+  if (bars.length < period) return null;
+  const vals = EMA.calculate({
+    period,
+    values: bars.map((b) => b.close),
+  });
+  const v = vals.at(-1);
+  return v == null || Number.isNaN(v) ? null : v;
+}
+
+function latestRsi(bars: OHLCVBar[], period = 14): number | null {
+  if (bars.length < period + 1) return null;
+  const vals = RSI.calculate({
+    period,
+    values: bars.map((b) => b.close),
+  });
+  const v = vals.at(-1);
+  return v == null || Number.isNaN(v) ? null : v;
+}
+
+function latestMacdHist(
+  bars: OHLCVBar[],
+  fast = 12,
+  slow = 26,
+  signal = 9,
+): number | null {
+  const minBars = slow + signal;
+  if (bars.length < minBars) return null;
+  const vals = MACD.calculate({
+    values: bars.map((b) => b.close),
+    fastPeriod: fast,
+    slowPeriod: slow,
+    signalPeriod: signal,
+    SimpleMAOscillator: false,
+    SimpleMASignal: false,
+  });
+  const v = vals.at(-1)?.histogram;
+  return v == null || Number.isNaN(v) ? null : v;
+}
+
+function latestBbBands(
+  bars: OHLCVBar[],
+  period = 20,
+  stdDev = 2,
+): { upper: number; lower: number } | null {
+  if (bars.length < period) return null;
+  const vals = BollingerBands.calculate({
+    period,
+    stdDev,
+    values: bars.map((b) => b.close),
+  });
+  const last = vals.at(-1);
+  if (!last) return null;
+  if (
+    last.upper == null ||
+    last.lower == null ||
+    Number.isNaN(last.upper) ||
+    Number.isNaN(last.lower)
+  ) {
+    return null;
+  }
+  return { upper: last.upper, lower: last.lower };
+}
 
 
 
@@ -86,36 +158,9 @@ function lastClose(bars: OHLCVBar[]): number {
 
 
 
-function tryIndicatorValue(
-
-  indicators: IndicatorResults["indicators"],
-
-  pluginId: string,
-
-  key: string,
-
-): number | null {
-
-  const out = indicators[pluginId];
-
-  if (!out) return null;
-
-  const val = out.latest[key];
-
-  return val ?? null;
-
-}
-
-
-
 function evalRule(
-
   rule: Record<string, unknown>,
-
   bars: OHLCVBar[],
-
-  indicators: IndicatorResults["indicators"],
-
 ): RuleEval {
 
   const ruleType = requireDefined(rule.type, "rule.type");
@@ -127,129 +172,82 @@ function evalRule(
 
 
   if (ruleType === "compare") {
-
     const right = requireDefined(rule.right as string, "rule.right");
-
     const op = requireDefined(rule.op as string, "rule.op");
+    let rhs: number | null = null;
 
-    let rhs: number | null;
-
-    if (right.startsWith("sma:")) {
-
-      rhs = tryIndicatorValue(indicators, "sma", right);
-
-    } else if (right.startsWith("ema:")) {
-
-      rhs = tryIndicatorValue(indicators, "ema", right);
-
+    const smaMatch = /^sma:(\d+)$/.exec(right);
+    const emaMatch = /^ema:(\d+)$/.exec(right);
+    if (smaMatch) {
+      rhs = latestSma(bars, Number(smaMatch[1]));
+    } else if (emaMatch) {
+      rhs = latestEma(bars, Number(emaMatch[1]));
     } else {
-
       throw new ConfigError(`Unsupported compare right: ${right}`);
-
     }
 
     if (rhs == null) {
-
+      const period = Number((smaMatch ?? emaMatch)![1]);
+      const kind = smaMatch ? "SMA" : "EMA";
       return {
-
         points: 0,
-
         maxPoints: 0,
-
-        skipped: `compare ${right}: indicator not available`,
-
+        skipped: `점수 규칙: ${kind}(${period}) 계산에 봉 ${period}개 필요 · 현재 ${bars.length}개`,
       };
-
     }
 
     const pass = op === "gt" ? close > rhs : close < rhs;
-
     return { points: pass ? ruleScore : 0, maxPoints: ruleScore };
-
   }
 
-
-
   if (ruleType === "rsi_mid") {
-
-    const rsi = tryIndicatorValue(indicators, "rsi", "rsi");
-
+    const period =
+      typeof rule.period === "number" && Number.isFinite(rule.period)
+        ? rule.period
+        : 14;
+    const rsi = latestRsi(bars, period);
     if (rsi == null) {
-
       return {
-
         points: 0,
-
         maxPoints: 0,
-
-        skipped: "rsi_mid: RSI not available",
-
+        skipped: `점수 규칙: RSI(${period}) 계산에 데이터 부족 · 현재 ${bars.length}봉`,
       };
-
     }
 
     const low = requireNumber(rule.low, "rule.low");
-
     const high = requireNumber(rule.high, "rule.high");
-
     if (rsi >= low && rsi <= high) return { points: ruleScore, maxPoints: ruleScore };
-
     if (rsi < low) return { points: ruleScore * 0.8, maxPoints: ruleScore };
-
     return { points: ruleScore * 0.3, maxPoints: ruleScore };
-
   }
 
-
-
   if (ruleType === "macd_hist") {
-
-    const hist = tryIndicatorValue(indicators, "macd", "macdHist");
-
+    const hist = latestMacdHist(bars);
     if (hist == null) {
-
       return {
-
         points: 0,
-
         maxPoints: 0,
-
-        skipped: "macd_hist: MACD not available",
-
+        skipped: `점수 규칙: MACD 계산에 데이터 부족 · 현재 ${bars.length}봉`,
       };
-
     }
 
     return {
-
       points: hist > 0 ? ruleScore : ruleScore * 0.2,
-
       maxPoints: ruleScore,
-
     };
-
   }
 
-
-
   if (ruleType === "bb_position") {
-
-    const upper = tryIndicatorValue(indicators, "bb", "bbUpper");
-
-    const lower = tryIndicatorValue(indicators, "bb", "bbLower");
+    const bands = latestBbBands(bars);
+    const upper = bands?.upper ?? null;
+    const lower = bands?.lower ?? null;
 
     if (upper == null || lower == null) {
-
       return {
-
         points: 0,
-
         maxPoints: 0,
-
-        skipped: "bb_position: Bollinger bands not available",
-
+        skipped: `점수 규칙: 볼린저 밴드 계산에 데이터 부족 · 현재 ${bars.length}봉`,
       };
-
     }
 
     if (upper === lower) {
@@ -367,18 +365,17 @@ function evalRule(
 
 
 export function computeScore(
-
   bars: OHLCVBar[],
-
-  indicatorResults: IndicatorResults,
-
+  _indicatorResults: IndicatorResults,
   presetKey: string,
-
 ): ScoreResult {
-
+  // Score rules compute their own series from OHLCV; chart indicator config is ignored.
   requireNonEmptyArray(bars, "OHLCV bars for scoring");
 
-  const presets = scoringConfig.presets as Record<string, ScoringPreset>;
+  const presets = getEffectiveScoringConfig().presets as Record<
+    string,
+    ScoringPreset
+  >;
 
   const preset = presets[presetKey];
 
@@ -408,7 +405,7 @@ export function computeScore(
 
     for (const rule of cat.rules) {
 
-      const result = evalRule(rule, bars, indicatorResults.indicators);
+      const result = evalRule(rule, bars);
 
       catScore += result.points;
 
@@ -476,7 +473,10 @@ export function computeScore(
 
 export function presetForTimeframe(tf: string): string {
 
-  const presets = scoringConfig.presets as Record<string, ScoringPreset>;
+  const presets = getEffectiveScoringConfig().presets as Record<
+    string,
+    ScoringPreset
+  >;
 
   const key = `${tf}_default`;
 
