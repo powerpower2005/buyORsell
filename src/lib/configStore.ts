@@ -2,6 +2,7 @@ import indicatorsBase from "../../config/indicators.json";
 import scoringBase from "../../config/scoring.json";
 import type { IndicatorsConfig, IndicatorConfigItem } from "./evaluation/types";
 import { nextDefaultPeriodColor, parsePeriodColors } from "./indicatorColors";
+import { remapIndicatorOverlayPeriod } from "./indicatorOverlayStore";
 
 const OVERRIDE_KEY = "gf:config:overrides";
 
@@ -94,9 +95,10 @@ export function setIndicatorPeriodAt(
   index: number,
   value: number,
 ): void {
+  let oldPeriod: number | undefined;
   updateIndicatorItem(id, (item) => {
     const periods = [...(item.params.periods as number[])];
-    const oldPeriod = periods[index];
+    oldPeriod = periods[index];
     periods[index] = value;
     const colors = { ...periodColorsOf(item) };
     if (oldPeriod != null && colors[String(oldPeriod)] != null) {
@@ -108,6 +110,14 @@ export function setIndicatorPeriodAt(
       params: { ...item.params, periods, colors },
     };
   });
+  // Chart layer toggles are keyed by period; keep the line visible after rename.
+  if (
+    (id === "sma" || id === "ema") &&
+    oldPeriod != null &&
+    Number.isFinite(oldPeriod)
+  ) {
+    remapIndicatorOverlayPeriod(id, oldPeriod, value);
+  }
 }
 
 export function addIndicatorPeriod(id: string): void {
