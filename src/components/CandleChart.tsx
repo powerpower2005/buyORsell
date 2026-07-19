@@ -11,6 +11,7 @@ import {
   type IChartApi,
   type ISeriesApi,
   type ISeriesMarkersPluginApi,
+  type LogicalRange,
   type MouseEventParams,
   type Time,
 } from "lightweight-charts";
@@ -228,7 +229,26 @@ export function CandleChart({
   const markersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
   const overlayRefs = useRef<Map<string, ISeriesApi<"Line">>>(new Map());
   const oscSeriesRefs = useRef<Map<string, OscSeries>>(new Map());
+  /** Only fit/zoom-reset when candle data or timeframe actually changes. */
+  const fittedBarsKeyRef = useRef<string>("");
   const mainHeight = useViewportChartHeight(heightProp);
+
+  const captureTimeRange = (): LogicalRange | null => {
+    try {
+      return chartRef.current?.timeScale().getVisibleLogicalRange() ?? null;
+    } catch {
+      return null;
+    }
+  };
+
+  const restoreTimeRange = (range: LogicalRange | null) => {
+    if (!range || !chartRef.current) return;
+    try {
+      chartRef.current.timeScale().setVisibleLogicalRange(range);
+    } catch {
+      // Ignore if the chart was torn down mid-update.
+    }
+  };
 
   const volumeMaPeriods = useMemo(
     () => getVolumeMaPeriods(timeframe),
@@ -828,6 +848,7 @@ export function CandleChart({
       markersRef.current = null;
       overlayRefs.current = new Map();
       oscSeriesRefs.current = new Map();
+      fittedBarsKeyRef.current = "";
       setHoverOhlcv(null);
     };
     // recreate chart on timeframe only; overlay redraw bound via other deps
@@ -837,6 +858,7 @@ export function CandleChart({
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart) return;
+    const savedRange = captureTimeRange();
     chart.applyOptions({ height: totalHeight });
     if (containerRef.current) {
       containerRef.current.style.height = `${totalHeight}px`;
@@ -852,7 +874,11 @@ export function CandleChart({
       const api = panes[i + 1 + volOffset];
       if (api) api.setHeight(pane.height);
     });
-    drawChartOverlays();
+    restoreTimeRange(savedRange);
+    requestAnimationFrame(() => {
+      restoreTimeRange(savedRange);
+      drawChartOverlays();
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalHeight, mainHeight, oscPanes, showVolume]);
 
@@ -981,6 +1007,8 @@ export function CandleChart({
     const chart = chartRef.current;
     if (!chart) return;
 
+    const savedRange = captureTimeRange();
+
     const safeRemove = (series: OscSeries | ISeriesApi<"Histogram">) => {
       try {
         chart.removeSeries(series);
@@ -1012,6 +1040,7 @@ export function CandleChart({
       }
       const panes = chart.panes();
       if (panes[0]) panes[0].setHeight(mainHeight);
+      restoreTimeRange(savedRange);
       drawChartOverlays();
       return;
     }
@@ -1246,7 +1275,11 @@ export function CandleChart({
       const api = panes[i + 1 + heightVolOffset];
       if (api) api.setHeight(pane.height);
     });
-    requestAnimationFrame(() => drawChartOverlays());
+    restoreTimeRange(savedRange);
+    requestAnimationFrame(() => {
+      restoreTimeRange(savedRange);
+      drawChartOverlays();
+    });
     // Recreate only when pane membership / volume snapshot changes — not on
     // every parent re-render (bars/indicators get new object identities often).
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1398,6 +1431,10 @@ export function CandleChart({
     if (!bars.length || !candleRef.current) return;
 
     try {
+      const barsKey = `${timeframe}:${bars.length}:${bars[0]?.date}:${bars.at(-1)?.date}:${bars.at(-1)?.close}`;
+      const shouldFit = fittedBarsKeyRef.current !== barsKey;
+      const savedRange = shouldFit ? null : captureTimeRange();
+
       candleRef.current.setData(
         bars.map((b) => ({
           time: b.date as `${number}-${number}-${number}`,
@@ -1429,7 +1466,13 @@ export function CandleChart({
       }
 
       markersRef.current?.setMarkers(chartMarkers);
-      chartRef.current?.timeScale().fitContent();
+
+      if (shouldFit) {
+        fittedBarsKeyRef.current = barsKey;
+        chartRef.current?.timeScale().fitContent();
+      } else {
+        restoreTimeRange(savedRange);
+      }
       requestAnimationFrame(() => drawChartOverlays());
     } catch (err) {
       console.error("CandleChart setData failed:", err);

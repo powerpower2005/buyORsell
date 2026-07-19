@@ -17,6 +17,7 @@ import { SwingStructurePanel } from "@/components/SwingStructurePanel";
 import { SupportResistancePanel } from "@/components/SupportResistancePanel";
 import { ChartSidebar } from "@/components/ChartSidebar";
 import { IndicatorConfigModal } from "@/components/IndicatorConfigModal";
+import type { IndicatorConfigSectionId } from "@/components/IndicatorConfigForm";
 import { formatTickerLabel } from "@/lib/tickerNames";
 import { getChartPatternVisibility } from "@/lib/candlePatternStore";
 import { getSwingChartVisibility } from "@/lib/swingStructureStore";
@@ -79,6 +80,8 @@ export function BrowsePage() {
   const [configTick, setConfigTick] = useState(0);
   const [chartVisTick, setChartVisTick] = useState(0);
   const [indicatorConfigOpen, setIndicatorConfigOpen] = useState(false);
+  const [indicatorConfigSection, setIndicatorConfigSection] =
+    useState<IndicatorConfigSectionId>("all");
   const [tickerListCollapsed, setTickerListCollapsed] = useState(() =>
     isBrowseTickerListCollapsed(),
   );
@@ -471,12 +474,16 @@ export function BrowsePage() {
                       visibilityTick={chartVisTick}
                       configTick={configTick}
                       onVisibilityChange={() => setChartVisTick((n) => n + 1)}
-                      onOpenIndicatorConfig={() => setIndicatorConfigOpen(true)}
+                      onEditIndicator={(section) => {
+                        setIndicatorConfigSection(section);
+                        setIndicatorConfigOpen(true);
+                      }}
                       trendlines={evaluation!.trendlines}
                     />
                   </div>
                   <IndicatorConfigModal
                     open={indicatorConfigOpen}
+                    section={indicatorConfigSection}
                     onClose={() => setIndicatorConfigOpen(false)}
                     onChange={() => {
                       setConfigTick((n) => n + 1);

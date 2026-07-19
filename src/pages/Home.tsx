@@ -14,6 +14,7 @@ import { ScoreCard } from "@/components/ScoreCard";
 import { IndicatorPanel } from "@/components/IndicatorPanel";
 import { ExportPanel } from "@/components/ExportPanel";
 import { IndicatorConfigModal } from "@/components/IndicatorConfigModal";
+import type { IndicatorConfigSectionId } from "@/components/IndicatorConfigForm";
 import { WatchlistSidebar } from "@/components/WatchlistSidebar";
 import { MTFAlignmentCard } from "@/components/MTFAlignmentCard";
 import { StrategyBuilder } from "@/components/StrategyBuilder";
@@ -97,6 +98,8 @@ export function HomePage() {
   const [configTick, setConfigTick] = useState(0);
   const [chartVisTick, setChartVisTick] = useState(0);
   const [indicatorConfigOpen, setIndicatorConfigOpen] = useState(false);
+  const [indicatorConfigSection, setIndicatorConfigSection] =
+    useState<IndicatorConfigSectionId>("all");
   const [backtest, setBacktest] = useState<BacktestResult | undefined>();
   const [catalog, setCatalog] = useState<IndexFile | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
@@ -483,12 +486,16 @@ export function HomePage() {
                     visibilityTick={chartVisTick}
                     configTick={configTick}
                     onVisibilityChange={() => setChartVisTick((n) => n + 1)}
-                    onOpenIndicatorConfig={() => setIndicatorConfigOpen(true)}
+                    onEditIndicator={(section) => {
+                      setIndicatorConfigSection(section);
+                      setIndicatorConfigOpen(true);
+                    }}
                     trendlines={evaluation!.trendlines}
                   />
                 </div>
                 <IndicatorConfigModal
                   open={indicatorConfigOpen}
+                  section={indicatorConfigSection}
                   onClose={() => setIndicatorConfigOpen(false)}
                   onChange={() => {
                     setConfigTick((n) => n + 1);

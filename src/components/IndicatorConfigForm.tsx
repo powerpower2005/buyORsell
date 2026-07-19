@@ -28,10 +28,38 @@ import { Button } from "./ui/Button";
 import { ConfigError } from "@/lib/errors";
 import { requireNumber } from "@/lib/require";
 
+export type IndicatorConfigSectionId =
+  | "ma"
+  | "sma"
+  | "ema"
+  | "rsi"
+  | "macd"
+  | "bb"
+  | "mfi"
+  | "atr"
+  | "all";
+
+export const INDICATOR_CONFIG_SECTION_LABEL: Record<
+  IndicatorConfigSectionId,
+  string
+> = {
+  all: "기술 지표",
+  ma: "이동평균",
+  sma: "SMA",
+  ema: "EMA",
+  rsi: "RSI",
+  macd: "MACD",
+  bb: "Bollinger Bands",
+  mfi: "MFI",
+  atr: "ATR",
+};
+
 interface Props {
   onChange: () => void;
   /** Evaluation warnings (e.g. not enough bars for SMA period). */
   runtimeWarnings?: string[];
+  /** When set, only show the matching indicator editor(s). */
+  section?: IndicatorConfigSectionId;
 }
 
 function LabelWithHelp({
@@ -270,7 +298,11 @@ function PeriodListEditor({
 }
 
 /** SMA/EMA/RSI/… period·색·사용 CRUD. Parent remounts via onChange tick. */
-export function IndicatorConfigForm({ onChange, runtimeWarnings = [] }: Props) {
+export function IndicatorConfigForm({
+  onChange,
+  runtimeWarnings = [],
+  section = "all",
+}: Props) {
   const cfg = getEffectiveIndicatorsConfig();
   const find = (id: string) => cfg.indicators.find((i) => i.id === id);
   const [notice, setNotice] = useState<{
@@ -294,6 +326,11 @@ export function IndicatorConfigForm({ onChange, runtimeWarnings = [] }: Props) {
   const emaPeriods = (ema.params.periods as number[]) ?? [12, 26];
   const smaColors = parsePeriodColors(sma.params.colors);
   const emaColors = parsePeriodColors(ema.params.colors);
+
+  const show = (id: IndicatorConfigSectionId) =>
+    section === "all" ||
+    section === id ||
+    (section === "ma" && (id === "sma" || id === "ema"));
 
   const patch = () => onChange();
   const onNotice = (message: string | null, kind: "error" | "info" = "info") => {
@@ -358,192 +395,202 @@ export function IndicatorConfigForm({ onChange, runtimeWarnings = [] }: Props) {
         </div>
       )}
 
-      <IndicatorSection
-        title="SMA"
-        help={INDICATOR_HELP.sma}
-        enabled={sma.enabled}
-        onEnabledChange={(v) => {
-          setIndicatorEnabled("sma", v);
-          patch();
-        }}
-      >
-        <PeriodListEditor
-          indicatorId="sma"
+      {show("sma") && (
+        <IndicatorSection
           title="SMA"
-          periods={smaPeriods}
-          colors={smaColors}
-          min={2}
-          max={250}
-          onChange={patch}
-          onNotice={onNotice}
-        />
-      </IndicatorSection>
+          help={INDICATOR_HELP.sma}
+          enabled={sma.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("sma", v);
+            patch();
+          }}
+        >
+          <PeriodListEditor
+            indicatorId="sma"
+            title="SMA"
+            periods={smaPeriods}
+            colors={smaColors}
+            min={2}
+            max={250}
+            onChange={patch}
+            onNotice={onNotice}
+          />
+        </IndicatorSection>
+      )}
 
-      <IndicatorSection
-        title="EMA"
-        help={INDICATOR_HELP.ema}
-        enabled={ema.enabled}
-        onEnabledChange={(v) => {
-          setIndicatorEnabled("ema", v);
-          patch();
-        }}
-      >
-        <PeriodListEditor
-          indicatorId="ema"
+      {show("ema") && (
+        <IndicatorSection
           title="EMA"
-          periods={emaPeriods}
-          colors={emaColors}
-          min={2}
-          max={100}
-          onChange={patch}
-          onNotice={onNotice}
-        />
-      </IndicatorSection>
+          help={INDICATOR_HELP.ema}
+          enabled={ema.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("ema", v);
+            patch();
+          }}
+        >
+          <PeriodListEditor
+            indicatorId="ema"
+            title="EMA"
+            periods={emaPeriods}
+            colors={emaColors}
+            min={2}
+            max={100}
+            onChange={patch}
+            onNotice={onNotice}
+          />
+        </IndicatorSection>
+      )}
 
-      <IndicatorSection
-        title="RSI"
-        help={INDICATOR_HELP.rsi}
-        enabled={rsi.enabled}
-        onEnabledChange={(v) => {
-          setIndicatorEnabled("rsi", v);
-          patch();
-        }}
-      >
-        <NumInput
-          label="Period"
-          help={PARAM_HELP["rsi.period"]}
-          value={requireNumber(rsi.params.period, "rsi.period")}
-          min={2}
-          max={50}
-          onChange={(v) => {
-            setIndicatorParam("rsi", "period", v);
+      {show("rsi") && (
+        <IndicatorSection
+          title="RSI"
+          help={INDICATOR_HELP.rsi}
+          enabled={rsi.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("rsi", v);
             patch();
           }}
-        />
-        <NumInput
-          label="Overbought"
-          help={PARAM_HELP["rsi.overbought"]}
-          value={requireNumber(rsi.overbought, "rsi.overbought")}
-          min={50}
-          max={95}
-          onChange={(v) => {
-            setIndicatorThreshold("rsi", "overbought", v);
-            patch();
-          }}
-        />
-        <NumInput
-          label="Oversold"
-          help={PARAM_HELP["rsi.oversold"]}
-          value={requireNumber(rsi.oversold, "rsi.oversold")}
-          min={5}
-          max={50}
-          onChange={(v) => {
-            setIndicatorThreshold("rsi", "oversold", v);
-            patch();
-          }}
-        />
-      </IndicatorSection>
+        >
+          <NumInput
+            label="Period"
+            help={PARAM_HELP["rsi.period"]}
+            value={requireNumber(rsi.params.period, "rsi.period")}
+            min={2}
+            max={50}
+            onChange={(v) => {
+              setIndicatorParam("rsi", "period", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Overbought"
+            help={PARAM_HELP["rsi.overbought"]}
+            value={requireNumber(rsi.overbought, "rsi.overbought")}
+            min={50}
+            max={95}
+            onChange={(v) => {
+              setIndicatorThreshold("rsi", "overbought", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Oversold"
+            help={PARAM_HELP["rsi.oversold"]}
+            value={requireNumber(rsi.oversold, "rsi.oversold")}
+            min={5}
+            max={50}
+            onChange={(v) => {
+              setIndicatorThreshold("rsi", "oversold", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
 
-      <IndicatorSection
-        title="MACD"
-        help={INDICATOR_HELP.macd}
-        enabled={macd.enabled}
-        onEnabledChange={(v) => {
-          setIndicatorEnabled("macd", v);
-          patch();
-        }}
-      >
-        <NumInput
-          label="Fast"
-          help={PARAM_HELP["macd.fast"]}
-          value={requireNumber(macd.params.fast, "macd.fast")}
-          min={2}
-          max={50}
-          onChange={(v) => {
-            setIndicatorParam("macd", "fast", v);
+      {show("macd") && (
+        <IndicatorSection
+          title="MACD"
+          help={INDICATOR_HELP.macd}
+          enabled={macd.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("macd", v);
             patch();
           }}
-        />
-        <NumInput
-          label="Slow"
-          help={PARAM_HELP["macd.slow"]}
-          value={requireNumber(macd.params.slow, "macd.slow")}
-          min={5}
-          max={100}
-          onChange={(v) => {
-            setIndicatorParam("macd", "slow", v);
-            patch();
-          }}
-        />
-        <NumInput
-          label="Signal"
-          help={PARAM_HELP["macd.signal"]}
-          value={requireNumber(macd.params.signal, "macd.signal")}
-          min={2}
-          max={30}
-          onChange={(v) => {
-            setIndicatorParam("macd", "signal", v);
-            patch();
-          }}
-        />
-      </IndicatorSection>
+        >
+          <NumInput
+            label="Fast"
+            help={PARAM_HELP["macd.fast"]}
+            value={requireNumber(macd.params.fast, "macd.fast")}
+            min={2}
+            max={50}
+            onChange={(v) => {
+              setIndicatorParam("macd", "fast", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Slow"
+            help={PARAM_HELP["macd.slow"]}
+            value={requireNumber(macd.params.slow, "macd.slow")}
+            min={5}
+            max={100}
+            onChange={(v) => {
+              setIndicatorParam("macd", "slow", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Signal"
+            help={PARAM_HELP["macd.signal"]}
+            value={requireNumber(macd.params.signal, "macd.signal")}
+            min={2}
+            max={30}
+            onChange={(v) => {
+              setIndicatorParam("macd", "signal", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
 
-      <IndicatorSection
-        title="Bollinger Bands"
-        help={INDICATOR_HELP.bb}
-        enabled={bb.enabled}
-        onEnabledChange={(v) => {
-          setIndicatorEnabled("bb", v);
-          patch();
-        }}
-      >
-        <NumInput
-          label="Period"
-          help={PARAM_HELP["bb.period"]}
-          value={requireNumber(bb.params.period, "bb.period")}
-          min={5}
-          max={100}
-          onChange={(v) => {
-            setIndicatorParam("bb", "period", v);
+      {show("bb") && (
+        <IndicatorSection
+          title="Bollinger Bands"
+          help={INDICATOR_HELP.bb}
+          enabled={bb.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("bb", v);
             patch();
           }}
-        />
-        <NumInput
-          label="Std Dev"
-          help={PARAM_HELP["bb.stdDev"]}
-          value={requireNumber(bb.params.stdDev, "bb.stdDev")}
-          min={0.5}
-          max={5}
-          step={0.5}
-          onChange={(v) => {
-            setIndicatorParam("bb", "stdDev", v);
-            patch();
-          }}
-        />
-        <div className="space-y-3 pt-1">
-          {BB_BAND_ORDER.map((band) => {
-            const colors = parsePeriodColors(bb.params.colors);
-            const color = resolveBbBandColor(colors, band);
-            return (
-              <div key={band}>
-                <p className="mb-1.5 flex items-center gap-1.5 text-xs text-text-tertiary">
-                  <span>{BB_BAND_META[band].labelKo} 색상</span>
-                  <HelpTip help={PARAM_HELP["bb.color"]} />
-                </p>
-                <ColorSwatchPicker
-                  value={color}
-                  onChange={(c) => {
-                    setIndicatorNamedColor("bb", band, c);
-                    patch();
-                  }}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </IndicatorSection>
+        >
+          <NumInput
+            label="Period"
+            help={PARAM_HELP["bb.period"]}
+            value={requireNumber(bb.params.period, "bb.period")}
+            min={5}
+            max={100}
+            onChange={(v) => {
+              setIndicatorParam("bb", "period", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Std Dev"
+            help={PARAM_HELP["bb.stdDev"]}
+            value={requireNumber(bb.params.stdDev, "bb.stdDev")}
+            min={0.5}
+            max={5}
+            step={0.5}
+            onChange={(v) => {
+              setIndicatorParam("bb", "stdDev", v);
+              patch();
+            }}
+          />
+          <div className="space-y-3 pt-1">
+            {BB_BAND_ORDER.map((band) => {
+              const colors = parsePeriodColors(bb.params.colors);
+              const color = resolveBbBandColor(colors, band);
+              return (
+                <div key={band}>
+                  <p className="mb-1.5 flex items-center gap-1.5 text-xs text-text-tertiary">
+                    <span>{BB_BAND_META[band].labelKo} 색상</span>
+                    <HelpTip help={PARAM_HELP["bb.color"]} />
+                  </p>
+                  <ColorSwatchPicker
+                    value={color}
+                    onChange={(c) => {
+                      setIndicatorNamedColor("bb", band, c);
+                      patch();
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </IndicatorSection>
+      )}
 
-      {mfi && (
+      {mfi && show("mfi") && (
         <IndicatorSection
           title="MFI"
           help={INDICATOR_HELP.mfi}
@@ -567,37 +614,41 @@ export function IndicatorConfigForm({ onChange, runtimeWarnings = [] }: Props) {
         </IndicatorSection>
       )}
 
-      <IndicatorSection
-        title="ATR"
-        help={INDICATOR_HELP.atr}
-        enabled={atr.enabled}
-        onEnabledChange={(v) => {
-          setIndicatorEnabled("atr", v);
-          patch();
-        }}
-      >
-        <NumInput
-          label="Period"
-          help={PARAM_HELP["atr.period"]}
-          value={requireNumber(atr.params.period, "atr.period")}
-          min={2}
-          max={50}
-          onChange={(v) => {
-            setIndicatorParam("atr", "period", v);
+      {show("atr") && (
+        <IndicatorSection
+          title="ATR"
+          help={INDICATOR_HELP.atr}
+          enabled={atr.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("atr", v);
             patch();
           }}
-        />
-      </IndicatorSection>
+        >
+          <NumInput
+            label="Period"
+            help={PARAM_HELP["atr.period"]}
+            value={requireNumber(atr.params.period, "atr.period")}
+            min={2}
+            max={50}
+            onChange={(v) => {
+              setIndicatorParam("atr", "period", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
 
-      <Button
-        variant="secondary"
-        onClick={() => {
-          resetOverrides();
-          patch();
-        }}
-      >
-        기본값으로 초기화
-      </Button>
+      {section === "all" && (
+        <Button
+          variant="secondary"
+          onClick={() => {
+            resetOverrides();
+            patch();
+          }}
+        >
+          기본값으로 초기화
+        </Button>
+      )}
     </div>
   );
 }

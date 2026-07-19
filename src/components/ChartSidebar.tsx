@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { ColorSwatchPicker } from "@/components/ColorSwatchPicker";
 import { getIndicatorConfig } from "@/lib/configStore";
+import type { IndicatorConfigSectionId } from "@/components/IndicatorConfigForm";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
 import {
   BB_BAND_META,
@@ -124,8 +125,8 @@ interface Props {
   /** Also bump when indicator config (periods/colors) changes. */
   configTick?: number;
   onVisibilityChange: () => void;
-  /** Opens SMA/EMA/… CRUD modal (parent-owned). */
-  onOpenIndicatorConfig?: () => void;
+  /** Open indicator editor for a chart-layer group / leaf. */
+  onEditIndicator?: (section: IndicatorConfigSectionId) => void;
   /** Current evaluation trendlines for per-line toggles. */
   trendlines?: TrendlineResult | null;
   className?: string;
@@ -162,6 +163,21 @@ function TriCheckbox({
   );
 }
 
+function EditLink({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium text-accent hover:bg-accent/10"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+    >
+      Edit
+    </button>
+  );
+}
+
 function Group({
   title,
   open,
@@ -171,6 +187,7 @@ function Group({
   onToggleAll,
   children,
   colorDot,
+  onEdit,
 }: {
   title: string;
   open: boolean;
@@ -180,6 +197,7 @@ function Group({
   onToggleAll: (next: boolean) => void;
   children: React.ReactNode;
   colorDot?: string;
+  onEdit?: () => void;
 }) {
   return (
     <div className="border-b border-border last:border-b-0">
@@ -203,6 +221,7 @@ function Group({
           )}
           <span className="truncate">{title}</span>
         </button>
+        {onEdit && <EditLink onClick={onEdit} />}
       </div>
       {open && <div className="space-y-0.5 pb-2 pl-7 pr-2">{children}</div>}
     </div>
@@ -218,6 +237,7 @@ function Leaf({
   colorValue,
   onColorChange,
   colorOptions,
+  onEdit,
 }: {
   label: string;
   checked: boolean;
@@ -227,33 +247,37 @@ function Leaf({
   colorValue?: string;
   onColorChange?: (color: string) => void;
   colorOptions?: readonly string[];
+  onEdit?: () => void;
 }) {
   return (
     <div className="rounded px-1.5 py-1 hover:bg-surface-elevated/60">
-      <label className="flex cursor-pointer items-start gap-2">
-        <input
-          type="checkbox"
-          className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-accent"
-          checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
-        />
-        <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-1.5 text-xs text-text-secondary">
-            {color && (
-              <span
-                className="inline-block h-0.5 w-3 rounded-sm"
-                style={{ backgroundColor: color }}
-              />
-            )}
-            <span className="truncate">{label}</span>
-          </span>
-          {hint && (
-            <span className="mt-0.5 block text-[10px] leading-snug text-text-tertiary">
-              {hint}
+      <div className="flex items-start gap-1">
+        <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-2">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-accent"
+            checked={checked}
+            onChange={(e) => onChange(e.target.checked)}
+          />
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-1.5 text-xs text-text-secondary">
+              {color && (
+                <span
+                  className="inline-block h-0.5 w-3 rounded-sm"
+                  style={{ backgroundColor: color }}
+                />
+              )}
+              <span className="truncate">{label}</span>
             </span>
-          )}
-        </span>
-      </label>
+            {hint && (
+              <span className="mt-0.5 block text-[10px] leading-snug text-text-tertiary">
+                {hint}
+              </span>
+            )}
+          </span>
+        </label>
+        {onEdit && <EditLink onClick={onEdit} />}
+      </div>
       {colorValue && onColorChange && (
         <div className="mt-1.5 pl-5">
           <ColorSwatchPicker
@@ -283,7 +307,7 @@ export function ChartSidebar({
   visibilityTick,
   configTick = 0,
   onVisibilityChange,
-  onOpenIndicatorConfig,
+  onEditIndicator,
   trendlines,
   className,
 }: Props) {
@@ -456,14 +480,14 @@ export function ChartSidebar({
         >
           레이어
         </button>
-        {onOpenIndicatorConfig && (
+        {onEditIndicator && (
           <button
             type="button"
             className="flex flex-1 items-center justify-center rounded-lg border border-accent/40 bg-accent/10 px-2 py-2 text-[11px] font-medium text-accent hover:bg-accent/20 lg:flex-none lg:px-1.5 lg:py-3 lg:[writing-mode:vertical-rl] lg:tracking-wide"
-            onClick={onOpenIndicatorConfig}
-            title="기술 지표 설정"
+            onClick={() => onEditIndicator("all")}
+            title="지표 편집"
           >
-            지표
+            Edit
           </button>
         )}
       </aside>
@@ -482,7 +506,7 @@ export function ChartSidebar({
           <div className="min-w-0">
             <p className="text-xs font-semibold text-text-primary">차트 레이어</p>
             <p className="mt-0.5 text-[10px] text-text-tertiary">
-              켜고 끄기 · 지표 기간/색은 「지표 설정」
+              체크 = 표시 · Edit = 기간·색상
             </p>
           </div>
           <button
@@ -494,15 +518,6 @@ export function ChartSidebar({
             접기
           </button>
         </div>
-        {onOpenIndicatorConfig && (
-          <button
-            type="button"
-            className="mt-2 w-full rounded-md border border-accent/40 bg-accent/10 px-2 py-1.5 text-left text-xs font-medium text-accent hover:bg-accent/20"
-            onClick={onOpenIndicatorConfig}
-          >
-            기술 지표 설정…
-          </button>
-        )}
       </div>
 
       <div className="max-h-[min(70vh,640px)] overflow-y-auto">
@@ -512,6 +527,9 @@ export function ChartSidebar({
           onToggleOpen={() => toggleOpen("ma")}
           checked={maState.checked}
           indeterminate={maState.indeterminate}
+          onEdit={
+            onEditIndicator ? () => onEditIndicator("ma") : undefined
+          }
           onToggleAll={(next) =>
             bump(() => {
               setIndicatorOverlayGroupVisible("sma", smaPeriods, next);
@@ -525,6 +543,9 @@ export function ChartSidebar({
             onToggleOpen={() => toggleOpen("sma")}
             checked={smaState.checked}
             indeterminate={smaState.indeterminate}
+            onEdit={
+              onEditIndicator ? () => onEditIndicator("sma") : undefined
+            }
             onToggleAll={(next) =>
               bump(() =>
                 setIndicatorOverlayGroupVisible("sma", smaPeriods, next),
@@ -553,6 +574,9 @@ export function ChartSidebar({
             onToggleOpen={() => toggleOpen("ema")}
             checked={emaState.checked}
             indeterminate={emaState.indeterminate}
+            onEdit={
+              onEditIndicator ? () => onEditIndicator("ema") : undefined
+            }
             onToggleAll={(next) =>
               bump(() =>
                 setIndicatorOverlayGroupVisible("ema", emaPeriods, next),
@@ -576,20 +600,20 @@ export function ChartSidebar({
           </Group>
         </Group>
 
-        {bbCfg?.enabled !== false && (
-          <Group
-            title="볼린저 밴드"
-            open={open.bb}
-            onToggleOpen={() => toggleOpen("bb")}
-            checked={bbState.checked}
-            indeterminate={bbState.indeterminate}
-            onToggleAll={(next) =>
-              bump(() => {
-                setBbOverlayGroupVisible(next);
-                setBbStrategyGroupVisible(next);
-              })
-            }
-          >
+        <Group
+          title="볼린저 밴드"
+          open={open.bb}
+          onToggleOpen={() => toggleOpen("bb")}
+          checked={bbState.checked}
+          indeterminate={bbState.indeterminate}
+          onEdit={onEditIndicator ? () => onEditIndicator("bb") : undefined}
+          onToggleAll={(next) =>
+            bump(() => {
+              setBbOverlayGroupVisible(next);
+              setBbStrategyGroupVisible(next);
+            })
+          }
+        >
             <Group
               title="밴드"
               open={open.bbBands}
@@ -636,8 +660,7 @@ export function ChartSidebar({
                 />
               ))}
             </Group>
-          </Group>
-        )}
+        </Group>
 
         <div className="border-b border-border px-2.5 py-2">
           <label className="flex cursor-pointer items-center gap-2">
@@ -916,17 +939,33 @@ export function ChartSidebar({
           indeterminate={auxState.indeterminate}
           onToggleAll={(next) => bump(() => setAuxIndicatorGroupVisible(next))}
         >
-          {AUX_INDICATOR_ORDER.map((id: AuxIndicatorId) => (
-            <Leaf
-              key={id}
-              label={AUX_INDICATOR_META[id].labelKo}
-              hint={AUX_INDICATOR_META[id].description}
-              checked={auxVis[id]}
-              onChange={(next) =>
-                bump(() => setAuxIndicatorVisible(id, next))
-              }
-            />
-          ))}
+          {AUX_INDICATOR_ORDER.map((id: AuxIndicatorId) => {
+            const editSection: IndicatorConfigSectionId | null =
+              id === "bbPercentB"
+                ? "bb"
+                : id === "rsi" ||
+                    id === "macd" ||
+                    id === "mfi" ||
+                    id === "atr"
+                  ? id
+                  : null;
+            return (
+              <Leaf
+                key={id}
+                label={AUX_INDICATOR_META[id].labelKo}
+                hint={AUX_INDICATOR_META[id].description}
+                checked={auxVis[id]}
+                onChange={(next) =>
+                  bump(() => setAuxIndicatorVisible(id, next))
+                }
+                onEdit={
+                  onEditIndicator && editSection
+                    ? () => onEditIndicator(editSection)
+                    : undefined
+                }
+              />
+            );
+          })}
         </Group>
 
         <Group

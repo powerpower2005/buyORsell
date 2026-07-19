@@ -1,5 +1,9 @@
 import { useEffect } from "react";
-import { IndicatorConfigForm } from "./IndicatorConfigForm";
+import {
+  INDICATOR_CONFIG_SECTION_LABEL,
+  IndicatorConfigForm,
+  type IndicatorConfigSectionId,
+} from "./IndicatorConfigForm";
 import { Button } from "./ui/Button";
 
 interface Props {
@@ -7,14 +11,16 @@ interface Props {
   onClose: () => void;
   onChange: () => void;
   runtimeWarnings?: string[];
+  section?: IndicatorConfigSectionId;
 }
 
-/** Right-edge settings drawer (collapsible sidebar). */
+/** Right-edge settings drawer opened from chart-layer Edit. */
 export function IndicatorConfigModal({
   open,
   onClose,
   onChange,
   runtimeWarnings,
+  section = "all",
 }: Props) {
   useEffect(() => {
     if (!open) return;
@@ -32,12 +38,14 @@ export function IndicatorConfigModal({
 
   if (!open) return null;
 
+  const title = INDICATOR_CONFIG_SECTION_LABEL[section];
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end" role="presentation">
       <button
         type="button"
         className="absolute inset-0 bg-black/50"
-        aria-label="기술 지표 설정 닫기"
+        aria-label="지표 설정 닫기"
         onClick={onClose}
       />
       <aside
@@ -52,23 +60,25 @@ export function IndicatorConfigModal({
               id="indicator-config-title"
               className="text-base font-semibold text-text-primary"
             >
-              기술 지표 설정
+              {title} 편집
             </h2>
             <p className="mt-0.5 text-[11px] text-text-tertiary">
-              기간·색상·사용 여부 (차트 레이어 on/off와 별개)
+              기간·색상·사용 여부
             </p>
           </div>
           <Button
             variant="ghost"
             className="shrink-0 px-2 py-1 text-xs"
             onClick={onClose}
-            title="사이드바 접기"
+            title="닫기"
           >
-            접기
+            닫기
           </Button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
           <IndicatorConfigForm
+            key={section}
+            section={section}
             onChange={onChange}
             runtimeWarnings={runtimeWarnings}
           />
