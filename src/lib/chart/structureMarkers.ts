@@ -1,4 +1,9 @@
-import type { SeriesMarker, Time } from "lightweight-charts";
+import type {
+  SeriesMarker,
+  SeriesMarkerBarPosition,
+  SeriesMarkerShape,
+  Time,
+} from "lightweight-charts";
 import type {
   StructureTransition,
   SwingLabel,
@@ -44,12 +49,16 @@ function transitionMarkers(
       if (t.to === "bearish") return visibility.bearish_transition;
       return false;
     })
-    .map((t) => {
+    .map((t): SeriesMarker<Time> => {
       const toBull = t.to === "bullish";
+      const position: SeriesMarkerBarPosition = toBull
+        ? "belowBar"
+        : "aboveBar";
+      const shape: SeriesMarkerShape = toBull ? "arrowUp" : "arrowDown";
       return {
         time: t.date as Time,
-        position: (toBull ? "belowBar" : "aboveBar") as SeriesMarker<Time>["position"],
-        shape: (toBull ? "arrowUp" : "arrowDown") as SeriesMarker<Time>["shape"],
+        position,
+        shape,
         color: toBull ? "#00c471" : "#f04452",
         text: "",
         id: `transition-${t.to}-${t.barIndex}`,

@@ -1,0 +1,121 @@
+import type { IndicatorResults, SeriesPoint } from "@/lib/types";
+import { getIndicatorConfig } from "@/lib/configStore";
+import {
+  AUX_INDICATOR_META,
+  AUX_INDICATOR_ORDER,
+  type AuxIndicatorId,
+} from "@/lib/auxIndicatorStore";
+
+export const OSC_PANE_HEIGHT = 120;
+export const OSC_MACD_PANE_HEIGHT = 140;
+
+export type OscPaneSpec = {
+  id: AuxIndicatorId;
+  title: string;
+  latest: string;
+  height: number;
+};
+
+function fmt(value: number | null | undefined, digits = 2): string {
+  if (value == null || Number.isNaN(value)) return "—";
+  return value.toFixed(digits);
+}
+
+export function toLineData(points: SeriesPoint[] | undefined) {
+  if (!points?.length) return [];
+  return points.map((p) => ({
+    time: p.date as `${number}-${number}-${number}`,
+    value: p.value,
+  }));
+}
+
+/** Active oscillator panes in display order (only when toggled + data exists). */
+export function buildOscPaneSpecs(
+  indicators: IndicatorResults | undefined,
+  visibility: Partial<Record<AuxIndicatorId, boolean>> | undefined,
+): OscPaneSpec[] {
+  if (!indicators) return [];
+  const panes: OscPaneSpec[] = [];
+
+  for (const id of AUX_INDICATOR_ORDER) {
+    if (visibility?.[id] !== true) continue;
+    const meta = AUX_INDICATOR_META[id];
+
+    if (id === "rsi") {
+      const cfg = getIndicatorConfig("rsi");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.rsi;
+      if (!out?.series.rsi?.length) continue;
+      const period = (cfg.params.period as number | undefined) ?? 14;
+      panes.push({
+        id,
+        title: `${meta.labelKo}(${period})`,
+        latest: fmt(out.latest.rsi),
+        height: OSC_PANE_HEIGHT,
+      });
+      continue;
+    }
+
+    if (id === "macd") {
+      const cfg = getIndicatorConfig("macd");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.macd;
+      if (!out?.series.macd?.length) continue;
+      panes.push({
+        id,
+        title: "MACD",
+        latest: `H ${fmt(out.latest.macdHist, 4)}`,
+        height: OSC_MACD_PANE_HEIGHT,
+      });
+      continue;
+    }
+
+    if (id === "mfi") {
+      const cfg = getIndicatorConfig("mfi");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.mfi;
+      if (!out?.series.mfi?.length) continue;
+      const period = (cfg.params.period as number | undefined) ?? 14;
+      panes.push({
+        id,
+        title: `${meta.labelKo}(${period})`,
+        latest: fmt(out.latest.mfi),
+        height: OSC_PANE_HEIGHT,
+      });
+      continue;
+    }
+
+    if (id === "atr") {
+      const cfg = getIndicatorConfig("atr");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.atr;
+      if (!out?.series.atr?.length) continue;
+      panes.push({
+        id,
+        title: meta.labelKo,
+        latest: fmt(out.latest.atr),
+        height: OSC_PANE_HEIGHT,
+      });
+      continue;
+    }
+
+    if (id === "bbPercentB") {
+      const cfg = getIndicatorConfig("bb");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.bb;
+      if (!out?.series.bbPercentB?.length) continue;
+      panes.push({
+        id,
+        title: meta.labelKo,
+        latest: fmt(out.latest.bbPercentB, 3),
+        height: OSC_PANE_HEIGHT,
+      });
+    }
+  }
+
+  return panes;
+}
+
+export function oscExtraHeight(panes: OscPaneSpec[]): number {
+  return panes.reduce((sum, p) => sum + p.height, 0);
+}

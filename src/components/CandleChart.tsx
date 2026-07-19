@@ -1,8 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  CandlestickSeries,
+  ColorType,
   createChart,
+  createSeriesMarkers,
+  HistogramSeries,
+  LineSeries,
+  LineStyle,
   type IChartApi,
   type ISeriesApi,
+  type ISeriesMarkersPluginApi,
+  type Time,
 } from "lightweight-charts";
 import type { OHLCVBar, Timeframe, IndicatorResults } from "@/lib/types";
 import type { CandlePatternId, CandlePatternResult } from "@/lib/evaluation/candlePatterns";
@@ -35,6 +43,11 @@ import {
   visibleClassicalPatternInstances,
   visibleClassicalPatternLegend,
 } from "@/lib/chart/classicalPatternMarkers";
+import {
+  buildOscPaneSpecs,
+  oscExtraHeight,
+  toLineData,
+} from "@/lib/chart/oscillatorPaneSpecs";
 import type { BbStrategyResult } from "@/lib/evaluation/bbStrategies";
 import type { BbStrategyId } from "@/lib/bbStrategyMeta";
 import type { ChartPatternResult } from "@/lib/evaluation/chartPatterns";
@@ -67,8 +80,9 @@ import {
   type FibRetracement,
 } from "@/lib/fibonacciStore";
 import type { AuxIndicatorId } from "@/lib/auxIndicatorStore";
-import { OscillatorPanes } from "./OscillatorPanes";
 import { Card } from "./ui/Card";
+
+type OscSeries = ISeriesApi<"Line"> | ISeriesApi<"Histogram">;
 
 function fmtLegend(value: number | null | undefined, digits = 2): string {
   if (value == null || Number.isNaN(value)) return "—";
@@ -169,9 +183,16 @@ export function CandleChart({
   const chartRef = useRef<IChartApi | null>(null);
   const candleRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volumeRef = useRef<ISeriesApi<"Histogram"> | null>(null);
+  const markersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
   const overlayRefs = useRef<Map<string, ISeriesApi<"Line">>>(new Map());
-  const [mainChartApi, setMainChartApi] = useState<IChartApi | null>(null);
-  const height = useViewportChartHeight(heightProp);
+  const oscSeriesRefs = useRef<Map<string, OscSeries>>(new Map());
+  const mainHeight = useViewportChartHeight(heightProp);
+
+  const oscPanes = useMemo(
+    () => buildOscPaneSpecs(indicators, auxIndicatorVisibility),
+    [indicators, auxIndicatorVisibility],
+  );
+  const totalHeight = mainHeight + oscExtraHeight(oscPanes);
 
   // Mutable refs so event handlers always read fresh values without re-subscribing
   const barsRef = useRef<OHLCVBar[]>(bars);
@@ -341,6 +362,13 @@ export function CandleChart({
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, h);
+
+    // Price overlays belong on pane 0 only (oscillator panes share this canvas).
+    const pane0H = chart.panes()[0]?.getHeight() ?? h;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, width, pane0H);
+    ctx.clip();
 
     // ── S/R zone bands ────────────────────────────────────────────────────────
     for (const zone of srZonesRef.current) {
@@ -573,6 +601,8 @@ export function CandleChart({
         ctx.stroke();
       }
     }
+
+    ctx.restore();
   };
 
   // ─── Chart creation / teardown ─────────────────────────────────────────────
@@ -585,10 +615,15 @@ export function CandleChart({
         containerRef.current.clientWidth ||
         containerRef.current.parentElement?.clientWidth ||
         600,
-      height,
+      height: mainHeight,
       layout: {
-        background: { color: "#252525" },
+        background: { type: ColorType.Solid, color: "#252525" },
         textColor: "#8b95a1",
+        attributionLogo: false,
+        panes: {
+          separatorColor: "#3a3a3c",
+          separatorHoverColor: "rgba(139, 149, 161, 0.15)",
+        },
       },
       grid: {
         vertLines: { color: "#3a3a3c" },
@@ -600,7 +635,7 @@ export function CandleChart({
       },
     });
 
-    const candles = chart.addCandlestickSeries({
+    const candles = chart.addSeries(CandlestickSeries, {
       upColor: "#00c471",
       downColor: "#f04452",
       borderVisible: false,
@@ -610,7 +645,7 @@ export function CandleChart({
       priceLineVisible: false,
     });
 
-    const volume = chart.addHistogramSeries({
+    const volume = chart.addSeries(HistogramSeries, {
       priceScaleId: "volume",
       priceFormat: { type: "volume" },
       lastValueVisible: false,
@@ -625,8 +660,9 @@ export function CandleChart({
     chartRef.current = chart;
     candleRef.current = candles;
     volumeRef.current = volume;
+    markersRef.current = createSeriesMarkers(candles, []);
     overlayRefs.current = new Map();
-    setMainChartApi(chart);
+    oscSeriesRefs.current = new Map();
 
     const onRange = () => drawChartOverlays();
     chart.timeScale().subscribeVisibleLogicalRangeChange(onRange);
@@ -697,26 +733,35 @@ export function CandleChart({
       chartRef.current = null;
       candleRef.current = null;
       volumeRef.current = null;
+      markersRef.current = null;
       overlayRefs.current = new Map();
-      setMainChartApi(null);
+      oscSeriesRefs.current = new Map();
     };
     // recreate chart on timeframe only; overlay redraw bound via other deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeframe]);
 
   useEffect(() => {
-    chartRef.current?.applyOptions({ height });
+    const chart = chartRef.current;
+    if (!chart) return;
+    chart.applyOptions({ height: totalHeight });
     if (containerRef.current) {
-      containerRef.current.style.height = `${height}px`;
+      containerRef.current.style.height = `${totalHeight}px`;
     }
     if (wrapRef.current) {
-      wrapRef.current.style.height = `${height}px`;
+      wrapRef.current.style.height = `${totalHeight}px`;
     }
+    const panes = chart.panes();
+    if (panes[0]) panes[0].setHeight(mainHeight);
+    oscPanes.forEach((pane, i) => {
+      const api = panes[i + 1];
+      if (api) api.setHeight(pane.height);
+    });
     drawChartOverlays();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [height]);
+  }, [totalHeight, mainHeight, oscPanes]);
 
-  // ─── MA / BB overlays ──────────────────────────────────────────────────────
+  // ─── MA / BB overlays (pane 0) ─────────────────────────────────────────────
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -747,10 +792,9 @@ export function CandleChart({
 
         let line = overlayRefs.current.get(key);
         if (!line) {
-          line = chart.addLineSeries({
+          line = chart.addSeries(LineSeries, {
             color: resolvePeriodColor(colors, period, i),
             lineWidth,
-            // Keep labels off the canvas; values live in the below-chart legend.
             title: "",
             lastValueVisible: false,
             priceLineVisible: false,
@@ -797,7 +841,7 @@ export function CandleChart({
 
         let line = overlayRefs.current.get(key);
         if (!line) {
-          line = chart.addLineSeries({
+          line = chart.addSeries(LineSeries, {
             color,
             lineWidth,
             title: "",
@@ -829,12 +873,228 @@ export function CandleChart({
 
     for (const [key, line] of overlayRefs.current) {
       if (!wanted.has(key)) {
-        line.setData([]);
-        line.applyOptions({ visible: false });
+        chart.removeSeries(line);
+        overlayRefs.current.delete(key);
       }
     }
     // Re-read periods/colors from config each run (localStorage may change via modal).
   }, [indicators, timeframe, maVisibility, bbVisibility, bars.length]);
+
+  // ─── Oscillator panes (native multi-pane, shared time scale) ───────────────
+
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+
+    for (const series of oscSeriesRefs.current.values()) {
+      chart.removeSeries(series);
+    }
+    oscSeriesRefs.current = new Map();
+
+    if (!indicators || oscPanes.length === 0) {
+      chart.applyOptions({ height: mainHeight });
+      if (containerRef.current) {
+        containerRef.current.style.height = `${mainHeight}px`;
+      }
+      if (wrapRef.current) {
+        wrapRef.current.style.height = `${mainHeight}px`;
+      }
+      const panes = chart.panes();
+      if (panes[0]) panes[0].setHeight(mainHeight);
+      drawChartOverlays();
+      return;
+    }
+
+    oscPanes.forEach((pane, index) => {
+      const paneIndex = index + 1;
+      const out = indicators.indicators;
+
+      if (pane.id === "rsi") {
+        const line = chart.addSeries(
+          LineSeries,
+          {
+            color: "#c084fc",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        const overbought =
+          getIndicatorConfig("rsi")?.overbought ?? 70;
+        const oversold = getIndicatorConfig("rsi")?.oversold ?? 30;
+        line.createPriceLine({
+          price: overbought,
+          color: "rgba(240, 68, 82, 0.55)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
+        line.createPriceLine({
+          price: oversold,
+          color: "rgba(0, 196, 113, 0.55)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
+        line.setData(toLineData(out.rsi?.series.rsi));
+        oscSeriesRefs.current.set("rsi", line);
+        return;
+      }
+
+      if (pane.id === "macd") {
+        const hist = chart.addSeries(
+          HistogramSeries,
+          {
+            lastValueVisible: false,
+            priceLineVisible: false,
+          },
+          paneIndex,
+        );
+        hist.setData(
+          (out.macd?.series.macdHist ?? []).map((p) => ({
+            time: p.date as `${number}-${number}-${number}`,
+            value: p.value,
+            color:
+              p.value >= 0
+                ? "rgba(0, 196, 113, 0.55)"
+                : "rgba(240, 68, 82, 0.55)",
+          })),
+        );
+        oscSeriesRefs.current.set("macdHist", hist);
+
+        const macdLine = chart.addSeries(
+          LineSeries,
+          {
+            color: "#60a5fa",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        macdLine.setData(toLineData(out.macd?.series.macd));
+        oscSeriesRefs.current.set("macd", macdLine);
+
+        const signal = chart.addSeries(
+          LineSeries,
+          {
+            color: "#fbbf24",
+            lineWidth: 1,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        signal.setData(toLineData(out.macd?.series.macdSignal));
+        oscSeriesRefs.current.set("macdSignal", signal);
+        return;
+      }
+
+      if (pane.id === "mfi") {
+        const line = chart.addSeries(
+          LineSeries,
+          {
+            color: "#22d3ee",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        line.createPriceLine({
+          price: 80,
+          color: "rgba(240, 68, 82, 0.45)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
+        line.createPriceLine({
+          price: 20,
+          color: "rgba(0, 196, 113, 0.45)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
+        line.setData(toLineData(out.mfi?.series.mfi));
+        oscSeriesRefs.current.set("mfi", line);
+        return;
+      }
+
+      if (pane.id === "atr") {
+        const line = chart.addSeries(
+          LineSeries,
+          {
+            color: "#94a3b8",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        line.setData(toLineData(out.atr?.series.atr));
+        oscSeriesRefs.current.set("atr", line);
+        return;
+      }
+
+      if (pane.id === "bbPercentB") {
+        const line = chart.addSeries(
+          LineSeries,
+          {
+            color: "#a78bfa",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        line.createPriceLine({
+          price: 1,
+          color: "rgba(240, 68, 82, 0.4)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
+        line.createPriceLine({
+          price: 0,
+          color: "rgba(0, 196, 113, 0.4)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
+        line.setData(toLineData(out.bb?.series.bbPercentB));
+        oscSeriesRefs.current.set("bbPercentB", line);
+      }
+    });
+
+    chart.applyOptions({ height: totalHeight });
+    if (containerRef.current) {
+      containerRef.current.style.height = `${totalHeight}px`;
+    }
+    if (wrapRef.current) {
+      wrapRef.current.style.height = `${totalHeight}px`;
+    }
+    const panes = chart.panes();
+    if (panes[0]) panes[0].setHeight(mainHeight);
+    oscPanes.forEach((pane, i) => {
+      const api = panes[i + 1];
+      if (api) api.setHeight(pane.height);
+    });
+    requestAnimationFrame(() => drawChartOverlays());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [indicators, auxIndicatorVisibility, oscPanes, timeframe, mainHeight, totalHeight]);
 
   const overlayLegend = useMemo(() => {
     if (!indicators) return [];
@@ -999,7 +1259,7 @@ export function CandleChart({
           : [],
       );
 
-      candleRef.current.setMarkers(chartMarkers);
+      markersRef.current?.setMarkers(chartMarkers);
       chartRef.current?.timeScale().fitContent();
       requestAnimationFrame(() => drawChartOverlays());
     } catch (err) {
@@ -1069,7 +1329,10 @@ export function CandleChart({
         <div
           ref={wrapRef}
           className="relative w-full"
-          style={{ height, cursor: fibDrawMode ? "crosshair" : undefined }}
+          style={{
+            height: totalHeight,
+            cursor: fibDrawMode ? "crosshair" : undefined,
+          }}
         >
           <div
             ref={containerRef}
@@ -1083,13 +1346,6 @@ export function CandleChart({
           />
         </div>
 
-        <OscillatorPanes
-          indicators={indicators}
-          visibility={auxIndicatorVisibility}
-          timeframe={timeframe}
-          mainChart={mainChartApi}
-        />
-
         <div className="mt-3 space-y-2 border-t border-border pt-3">
           {overlayLegend.length > 0 && (
             <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
@@ -1101,6 +1357,20 @@ export function CandleChart({
                     style={{ backgroundColor: item.color }}
                   />
                   <span className="tabular-nums">{item.label}</span>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {oscPanes.length > 0 && (
+            <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
+              <span>보조 패널:</span>
+              {oscPanes.map((pane) => (
+                <span
+                  key={pane.id}
+                  className="tabular-nums text-text-tertiary"
+                >
+                  {pane.title} {pane.latest}
                 </span>
               ))}
             </div>

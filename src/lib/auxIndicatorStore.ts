@@ -16,23 +16,23 @@ export const AUX_INDICATOR_META: Record<
 > = {
   rsi: {
     labelKo: "RSI",
-    description: "상대강도지수 — 가격 차트 아래 별도 패널 (0–100 스케일).",
+    description: "상대강도지수 — 같은 차트 안 별도 섹션 (0–100 스케일).",
   },
   macd: {
     labelKo: "MACD",
-    description: "MACD/시그널/히스토그램 — 가격 차트 아래 별도 패널.",
+    description: "MACD/시그널/히스토그램 — 같은 차트 안 별도 섹션.",
   },
   mfi: {
     labelKo: "MFI",
-    description: "자금흐름지수 — 가격 차트 아래 별도 패널 (0–100 스케일).",
+    description: "자금흐름지수 — 같은 차트 안 별도 섹션 (0–100 스케일).",
   },
   atr: {
     labelKo: "ATR",
-    description: "평균진폭 — 가격 차트 아래 별도 패널.",
+    description: "평균진폭 — 같은 차트 안 별도 섹션.",
   },
   bbPercentB: {
     labelKo: "%B",
-    description: "볼린저 %B — 가격 차트 아래 별도 패널.",
+    description: "볼린저 %B — 같은 차트 안 별도 섹션.",
   },
 };
 
