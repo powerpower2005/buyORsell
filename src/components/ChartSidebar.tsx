@@ -38,6 +38,28 @@ import {
   setRsiStrategyGroupVisible,
   setRsiStrategyVisible,
 } from "@/lib/rsiStrategyStore";
+import { macdStrategyHelp } from "@/lib/macdStrategyHelp";
+import {
+  MACD_STRATEGY_META,
+  MACD_STRATEGY_ORDER,
+  type MacdStrategyId,
+} from "@/lib/macdStrategyMeta";
+import {
+  getMacdStrategyVisibility,
+  setMacdStrategyGroupVisible,
+  setMacdStrategyVisible,
+} from "@/lib/macdStrategyStore";
+import { stochStrategyHelp } from "@/lib/stochStrategyHelp";
+import {
+  STOCH_STRATEGY_META,
+  STOCH_STRATEGY_ORDER,
+  type StochStrategyId,
+} from "@/lib/stochStrategyMeta";
+import {
+  getStochStrategyVisibility,
+  setStochStrategyGroupVisible,
+  setStochStrategyVisible,
+} from "@/lib/stochStrategyStore";
 import type { HelpContent } from "@/lib/indicatorHelp";
 import { INDICATOR_HELP } from "@/lib/indicatorHelp";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
@@ -515,6 +537,14 @@ export function ChartSidebar({
     () => getRsiStrategyVisibility(),
     [refreshTick],
   );
+  const macdStratVis = useMemo(
+    () => getMacdStrategyVisibility(),
+    [refreshTick],
+  );
+  const stochStratVis = useMemo(
+    () => getStochStrategyVisibility(),
+    [refreshTick],
+  );
   const swingVis = useMemo(() => getSwingChartVisibility(), [refreshTick]);
   const srVis = useMemo(() => getSrChartVisibility(), [refreshTick]);
   const volumeVis = useMemo(() => isVolumeOverlayVisible(), [refreshTick]);
@@ -616,7 +646,15 @@ export function ChartSidebar({
   const rsiStratVals = RSI_STRATEGY_ORDER.map((id) => rsiStratVis[id]);
   const rsiStratState = groupState(rsiStratVals);
   const rsiRootState = groupState([auxVis.rsi, ...rsiStratVals]);
-  const auxOtherIds = AUX_INDICATOR_ORDER.filter((id) => id !== "rsi");
+  const macdStratVals = MACD_STRATEGY_ORDER.map((id) => macdStratVis[id]);
+  const macdStratState = groupState(macdStratVals);
+  const macdRootState = groupState([auxVis.macd, ...macdStratVals]);
+  const stochStratVals = STOCH_STRATEGY_ORDER.map((id) => stochStratVis[id]);
+  const stochStratState = groupState(stochStratVals);
+  const stochRootState = groupState([auxVis.stoch, ...stochStratVals]);
+  const auxOtherIds = AUX_INDICATOR_ORDER.filter(
+    (id) => id !== "rsi" && id !== "macd" && id !== "stoch",
+  );
   const auxOtherState = groupState(auxOtherIds.map((id) => auxVis[id]));
   const classicalRootState = groupState([
     ...CHART_PATTERN_ORDER.map((id) => classicalPatternVis[id]),
@@ -632,7 +670,7 @@ export function ChartSidebar({
     ...FIB_RETRACEMENT_LEVELS.map((r) => fibVis[r]),
     ...FIB_EXTRA_ORDER.map((id) => fibExtraVis[id]),
   ]);
-  // RSI lives in its own top-level group; aux group is the other panes.
+  // RSI / MACD / Stoch live in their own top-level groups; aux is the rest.
   const auxState = auxOtherState;
   const ascState = kindLineState("ascending", ascendingLines);
   const descState = kindLineState("descending", descendingLines);
@@ -1284,6 +1322,128 @@ export function ChartSidebar({
         </Group>
 
         <Group
+          title="MACD"
+          open={open.macd}
+          onToggleOpen={() => toggleOpen("macd")}
+          checked={macdRootState.checked}
+          indeterminate={macdRootState.indeterminate}
+          help={INDICATOR_HELP.macd}
+          onEdit={
+            onEditIndicator ? () => onEditIndicator("macd") : undefined
+          }
+          onToggleAll={(next) =>
+            bump(() => {
+              setAuxIndicatorVisible("macd", next);
+              setMacdStrategyGroupVisible(next);
+            })
+          }
+        >
+          <Leaf
+            label="패널"
+            checked={auxVis.macd}
+            help={auxHelp("macd")}
+            onChange={(next) =>
+              bump(() => setAuxIndicatorVisible("macd", next))
+            }
+            onEdit={
+              onEditIndicator ? () => onEditIndicator("macd") : undefined
+            }
+          />
+          <Group
+            nested
+            title="전략"
+            open={open.macdStrategies}
+            onToggleOpen={() => toggleOpen("macdStrategies")}
+            checked={macdStratState.checked}
+            indeterminate={macdStratState.indeterminate}
+            help={CHART_LAYER_HELP.macdStrategies}
+            onToggleAll={(next) =>
+              bump(() => setMacdStrategyGroupVisible(next))
+            }
+          >
+            {MACD_STRATEGY_ORDER.map((id: MacdStrategyId) => (
+              <Leaf
+                key={id}
+                label={MACD_STRATEGY_META[id].labelKo}
+                checked={macdStratVis[id]}
+                rateStat={
+                  stats?.macdStrategy[id] ?? {
+                    samples: 0,
+                    wins: 0,
+                    ratePct: null,
+                  }
+                }
+                help={macdStrategyHelp(id)}
+                onChange={(next) =>
+                  bump(() => setMacdStrategyVisible(id, next))
+                }
+              />
+            ))}
+          </Group>
+        </Group>
+
+        <Group
+          title="스토캐스틱"
+          open={open.stoch}
+          onToggleOpen={() => toggleOpen("stoch")}
+          checked={stochRootState.checked}
+          indeterminate={stochRootState.indeterminate}
+          help={INDICATOR_HELP.stoch}
+          onEdit={
+            onEditIndicator ? () => onEditIndicator("stoch") : undefined
+          }
+          onToggleAll={(next) =>
+            bump(() => {
+              setAuxIndicatorVisible("stoch", next);
+              setStochStrategyGroupVisible(next);
+            })
+          }
+        >
+          <Leaf
+            label="패널"
+            checked={auxVis.stoch}
+            help={auxHelp("stoch")}
+            onChange={(next) =>
+              bump(() => setAuxIndicatorVisible("stoch", next))
+            }
+            onEdit={
+              onEditIndicator ? () => onEditIndicator("stoch") : undefined
+            }
+          />
+          <Group
+            nested
+            title="전략"
+            open={open.stochStrategies}
+            onToggleOpen={() => toggleOpen("stochStrategies")}
+            checked={stochStratState.checked}
+            indeterminate={stochStratState.indeterminate}
+            help={CHART_LAYER_HELP.stochStrategies}
+            onToggleAll={(next) =>
+              bump(() => setStochStrategyGroupVisible(next))
+            }
+          >
+            {STOCH_STRATEGY_ORDER.map((id: StochStrategyId) => (
+              <Leaf
+                key={id}
+                label={STOCH_STRATEGY_META[id].labelKo}
+                checked={stochStratVis[id]}
+                rateStat={
+                  stats?.stochStrategy[id] ?? {
+                    samples: 0,
+                    wins: 0,
+                    ratePct: null,
+                  }
+                }
+                help={stochStrategyHelp(id)}
+                onChange={(next) =>
+                  bump(() => setStochStrategyVisible(id, next))
+                }
+              />
+            ))}
+          </Group>
+        </Group>
+
+        <Group
           title="보조 지표 (패널)"
           open={open.aux}
           onToggleOpen={() => toggleOpen("aux")}
@@ -1302,7 +1462,7 @@ export function ChartSidebar({
             const editSection: IndicatorConfigSectionId | null =
               id === "bbPercentB"
                 ? "bb"
-                : id === "macd" || id === "mfi" || id === "atr"
+                : id === "mfi" || id === "atr"
                   ? id
                   : null;
             return (

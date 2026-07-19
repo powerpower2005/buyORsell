@@ -78,11 +78,23 @@ import {
   visibleRsiStrategyLegend,
 } from "@/lib/chart/rsiStrategyMarkers";
 import {
+  macdStrategiesToChartMarkers,
+  visibleMacdStrategyLegend,
+} from "@/lib/chart/macdStrategyMarkers";
+import {
+  stochStrategiesToChartMarkers,
+  visibleStochStrategyLegend,
+} from "@/lib/chart/stochStrategyMarkers";
+import {
   ichimokuStrategiesToChartMarkers,
   visibleIchimokuStrategyLegend,
 } from "@/lib/chart/ichimokuStrategyMarkers";
 import type { IchimokuStrategyResult } from "@/lib/evaluation/ichimokuStrategies";
 import type { IchimokuStrategyId } from "@/lib/ichimokuStrategyMeta";
+import type { MacdStrategyResult } from "@/lib/evaluation/macdStrategies";
+import type { MacdStrategyId } from "@/lib/macdStrategyMeta";
+import type { StochStrategyResult } from "@/lib/evaluation/stochStrategies";
+import type { StochStrategyId } from "@/lib/stochStrategyMeta";
 import {
   ICHIMOKU_LINE_ORDER,
   ICHIMOKU_PART_META,
@@ -192,6 +204,10 @@ interface Props {
   chartPatternStrategyVisibility?: Record<PatternStrategyId, boolean>;
   rsiStrategies?: RsiStrategyResult;
   chartRsiStrategyVisibility?: Record<RsiStrategyId, boolean>;
+  macdStrategies?: MacdStrategyResult;
+  chartMacdStrategyVisibility?: Record<MacdStrategyId, boolean>;
+  stochStrategies?: StochStrategyResult;
+  chartStochStrategyVisibility?: Record<StochStrategyId, boolean>;
   showVolume?: boolean;
   height?: number;
   fibDrawMode?: boolean;
@@ -251,6 +267,10 @@ export function CandleChart({
   chartPatternStrategyVisibility,
   rsiStrategies,
   chartRsiStrategyVisibility,
+  macdStrategies,
+  chartMacdStrategyVisibility,
+  stochStrategies,
+  chartStochStrategyVisibility,
   showVolume = false,
   height: heightProp,
   fibDrawMode,
@@ -374,6 +394,14 @@ export function CandleChart({
       rsiStrategies,
       chartRsiStrategyVisibility ?? ({} as Record<RsiStrategyId, boolean>),
     );
+    const macdStratMs = macdStrategiesToChartMarkers(
+      macdStrategies,
+      chartMacdStrategyVisibility ?? ({} as Record<MacdStrategyId, boolean>),
+    );
+    const stochStratMs = stochStrategiesToChartMarkers(
+      stochStrategies,
+      chartStochStrategyVisibility ?? ({} as Record<StochStrategyId, boolean>),
+    );
     const ichiStratMs = ichimokuStrategiesToChartMarkers(
       ichimokuStrategies,
       chartIchimokuStrategyVisibility ??
@@ -386,6 +414,8 @@ export function CandleChart({
       ...classicalMs,
       ...patternStratMs,
       ...rsiStratMs,
+      ...macdStratMs,
+      ...stochStratMs,
       ...ichiStratMs,
     ].sort((a, b) => {
       const byDate = String(a.time).localeCompare(String(b.time));
@@ -405,6 +435,10 @@ export function CandleChart({
     chartPatternStrategyVisibility,
     rsiStrategies,
     chartRsiStrategyVisibility,
+    macdStrategies,
+    chartMacdStrategyVisibility,
+    stochStrategies,
+    chartStochStrategyVisibility,
     ichimokuStrategies,
     chartIchimokuStrategyVisibility,
   ]);
@@ -516,6 +550,20 @@ export function CandleChart({
         ? visibleRsiStrategyLegend(chartRsiStrategyVisibility)
         : [],
     [chartRsiStrategyVisibility],
+  );
+  const macdStrategyLegend = useMemo(
+    () =>
+      chartMacdStrategyVisibility
+        ? visibleMacdStrategyLegend(chartMacdStrategyVisibility)
+        : [],
+    [chartMacdStrategyVisibility],
+  );
+  const stochStrategyLegend = useMemo(
+    () =>
+      chartStochStrategyVisibility
+        ? visibleStochStrategyLegend(chartStochStrategyVisibility)
+        : [],
+    [chartStochStrategyVisibility],
   );
   const ichimokuStrategyLegend = useMemo(
     () =>
@@ -1414,6 +1462,14 @@ export function CandleChart({
         );
         macdLine.setData(toLineData(out.macd?.series.macd));
         oscSeriesRefs.current.set("macd", macdLine);
+        macdLine.createPriceLine({
+          price: 0,
+          color: "rgba(148, 163, 184, 0.55)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
 
         const signal = chart.addSeries(
           LineSeries,
@@ -1428,6 +1484,65 @@ export function CandleChart({
         );
         signal.setData(toLineData(out.macd?.series.macdSignal));
         oscSeriesRefs.current.set("macdSignal", signal);
+        return;
+      }
+
+      if (pane.id === "stoch") {
+        const kLine = chart.addSeries(
+          LineSeries,
+          {
+            color: "#2dd4bf",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        kLine.setData(toLineData(out.stoch?.series.stochK));
+        oscSeriesRefs.current.set("stochK", kLine);
+
+        const overbought =
+          getIndicatorConfig("stoch")?.overbought ?? 80;
+        const oversold = getIndicatorConfig("stoch")?.oversold ?? 20;
+        kLine.createPriceLine({
+          price: overbought,
+          color: "rgba(240, 68, 82, 0.45)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
+        kLine.createPriceLine({
+          price: 50,
+          color: "rgba(148, 163, 184, 0.45)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
+        kLine.createPriceLine({
+          price: oversold,
+          color: "rgba(0, 196, 113, 0.45)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
+
+        const dLine = chart.addSeries(
+          LineSeries,
+          {
+            color: "#fb923c",
+            lineWidth: 1,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        dLine.setData(toLineData(out.stoch?.series.stochD));
+        oscSeriesRefs.current.set("stochD", dLine);
         return;
       }
 
@@ -1639,6 +1754,46 @@ export function CandleChart({
               : "#8b95a1",
       }));
   }, [rsiStrategies, chartRsiStrategyVisibility]);
+
+  const macdStrategyHitLegend = useMemo(() => {
+    if (!macdStrategies?.recent.length || !chartMacdStrategyVisibility)
+      return [];
+    return macdStrategies.recent
+      .filter((hit) => chartMacdStrategyVisibility[hit.id])
+      .slice(-8)
+      .reverse()
+      .map((hit) => ({
+        key: `${hit.id}-${hit.barIndex}`,
+        text: hit.label,
+        detail: `${hit.date} · ${hit.summary}`,
+        color:
+          hit.direction === "bullish"
+            ? "#00c471"
+            : hit.direction === "bearish"
+              ? "#f04452"
+              : "#8b95a1",
+      }));
+  }, [macdStrategies, chartMacdStrategyVisibility]);
+
+  const stochStrategyHitLegend = useMemo(() => {
+    if (!stochStrategies?.recent.length || !chartStochStrategyVisibility)
+      return [];
+    return stochStrategies.recent
+      .filter((hit) => chartStochStrategyVisibility[hit.id])
+      .slice(-8)
+      .reverse()
+      .map((hit) => ({
+        key: `${hit.id}-${hit.barIndex}`,
+        text: hit.label,
+        detail: `${hit.date} · ${hit.summary}`,
+        color:
+          hit.direction === "bullish"
+            ? "#00c471"
+            : hit.direction === "bearish"
+              ? "#f04452"
+              : "#8b95a1",
+      }));
+  }, [stochStrategies, chartStochStrategyVisibility]);
 
   const ichimokuStrategyHitLegend = useMemo(() => {
     if (!ichimokuStrategies?.recent.length || !chartIchimokuStrategyVisibility)
@@ -2160,6 +2315,72 @@ export function CandleChart({
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
                 <span>RSI 전략:</span>
                 {rsiStrategyLegend.map((item) => (
+                  <span
+                    key={`${item.text}-${item.label}`}
+                    className="text-text-tertiary"
+                  >
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            )
+          )}
+
+          {macdStrategyHitLegend.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>MACD 전략:</span>
+              {macdStrategyHitLegend.map((item) => (
+                <span key={item.key} className="flex items-center gap-1.5">
+                  <span
+                    className="font-mono text-[10px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.text}
+                  </span>
+                  <span className="tabular-nums text-text-tertiary">
+                    {item.detail}
+                  </span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            macdStrategyLegend.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span>MACD 전략:</span>
+                {macdStrategyLegend.map((item) => (
+                  <span
+                    key={`${item.text}-${item.label}`}
+                    className="text-text-tertiary"
+                  >
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            )
+          )}
+
+          {stochStrategyHitLegend.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>스토캐 전략:</span>
+              {stochStrategyHitLegend.map((item) => (
+                <span key={item.key} className="flex items-center gap-1.5">
+                  <span
+                    className="font-mono text-[10px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.text}
+                  </span>
+                  <span className="tabular-nums text-text-tertiary">
+                    {item.detail}
+                  </span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            stochStrategyLegend.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span>스토캐 전략:</span>
+                {stochStrategyLegend.map((item) => (
                   <span
                     key={`${item.text}-${item.label}`}
                     className="text-text-tertiary"

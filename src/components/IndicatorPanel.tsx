@@ -45,6 +45,18 @@ export function IndicatorPanel({ results }: { results: IndicatorResults }) {
     metrics.push({ label: "MACD Hist", value: "데이터 부족", muted: true });
   }
 
+  const stochCfg = getIndicatorConfig("stoch");
+  const stochK = results.indicators.stoch?.latest.stochK;
+  const stochD = results.indicators.stoch?.latest.stochD;
+  if (stochK != null && stochD != null) {
+    metrics.push({
+      label: "Stoch K/D",
+      value: `${fmt(stochK)} / ${fmt(stochD)}`,
+    });
+  } else if (stochCfg?.enabled) {
+    metrics.push({ label: "Stoch K/D", value: "데이터 부족", muted: true });
+  }
+
   for (const period of smaPeriods) {
     const key = `sma:${period}`;
     const val = results.indicators.sma?.latest[key];

@@ -320,6 +320,115 @@ export const mfiPlugin: IndicatorPlugin = {
   },
 };
 
+/** Slow/Fast Stochastic: %K smoothed by `slowing`, %D = SMA(%K, signalPeriod). */
+export const stochPlugin: IndicatorPlugin = {
+  id: "stoch",
+  minBars: (p) =>
+    requireNumber(p.period, "stoch.period") +
+    requireNumber(p.slowing, "stoch.slowing") +
+    requireNumber(p.signalPeriod, "stoch.signalPeriod") -
+    2,
+  compute(bars, params) {
+    const period = requireNumber(params.period, "stoch.period");
+    const slowing = requireNumber(params.slowing, "stoch.slowing");
+    const signalPeriod = requireNumber(params.signalPeriod, "stoch.signalPeriod");
+    const minBars = period + slowing + signalPeriod - 2;
+
+    if (bars.length < minBars) {
+      return {
+        series: {} as Record<string, SeriesPoint[]>,
+        latest: { stochK: null, stochD: null },
+        skipped: [`stoch requires ${minBars} bars, got ${bars.length}`],
+      };
+    }
+
+    const d = dates(bars);
+    const rawK: number[] = [];
+    for (let i = 0; i < bars.length; i++) {
+      if (i < period - 1) {
+        rawK.push(NaN);
+        continue;
+      }
+      let hh = -Infinity;
+      let ll = Infinity;
+      for (let j = i - period + 1; j <= i; j++) {
+        hh = Math.max(hh, bars[j]!.high);
+        ll = Math.min(ll, bars[j]!.low);
+      }
+      const range = hh - ll;
+      rawK.push(range > 0 ? ((bars[i]!.close - ll) / range) * 100 : 50);
+    }
+
+    const smoothK: number[] = [];
+    for (let i = 0; i < rawK.length; i++) {
+      if (i < period - 1 + slowing - 1 || !Number.isFinite(rawK[i]!)) {
+        smoothK.push(NaN);
+        continue;
+      }
+      let sum = 0;
+      let ok = true;
+      for (let j = i - slowing + 1; j <= i; j++) {
+        if (!Number.isFinite(rawK[j]!)) {
+          ok = false;
+          break;
+        }
+        sum += rawK[j]!;
+      }
+      smoothK.push(ok ? sum / slowing : NaN);
+    }
+
+    const dLine: number[] = [];
+    for (let i = 0; i < smoothK.length; i++) {
+      if (
+        i < period - 1 + slowing - 1 + signalPeriod - 1 ||
+        !Number.isFinite(smoothK[i]!)
+      ) {
+        dLine.push(NaN);
+        continue;
+      }
+      let sum = 0;
+      let ok = true;
+      for (let j = i - signalPeriod + 1; j <= i; j++) {
+        if (!Number.isFinite(smoothK[j]!)) {
+          ok = false;
+          break;
+        }
+        sum += smoothK[j]!;
+      }
+      dLine.push(ok ? sum / signalPeriod : NaN);
+    }
+
+    const kPts: number[] = [];
+    const dPts: number[] = [];
+    const datesAligned: string[] = [];
+    for (let i = 0; i < bars.length; i++) {
+      if (!Number.isFinite(smoothK[i]!) || !Number.isFinite(dLine[i]!)) continue;
+      datesAligned.push(d[i]!);
+      kPts.push(smoothK[i]!);
+      dPts.push(dLine[i]!);
+    }
+
+    if (!kPts.length) {
+      return {
+        series: {} as Record<string, SeriesPoint[]>,
+        latest: { stochK: null, stochD: null },
+        skipped: [`stoch requires ${minBars} bars, got ${bars.length}`],
+      };
+    }
+
+    return {
+      series: {
+        stochK: alignSeries(datesAligned, kPts),
+        stochD: alignSeries(datesAligned, dPts),
+      },
+      latest: {
+        stochK: optionalLatest(kPts.at(-1)),
+        stochD: optionalLatest(dPts.at(-1)),
+      },
+    };
+  },
+};
+
 export const atrPlugin: IndicatorPlugin = {
   id: "atr",
   minBars: (p) => requireNumber(p.period, "atr.period"),
@@ -497,6 +606,7 @@ export const allPlugins = [
   emaPlugin,
   rsiPlugin,
   macdPlugin,
+  stochPlugin,
   bbPlugin,
   mfiPlugin,
   atrPlugin,

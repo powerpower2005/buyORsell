@@ -33,6 +33,10 @@ export const SIDEBAR_OPEN_KEYS = [
   "aux",
   "rsi",
   "rsiStrategies",
+  "macd",
+  "macdStrategies",
+  "stoch",
+  "stochStrategies",
   "volume",
 ] as const;
 

@@ -52,14 +52,32 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     tip: "고정 70/30만 기계적으로 쓰면 추세장에서 실패가 잦습니다. 유동 밴드·다이버전스·사이드바의 RSI 전략을 함께 보세요.",
   },
   macd: {
-    title: "MACD",
+    title: "MACD (이동평균 수렴·확산)",
     summary:
-      "단기·장기 EMA 차이와 그 신호선으로 추세·모멘텀을 봅니다. Hist(히스토그램)는 두 선의 간격을 나타냅니다.",
+      "단기 EMA(보통 12)에서 장기 EMA(보통 26)를 뺀 값으로 추세 방향·강도를 봅니다. 시그널(보통 9)과 Hist(오실레이터)로 전환을 더 빨리 봅니다.",
+    howToFind:
+      "사이드바 RSI 옆처럼 MACD 그룹에서 패널을 켭니다. 파란=MACD 선, 노란=시그널, 막대=Hist(MACD−시그널), 점선=기준선(0). Hist가 0을 상·하향 돌파하면 추세 전환 후보로 봅니다.",
+    higherLabel: "상승·0선 위",
+    lowerLabel: "하락·0선 아래",
     higher:
-      "MACD·Hist가 커질수록(특히 0선 위에서) 상승 모멘텀이 강해진다고 보는 경우가 많습니다. MACD가 신호선을 상향 돌파하면 매수 모멘텀 힌트입니다.",
+      "MACD가 상승하며 0선 위이면 상승 추세 우위로 봅니다. 시그널 상향 돌파(골든)·Hist 확대는 매수 모멘텀 힌트입니다.",
     lower:
-      "MACD·Hist가 작아지거나 음수로 깊어질수록 하락 모멘텀이 커진다고 보는 경우가 많습니다. MACD가 신호선을 하향 돌파하면 매도 모멘텀 힌트입니다.",
-    tip: "0선 위/아래는 각각 중기 상승·하락 우위로 해석하는 경우가 많습니다.",
+      "MACD가 하락하며 0선 아래이면 하락 추세 우위로 봅니다. 시그널 하향 돌파(데드)·Hist 음수 확대는 매도 모멘텀 힌트입니다.",
+    tip: "MACD는 후행성이 있어 Hist·다이버전스·사이드바 MACD 전략으로 시점을 보완합니다.",
+  },
+  stoch: {
+    title: "Stochastic (스토캐스틱)",
+    summary:
+      "일정 기간 고·저 범위에서 종가의 상대 위치를 0~100으로 봅니다. %K가 빠르고 %D는 %K의 이동평균으로 교차·과열을 봅니다.",
+    howToFind:
+      "사이드바 스토캐스틱 그룹에서 패널을 켭니다. 청록=%K, 주황=%D, 점선=80/50/20. %K가 %D를 상향(골든)·하향(데드) 돌파하면 매매 타점 후보입니다.",
+    higherLabel: "과매수·상승",
+    lowerLabel: "과매도·하락",
+    higher:
+      "80 이상(또는 K·D 모두 90 근처)은 과매수·하락 반전 후보입니다. 다만 강한 상승장에서는 과매수가 오래갈 수 있습니다.",
+    lower:
+      "20 이하(또는 K·D 모두 10 근처)는 과매도·반등 후보입니다. 강한 하락장에서는 과매도가 길게 갈 수 있습니다.",
+    tip: "50선 위 유지는 상승 우위, 아래는 하락 우위로 봅니다. 단순 OB/OS보다 이평·다이버전스·사이드바 전략과 함께 쓰세요.",
   },
   bb: {
     title: "Bollinger Bands (볼린저 밴드)",
@@ -185,7 +203,8 @@ export const PARAM_HELP: Record<string, HelpContent> = {
   },
   "macd.fast": {
     title: "Fast (단기 EMA)",
-    summary: "MACD의 빠른 EMA 기간입니다. Slow보다 짧아야 합니다.",
+    summary:
+      "MACD의 빠른 EMA 기간입니다. 기본 12. Slow보다 짧아야 합니다.",
     higher:
       "Fast를 키우면(Slow에 가까워지면) MACD 선이 둔해지고 교차 신호가 줄어듭니다.",
     lower:
@@ -193,19 +212,42 @@ export const PARAM_HELP: Record<string, HelpContent> = {
   },
   "macd.slow": {
     title: "Slow (장기 EMA)",
-    summary: "MACD의 느린 EMA 기간입니다. Fast보다 길어야 합니다.",
+    summary:
+      "MACD의 느린 EMA 기간입니다. 기본 26. Fast보다 길어야 합니다.",
     higher:
       "Slow를 키우면 장기 추세 쪽에 더 맞춰져 MACD가 완만해지고 신호가 늦어집니다.",
     lower:
       "Slow를 줄이면(Fast에 가까워지면) 두 선의 차이가 작아져 신호가 자주·민감해집니다.",
   },
   "macd.signal": {
-    title: "Signal (신호선)",
-    summary: "MACD 선을 다시 이동평균한 신호선 기간입니다.",
+    title: "Signal (시그널 선)",
+    summary:
+      "MACD 선을 다시 이동평균한 시그널입니다. 기본 9. MACD 움직임을 부드럽게 해 교차 기준이 됩니다.",
     higher:
-      "신호선이 완만해져 교차가 덜 나고, 확정된 모멘텀 변화에 가깝게 반응합니다.",
+      "시그널이 완만해져 교차가 덜 나고, 확정된 모멘텀 변화에 가깝게 반응합니다.",
     lower:
-      "신호선이 민감해져 교차가 잦아집니다. 반응이 빠르지만 휩쏘도 늘 수 있습니다.",
+      "시그널이 민감해져 교차가 잦아집니다. 반응이 빠르지만 휩쏘도 늘 수 있습니다.",
+    tip: "Hist = MACD − 시그널. 막대가 커질수록 두 선의 간격(모멘텀)이 커집니다.",
+  },
+  "stoch.period": {
+    title: "Period (%K 기간)",
+    summary:
+      "고·저 범위를 볼 봉 개수입니다. 기본 14. 차트 표기 (14,1,3)의 첫 숫자.",
+    higher: "반응 느려지고 교차가 줄며, 큰 추세·스윙에 맞춰집니다.",
+    lower: "단기 민감도가 커져 교차·과열이 잦아집니다. 예: 5는 단기 이평에 선행하는 느낌.",
+  },
+  "stoch.slowing": {
+    title: "Slowing (%K 스무딩)",
+    summary:
+      "원시 %K를 다시 이동평균하는 기간입니다. 1이면 Fast, 3이면 Slow Stochastic에 가깝습니다.",
+    higher: "%K가 완만해져 노이즈가 줄고 신호가 늦어집니다.",
+    lower: "1에 가까울수록 원시 %K에 가깝고 교차가 민감합니다.",
+  },
+  "stoch.signalPeriod": {
+    title: "Signal (%D 기간)",
+    summary: "%K를 이동평균한 %D 기간입니다. 기본 3. K/D 교차의 기준선입니다.",
+    higher: "%D가 느려져 교차가 덜 나고 확정 신호에 가깝습니다.",
+    lower: "%D가 민감해져 교차가 잦아집니다.",
   },
   "bb.period": {
     title: "Period (기간)",

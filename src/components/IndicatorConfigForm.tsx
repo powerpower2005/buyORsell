@@ -39,6 +39,7 @@ export type IndicatorConfigSectionId =
   | "ema"
   | "rsi"
   | "macd"
+  | "stoch"
   | "bb"
   | "mfi"
   | "atr"
@@ -55,6 +56,7 @@ export const INDICATOR_CONFIG_SECTION_LABEL: Record<
   ema: "EMA",
   rsi: "RSI",
   macd: "MACD",
+  stoch: "스토캐스틱",
   bb: "Bollinger Bands",
   mfi: "MFI",
   atr: "ATR",
@@ -321,12 +323,13 @@ export function IndicatorConfigForm({
   const ema = find("ema");
   const rsi = find("rsi");
   const macd = find("macd");
+  const stoch = find("stoch");
   const bb = find("bb");
   const mfi = find("mfi");
   const atr = find("atr");
   const ichimoku = find("ichimoku");
 
-  if (!sma || !ema || !rsi || !macd || !bb || !atr) {
+  if (!sma || !ema || !rsi || !macd || !stoch || !bb || !atr) {
     throw new ConfigError("IndicatorConfigForm: missing indicator definitions");
   }
 
@@ -347,7 +350,7 @@ export function IndicatorConfigForm({
 
   const indicatorWarnings = runtimeWarnings.filter(
     (w) =>
-      /SMA|EMA|RSI|MACD|BB|MFI|ATR|ICHIMOKU|일목|sma|ema|rsi|macd|bb|mfi|atr|ichimoku|점수 규칙/i.test(
+      /SMA|EMA|RSI|MACD|STOCH|BB|MFI|ATR|ICHIMOKU|일목|스토캐|sma|ema|rsi|macd|stoch|bb|mfi|atr|ichimoku|점수 규칙/i.test(
         w,
       ) || w.includes("봉"),
   );
@@ -535,6 +538,77 @@ export function IndicatorConfigForm({
             max={30}
             onChange={(v) => {
               setIndicatorParam("macd", "signal", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
+
+      {show("stoch") && (
+        <IndicatorSection
+          title="스토캐스틱"
+          help={INDICATOR_HELP.stoch}
+          enabled={stoch.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("stoch", v);
+            patch();
+          }}
+        >
+          <NumInput
+            label="Period"
+            help={PARAM_HELP["stoch.period"]}
+            value={requireNumber(stoch.params.period, "stoch.period")}
+            min={3}
+            max={50}
+            onChange={(v) => {
+              setIndicatorParam("stoch", "period", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Slowing"
+            help={PARAM_HELP["stoch.slowing"]}
+            value={requireNumber(stoch.params.slowing, "stoch.slowing")}
+            min={1}
+            max={10}
+            onChange={(v) => {
+              setIndicatorParam("stoch", "slowing", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Signal (%D)"
+            help={PARAM_HELP["stoch.signalPeriod"]}
+            value={requireNumber(
+              stoch.params.signalPeriod,
+              "stoch.signalPeriod",
+            )}
+            min={1}
+            max={20}
+            onChange={(v) => {
+              setIndicatorParam("stoch", "signalPeriod", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Overbought"
+            help={INDICATOR_HELP.stoch}
+            value={(stoch.overbought as number | undefined) ?? 80}
+            min={50}
+            max={95}
+            onChange={(v) => {
+              setIndicatorThreshold("stoch", "overbought", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Oversold"
+            help={INDICATOR_HELP.stoch}
+            value={(stoch.oversold as number | undefined) ?? 20}
+            min={5}
+            max={50}
+            onChange={(v) => {
+              setIndicatorThreshold("stoch", "oversold", v);
               patch();
             }}
           />

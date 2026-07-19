@@ -75,6 +75,23 @@ export function buildOscPaneSpecs(
       continue;
     }
 
+    if (id === "stoch") {
+      const cfg = getIndicatorConfig("stoch");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.stoch;
+      if (!out?.series.stochK?.length) continue;
+      const period = (cfg.params.period as number | undefined) ?? 14;
+      const slowing = (cfg.params.slowing as number | undefined) ?? 1;
+      const signal = (cfg.params.signalPeriod as number | undefined) ?? 3;
+      panes.push({
+        id,
+        title: `Stoch(${period},${slowing},${signal})`,
+        latest: `K ${fmt(out.latest.stochK)} · D ${fmt(out.latest.stochD)}`,
+        height: OSC_PANE_HEIGHT,
+      });
+      continue;
+    }
+
     if (id === "mfi") {
       const cfg = getIndicatorConfig("mfi");
       if (!cfg?.enabled) continue;

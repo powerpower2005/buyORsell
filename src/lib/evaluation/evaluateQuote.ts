@@ -50,6 +50,14 @@ import {
   detectIchimokuStrategies,
   type IchimokuStrategyResult,
 } from "./ichimokuStrategies";
+import {
+  detectMacdStrategies,
+  type MacdStrategyResult,
+} from "./macdStrategies";
+import {
+  detectStochStrategies,
+  type StochStrategyResult,
+} from "./stochStrategies";
 import { getIndicatorConfig } from "../configStore";
 import {
   EMPTY_SIGNAL_STATS,
@@ -69,6 +77,8 @@ export interface QuoteEvaluation {
   classicalPatterns: ChartPatternResult | null;
   patternStrategies: PatternStrategyResult | null;
   rsiStrategies: RsiStrategyResult | null;
+  macdStrategies: MacdStrategyResult | null;
+  stochStrategies: StochStrategyResult | null;
   ichimokuStrategies: IchimokuStrategyResult | null;
   /** Follow-through rates by pattern/strategy id (this ticker window). */
   signalStats: SignalStatsBundle;
@@ -139,6 +149,8 @@ export function evaluateQuote(
       classicalPatterns: null,
       patternStrategies: null,
       rsiStrategies: null,
+      macdStrategies: null,
+      stochStrategies: null,
       ichimokuStrategies: null,
       signalStats: EMPTY_SIGNAL_STATS,
       warnings,
@@ -256,6 +268,35 @@ export function evaluateQuote(
     }
   }
 
+  let macdStrategies: MacdStrategyResult | null = null;
+  if (!fatalError) {
+    try {
+      macdStrategies = detectMacdStrategies(prepared, indicators);
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
+  let stochStrategies: StochStrategyResult | null = null;
+  if (!fatalError) {
+    try {
+      const stochCfg = getIndicatorConfig("stoch");
+      stochStrategies = detectStochStrategies(
+        prepared,
+        indicators,
+        supportResistance,
+        {
+          overbought: (stochCfg?.overbought as number | undefined) ?? 80,
+          oversold: (stochCfg?.oversold as number | undefined) ?? 20,
+        },
+      );
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
   let ichimokuStrategies: IchimokuStrategyResult | null = null;
   if (!fatalError) {
     try {
@@ -276,6 +317,8 @@ export function evaluateQuote(
     patternStrategy: patternStrategies?.stats ?? {},
     bbStrategy: bbStrategies?.stats ?? {},
     rsiStrategy: rsiStrategies?.stats ?? {},
+    macdStrategy: macdStrategies?.stats ?? {},
+    stochStrategy: stochStrategies?.stats ?? {},
     ichimokuStrategy: ichimokuStrategies?.stats ?? {},
   };
 
@@ -292,6 +335,8 @@ export function evaluateQuote(
     classicalPatterns,
     patternStrategies,
     rsiStrategies,
+    macdStrategies,
+    stochStrategies,
     ichimokuStrategies,
     signalStats,
     warnings,

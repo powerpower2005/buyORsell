@@ -14,6 +14,8 @@ export interface SignalStatsBundle {
   patternStrategy: SignalStatsMap;
   bbStrategy: SignalStatsMap;
   rsiStrategy: SignalStatsMap;
+  macdStrategy: SignalStatsMap;
+  stochStrategy: SignalStatsMap;
   ichimokuStrategy: SignalStatsMap;
 }
 
@@ -23,6 +25,8 @@ export const EMPTY_SIGNAL_STATS: SignalStatsBundle = {
   patternStrategy: {},
   bbStrategy: {},
   rsiStrategy: {},
+  macdStrategy: {},
+  stochStrategy: {},
   ichimokuStrategy: {},
 };
 

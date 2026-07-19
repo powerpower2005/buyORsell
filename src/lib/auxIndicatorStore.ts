@@ -1,10 +1,17 @@
 /** Below-chart oscillator pane toggles (separate Y-axis sections, shared time scale). */
 
-export type AuxIndicatorId = "rsi" | "macd" | "mfi" | "atr" | "bbPercentB";
+export type AuxIndicatorId =
+  | "rsi"
+  | "macd"
+  | "stoch"
+  | "mfi"
+  | "atr"
+  | "bbPercentB";
 
 export const AUX_INDICATOR_ORDER: AuxIndicatorId[] = [
   "rsi",
   "macd",
+  "stoch",
   "mfi",
   "atr",
   "bbPercentB",
@@ -21,6 +28,10 @@ export const AUX_INDICATOR_META: Record<
   macd: {
     labelKo: "MACD",
     description: "MACD/시그널/히스토그램 — 같은 차트 안 별도 섹션.",
+  },
+  stoch: {
+    labelKo: "스토캐스틱",
+    description: "%K/%D — 같은 차트 안 별도 섹션 (0–100 스케일).",
   },
   mfi: {
     labelKo: "MFI",
@@ -40,6 +51,7 @@ export const AUX_INDICATOR_META: Record<
 export const INDICATOR_TO_AUX: Partial<Record<string, AuxIndicatorId>> = {
   rsi: "rsi",
   macd: "macd",
+  stoch: "stoch",
   mfi: "mfi",
   atr: "atr",
 };
