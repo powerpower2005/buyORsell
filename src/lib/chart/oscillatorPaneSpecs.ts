@@ -1,4 +1,4 @@
-import type { IndicatorResults, SeriesPoint } from "@/lib/types";
+import type { IndicatorResults, OHLCVBar, SeriesPoint } from "@/lib/types";
 import { getIndicatorConfig } from "@/lib/configStore";
 import {
   AUX_INDICATOR_META,
@@ -8,6 +8,7 @@ import {
 
 export const OSC_PANE_HEIGHT = 120;
 export const OSC_MACD_PANE_HEIGHT = 140;
+export const VOLUME_PANE_HEIGHT = 100;
 
 export type OscPaneSpec = {
   id: AuxIndicatorId;
@@ -118,4 +119,23 @@ export function buildOscPaneSpecs(
 
 export function oscExtraHeight(panes: OscPaneSpec[]): number {
   return panes.reduce((sum, p) => sum + p.height, 0);
+}
+
+export function toVolumeData(bars: OHLCVBar[]) {
+  return bars.map((b) => ({
+    time: b.date as `${number}-${number}-${number}`,
+    value: b.volume,
+    color:
+      b.close >= b.open
+        ? "rgba(0, 196, 113, 0.55)"
+        : "rgba(240, 68, 82, 0.55)",
+  }));
+}
+
+export function fmtVolume(value: number | undefined): string {
+  if (value == null || Number.isNaN(value)) return "—";
+  if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(2)}B`;
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  return String(Math.round(value));
 }

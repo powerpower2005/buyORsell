@@ -45,8 +45,11 @@ import {
 } from "@/lib/chart/classicalPatternMarkers";
 import {
   buildOscPaneSpecs,
+  fmtVolume,
   oscExtraHeight,
   toLineData,
+  toVolumeData,
+  VOLUME_PANE_HEIGHT,
 } from "@/lib/chart/oscillatorPaneSpecs";
 import type { BbStrategyResult } from "@/lib/evaluation/bbStrategies";
 import type { BbStrategyId } from "@/lib/bbStrategyMeta";
@@ -192,7 +195,10 @@ export function CandleChart({
     () => buildOscPaneSpecs(indicators, auxIndicatorVisibility),
     [indicators, auxIndicatorVisibility],
   );
-  const totalHeight = mainHeight + oscExtraHeight(oscPanes);
+  const volumePaneHeight = showVolume ? VOLUME_PANE_HEIGHT : 0;
+  const totalHeight =
+    mainHeight + volumePaneHeight + oscExtraHeight(oscPanes);
+  const latestVolume = bars.length ? bars[bars.length - 1]!.volume : undefined;
 
   // Mutable refs so event handlers always read fresh values without re-subscribing
   const barsRef = useRef<OHLCVBar[]>(bars);
@@ -631,7 +637,7 @@ export function CandleChart({
       },
       rightPriceScale: {
         borderColor: "#3a3a3c",
-        scaleMargins: { top: 0.05, bottom: 0.28 },
+        scaleMargins: { top: 0.05, bottom: 0.05 },
       },
     });
 
@@ -645,21 +651,9 @@ export function CandleChart({
       priceLineVisible: false,
     });
 
-    const volume = chart.addSeries(HistogramSeries, {
-      priceScaleId: "volume",
-      priceFormat: { type: "volume" },
-      lastValueVisible: false,
-      priceLineVisible: false,
-    });
-
-    chart.priceScale("volume").applyOptions({
-      scaleMargins: { top: 0.78, bottom: 0 },
-      borderColor: "#3a3a3c",
-    });
-
     chartRef.current = chart;
     candleRef.current = candles;
-    volumeRef.current = volume;
+    volumeRef.current = null;
     markersRef.current = createSeriesMarkers(candles, []);
     overlayRefs.current = new Map();
     oscSeriesRefs.current = new Map();
@@ -753,13 +747,15 @@ export function CandleChart({
     }
     const panes = chart.panes();
     if (panes[0]) panes[0].setHeight(mainHeight);
+    const volOffset = showVolume ? 1 : 0;
+    if (showVolume && panes[1]) panes[1].setHeight(VOLUME_PANE_HEIGHT);
     oscPanes.forEach((pane, i) => {
-      const api = panes[i + 1];
+      const api = panes[i + 1 + volOffset];
       if (api) api.setHeight(pane.height);
     });
     drawChartOverlays();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [totalHeight, mainHeight, oscPanes]);
+  }, [totalHeight, mainHeight, oscPanes, showVolume]);
 
   // ─── MA / BB overlays (pane 0) ─────────────────────────────────────────────
 
@@ -880,7 +876,7 @@ export function CandleChart({
     // Re-read periods/colors from config each run (localStorage may change via modal).
   }, [indicators, timeframe, maVisibility, bbVisibility, bars.length]);
 
-  // ─── Oscillator panes (native multi-pane, shared time scale) ───────────────
+  // ─── Secondary panes: volume + oscillators (native multi-pane) ─────────────
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -890,8 +886,13 @@ export function CandleChart({
       chart.removeSeries(series);
     }
     oscSeriesRefs.current = new Map();
+    if (volumeRef.current) {
+      chart.removeSeries(volumeRef.current);
+      volumeRef.current = null;
+    }
 
-    if (!indicators || oscPanes.length === 0) {
+    const hasSecondary = showVolume || oscPanes.length > 0;
+    if (!hasSecondary) {
       chart.applyOptions({ height: mainHeight });
       if (containerRef.current) {
         containerRef.current.style.height = `${mainHeight}px`;
@@ -905,9 +906,27 @@ export function CandleChart({
       return;
     }
 
+    let nextPane = 1;
+    if (showVolume && bars.length) {
+      const volume = chart.addSeries(
+        HistogramSeries,
+        {
+          priceFormat: { type: "volume" },
+          lastValueVisible: false,
+          priceLineVisible: false,
+        },
+        nextPane,
+      );
+      volume.setData(toVolumeData(bars));
+      volumeRef.current = volume;
+      nextPane += 1;
+    }
+
+    const volOffset = nextPane - 1;
     oscPanes.forEach((pane, index) => {
-      const paneIndex = index + 1;
-      const out = indicators.indicators;
+      const paneIndex = index + 1 + volOffset;
+      const out = indicators?.indicators;
+      if (!out) return;
 
       if (pane.id === "rsi") {
         const line = chart.addSeries(
@@ -1088,13 +1107,24 @@ export function CandleChart({
     }
     const panes = chart.panes();
     if (panes[0]) panes[0].setHeight(mainHeight);
+    const heightVolOffset = showVolume ? 1 : 0;
+    if (showVolume && panes[1]) panes[1].setHeight(VOLUME_PANE_HEIGHT);
     oscPanes.forEach((pane, i) => {
-      const api = panes[i + 1];
+      const api = panes[i + 1 + heightVolOffset];
       if (api) api.setHeight(pane.height);
     });
     requestAnimationFrame(() => drawChartOverlays());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [indicators, auxIndicatorVisibility, oscPanes, timeframe, mainHeight, totalHeight]);
+  }, [
+    indicators,
+    auxIndicatorVisibility,
+    oscPanes,
+    showVolume,
+    bars,
+    timeframe,
+    mainHeight,
+    totalHeight,
+  ]);
 
   const overlayLegend = useMemo(() => {
     if (!indicators) return [];
@@ -1232,7 +1262,7 @@ export function CandleChart({
   // ─── Bars data update ──────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!bars.length || !candleRef.current || !volumeRef.current) return;
+    if (!bars.length || !candleRef.current) return;
 
     try {
       candleRef.current.setData(
@@ -1245,19 +1275,9 @@ export function CandleChart({
         })),
       );
 
-      volumeRef.current.applyOptions({ visible: showVolume });
-      volumeRef.current.setData(
-        showVolume
-          ? bars.map((b) => ({
-              time: b.date as `${number}-${number}-${number}`,
-              value: b.volume,
-              color:
-                b.close >= b.open
-                  ? "rgba(0, 196, 113, 0.45)"
-                  : "rgba(240, 68, 82, 0.45)",
-            }))
-          : [],
-      );
+      if (volumeRef.current && showVolume) {
+        volumeRef.current.setData(toVolumeData(bars));
+      }
 
       markersRef.current?.setMarkers(chartMarkers);
       chartRef.current?.timeScale().fitContent();
@@ -1362,9 +1382,14 @@ export function CandleChart({
             </div>
           )}
 
-          {oscPanes.length > 0 && (
+          {(showVolume || oscPanes.length > 0) && (
             <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
               <span>보조 패널:</span>
+              {showVolume && (
+                <span className="tabular-nums text-text-tertiary">
+                  거래량 {fmtVolume(latestVolume)}
+                </span>
+              )}
               {oscPanes.map((pane) => (
                 <span
                   key={pane.id}
