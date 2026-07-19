@@ -1,4 +1,4 @@
-/** Below-chart value toggles for oscillators / secondary metrics (not drawn on canvas). */
+/** Below-chart oscillator pane toggles (separate Y-axis sections, shared time scale). */
 
 export type AuxIndicatorId = "rsi" | "macd" | "mfi" | "atr" | "bbPercentB";
 
@@ -16,24 +16,32 @@ export const AUX_INDICATOR_META: Record<
 > = {
   rsi: {
     labelKo: "RSI",
-    description: "상대강도지수 최신값 (차트 아래 범례).",
+    description: "상대강도지수 — 가격 차트 아래 별도 패널 (0–100 스케일).",
   },
   macd: {
-    labelKo: "MACD Hist",
-    description: "MACD 히스토그램 최신값 (차트 아래 범례).",
+    labelKo: "MACD",
+    description: "MACD/시그널/히스토그램 — 가격 차트 아래 별도 패널.",
   },
   mfi: {
     labelKo: "MFI",
-    description: "자금흐름지수 최신값 (차트 아래 범례).",
+    description: "자금흐름지수 — 가격 차트 아래 별도 패널 (0–100 스케일).",
   },
   atr: {
     labelKo: "ATR",
-    description: "평균진폭 최신값 (차트 아래 범례).",
+    description: "평균진폭 — 가격 차트 아래 별도 패널.",
   },
   bbPercentB: {
     labelKo: "%B",
-    description: "볼린저 %B 최신값 (차트 아래 범례).",
+    description: "볼린저 %B — 가격 차트 아래 별도 패널.",
   },
+};
+
+/** Oscillator indicator config ids that map 1:1 to aux pane toggles. */
+export const INDICATOR_TO_AUX: Partial<Record<string, AuxIndicatorId>> = {
+  rsi: "rsi",
+  macd: "macd",
+  mfi: "mfi",
+  atr: "atr",
 };
 
 const STORAGE_KEY = "gf:config:aux-indicators-legend";
@@ -53,7 +61,7 @@ function saveOverrides(overrides: Overrides): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
 }
 
-/** Default off — opt-in below-chart values. */
+/** Default off — opt-in oscillator panes. */
 export function getAuxIndicatorVisibility(): Record<AuxIndicatorId, boolean> {
   const overrides = loadOverrides();
   const out = {} as Record<AuxIndicatorId, boolean>;

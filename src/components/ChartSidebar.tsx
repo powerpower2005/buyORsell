@@ -909,7 +909,7 @@ export function ChartSidebar({
         </div>
 
         <Group
-          title="보조 지표 (값)"
+          title="보조 지표 (패널)"
           open={open.aux}
           onToggleOpen={() => toggleOpen("aux")}
           checked={auxState.checked}

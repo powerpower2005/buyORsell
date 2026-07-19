@@ -66,11 +66,8 @@ import {
   type FibLevelRatio,
   type FibRetracement,
 } from "@/lib/fibonacciStore";
-import {
-  AUX_INDICATOR_META,
-  AUX_INDICATOR_ORDER,
-  type AuxIndicatorId,
-} from "@/lib/auxIndicatorStore";
+import type { AuxIndicatorId } from "@/lib/auxIndicatorStore";
+import { OscillatorPanes } from "./OscillatorPanes";
 import { Card } from "./ui/Card";
 
 function fmtLegend(value: number | null | undefined, digits = 2): string {
@@ -112,7 +109,7 @@ interface Props {
   fibLevelVisibility?: Record<FibLevelRatio, boolean>;
   /** 0%/100% guides and confluence band visibility. Missing defaults to true. */
   fibExtraVisibility?: Partial<Record<FibExtraId, boolean>>;
-  /** Below-chart oscillator value toggles. Missing defaults to true. */
+  /** Below-chart oscillator pane toggles. Missing / false = hidden. */
   auxIndicatorVisibility?: Partial<Record<AuxIndicatorId, boolean>>;
   onFibChange?: () => void;
 }
@@ -173,6 +170,7 @@ export function CandleChart({
   const candleRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volumeRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const overlayRefs = useRef<Map<string, ISeriesApi<"Line">>>(new Map());
+  const [mainChartApi, setMainChartApi] = useState<IChartApi | null>(null);
   const height = useViewportChartHeight(heightProp);
 
   // Mutable refs so event handlers always read fresh values without re-subscribing
@@ -628,6 +626,7 @@ export function CandleChart({
     candleRef.current = candles;
     volumeRef.current = volume;
     overlayRefs.current = new Map();
+    setMainChartApi(chart);
 
     const onRange = () => drawChartOverlays();
     chart.timeScale().subscribeVisibleLogicalRangeChange(onRange);
@@ -699,6 +698,7 @@ export function CandleChart({
       candleRef.current = null;
       volumeRef.current = null;
       overlayRefs.current = new Map();
+      setMainChartApi(null);
     };
     // recreate chart on timeframe only; overlay redraw bound via other deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -877,84 +877,6 @@ export function CandleChart({
 
     return items;
   }, [indicators, maVisibility, bbVisibility]);
-
-  const auxIndicatorLegend = useMemo(() => {
-    if (!indicators) return [];
-    const items: { id: AuxIndicatorId; label: string; value: string }[] = [];
-
-    for (const id of AUX_INDICATOR_ORDER) {
-      if (auxIndicatorVisibility?.[id] !== true) continue;
-      const meta = AUX_INDICATOR_META[id];
-
-      if (id === "rsi") {
-        const cfg = getIndicatorConfig("rsi");
-        if (!cfg?.enabled) continue;
-        const period = (cfg.params.period as number | undefined) ?? 14;
-        const val = indicators.indicators.rsi?.latest.rsi;
-        if (val == null && !indicators.indicators.rsi) continue;
-        items.push({
-          id,
-          label: `${meta.labelKo}(${period})`,
-          value: fmtLegend(val),
-        });
-        continue;
-      }
-
-      if (id === "macd") {
-        const cfg = getIndicatorConfig("macd");
-        if (!cfg?.enabled) continue;
-        const val = indicators.indicators.macd?.latest.macdHist;
-        if (val == null && !indicators.indicators.macd) continue;
-        items.push({
-          id,
-          label: meta.labelKo,
-          value: fmtLegend(val, 4),
-        });
-        continue;
-      }
-
-      if (id === "mfi") {
-        const cfg = getIndicatorConfig("mfi");
-        if (!cfg?.enabled) continue;
-        const period = (cfg.params.period as number | undefined) ?? 14;
-        const val = indicators.indicators.mfi?.latest.mfi;
-        if (val == null && !indicators.indicators.mfi) continue;
-        items.push({
-          id,
-          label: `${meta.labelKo}(${period})`,
-          value: fmtLegend(val),
-        });
-        continue;
-      }
-
-      if (id === "atr") {
-        const cfg = getIndicatorConfig("atr");
-        if (!cfg?.enabled) continue;
-        const val = indicators.indicators.atr?.latest.atr;
-        if (val == null && !indicators.indicators.atr) continue;
-        items.push({
-          id,
-          label: meta.labelKo,
-          value: fmtLegend(val),
-        });
-        continue;
-      }
-
-      if (id === "bbPercentB") {
-        const cfg = getIndicatorConfig("bb");
-        if (!cfg?.enabled) continue;
-        const val = indicators.indicators.bb?.latest.bbPercentB;
-        if (val == null && !indicators.indicators.bb) continue;
-        items.push({
-          id,
-          label: meta.labelKo,
-          value: fmtLegend(val, 3),
-        });
-      }
-    }
-
-    return items;
-  }, [indicators, auxIndicatorVisibility]);
 
   const patternHitLegend = useMemo(() => {
     if (!patterns?.recent.length || !chartPatternVisibility) return [];
@@ -1161,6 +1083,13 @@ export function CandleChart({
           />
         </div>
 
+        <OscillatorPanes
+          indicators={indicators}
+          visibility={auxIndicatorVisibility}
+          timeframe={timeframe}
+          mainChart={mainChartApi}
+        />
+
         <div className="mt-3 space-y-2 border-t border-border pt-3">
           {overlayLegend.length > 0 && (
             <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
@@ -1172,17 +1101,6 @@ export function CandleChart({
                     style={{ backgroundColor: item.color }}
                   />
                   <span className="tabular-nums">{item.label}</span>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {auxIndicatorLegend.length > 0 && (
-            <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
-              <span>보조 지표:</span>
-              {auxIndicatorLegend.map((item) => (
-                <span key={item.id} className="tabular-nums text-text-tertiary">
-                  {item.label} {item.value}
                 </span>
               ))}
             </div>

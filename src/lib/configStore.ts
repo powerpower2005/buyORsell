@@ -6,6 +6,10 @@ import {
   remapIndicatorOverlayPeriod,
   setIndicatorOverlayVisible,
 } from "./indicatorOverlayStore";
+import {
+  INDICATOR_TO_AUX,
+  setAuxIndicatorVisible,
+} from "./auxIndicatorStore";
 
 const OVERRIDE_KEY = "gf:config:overrides";
 
@@ -204,6 +208,8 @@ export function setIndicatorNamedColor(
 
 export function setIndicatorEnabled(id: string, enabled: boolean): void {
   updateIndicatorItem(id, (item) => ({ ...item, enabled }));
+  const auxId = INDICATOR_TO_AUX[id];
+  if (auxId) setAuxIndicatorVisible(auxId, enabled);
 }
 
 export function setIndicatorThreshold(

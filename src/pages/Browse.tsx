@@ -203,7 +203,7 @@ export function BrowsePage() {
   );
   const auxIndicatorVisibility = useMemo(
     () => getAuxIndicatorVisibility(),
-    [chartVisTick],
+    [chartVisTick, configTick],
   );
   const chartTrendlineVisibility = useMemo(
     () => getTrendlineChartVisibility(),
