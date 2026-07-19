@@ -53,11 +53,26 @@ function dateRangeForTimeframe(tfConfig) {
   if (tfConfig.sheetsLookbackDays == null) {
     throw new Error("timeframes.json: sheetsLookbackDays is required for Sheets fetch");
   }
-  const start = addDays(end, -tfConfig.sheetsLookbackDays);
+  // Prefer a shorter first-fetch window; history beyond that is filled by backfill chunks.
+  const lookbackDays =
+    tfConfig.sheetsInitialLookbackDays ?? tfConfig.sheetsLookbackDays;
+  const start = addDays(end, -lookbackDays);
   return { start, end };
 }
 
-export async function fetchQuote(ticker, timeframe = "1d") {
+function toUtcDate(value) {
+  if (value instanceof Date) return value;
+  const s = String(value);
+  const [y, m, d] = s.slice(0, 10).split("-").map(Number);
+  return utcDate(y, m, d);
+}
+
+/**
+ * @param {string} ticker
+ * @param {string} [timeframe]
+ * @param {{ start?: Date|string, end?: Date|string, symbolCandidates?: string[] }} [options]
+ */
+export async function fetchQuote(ticker, timeframe = "1d", options = {}) {
   const timeframes = loadJson("config/timeframes.json").timeframes;
   const tfConfig = timeframes[timeframe];
   if (!tfConfig) throw new Error(`Unknown timeframe: ${timeframe}`);
@@ -69,8 +84,15 @@ export async function fetchQuote(ticker, timeframe = "1d") {
   }
 
   const sheetsCfg = loadJson("config/sheets.json");
-  const candidates = financeSymbolCandidates(ticker);
-  const { start, end } = dateRangeForTimeframe(tfConfig);
+  const candidates =
+    options.symbolCandidates?.length > 0
+      ? options.symbolCandidates
+      : financeSymbolCandidates(ticker);
+  const range =
+    options.start != null && options.end != null
+      ? { start: toUtcDate(options.start), end: toUtcDate(options.end) }
+      : dateRangeForTimeframe(tfConfig);
+  const { start, end } = range;
 
   const { symbol, bars } = await fetchBarsWithSymbolCandidates(
     ROOT,

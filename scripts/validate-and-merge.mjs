@@ -8,6 +8,7 @@ import {
   assertBarsMatchTimeframe,
   dropLeadingWrongCadence,
 } from "./lib/bar-cadence.mjs";
+import { financeSymbolCandidates } from "./lib/finance-symbol.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -142,8 +143,147 @@ function updateIndex(entry) {
   writeJson(indexPath, index);
 }
 
+function timeframeConfig(timeframe) {
+  const timeframes = loadJson("config/timeframes.json").timeframes;
+  return timeframes[timeframe] ?? {};
+}
+
+function targetBarCount(tfConfig) {
+  return tfConfig.maxBars ?? null;
+}
+
+function backfillChunkDays(tfConfig) {
+  return tfConfig.backfillChunkDays ?? 10;
+}
+
+/**
+ * After the first fetch, walk backward in chunkDays (default 10) windows
+ * and merge until we reach maxBars / target, or a chunk adds nothing.
+ */
+export async function backfillPastBars({
+  ticker,
+  timeframe,
+  ohlcv,
+  resolvedSymbol,
+}) {
+  const tfConfig = timeframeConfig(timeframe);
+  const target = targetBarCount(tfConfig);
+  const chunkDays = backfillChunkDays(tfConfig);
+  if (target == null || chunkDays <= 0) {
+    return { ohlcv, rounds: 0, addedBars: 0, stoppedReason: "disabled" };
+  }
+  if (ohlcv.length >= target) {
+    return { ohlcv, rounds: 0, addedBars: 0, stoppedReason: "already_at_target" };
+  }
+
+  const candidates = resolvedSymbol
+    ? [resolvedSymbol, ...financeSymbolCandidates(ticker)].filter(
+        (v, i, a) => v && a.indexOf(v) === i,
+      )
+    : undefined;
+
+  let current = ohlcv;
+  let rounds = 0;
+  let addedBars = 0;
+  let emptyStreak = 0;
+  const maxRounds = Math.ceil((target * 3) / Math.max(1, chunkDays)) + 5;
+  const maxEmptyStreak = 12;
+  let stoppedReason = "target_reached";
+  // Cursor walks further into the past even when a chunk is empty (holidays / N/A).
+  let cursorEnd = addUtcDays(current[0].date, -1);
+
+  while (current.length < target && rounds < maxRounds) {
+    rounds += 1;
+    const endIso = cursorEnd;
+    const startIso = addUtcDays(endIso, -(chunkDays - 1));
+    if (endIso < "1990-01-01") {
+      stoppedReason = "cursor_floor";
+      break;
+    }
+    console.log(
+      `[backfill] ${ticker} ${timeframe} round ${rounds}: ${startIso}..${endIso} (have ${current.length}/${target})`,
+    );
+
+    let chunk;
+    try {
+      chunk = await fetchQuote(ticker, timeframe, {
+        start: startIso,
+        end: endIso,
+        symbolCandidates: candidates,
+      });
+    } catch (e) {
+      console.warn(
+        `[backfill] chunk empty/fail, step back: ${e instanceof Error ? e.message : e}`,
+      );
+      emptyStreak += 1;
+      cursorEnd = addUtcDays(startIso, -1);
+      if (emptyStreak >= maxEmptyStreak) {
+        stoppedReason = "empty_streak";
+        break;
+      }
+      continue;
+    }
+
+    let incoming = dropLeadingWrongCadence(chunk.ohlcv, timeframe);
+    if (!incoming.length) {
+      emptyStreak += 1;
+      cursorEnd = addUtcDays(startIso, -1);
+      if (emptyStreak >= maxEmptyStreak) {
+        stoppedReason = "empty_streak";
+        break;
+      }
+      continue;
+    }
+
+    const before = current.length;
+    const m = mergeOhlcv(current, incoming);
+    current = sanitizeBars(m.ohlcv, timeframe);
+    const gained = current.length - before;
+    cursorEnd = addUtcDays(current[0].date, -1);
+    if (gained <= 0) {
+      emptyStreak += 1;
+      if (emptyStreak >= maxEmptyStreak) {
+        stoppedReason = "no_new_bars";
+        break;
+      }
+      continue;
+    }
+    emptyStreak = 0;
+    addedBars += gained;
+  }
+
+  if (rounds >= maxRounds && current.length < target) {
+    stoppedReason = "max_rounds";
+  }
+
+  console.log(
+    `[backfill] ${ticker} ${timeframe} done: ${current.length}/${target} bars (+${addedBars} in ${rounds} rounds, ${stoppedReason})`,
+  );
+  return { ohlcv: current, rounds, addedBars, stoppedReason };
+}
+
+function persistQuote({ ticker, timeframe, rel, quote }) {
+  writeJson(rel, quote);
+  writeJson(statusPath(ticker, timeframe), {
+    status: "ready",
+    updatedAt: new Date().toISOString(),
+    ticker,
+    timeframe,
+  });
+  updateIndex({
+    ticker,
+    timeframe,
+    path: rel,
+    fetchedAt: quote.fetchedAt,
+    lastBarDate: quote.lastBarDate,
+    barCount: quote.barCount,
+  });
+}
+
 export async function runFetchPipeline({ ticker, timeframe, force = false }) {
   const policy = loadJson("config/data-policy.json");
+  const tfConfig = timeframeConfig(timeframe);
+  const target = targetBarCount(tfConfig);
   const rel = quotePath(ticker, timeframe);
   const full = path.join(ROOT, rel);
   let existing = null;
@@ -153,27 +293,77 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
       const v = validateFreshness(existing, policy, timeframe);
       if (v.status === "fresh") {
         const cleaned = sanitizeBars(existing.ohlcv, timeframe);
-        if (cleaned.length === existing.ohlcv.length) {
-          return { action: "skipped", reason: "already fresh", quote: existing };
+        const wasCleaned = cleaned.length !== existing.ohlcv.length;
+        let quote = existing;
+        if (wasCleaned) {
+          assertBarsMatchTimeframe(cleaned, timeframe, `stored ${ticker} ${timeframe}`);
+          quote = {
+            ...existing,
+            ohlcv: cleaned,
+            barCount: cleaned.length,
+            lastBarDate: cleaned.at(-1).date,
+          };
+          persistQuote({ ticker, timeframe, rel, quote });
         }
-        // Fresh but polluted / outside window — rewrite cleaned history without refetch.
-        assertBarsMatchTimeframe(cleaned, timeframe, `stored ${ticker} ${timeframe}`);
-        const rewritten = {
-          ...existing,
-          ohlcv: cleaned,
-          barCount: cleaned.length,
-          lastBarDate: cleaned.at(-1).date,
-        };
-        writeJson(rel, rewritten);
-        updateIndex({
+
+        if (target == null || quote.ohlcv.length >= target) {
+          return {
+            action: wasCleaned ? "cleaned" : "skipped",
+            reason: wasCleaned
+              ? "trimmed polluted history"
+              : "already fresh",
+            quote,
+          };
+        }
+
+        // Fresh tip, but history shorter than target — walk backward in chunks.
+        writeJson(statusPath(ticker, timeframe), {
+          status: "running",
+          startedAt: new Date().toISOString(),
           ticker,
           timeframe,
-          path: rel,
-          fetchedAt: rewritten.fetchedAt,
-          lastBarDate: rewritten.lastBarDate,
-          barCount: rewritten.barCount,
         });
-        return { action: "cleaned", reason: "trimmed polluted history", quote: rewritten };
+        const filled = await backfillPastBars({
+          ticker,
+          timeframe,
+          ohlcv: quote.ohlcv,
+          resolvedSymbol: quote.resolvedSymbol,
+        });
+        if (filled.addedBars <= 0) {
+          writeJson(statusPath(ticker, timeframe), {
+            status: "ready",
+            updatedAt: new Date().toISOString(),
+            ticker,
+            timeframe,
+          });
+          return {
+            action: wasCleaned ? "cleaned" : "skipped",
+            reason: wasCleaned
+              ? `trimmed polluted history; backfill ${filled.stoppedReason}`
+              : `already fresh; backfill ${filled.stoppedReason}`,
+            quote,
+            backfill: filled,
+          };
+        }
+        assertBarsMatchTimeframe(
+          filled.ohlcv,
+          timeframe,
+          `backfill ${ticker} ${timeframe}`,
+        );
+        const merged = {
+          ...quote,
+          ohlcv: filled.ohlcv,
+          barCount: filled.ohlcv.length,
+          lastBarDate: filled.ohlcv.at(-1).date,
+        };
+        persistQuote({ ticker, timeframe, rel, quote: merged });
+        return {
+          action: "backfilled",
+          reason: filled.stoppedReason,
+          quote: merged,
+          backfill: filled,
+          barsChanged: true,
+        };
       }
     }
   }
@@ -213,6 +403,19 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
 
   assertBarsMatchTimeframe(ohlcv, timeframe, `sanitized ${ticker} ${timeframe}`);
 
+  // After first fetch, extend history backward in 10-day chunks until maxBars.
+  const filled = await backfillPastBars({
+    ticker,
+    timeframe,
+    ohlcv,
+    resolvedSymbol: incoming.resolvedSymbol || existing?.resolvedSymbol,
+  });
+  if (filled.addedBars > 0) {
+    ohlcv = filled.ohlcv;
+    barsChanged = true;
+    assertBarsMatchTimeframe(ohlcv, timeframe, `backfill ${ticker} ${timeframe}`);
+  }
+
   // Successful fetch always stamps fetchedAt so freshness reflects verification time,
   // even when GOOGLEFINANCE returns identical bars.
   const merged = {
@@ -224,24 +427,18 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
     fetchedAt: incoming.fetchedAt,
   };
 
-  writeJson(rel, merged);
-  writeJson(statusPath(ticker, timeframe), {
-    status: "ready",
-    updatedAt: new Date().toISOString(),
-    ticker,
-    timeframe,
-  });
+  persistQuote({ ticker, timeframe, rel, quote: merged });
 
-  updateIndex({
-    ticker,
-    timeframe,
-    path: rel,
-    fetchedAt: merged.fetchedAt,
-    lastBarDate: merged.lastBarDate,
-    barCount: merged.barCount,
-  });
-
-  return { action: "committed", quote: merged, barsChanged };
+  return {
+    action: "committed",
+    quote: merged,
+    barsChanged,
+    backfill: {
+      rounds: filled.rounds,
+      addedBars: filled.addedBars,
+      stoppedReason: filled.stoppedReason,
+    },
+  };
 }
 
 async function main() {
