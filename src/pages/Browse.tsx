@@ -482,7 +482,10 @@ export function BrowsePage() {
                     runtimeWarnings={evaluation?.warnings ?? []}
                   />
                   <div className="grid gap-6 xl:grid-cols-2">
-                    <VolumePanel snapshot={evaluation!.volume} />
+                    <VolumePanel
+                      snapshot={evaluation!.volume}
+                      timeframe={selected.timeframe as Timeframe}
+                    />
                     {evaluation!.score && <ScoreCard score={evaluation!.score} />}
                     <IndicatorPanel results={evaluation!.indicators} />
                     {evaluation!.structure && (

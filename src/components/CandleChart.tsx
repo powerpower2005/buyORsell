@@ -51,6 +51,13 @@ import {
   toVolumeData,
   VOLUME_PANE_HEIGHT,
 } from "@/lib/chart/oscillatorPaneSpecs";
+import {
+  computeVolumeAverages,
+  formatVolume,
+  getVolumeMaPeriods,
+  volumeMaColor,
+  volumeMaLabel,
+} from "@/lib/evaluation/volumeMa";
 import type { BbStrategyResult } from "@/lib/evaluation/bbStrategies";
 import type { BbStrategyId } from "@/lib/bbStrategyMeta";
 import type { ChartPatternResult } from "@/lib/evaluation/chartPatterns";
@@ -186,10 +193,23 @@ export function CandleChart({
   const chartRef = useRef<IChartApi | null>(null);
   const candleRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volumeRef = useRef<ISeriesApi<"Histogram"> | null>(null);
+  const volumeMaRefs = useRef<Map<number, ISeriesApi<"Line">>>(new Map());
   const markersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
   const overlayRefs = useRef<Map<string, ISeriesApi<"Line">>>(new Map());
   const oscSeriesRefs = useRef<Map<string, OscSeries>>(new Map());
   const mainHeight = useViewportChartHeight(heightProp);
+
+  const volumeMaPeriods = useMemo(
+    () => getVolumeMaPeriods(timeframe),
+    [timeframe],
+  );
+  const volumeSnapshot = useMemo(
+    () =>
+      bars.length
+        ? computeVolumeAverages(bars, volumeMaPeriods)
+        : null,
+    [bars, volumeMaPeriods],
+  );
 
   const oscPanes = useMemo(
     () => buildOscPaneSpecs(indicators, auxIndicatorVisibility),
@@ -654,6 +674,7 @@ export function CandleChart({
     chartRef.current = chart;
     candleRef.current = candles;
     volumeRef.current = null;
+    volumeMaRefs.current = new Map();
     markersRef.current = createSeriesMarkers(candles, []);
     overlayRefs.current = new Map();
     oscSeriesRefs.current = new Map();
@@ -727,6 +748,7 @@ export function CandleChart({
       chartRef.current = null;
       candleRef.current = null;
       volumeRef.current = null;
+      volumeMaRefs.current = new Map();
       markersRef.current = null;
       overlayRefs.current = new Map();
       oscSeriesRefs.current = new Map();
@@ -890,6 +912,10 @@ export function CandleChart({
       chart.removeSeries(volumeRef.current);
       volumeRef.current = null;
     }
+    for (const line of volumeMaRefs.current.values()) {
+      chart.removeSeries(line);
+    }
+    volumeMaRefs.current = new Map();
 
     const hasSecondary = showVolume || oscPanes.length > 0;
     if (!hasSecondary) {
@@ -907,7 +933,8 @@ export function CandleChart({
     }
 
     let nextPane = 1;
-    if (showVolume && bars.length) {
+    if (showVolume && bars.length && volumeSnapshot) {
+      const volumePane = nextPane;
       const volume = chart.addSeries(
         HistogramSeries,
         {
@@ -915,10 +942,32 @@ export function CandleChart({
           lastValueVisible: false,
           priceLineVisible: false,
         },
-        nextPane,
+        volumePane,
       );
       volume.setData(toVolumeData(bars));
       volumeRef.current = volume;
+
+      for (const avg of volumeSnapshot.averages) {
+        if (!avg.available || !avg.series.length) continue;
+        const line = chart.addSeries(
+          LineSeries,
+          {
+            color: volumeMaColor(avg.period),
+            lineWidth: avg.period <= 7 ? 2 : 1,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          volumePane,
+        );
+        line.setData(
+          avg.series.map((p) => ({
+            time: p.date as `${number}-${number}-${number}`,
+            value: p.value,
+          })),
+        );
+        volumeMaRefs.current.set(avg.period, line);
+      }
       nextPane += 1;
     }
 
@@ -1121,6 +1170,7 @@ export function CandleChart({
     oscPanes,
     showVolume,
     bars,
+    volumeSnapshot,
     timeframe,
     mainHeight,
     totalHeight,
@@ -1278,6 +1328,22 @@ export function CandleChart({
       if (volumeRef.current && showVolume) {
         volumeRef.current.setData(toVolumeData(bars));
       }
+      if (showVolume && volumeSnapshot) {
+        for (const avg of volumeSnapshot.averages) {
+          const line = volumeMaRefs.current.get(avg.period);
+          if (!line) continue;
+          if (!avg.available || !avg.series.length) {
+            line.setData([]);
+            continue;
+          }
+          line.setData(
+            avg.series.map((p) => ({
+              time: p.date as `${number}-${number}-${number}`,
+              value: p.value,
+            })),
+          );
+        }
+      }
 
       markersRef.current?.setMarkers(chartMarkers);
       chartRef.current?.timeScale().fitContent();
@@ -1286,7 +1352,7 @@ export function CandleChart({
       console.error("CandleChart setData failed:", err);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bars, chartMarkers, timeframe, showVolume]);
+  }, [bars, chartMarkers, timeframe, showVolume, volumeSnapshot]);
 
   // ─── SR zone redraw ────────────────────────────────────────────────────────
 
@@ -1386,9 +1452,26 @@ export function CandleChart({
             <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
               <span>보조 패널:</span>
               {showVolume && (
-                <span className="tabular-nums text-text-tertiary">
-                  거래량 {fmtVolume(latestVolume)}
-                </span>
+                <>
+                  <span className="tabular-nums text-text-tertiary">
+                    거래량 {fmtVolume(latestVolume)}
+                  </span>
+                  {volumeSnapshot?.averages.map((avg) => (
+                    <span
+                      key={avg.period}
+                      className="flex items-center gap-1 tabular-nums text-text-tertiary"
+                    >
+                      <span
+                        className="inline-block h-0.5 w-3 rounded-sm"
+                        style={{ backgroundColor: volumeMaColor(avg.period) }}
+                      />
+                      {volumeMaLabel(avg.period, timeframe)}{" "}
+                      {avg.available && avg.latest != null
+                        ? formatVolume(avg.latest)
+                        : "—"}
+                    </span>
+                  ))}
+                </>
               )}
               {oscPanes.map((pane) => (
                 <span
