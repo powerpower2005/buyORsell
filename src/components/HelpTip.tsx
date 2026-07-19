@@ -78,7 +78,7 @@ export function HelpTip({ help, label }: Props) {
                 {help.higher && (
                   <div className="rounded-md border border-border/80 bg-bg px-3 py-2.5">
                     <p className="text-[11px] font-semibold text-accent">
-                      값이 높아지면
+                      {help.higherLabel ?? "값이 높아지면"}
                     </p>
                     <p className="mt-1 text-xs leading-relaxed text-text-secondary">
                       {help.higher}
@@ -88,7 +88,7 @@ export function HelpTip({ help, label }: Props) {
                 {help.lower && (
                   <div className="rounded-md border border-border/80 bg-bg px-3 py-2.5">
                     <p className="text-[11px] font-semibold text-text-tertiary">
-                      값이 낮아지면
+                      {help.lowerLabel ?? "값이 낮아지면"}
                     </p>
                     <p className="mt-1 text-xs leading-relaxed text-text-secondary">
                       {help.lower}

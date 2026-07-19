@@ -1,4 +1,5 @@
 import type { CandlePatternId } from "./evaluation/candlePatterns";
+import type { PatternBias } from "./patternBias";
 import type { TrendLabel } from "./types";
 
 export interface CandlePatternMeta {
@@ -10,16 +11,23 @@ export interface CandlePatternMeta {
   typicalDirection: TrendLabel;
 }
 
+/** Long → short → neutral (sidebar grouping order). */
 export const CANDLE_PATTERN_ORDER: CandlePatternId[] = [
-  "doji",
   "hammer",
-  "hanging_man",
   "inverted_hammer",
-  "shooting_star",
   "bullish_engulfing",
-  "bearish_engulfing",
   "bullish_harami",
+  "hanging_man",
+  "shooting_star",
+  "bearish_engulfing",
   "bearish_harami",
+  "doji",
+];
+
+export const CANDLE_PATTERN_BIAS_ORDER: PatternBias[] = [
+  "bullish",
+  "bearish",
+  "neutral",
 ];
 
 export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
@@ -96,6 +104,12 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     typicalDirection: "bearish",
   },
 };
+
+export function candlePatternsByBias(bias: PatternBias): CandlePatternId[] {
+  return CANDLE_PATTERN_ORDER.filter(
+    (id) => CANDLE_PATTERN_META[id].typicalDirection === bias,
+  );
+}
 
 export function patternLabel(id: CandlePatternId): string {
   return CANDLE_PATTERN_META[id].label;

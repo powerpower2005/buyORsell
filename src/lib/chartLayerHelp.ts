@@ -121,13 +121,25 @@ export const CHART_LAYER_HELP = {
   classicalPatterns: {
     title: "차트 패턴",
     summary:
-      "헤드앤숄더, 삼각수렴 등 고전적 가격 패턴을 탐지해 차트에 표시합니다.",
+      "헤드앤숄더, 삼각수렴 등 고전적 가격 패턴을 탐지해 차트에 표시합니다. 롱·숏·양방향으로 구분해 둡니다.",
+    higherLabel: "돌파 시",
+    lowerLabel: "실패 시",
+    higher:
+      "목선·저항을 돌파하면 패턴 방향(롱/숏) 신호가 확인된 것으로 보는 경우가 많습니다.",
+    lower:
+      "돌파에 실패하거나 패턴 구조를 깨면 신호가 무효·반대로 해석되는 경우가 많습니다.",
     tip: "패턴 완성·돌파 여부와 거래량을 함께 보면 허위 신호를 줄이는 데 도움이 됩니다.",
   },
   candlePatterns: {
     title: "캔들 패턴",
     summary:
-      "망치형, 잉걸핑 등 단일·복합 캔들 형태를 탐지해 마커로 표시합니다.",
+      "망치형, 잉걸핑 등 단일·복합 캔들 형태를 탐지해 마커로 표시합니다. 롱·숏·중립으로 구분해 둡니다.",
+    higherLabel: "돌파 시",
+    lowerLabel: "실패 시",
+    higher:
+      "다음 봉이 패턴 방향으로 확인되면(종가·고저 돌파) 신호 신뢰도가 올라가는 편입니다.",
+    lower:
+      "패턴 고·저점이 깨지면 신호가 무효화될 수 있습니다. 단독 진입보다 맥락과 함께 보세요.",
     tip: "캔들 패턴은 단기 심리 힌트입니다. 추세·지지저항과 맞을 때 더 의미 있는 경우가 많습니다.",
   },
   bbUpper: {
@@ -311,16 +323,46 @@ export function fibExtraHelp(id: FibExtraId): HelpContent {
   };
 }
 
+const PATTERN_OUTCOME_LABELS = {
+  higherLabel: "돌파 시",
+  lowerLabel: "실패 시",
+} as const;
+
 export function classicalPatternHelp(id: ChartPatternId): HelpContent {
   const meta = CHART_PATTERN_META[id];
   const isReversal = meta.category === "reversal";
+  const biasLabel =
+    meta.typicalDirection === "bullish"
+      ? "롱"
+      : meta.typicalDirection === "bearish"
+        ? "숏"
+        : "양방향";
+
+  let higher: string;
+  let lower: string;
+  if (meta.typicalDirection === "bullish") {
+    higher =
+      "목선·저항을 상향 돌파하면 롱 신호가 확인된 것으로 보는 경우가 많습니다.";
+    lower =
+      "돌파에 실패하거나 패턴 저점·지지가 깨지면 롱 신호가 무효화될 수 있습니다.";
+  } else if (meta.typicalDirection === "bearish") {
+    higher =
+      "목선·지지를 하향 돌파하면 숏 신호가 확인된 것으로 보는 경우가 많습니다.";
+    lower =
+      "하향 돌파에 실패하거나 패턴 고점·저항을 다시 돌파하면 숏 신호가 무효화될 수 있습니다.";
+  } else {
+    higher =
+      "깃대·목선 방향으로 돌파되면 그 방향(롱/숏) 신호가 확인된 것으로 봅니다.";
+    lower =
+      "돌파에 실패하거나 반대 방향으로 깨지면 패턴 해석을 보류·무효로 봅니다.";
+  }
+
   return {
-    title: meta.labelKo,
+    title: `${meta.labelKo} (${biasLabel})`,
     summary: meta.description,
-    higher:
-      "상향 돌파·완성 시 롱(상승) 쪽으로 해석하는 경우가 많습니다.",
-    lower:
-      "하향 이탈·완성 시 숏(하락) 쪽으로 해석하는 경우가 많습니다.",
+    ...PATTERN_OUTCOME_LABELS,
+    higher,
+    lower,
     tip: isReversal
       ? "반전 패턴은 추세 끝에서 더 의미가 큽니다. 목선 돌파와 거래량을 함께 보세요."
       : "지속 패턴은 기존 추세 방향 돌파가 확인될 때 더 의미가 큽니다.",
@@ -329,27 +371,40 @@ export function classicalPatternHelp(id: ChartPatternId): HelpContent {
 
 export function candlePatternHelp(id: CandlePatternId): HelpContent {
   const meta: CandlePatternMeta = CANDLE_PATTERN_META[id];
-  const help: HelpContent = {
-    title: meta.labelKo,
+  const biasLabel =
+    meta.typicalDirection === "bullish"
+      ? "롱"
+      : meta.typicalDirection === "bearish"
+        ? "숏"
+        : "중립";
+
+  let higher: string;
+  let lower: string;
+  if (meta.typicalDirection === "bullish") {
+    higher =
+      "다음 봉이 패턴 고점을 넘거나 양봉으로 확인되면 롱·반등 신호 신뢰도가 올라갑니다.";
+    lower =
+      "패턴 저점이 깨지면 롱 신호가 무효화될 수 있습니다.";
+  } else if (meta.typicalDirection === "bearish") {
+    higher =
+      "다음 봉이 패턴 저점을 깨거나 음봉으로 확인되면 숏·조정 신호 신뢰도가 올라갑니다.";
+    lower =
+      "패턴 고점을 다시 돌파하면 숏 신호가 무효화될 수 있습니다.";
+  } else {
+    higher =
+      "다음 봉이 위쪽으로 강하게 돌파하면 매수 유입·추세 재개 쪽으로 읽기도 합니다.";
+    lower =
+      "다음 봉이 아래쪽으로 깨지면 매도 압력·추세 약화 쪽으로 읽기도 합니다.";
+  }
+
+  return {
+    title: `${meta.labelKo} (${biasLabel})`,
     summary: meta.description,
+    ...PATTERN_OUTCOME_LABELS,
+    higher,
+    lower,
     tip: "단일 캔들 신호는 추세·지지저항과 맞을 때 더 신뢰도가 올라가는 편입니다.",
   };
-  if (meta.typicalDirection === "bullish") {
-    help.higher = "전형적인 상승·반등 힌트로 봅니다. 확인 봉이 있으면 신뢰도가 올라갑니다.";
-    help.lower =
-      "이후 가격이 패턴 저점을 깨면 신호가 무효화될 수 있습니다.";
-  } else if (meta.typicalDirection === "bearish") {
-    help.higher =
-      "이후 가격이 패턴 고점을 돌파하면 하락 신호가 무효화될 수 있습니다.";
-    help.lower =
-      "전형적인 하락·조정 힌트로 봅니다. 확인 봉이 있으면 신뢰도가 올라갑니다.";
-  } else {
-    help.higher =
-      "위꼬리가 길거나 위쪽에서 나오면 상승 피로·저항 반응으로 읽기도 합니다.";
-    help.lower =
-      "아래꼬리가 길거나 아래쪽에서 나오면 매수 유입·지지 반응으로 읽기도 합니다.";
-  }
-  return help;
 }
 
 export function bbStrategyHelp(id: string): HelpContent {

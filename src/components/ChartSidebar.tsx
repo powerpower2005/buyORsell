@@ -46,18 +46,23 @@ import {
   setVolumeOverlayVisible,
 } from "@/lib/indicatorOverlayStore";
 import {
+  CANDLE_PATTERN_BIAS_ORDER,
   CANDLE_PATTERN_META,
   CANDLE_PATTERN_ORDER,
+  candlePatternsByBias,
 } from "@/lib/candlePatternMeta";
+import {
+  CHART_PATTERN_BIAS_ORDER,
+  CHART_PATTERN_META,
+  CHART_PATTERN_ORDER,
+  chartPatternsByBias,
+  type ChartPatternId,
+} from "@/lib/chartPatternMeta";
+import { PATTERN_BIAS_META, type PatternBias } from "@/lib/patternBias";
 import {
   getChartPatternVisibility,
   setChartPatternVisible,
 } from "@/lib/candlePatternStore";
-import {
-  CHART_PATTERN_META,
-  CHART_PATTERN_ORDER,
-  type ChartPatternId,
-} from "@/lib/chartPatternMeta";
 import {
   getClassicalChartPatternVisibility,
   setClassicalChartPatternGroupVisible,
@@ -246,12 +251,27 @@ function Group({
   );
 }
 
+function BiasBadge({ bias }: { bias: PatternBias }) {
+  const meta = PATTERN_BIAS_META[bias];
+  return (
+    <span
+      className={clsx(
+        "shrink-0 rounded border px-1 py-px text-[10px] font-medium leading-none",
+        meta.className,
+      )}
+    >
+      {meta.shortKo}
+    </span>
+  );
+}
+
 function Leaf({
   label,
   checked,
   onChange,
   color,
   hint,
+  bias,
   colorValue,
   onColorChange,
   colorOptions,
@@ -263,6 +283,7 @@ function Leaf({
   onChange: (next: boolean) => void;
   color?: string;
   hint?: string;
+  bias?: PatternBias;
   colorValue?: string;
   onColorChange?: (color: string) => void;
   colorOptions?: readonly string[];
@@ -288,6 +309,7 @@ function Leaf({
                 />
               )}
               <span className="truncate">{label}</span>
+              {bias && <BiasBadge bias={bias} />}
             </span>
             {hint && (
               <span className="mt-0.5 block text-[10px] leading-snug text-text-tertiary">
@@ -1028,18 +1050,50 @@ export function ChartSidebar({
             bump(() => setClassicalChartPatternGroupVisible(next))
           }
         >
-          {CHART_PATTERN_ORDER.map((id: ChartPatternId) => (
-            <Leaf
-              key={id}
-              label={CHART_PATTERN_META[id].labelKo}
-              color={CHART_PATTERN_META[id].color}
-              checked={classicalPatternVis[id]}
-              help={classicalPatternHelp(id)}
-              onChange={(next) =>
-                bump(() => setClassicalChartPatternVisible(id, next))
-              }
-            />
-          ))}
+          {CHART_PATTERN_BIAS_ORDER.map((bias) => {
+            const ids = chartPatternsByBias(bias);
+            if (!ids.length) return null;
+            const openKey =
+              bias === "bullish"
+                ? "classicalLong"
+                : bias === "bearish"
+                  ? "classicalShort"
+                  : "classicalBoth";
+            const state = groupState(
+              ids.map((id) => classicalPatternVis[id]),
+            );
+            return (
+              <Group
+                key={bias}
+                title={PATTERN_BIAS_META[bias].labelKo}
+                open={open[openKey]}
+                onToggleOpen={() => toggleOpen(openKey)}
+                checked={state.checked}
+                indeterminate={state.indeterminate}
+                onToggleAll={(next) =>
+                  bump(() => {
+                    for (const id of ids) {
+                      setClassicalChartPatternVisible(id, next);
+                    }
+                  })
+                }
+              >
+                {ids.map((id: ChartPatternId) => (
+                  <Leaf
+                    key={id}
+                    label={CHART_PATTERN_META[id].labelKo}
+                    color={CHART_PATTERN_META[id].color}
+                    bias={bias}
+                    checked={classicalPatternVis[id]}
+                    help={classicalPatternHelp(id)}
+                    onChange={(next) =>
+                      bump(() => setClassicalChartPatternVisible(id, next))
+                    }
+                  />
+                ))}
+              </Group>
+            );
+          })}
         </Group>
 
         <Group
@@ -1057,15 +1111,47 @@ export function ChartSidebar({
             })
           }
         >
-          {CANDLE_PATTERN_ORDER.map((id: CandlePatternId) => (
-            <Leaf
-              key={id}
-              label={CANDLE_PATTERN_META[id].labelKo}
-              checked={patternVis[id]}
-              help={candlePatternHelp(id)}
-              onChange={(next) => bump(() => setChartPatternVisible(id, next))}
-            />
-          ))}
+          {CANDLE_PATTERN_BIAS_ORDER.map((bias) => {
+            const ids = candlePatternsByBias(bias);
+            if (!ids.length) return null;
+            const openKey =
+              bias === "bullish"
+                ? "candleLong"
+                : bias === "bearish"
+                  ? "candleShort"
+                  : "candleNeutral";
+            const state = groupState(ids.map((id) => patternVis[id]));
+            return (
+              <Group
+                key={bias}
+                title={PATTERN_BIAS_META[bias].labelKo}
+                open={open[openKey]}
+                onToggleOpen={() => toggleOpen(openKey)}
+                checked={state.checked}
+                indeterminate={state.indeterminate}
+                onToggleAll={(next) =>
+                  bump(() => {
+                    for (const id of ids) {
+                      setChartPatternVisible(id, next);
+                    }
+                  })
+                }
+              >
+                {ids.map((id: CandlePatternId) => (
+                  <Leaf
+                    key={id}
+                    label={CANDLE_PATTERN_META[id].labelKo}
+                    bias={bias}
+                    checked={patternVis[id]}
+                    help={candlePatternHelp(id)}
+                    onChange={(next) =>
+                      bump(() => setChartPatternVisible(id, next))
+                    }
+                  />
+                ))}
+              </Group>
+            );
+          })}
         </Group>
       </div>
     </aside>

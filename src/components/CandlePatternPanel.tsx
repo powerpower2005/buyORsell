@@ -6,6 +6,7 @@ import {
   CANDLE_PATTERN_META,
   CANDLE_PATTERN_ORDER,
 } from "@/lib/candlePatternMeta";
+import { PATTERN_BIAS_META } from "@/lib/patternBias";
 import {
   isCandlePatternHelpCollapsed,
   setCandlePatternHelpCollapsed,
@@ -15,6 +16,12 @@ function dirVariant(d: string): "positive" | "negative" | "muted" {
   if (d === "bullish") return "positive";
   if (d === "bearish") return "negative";
   return "muted";
+}
+
+function dirLabelKo(d: string): string {
+  if (d === "bullish") return "롱";
+  if (d === "bearish") return "숏";
+  return "중립";
 }
 
 interface Props {
@@ -57,12 +64,16 @@ export function CandlePatternPanel({ patterns }: Props) {
           <ul className="mt-2 max-h-40 space-y-2 overflow-y-auto">
             {CANDLE_PATTERN_ORDER.map((id) => {
               const meta = CANDLE_PATTERN_META[id];
+              const bias = PATTERN_BIAS_META[meta.typicalDirection];
               return (
                 <li key={id} className="text-xs text-text-secondary">
                   <span className="font-medium text-text-primary">
                     {meta.labelKo}
                   </span>
-                  <span className="text-text-tertiary"> ({meta.label})</span>
+                  <span className="text-text-tertiary">
+                    {" "}
+                    · {bias.shortKo}
+                  </span>
                   <span className="mt-0.5 block leading-relaxed text-text-tertiary">
                     {meta.description}
                   </span>
@@ -79,7 +90,7 @@ export function CandlePatternPanel({ patterns }: Props) {
           <div className="mt-2 flex flex-wrap gap-2">
             {onLatestBar.map((p) => (
               <Badge key={`${p.id}-${p.date}`} variant={dirVariant(p.direction)}>
-                {CANDLE_PATTERN_META[p.id].labelKo} ({p.direction})
+                {CANDLE_PATTERN_META[p.id].labelKo} · {dirLabelKo(p.direction)}
               </Badge>
             ))}
           </div>
@@ -101,7 +112,7 @@ export function CandlePatternPanel({ patterns }: Props) {
               >
                 <span className="tabular-nums text-text-tertiary">{p.date}</span>
                 <Badge variant={dirVariant(p.direction)}>
-                  {CANDLE_PATTERN_META[p.id].labelKo}
+                  {CANDLE_PATTERN_META[p.id].labelKo} · {dirLabelKo(p.direction)}
                 </Badge>
               </li>
             ))}

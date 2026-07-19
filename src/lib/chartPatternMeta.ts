@@ -1,3 +1,4 @@
+import type { PatternBias } from "./patternBias";
 import type { TrendLabel } from "./types";
 
 export type ChartPatternId =
@@ -12,17 +13,24 @@ export type ChartPatternId =
   | "descending_triangle"
   | "pennant";
 
+/** Long → short → both (sidebar grouping order). */
 export const CHART_PATTERN_ORDER: ChartPatternId[] = [
   "double_bottom",
-  "cup_and_handle",
-  "head_and_shoulders",
-  "triple_top",
   "triple_bottom",
-  "rising_wedge",
+  "cup_and_handle",
   "falling_wedge",
   "ascending_triangle",
+  "triple_top",
+  "rising_wedge",
   "descending_triangle",
+  "head_and_shoulders",
   "pennant",
+];
+
+export const CHART_PATTERN_BIAS_ORDER: PatternBias[] = [
+  "bullish",
+  "bearish",
+  "both",
 ];
 
 export const CHART_PATTERN_META: Record<
@@ -31,6 +39,8 @@ export const CHART_PATTERN_META: Record<
     label: string;
     labelKo: string;
     category: "continuation" | "reversal";
+    /** Primary trade bias for sidebar grouping. */
+    typicalDirection: PatternBias;
     description: string;
     markerBull: string;
     markerBear: string;
@@ -41,6 +51,7 @@ export const CHART_PATTERN_META: Record<
     label: "Double bottom",
     labelKo: "쌍바닥",
     category: "continuation",
+    typicalDirection: "bullish",
     description: "목선 상향 돌파 시 롱. 손절 첫 저점, 목표가 저점–목선 높이.",
     markerBull: "DB↑",
     markerBear: "DB↓",
@@ -50,6 +61,7 @@ export const CHART_PATTERN_META: Record<
     label: "Cup and handle",
     labelKo: "컵 앤 핸들",
     category: "continuation",
+    typicalDirection: "bullish",
     description: "핸들 상단 돌파 시 롱. 손절 핸들 저점, 목표가 컵 깊이.",
     markerBull: "CH↑",
     markerBear: "CH↓",
@@ -59,6 +71,7 @@ export const CHART_PATTERN_META: Record<
     label: "Head and shoulders",
     labelKo: "헤드앤숄더",
     category: "reversal",
+    typicalDirection: "both",
     description:
       "목선 하향 이탈 숏 / 역헤드앤숄더는 상향 돌파 롱. 목표 머리–목선 높이.",
     markerBull: "iHS↑",
@@ -69,6 +82,7 @@ export const CHART_PATTERN_META: Record<
     label: "Triple top",
     labelKo: "3중 천장",
     category: "reversal",
+    typicalDirection: "bearish",
     description: "목선 하향 돌파 숏. 손절 세 번째 고점, 목표가 고점–목선 높이.",
     markerBull: "TT↑",
     markerBear: "TT↓",
@@ -78,6 +92,7 @@ export const CHART_PATTERN_META: Record<
     label: "Triple bottom",
     labelKo: "3중 바닥",
     category: "reversal",
+    typicalDirection: "bullish",
     description: "목선 상향 돌파 롱. 손절 세 번째 저점, 목표가 목선–저점 높이.",
     markerBull: "TB↑",
     markerBear: "TB↓",
@@ -87,6 +102,7 @@ export const CHART_PATTERN_META: Record<
     label: "Rising wedge",
     labelKo: "상승 쐐기",
     category: "reversal",
+    typicalDirection: "bearish",
     description: "하단 지지 이탈 숏. 손절 패턴 고점, 목표가 초기 쐐기 폭.",
     markerBull: "RW↑",
     markerBear: "RW↓",
@@ -96,6 +112,7 @@ export const CHART_PATTERN_META: Record<
     label: "Falling wedge",
     labelKo: "하강 쐐기",
     category: "reversal",
+    typicalDirection: "bullish",
     description: "상단 저항 돌파 롱. 손절 패턴 저점, 목표가 초기 쐐기 폭.",
     markerBull: "FW↑",
     markerBear: "FW↓",
@@ -105,6 +122,7 @@ export const CHART_PATTERN_META: Record<
     label: "Ascending triangle",
     labelKo: "상승 삼각형",
     category: "continuation",
+    typicalDirection: "bullish",
     description: "수평 저항 돌파 롱. 손절 상승 지지 이탈, 목표가 삼각형 높이.",
     markerBull: "AT↑",
     markerBear: "AT↓",
@@ -114,6 +132,7 @@ export const CHART_PATTERN_META: Record<
     label: "Descending triangle",
     labelKo: "하락 삼각형",
     category: "continuation",
+    typicalDirection: "bearish",
     description: "수평 지지 이탈 숏. 손절 하락 저항 돌파, 목표가 삼각형 높이.",
     markerBull: "DT↑",
     markerBear: "DT↓",
@@ -123,12 +142,19 @@ export const CHART_PATTERN_META: Record<
     label: "Pennant",
     labelKo: "페넌트",
     category: "continuation",
+    typicalDirection: "both",
     description: "깃대 후 수렴 돌파 시 깃대 방향으로 진입. 목표가 깃대 길이.",
     markerBull: "PN↑",
     markerBear: "PN↓",
     color: "#38bdf8",
   },
 };
+
+export function chartPatternsByBias(bias: PatternBias): ChartPatternId[] {
+  return CHART_PATTERN_ORDER.filter(
+    (id) => CHART_PATTERN_META[id].typicalDirection === bias,
+  );
+}
 
 export function chartPatternMarkerText(
   id: ChartPatternId,

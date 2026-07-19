@@ -3,10 +3,14 @@
 export interface HelpContent {
   title: string;
   summary: string;
-  /** What happens when the related value is higher. */
+  /** Primary outcome block (default label: 값이 높아지면). */
   higher?: string;
-  /** What happens when the related value is lower. */
+  /** Secondary outcome block (default label: 값이 낮아지면). */
   lower?: string;
+  /** Override for the higher block heading (e.g. 돌파 시). */
+  higherLabel?: string;
+  /** Override for the lower block heading (e.g. 실패 시). */
+  lowerLabel?: string;
   tip?: string;
 }
 
