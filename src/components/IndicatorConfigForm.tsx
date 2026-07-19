@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { ColorSwatchPicker } from "./ColorSwatchPicker";
 import { HelpTip } from "./HelpTip";
 import {
@@ -46,6 +47,11 @@ function LabelWithHelp({
   );
 }
 
+function clampNum(n: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, n));
+}
+
+/** Commit on Enter / blur so typing mid-edit does not refresh the chart. */
 function NumInput({
   label,
   value,
@@ -63,6 +69,25 @@ function NumInput({
   onChange: (v: number) => void;
   help?: HelpContent;
 }) {
+  const [draft, setDraft] = useState(() =>
+    Number.isFinite(value) ? String(value) : "",
+  );
+
+  useEffect(() => {
+    setDraft(Number.isFinite(value) ? String(value) : "");
+  }, [value]);
+
+  const commit = () => {
+    const n = Number(draft);
+    if (!Number.isFinite(n)) {
+      setDraft(Number.isFinite(value) ? String(value) : "");
+      return;
+    }
+    const next = clampNum(n, min, max);
+    setDraft(String(next));
+    if (next !== value) onChange(next);
+  };
+
   return (
     <label className="block text-sm text-text-secondary">
       <LabelWithHelp label={label} help={help} />
@@ -71,12 +96,15 @@ function NumInput({
         min={min}
         max={max}
         step={step}
-        value={Number.isFinite(value) ? value : ""}
+        value={draft}
         className="w-full rounded-md border border-border bg-bg px-3 py-2 tabular-nums text-text-primary outline-none focus:border-accent"
-        onChange={(e) => {
-          const n = Number(e.target.value);
-          if (!Number.isFinite(n)) return;
-          onChange(Math.min(max, Math.max(min, n)));
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            (e.target as HTMLInputElement).blur();
+          }
         }}
       />
     </label>
