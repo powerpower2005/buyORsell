@@ -1,4 +1,5 @@
 import { ColorSwatchPicker } from "./ColorSwatchPicker";
+import { HelpTip } from "./HelpTip";
 import {
   addIndicatorPeriod,
   getEffectiveIndicatorsConfig,
@@ -17,12 +18,32 @@ import {
   resolveBbBandColor,
 } from "@/lib/bbOverlay";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
+import {
+  INDICATOR_HELP,
+  PARAM_HELP,
+  type HelpContent,
+} from "@/lib/indicatorHelp";
 import { Button } from "./ui/Button";
 import { ConfigError } from "@/lib/errors";
 import { requireNumber } from "@/lib/require";
 
 interface Props {
   onChange: () => void;
+}
+
+function LabelWithHelp({
+  label,
+  help,
+}: {
+  label: string;
+  help?: HelpContent;
+}) {
+  return (
+    <span className="mb-1 flex items-center gap-1.5">
+      <span>{label}</span>
+      {help && <HelpTip help={help} />}
+    </span>
+  );
 }
 
 function NumInput({
@@ -32,6 +53,7 @@ function NumInput({
   max,
   step = 1,
   onChange,
+  help,
 }: {
   label: string;
   value: number;
@@ -39,10 +61,11 @@ function NumInput({
   max: number;
   step?: number;
   onChange: (v: number) => void;
+  help?: HelpContent;
 }) {
   return (
     <label className="block text-sm text-text-secondary">
-      <span className="mb-1 block">{label}</span>
+      <LabelWithHelp label={label} help={help} />
       <input
         type="number"
         min={min}
@@ -84,11 +107,13 @@ function Toggle({
 
 function IndicatorSection({
   title,
+  help,
   enabled,
   onEnabledChange,
   children,
 }: {
   title: string;
+  help?: HelpContent;
   enabled: boolean;
   onEnabledChange: (v: boolean) => void;
   children: React.ReactNode;
@@ -96,7 +121,10 @@ function IndicatorSection({
   return (
     <div className="rounded-lg border border-border bg-bg p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <p className="text-sm font-medium text-text-primary">{title}</p>
+        <p className="flex items-center gap-1.5 text-sm font-medium text-text-primary">
+          <span>{title}</span>
+          {help && <HelpTip help={help} />}
+        </p>
         <Toggle label="사용" checked={enabled} onChange={onEnabledChange} />
       </div>
       {enabled ? <div className="space-y-3">{children}</div> : null}
@@ -150,6 +178,7 @@ function PeriodListEditor({
             </div>
             <NumInput
               label="Period"
+              help={PARAM_HELP["ma.period"]}
               value={period}
               min={min}
               max={max}
@@ -159,7 +188,10 @@ function PeriodListEditor({
               }}
             />
             <div className="mt-3">
-              <p className="mb-1.5 text-xs text-text-tertiary">색상</p>
+              <p className="mb-1.5 flex items-center gap-1.5 text-xs text-text-tertiary">
+                <span>색상</span>
+                <HelpTip help={PARAM_HELP["ma.color"]} />
+              </p>
               <ColorSwatchPicker
                 value={color}
                 onChange={(c) => {
@@ -212,11 +244,13 @@ export function IndicatorConfigForm({ onChange }: Props) {
   return (
     <div className="space-y-3 text-left">
       <p className="text-xs text-text-tertiary">
-        브라우저에 저장됩니다. 변경 즉시 점수·지표·차트에 반영됩니다.
+        브라우저에 저장됩니다. 변경 즉시 점수·지표·차트에 반영됩니다. 「?」를
+        누르면 지표·설정값 설명을 볼 수 있습니다.
       </p>
 
       <IndicatorSection
         title="SMA"
+        help={INDICATOR_HELP.sma}
         enabled={sma.enabled}
         onEnabledChange={(v) => {
           setIndicatorEnabled("sma", v);
@@ -236,6 +270,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
 
       <IndicatorSection
         title="EMA"
+        help={INDICATOR_HELP.ema}
         enabled={ema.enabled}
         onEnabledChange={(v) => {
           setIndicatorEnabled("ema", v);
@@ -255,6 +290,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
 
       <IndicatorSection
         title="RSI"
+        help={INDICATOR_HELP.rsi}
         enabled={rsi.enabled}
         onEnabledChange={(v) => {
           setIndicatorEnabled("rsi", v);
@@ -263,6 +299,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
       >
         <NumInput
           label="Period"
+          help={PARAM_HELP["rsi.period"]}
           value={requireNumber(rsi.params.period, "rsi.period")}
           min={2}
           max={50}
@@ -273,6 +310,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
         />
         <NumInput
           label="Overbought"
+          help={PARAM_HELP["rsi.overbought"]}
           value={requireNumber(rsi.overbought, "rsi.overbought")}
           min={50}
           max={95}
@@ -283,6 +321,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
         />
         <NumInput
           label="Oversold"
+          help={PARAM_HELP["rsi.oversold"]}
           value={requireNumber(rsi.oversold, "rsi.oversold")}
           min={5}
           max={50}
@@ -295,6 +334,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
 
       <IndicatorSection
         title="MACD"
+        help={INDICATOR_HELP.macd}
         enabled={macd.enabled}
         onEnabledChange={(v) => {
           setIndicatorEnabled("macd", v);
@@ -303,6 +343,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
       >
         <NumInput
           label="Fast"
+          help={PARAM_HELP["macd.fast"]}
           value={requireNumber(macd.params.fast, "macd.fast")}
           min={2}
           max={50}
@@ -313,6 +354,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
         />
         <NumInput
           label="Slow"
+          help={PARAM_HELP["macd.slow"]}
           value={requireNumber(macd.params.slow, "macd.slow")}
           min={5}
           max={100}
@@ -323,6 +365,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
         />
         <NumInput
           label="Signal"
+          help={PARAM_HELP["macd.signal"]}
           value={requireNumber(macd.params.signal, "macd.signal")}
           min={2}
           max={30}
@@ -335,6 +378,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
 
       <IndicatorSection
         title="Bollinger Bands"
+        help={INDICATOR_HELP.bb}
         enabled={bb.enabled}
         onEnabledChange={(v) => {
           setIndicatorEnabled("bb", v);
@@ -343,6 +387,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
       >
         <NumInput
           label="Period"
+          help={PARAM_HELP["bb.period"]}
           value={requireNumber(bb.params.period, "bb.period")}
           min={5}
           max={100}
@@ -353,6 +398,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
         />
         <NumInput
           label="Std Dev"
+          help={PARAM_HELP["bb.stdDev"]}
           value={requireNumber(bb.params.stdDev, "bb.stdDev")}
           min={0.5}
           max={5}
@@ -368,8 +414,9 @@ export function IndicatorConfigForm({ onChange }: Props) {
             const color = resolveBbBandColor(colors, band);
             return (
               <div key={band}>
-                <p className="mb-1.5 text-xs text-text-tertiary">
-                  {BB_BAND_META[band].labelKo} 색상
+                <p className="mb-1.5 flex items-center gap-1.5 text-xs text-text-tertiary">
+                  <span>{BB_BAND_META[band].labelKo} 색상</span>
+                  <HelpTip help={PARAM_HELP["bb.color"]} />
                 </p>
                 <ColorSwatchPicker
                   value={color}
@@ -387,6 +434,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
       {mfi && (
         <IndicatorSection
           title="MFI"
+          help={INDICATOR_HELP.mfi}
           enabled={mfi.enabled}
           onEnabledChange={(v) => {
             setIndicatorEnabled("mfi", v);
@@ -395,6 +443,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
         >
           <NumInput
             label="Period"
+            help={PARAM_HELP["mfi.period"]}
             value={requireNumber(mfi.params.period, "mfi.period")}
             min={5}
             max={50}
@@ -408,6 +457,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
 
       <IndicatorSection
         title="ATR"
+        help={INDICATOR_HELP.atr}
         enabled={atr.enabled}
         onEnabledChange={(v) => {
           setIndicatorEnabled("atr", v);
@@ -416,6 +466,7 @@ export function IndicatorConfigForm({ onChange }: Props) {
       >
         <NumInput
           label="Period"
+          help={PARAM_HELP["atr.period"]}
           value={requireNumber(atr.params.period, "atr.period")}
           min={2}
           max={50}
