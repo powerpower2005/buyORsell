@@ -42,6 +42,11 @@ import {
   detectPatternStrategies,
   type PatternStrategyResult,
 } from "./patternStrategies";
+import {
+  detectRsiStrategies,
+  type RsiStrategyResult,
+} from "./rsiStrategies";
+import { getIndicatorConfig } from "../configStore";
 
 export interface QuoteEvaluation {
   indicators: IndicatorResults;
@@ -55,6 +60,7 @@ export interface QuoteEvaluation {
   bbStrategies: BbStrategyResult | null;
   classicalPatterns: ChartPatternResult | null;
   patternStrategies: PatternStrategyResult | null;
+  rsiStrategies: RsiStrategyResult | null;
   warnings: string[];
   fatalError: string | null;
   /** Bars actually used after lookback / maxBars / cadence cleanup. */
@@ -121,6 +127,7 @@ export function evaluateQuote(
       bbStrategies: null,
       classicalPatterns: null,
       patternStrategies: null,
+      rsiStrategies: null,
       warnings,
       fatalError: "No OHLCV bars available",
       bars: [],
@@ -222,6 +229,20 @@ export function evaluateQuote(
     }
   }
 
+  let rsiStrategies: RsiStrategyResult | null = null;
+  if (!fatalError) {
+    try {
+      const rsiCfg = getIndicatorConfig("rsi");
+      rsiStrategies = detectRsiStrategies(prepared, indicators, {
+        overbought: (rsiCfg?.overbought as number | undefined) ?? 70,
+        oversold: (rsiCfg?.oversold as number | undefined) ?? 30,
+      });
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
   return {
     indicators,
     score,
@@ -234,6 +255,7 @@ export function evaluateQuote(
     bbStrategies,
     classicalPatterns,
     patternStrategies,
+    rsiStrategies,
     warnings,
     fatalError,
     bars: prepared,

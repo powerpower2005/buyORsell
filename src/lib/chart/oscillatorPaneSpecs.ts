@@ -48,10 +48,14 @@ export function buildOscPaneSpecs(
       const out = indicators.indicators.rsi;
       if (!out?.series.rsi?.length) continue;
       const period = (cfg.params.period as number | undefined) ?? 14;
+      const w = out.latest.rsiWeighted;
       panes.push({
         id,
         title: `${meta.labelKo}(${period})`,
-        latest: fmt(out.latest.rsi),
+        latest:
+          w != null
+            ? `${fmt(out.latest.rsi)} · W ${fmt(w)}`
+            : fmt(out.latest.rsi),
         height: OSC_PANE_HEIGHT,
       });
       continue;

@@ -28,6 +28,7 @@ export const SIDEBAR_OPEN_KEYS = [
   "fibLevels",
   "fibExtras",
   "aux",
+  "rsiStrategies",
   "volume",
 ] as const;
 

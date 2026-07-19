@@ -27,6 +27,17 @@ import {
   setPatternStrategyGroupVisible,
   setPatternStrategyVisible,
 } from "@/lib/patternStrategyStore";
+import { rsiStrategyHelp } from "@/lib/rsiStrategyHelp";
+import {
+  RSI_STRATEGY_META,
+  RSI_STRATEGY_ORDER,
+  type RsiStrategyId,
+} from "@/lib/rsiStrategyMeta";
+import {
+  getRsiStrategyVisibility,
+  setRsiStrategyGroupVisible,
+  setRsiStrategyVisible,
+} from "@/lib/rsiStrategyStore";
 import type { HelpContent } from "@/lib/indicatorHelp";
 import { INDICATOR_HELP } from "@/lib/indicatorHelp";
 import { parsePeriodColors, resolvePeriodColor } from "@/lib/indicatorColors";
@@ -408,6 +419,10 @@ export function ChartSidebar({
     () => getPatternStrategyVisibility(),
     [refreshTick],
   );
+  const rsiStratVis = useMemo(
+    () => getRsiStrategyVisibility(),
+    [refreshTick],
+  );
   const swingVis = useMemo(() => getSwingChartVisibility(), [refreshTick]);
   const srVis = useMemo(() => getSrChartVisibility(), [refreshTick]);
   const volumeVis = useMemo(() => isVolumeOverlayVisible(), [refreshTick]);
@@ -500,6 +515,9 @@ export function ChartSidebar({
   );
   const patternStratState = groupState(
     PATTERN_STRATEGY_ORDER.map((id) => patternStratVis[id]),
+  );
+  const rsiStratState = groupState(
+    RSI_STRATEGY_ORDER.map((id) => rsiStratVis[id]),
   );
   const classicalRootState = groupState([
     ...CHART_PATTERN_ORDER.map((id) => classicalPatternVis[id]),
@@ -1061,6 +1079,30 @@ export function ChartSidebar({
               />
             );
           })}
+        </Group>
+
+        <Group
+          title="RSI 전략"
+          open={open.rsiStrategies}
+          onToggleOpen={() => toggleOpen("rsiStrategies")}
+          checked={rsiStratState.checked}
+          indeterminate={rsiStratState.indeterminate}
+          help={CHART_LAYER_HELP.rsiStrategies}
+          onToggleAll={(next) =>
+            bump(() => setRsiStrategyGroupVisible(next))
+          }
+        >
+          {RSI_STRATEGY_ORDER.map((id: RsiStrategyId) => (
+            <Leaf
+              key={id}
+              label={RSI_STRATEGY_META[id].labelKo}
+              checked={rsiStratVis[id]}
+              help={rsiStrategyHelp(id)}
+              onChange={(next) =>
+                bump(() => setRsiStrategyVisible(id, next))
+              }
+            />
+          ))}
         </Group>
 
         <Group

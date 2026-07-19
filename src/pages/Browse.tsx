@@ -30,6 +30,7 @@ import {
 import { getBbStrategyVisibility } from "@/lib/bbStrategyStore";
 import { getClassicalChartPatternVisibility } from "@/lib/chartPatternStore";
 import { getPatternStrategyVisibility } from "@/lib/patternStrategyStore";
+import { getRsiStrategyVisibility } from "@/lib/rsiStrategyStore";
 import {
   getFibExtraVisibility,
   getFibLevelVisibility,
@@ -193,6 +194,10 @@ export function BrowsePage() {
   );
   const chartPatternStrategyVisibility = useMemo(
     () => getPatternStrategyVisibility(),
+    [chartVisTick],
+  );
+  const chartRsiStrategyVisibility = useMemo(
+    () => getRsiStrategyVisibility(),
     [chartVisTick],
   );
   const showVolume = useMemo(
@@ -472,6 +477,8 @@ export function BrowsePage() {
                         chartPatternStrategyVisibility={
                           chartPatternStrategyVisibility
                         }
+                        rsiStrategies={evaluation!.rsiStrategies ?? undefined}
+                        chartRsiStrategyVisibility={chartRsiStrategyVisibility}
                         showVolume={showVolume}
                         fibDrawMode={fibDrawMode}
                         fibRetracement={fibRetracement}

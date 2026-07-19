@@ -105,10 +105,21 @@ export const rsiPlugin: IndicatorPlugin = {
   minBars: (p) => requireNumber(p.period, "rsi.period"),
   compute(bars, params) {
     const period = requireNumber(params.period, "rsi.period");
+    // Super-RSI style overlays: short weighted RSI + dynamic bands on RSI.
+    const weightPeriod = 4;
+    const bandPeriod = 20;
+    const bandStd = 1.5;
+    const need = period + bandPeriod;
     if (bars.length < period) {
       return {
         series: {} as Record<string, SeriesPoint[]>,
-        latest: { rsi: null },
+        latest: {
+          rsi: null,
+          rsiWeighted: null,
+          rsiMid: null,
+          rsiUpper: null,
+          rsiLower: null,
+        },
         skipped: [`rsi requires ${period} bars, got ${bars.length}`],
       };
     }
@@ -119,10 +130,52 @@ export const rsiPlugin: IndicatorPlugin = {
     const pad = c.length - vals.length;
     const aligned = alignSeries(d.slice(pad), vals);
 
-    return {
-      series: { rsi: aligned },
-      latest: { rsi: optionalLatest(vals.at(-1)) },
+    const series: Record<string, SeriesPoint[]> = { rsi: aligned };
+    const latest: Record<string, number | null> = {
+      rsi: optionalLatest(vals.at(-1)),
+      rsiWeighted: null,
+      rsiMid: null,
+      rsiUpper: null,
+      rsiLower: null,
     };
+
+    if (vals.length >= weightPeriod) {
+      const weighted = SMA.calculate({ period: weightPeriod, values: vals });
+      const wPad = vals.length - weighted.length;
+      series.rsiWeighted = alignSeries(
+        d.slice(pad + wPad),
+        weighted,
+      );
+      latest.rsiWeighted = optionalLatest(weighted.at(-1));
+    }
+
+    if (vals.length >= bandPeriod && bars.length >= need) {
+      const bands = BollingerBands.calculate({
+        period: bandPeriod,
+        stdDev: bandStd,
+        values: vals,
+      });
+      const bPad = vals.length - bands.length;
+      const datesBand = d.slice(pad + bPad);
+      series.rsiMid = alignSeries(
+        datesBand,
+        bands.map((b) => b.middle),
+      );
+      series.rsiUpper = alignSeries(
+        datesBand,
+        bands.map((b) => b.upper),
+      );
+      series.rsiLower = alignSeries(
+        datesBand,
+        bands.map((b) => b.lower),
+      );
+      const last = bands.at(-1);
+      latest.rsiMid = optionalLatest(last?.middle);
+      latest.rsiUpper = optionalLatest(last?.upper);
+      latest.rsiLower = optionalLatest(last?.lower);
+    }
+
+    return { series, latest };
   },
 };
 

@@ -71,6 +71,12 @@ import {
 } from "@/lib/evaluation/volumeMa";
 import type { BbStrategyResult } from "@/lib/evaluation/bbStrategies";
 import type { BbStrategyId } from "@/lib/bbStrategyMeta";
+import type { RsiStrategyResult } from "@/lib/evaluation/rsiStrategies";
+import type { RsiStrategyId } from "@/lib/rsiStrategyMeta";
+import {
+  rsiStrategiesToChartMarkers,
+  visibleRsiStrategyLegend,
+} from "@/lib/chart/rsiStrategyMarkers";
 import type { ChartPatternResult } from "@/lib/evaluation/chartPatterns";
 import {
   CHART_PATTERN_META,
@@ -168,6 +174,8 @@ interface Props {
   chartClassicalPatternVisibility?: Record<ChartPatternId, boolean>;
   patternStrategies?: PatternStrategyResult;
   chartPatternStrategyVisibility?: Record<PatternStrategyId, boolean>;
+  rsiStrategies?: RsiStrategyResult;
+  chartRsiStrategyVisibility?: Record<RsiStrategyId, boolean>;
   showVolume?: boolean;
   height?: number;
   fibDrawMode?: boolean;
@@ -222,6 +230,8 @@ export function CandleChart({
   chartClassicalPatternVisibility,
   patternStrategies,
   chartPatternStrategyVisibility,
+  rsiStrategies,
+  chartRsiStrategyVisibility,
   showVolume = false,
   height: heightProp,
   fibDrawMode,
@@ -341,12 +351,17 @@ export function CandleChart({
       chartPatternStrategyVisibility ??
         ({} as Record<PatternStrategyId, boolean>),
     );
+    const rsiStratMs = rsiStrategiesToChartMarkers(
+      rsiStrategies,
+      chartRsiStrategyVisibility ?? ({} as Record<RsiStrategyId, boolean>),
+    );
     return [
       ...patternMs,
       ...structureMs,
       ...bbStratMs,
       ...classicalMs,
       ...patternStratMs,
+      ...rsiStratMs,
     ].sort((a, b) => {
       const byDate = String(a.time).localeCompare(String(b.time));
       if (byDate !== 0) return byDate;
@@ -363,6 +378,8 @@ export function CandleChart({
     chartClassicalPatternVisibility,
     patternStrategies,
     chartPatternStrategyVisibility,
+    rsiStrategies,
+    chartRsiStrategyVisibility,
   ]);
 
   const barHighlights = useMemo(
@@ -447,6 +464,13 @@ export function CandleChart({
         ? visiblePatternStrategyLegend(chartPatternStrategyVisibility)
         : [],
     [chartPatternStrategyVisibility],
+  );
+  const rsiStrategyLegend = useMemo(
+    () =>
+      chartRsiStrategyVisibility
+        ? visibleRsiStrategyLegend(chartRsiStrategyVisibility)
+        : [],
+    [chartRsiStrategyVisibility],
   );
   const patternStrategyHitLegend = useMemo(() => {
     if (!patternStrategies?.recent.length || !chartPatternStrategyVisibility)
@@ -1143,23 +1167,40 @@ export function CandleChart({
       if (!out) return;
 
       if (pane.id === "rsi") {
-        const line = chart.addSeries(
-          LineSeries,
-          {
-            color: "#c084fc",
-            lineWidth: 2,
-            lastValueVisible: false,
-            priceLineVisible: false,
-            crosshairMarkerVisible: false,
-          },
-          paneIndex,
+        const addRsiLine = (
+          key: string,
+          color: string,
+          width: number,
+          data: ReturnType<typeof toLineData>,
+        ) => {
+          const series = chart.addSeries(
+            LineSeries,
+            {
+              color,
+              lineWidth: width,
+              lastValueVisible: false,
+              priceLineVisible: false,
+              crosshairMarkerVisible: false,
+            },
+            paneIndex,
+          );
+          series.setData(data);
+          oscSeriesRefs.current.set(key, series);
+          return series;
+        };
+
+        const line = addRsiLine(
+          "rsi",
+          "#c084fc",
+          2,
+          toLineData(out.rsi?.series.rsi),
         );
         const overbought =
           getIndicatorConfig("rsi")?.overbought ?? 70;
         const oversold = getIndicatorConfig("rsi")?.oversold ?? 30;
         line.createPriceLine({
           price: overbought,
-          color: "rgba(240, 68, 82, 0.55)",
+          color: "rgba(240, 68, 82, 0.35)",
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
@@ -1167,14 +1208,46 @@ export function CandleChart({
         });
         line.createPriceLine({
           price: oversold,
-          color: "rgba(0, 196, 113, 0.55)",
+          color: "rgba(0, 196, 113, 0.35)",
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
           title: "",
         });
-        line.setData(toLineData(out.rsi?.series.rsi));
-        oscSeriesRefs.current.set("rsi", line);
+
+        // Super RSI overlays: weighted + dynamic mid/upper/lower bands.
+        if (out.rsi?.series.rsiUpper?.length) {
+          addRsiLine(
+            "rsiUpper",
+            "#f9a8d4",
+            1,
+            toLineData(out.rsi.series.rsiUpper),
+          );
+        }
+        if (out.rsi?.series.rsiLower?.length) {
+          addRsiLine(
+            "rsiLower",
+            "#86efac",
+            1,
+            toLineData(out.rsi.series.rsiLower),
+          );
+        }
+        if (out.rsi?.series.rsiMid?.length) {
+          addRsiLine(
+            "rsiMid",
+            "#facc15",
+            1,
+            toLineData(out.rsi.series.rsiMid),
+          );
+        }
+        if (out.rsi?.series.rsiWeighted?.length) {
+          addRsiLine(
+            "rsiWeighted",
+            "#1f2937",
+            2,
+            toLineData(out.rsi.series.rsiWeighted),
+          );
+        }
         return;
       }
 
@@ -1418,6 +1491,25 @@ export function CandleChart({
               : "#8b95a1",
       }));
   }, [bbStrategies, chartBbStrategyVisibility]);
+
+  const rsiStrategyHitLegend = useMemo(() => {
+    if (!rsiStrategies?.recent.length || !chartRsiStrategyVisibility) return [];
+    return rsiStrategies.recent
+      .filter((hit) => chartRsiStrategyVisibility[hit.id])
+      .slice(-8)
+      .reverse()
+      .map((hit) => ({
+        key: `${hit.id}-${hit.barIndex}`,
+        text: hit.label,
+        detail: `${hit.date} · ${hit.summary}`,
+        color:
+          hit.direction === "bullish"
+            ? "#00c471"
+            : hit.direction === "bearish"
+              ? "#f04452"
+              : "#8b95a1",
+      }));
+  }, [rsiStrategies, chartRsiStrategyVisibility]);
 
   const classicalHitLegend = useMemo(() => {
     if (!classicalPatterns?.recent.length || !chartClassicalPatternVisibility)
@@ -1884,6 +1976,39 @@ export function CandleChart({
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
                 <span>패턴 전략:</span>
                 {patternStrategyLegend.map((item) => (
+                  <span
+                    key={`${item.text}-${item.label}`}
+                    className="text-text-tertiary"
+                  >
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            )
+          )}
+
+          {rsiStrategyHitLegend.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>RSI 전략:</span>
+              {rsiStrategyHitLegend.map((item) => (
+                <span key={item.key} className="flex items-center gap-1.5">
+                  <span
+                    className="font-mono text-[10px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.text}
+                  </span>
+                  <span className="tabular-nums text-text-tertiary">
+                    {item.detail}
+                  </span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            rsiStrategyLegend.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span>RSI 전략:</span>
+                {rsiStrategyLegend.map((item) => (
                   <span
                     key={`${item.text}-${item.label}`}
                     className="text-text-tertiary"
