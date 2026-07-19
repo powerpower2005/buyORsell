@@ -170,15 +170,19 @@ function TriCheckbox({
   indeterminate?: boolean;
   onChange: (next: boolean) => void;
 }) {
+  const isPartial = Boolean(indeterminate) && !checked;
   return (
     <input
       type="checkbox"
       className="h-3.5 w-3.5 shrink-0 accent-accent"
       checked={checked}
       ref={(el) => {
-        if (el) el.indeterminate = Boolean(indeterminate) && !checked;
+        if (el) el.indeterminate = isPartial;
       }}
-      onChange={(e) => onChange(e.target.checked)}
+      onChange={() => {
+        // Only two outcomes: on or off. Partial (indeterminate) → off.
+        onChange(!(checked || isPartial));
+      }}
     />
   );
 }
@@ -469,7 +473,8 @@ export function ChartSidebar({
   const emaState = groupState(emaVals);
   const bbBandState = groupState(bbVals);
   const bbStratState = groupState(bbStratVals);
-  const bbState = groupState([...bbVals, ...bbStratVals]);
+  // Parent BB checkbox follows bands only (strategies stay in their subgroup).
+  const bbState = bbBandState;
   const swingState = groupState(SWING_CHART_TOGGLE_ORDER.map((id) => swingVis[id]));
   const srState = groupState(SR_CHART_TOGGLE_ORDER.map((id) => srVis[id]));
   const patternState = groupState(
@@ -660,10 +665,7 @@ export function ChartSidebar({
           help={INDICATOR_HELP.bb}
           onEdit={onEditIndicator ? () => onEditIndicator("bb") : undefined}
           onToggleAll={(next) =>
-            bump(() => {
-              setBbOverlayGroupVisible(next);
-              setBbStrategyGroupVisible(next);
-            })
+            bump(() => setBbOverlayGroupVisible(next))
           }
         >
             <Group

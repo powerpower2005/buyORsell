@@ -901,12 +901,58 @@ export function CandleChart({
   }, [totalHeight, mainHeight, oscPanes, showVolume]);
 
   // ─── MA / BB overlays (pane 0) ─────────────────────────────────────────────
+  // Toggle via visible:true/false (do not removeSeries on every click — that can
+  // blank the price pane after rapid BB checkbox toggles).
 
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart || !indicators) return;
 
     const wanted = new Set<string>();
+
+    const upsertLine = (
+      key: string,
+      points: { date: string; value: number }[],
+      opts: {
+        color: string;
+        lineWidth: 1 | 2;
+        visible: boolean;
+      },
+    ) => {
+      wanted.add(key);
+      let line = overlayRefs.current.get(key);
+      if (!line) {
+        line = chart.addSeries(LineSeries, {
+          color: opts.color,
+          lineWidth: opts.lineWidth,
+          visible: opts.visible,
+          title: "",
+          lastValueVisible: false,
+          priceLineVisible: false,
+          crosshairMarkerVisible: false,
+          // Keep candles driving the scale when overlays are hidden/shown.
+          autoscaleInfoProvider: () => null,
+        });
+        overlayRefs.current.set(key, line);
+      } else {
+        line.applyOptions({
+          color: opts.color,
+          lineWidth: opts.lineWidth,
+          visible: opts.visible,
+          title: "",
+          lastValueVisible: false,
+          priceLineVisible: false,
+          crosshairMarkerVisible: false,
+          autoscaleInfoProvider: () => null,
+        });
+      }
+      line.setData(
+        points.map((p) => ({
+          time: p.date as `${number}-${number}-${number}`,
+          value: p.value,
+        })),
+      );
+    };
 
     const drawGroup = (
       pluginId: "sma" | "ema",
@@ -925,38 +971,11 @@ export function CandleChart({
         const key = `${prefix}:${period}`;
         const points = out.series[key];
         if (!points?.length) return;
-        const visible = periodVis?.[period] ?? false;
-        if (!visible) return;
-        wanted.add(key);
-
-        let line = overlayRefs.current.get(key);
-        if (!line) {
-          line = chart.addSeries(LineSeries, {
-            color: resolvePeriodColor(colors, period, i),
-            lineWidth,
-            title: "",
-            lastValueVisible: false,
-            priceLineVisible: false,
-            crosshairMarkerVisible: false,
-          });
-          overlayRefs.current.set(key, line);
-        } else {
-          line.applyOptions({
-            color: resolvePeriodColor(colors, period, i),
-            visible: true,
-            title: "",
-            lastValueVisible: false,
-            priceLineVisible: false,
-            crosshairMarkerVisible: false,
-          });
-        }
-
-        line.setData(
-          points.map((p) => ({
-            time: p.date as `${number}-${number}-${number}`,
-            value: p.value,
-          })),
-        );
+        upsertLine(key, points, {
+          color: resolvePeriodColor(colors, period, i),
+          lineWidth,
+          visible: periodVis?.[period] ?? false,
+        });
       });
     };
 
@@ -968,53 +987,26 @@ export function CandleChart({
     if (bbCfg?.enabled && bbOut) {
       const colors = parsePeriodColors(bbCfg.params.colors);
       for (const band of BB_BAND_ORDER) {
-        if (!(bbVisibility?.[band] ?? false)) continue;
         const meta = BB_BAND_META[band];
         const key = bbOverlayKey(band);
         const points = bbOut.series[meta.seriesKey];
         if (!points?.length) continue;
-        wanted.add(key);
-
-        const color = resolveBbBandColor(colors, band);
-        const lineWidth: 1 | 2 = band === "middle" ? 2 : 1;
-
-        let line = overlayRefs.current.get(key);
-        if (!line) {
-          line = chart.addSeries(LineSeries, {
-            color,
-            lineWidth,
-            title: "",
-            lastValueVisible: false,
-            priceLineVisible: false,
-            crosshairMarkerVisible: false,
-          });
-          overlayRefs.current.set(key, line);
-        } else {
-          line.applyOptions({
-            color,
-            lineWidth,
-            visible: true,
-            title: "",
-            lastValueVisible: false,
-            priceLineVisible: false,
-            crosshairMarkerVisible: false,
-          });
-        }
-
-        line.setData(
-          points.map((p) => ({
-            time: p.date as `${number}-${number}-${number}`,
-            value: p.value,
-          })),
-        );
+        upsertLine(key, points, {
+          color: resolveBbBandColor(colors, band),
+          lineWidth: band === "middle" ? 2 : 1,
+          visible: bbVisibility?.[band] ?? false,
+        });
       }
     }
 
-    for (const [key, line] of overlayRefs.current) {
-      if (!wanted.has(key)) {
+    for (const [key, line] of [...overlayRefs.current.entries()]) {
+      if (wanted.has(key)) continue;
+      try {
         chart.removeSeries(line);
-        overlayRefs.current.delete(key);
+      } catch {
+        // Series may already be gone after chart recreate.
       }
+      overlayRefs.current.delete(key);
     }
     // Re-read periods/colors from config each run (localStorage may change via modal).
   }, [indicators, timeframe, maVisibility, bbVisibility, bars.length]);
