@@ -243,9 +243,11 @@ export function HomePage() {
   const freshness = quote ? checkFresh(quote, timeframe) : null;
   const isStale = freshness?.status === "stale";
 
-  const evaluation = quote
-    ? evaluateQuote(quote.ohlcv, timeframe, indicatorConfig)
-    : null;
+  const evaluation = useMemo(
+    () =>
+      quote ? evaluateQuote(quote.ohlcv, timeframe, indicatorConfig) : null,
+    [quote, timeframe, indicatorConfig],
+  );
 
   const trendlineIdsKey = evaluation?.trendlines
     ? [

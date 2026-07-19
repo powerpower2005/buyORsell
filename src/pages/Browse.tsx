@@ -215,14 +215,17 @@ export function BrowsePage() {
     : null;
   const isStale = freshness?.status === "stale";
 
-  const evaluation =
-    quote && selected
-      ? evaluateQuote(
-          quote.ohlcv,
-          selected.timeframe as Timeframe,
-          indicatorConfig,
-        )
-      : null;
+  const evaluation = useMemo(
+    () =>
+      quote && selected
+        ? evaluateQuote(
+            quote.ohlcv,
+            selected.timeframe as Timeframe,
+            indicatorConfig,
+          )
+        : null,
+    [quote, selected?.ticker, selected?.timeframe, indicatorConfig],
+  );
 
   const trendlineIdsKey = evaluation?.trendlines
     ? [

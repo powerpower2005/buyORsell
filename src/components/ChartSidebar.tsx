@@ -384,7 +384,7 @@ export function ChartSidebar({
     next: boolean,
   ) => {
     setTrendlineChartVisible(kind, next);
-    if (lines.length > 1) {
+    if (lines.length > 0) {
       setTrendlineLinesVisible(
         lines.map((l) => l.id),
         next,
@@ -777,7 +777,7 @@ export function ChartSidebar({
                   })
                 }
                 onChange={(next) =>
-                  bump(() => setTrendlineChartVisible(id, next))
+                  bump(() => setKindVisible(id, lines, next))
                 }
               />
             );

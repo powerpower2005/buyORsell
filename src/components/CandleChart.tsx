@@ -141,7 +141,7 @@ interface Props {
   chartSrVisibility?: Record<SrChartToggleId, boolean>;
   trendlines?: TrendlineResult;
   chartTrendlineVisibility?: Record<TrendlineChartToggleId, boolean>;
-  /** Per-line visibility keyed by Trendline.id. Missing id defaults to true. */
+  /** Per-line visibility keyed by Trendline.id. Missing id defaults to visible. */
   chartTrendlineLineVisibility?: Record<string, boolean>;
   /** Resolved per-line colors keyed by Trendline.id. */
   chartTrendlineColors?: Record<string, string>;
@@ -342,7 +342,8 @@ export function CandleChart({
         boolean
       >);
     const lineVis = chartTrendlineLineVisibility ?? {};
-    const keep = (line: Trendline) => lineVis[line.id] ?? false;
+    // Missing per-line override defaults to visible when the kind is on.
+    const keep = (line: Trendline) => lineVis[line.id] ?? true;
     const out: Trendline[] = [];
     if (vis.ascending) out.push(...trendlines.ascending.filter(keep));
     if (vis.descending) out.push(...trendlines.descending.filter(keep));
@@ -980,16 +981,23 @@ export function CandleChart({
     const chart = chartRef.current;
     if (!chart) return;
 
+    const safeRemove = (series: OscSeries | ISeriesApi<"Histogram">) => {
+      try {
+        chart.removeSeries(series);
+      } catch {
+        // Series may already be gone after pane teardown.
+      }
+    };
     for (const series of oscSeriesRefs.current.values()) {
-      chart.removeSeries(series);
+      safeRemove(series);
     }
     oscSeriesRefs.current = new Map();
     if (volumeRef.current) {
-      chart.removeSeries(volumeRef.current);
+      safeRemove(volumeRef.current);
       volumeRef.current = null;
     }
     for (const line of volumeMaRefs.current.values()) {
-      chart.removeSeries(line);
+      safeRemove(line);
     }
     volumeMaRefs.current = new Map();
 
@@ -1239,13 +1247,12 @@ export function CandleChart({
       if (api) api.setHeight(pane.height);
     });
     requestAnimationFrame(() => drawChartOverlays());
+    // Recreate only when pane membership / volume snapshot changes — not on
+    // every parent re-render (bars/indicators get new object identities often).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    indicators,
-    auxIndicatorVisibility,
     oscPanes,
     showVolume,
-    bars,
     volumeSnapshot,
     timeframe,
     mainHeight,

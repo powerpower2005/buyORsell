@@ -119,7 +119,7 @@ export function setTrendlineChartVisible(
   saveOverrides(overrides);
 }
 
-/** Per-line visibility keyed by Trendline.id. Missing id defaults to hidden. */
+/** Per-line visibility keyed by Trendline.id. Missing id defaults to hidden in storage. */
 export function isTrendlineLineVisible(lineId: string): boolean {
   const overrides = loadLineOverrides();
   return overrides[lineId] ?? false;
