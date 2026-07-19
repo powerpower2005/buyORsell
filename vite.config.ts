@@ -62,8 +62,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["icon.svg", "manifest.json"],
       manifest: {
-        name: "GF",
-        short_name: "GF",
+        name: "개미브레인롯",
+        short_name: "개미브레인롯",
         description: "OHLCV 기술 분석",
         theme_color: "#191919",
         background_color: "#191919",

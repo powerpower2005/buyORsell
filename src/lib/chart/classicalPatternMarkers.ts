@@ -9,7 +9,7 @@ import {
   CHART_PATTERN_ORDER,
   type ChartPatternId,
 } from "@/lib/chartPatternMeta";
-import { directionColor } from "@/lib/candlePatternMeta";
+import { PATTERN_MARKER_SIZE, patternAccentColor } from "@/lib/candlePatternMeta";
 
 function hitToMarker(hit: ChartPatternHit): SeriesMarker<Time> {
   const position =
@@ -29,11 +29,11 @@ function hitToMarker(hit: ChartPatternHit): SeriesMarker<Time> {
     time: hit.date as Time,
     position,
     shape,
-    color: directionColor(hit.direction),
+    color: CHART_PATTERN_META[hit.id]?.color ?? patternAccentColor(hit.direction),
     // Labels live in the below-chart legend only.
     text: "",
     id: `cpat-${hit.instanceKey}`,
-    size: 1,
+    size: PATTERN_MARKER_SIZE,
   };
 }
 

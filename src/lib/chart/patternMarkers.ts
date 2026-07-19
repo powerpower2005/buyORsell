@@ -7,11 +7,12 @@ import type {
 import {
   CANDLE_PATTERN_META,
   CANDLE_PATTERN_ORDER,
-  directionColor,
+  PATTERN_MARKER_SIZE,
+  patternAccentColor,
 } from "@/lib/candlePatternMeta";
 
 function hitToMarker(hit: CandlePatternHit): SeriesMarker<Time> {
-  const color = directionColor(hit.direction);
+  const color = patternAccentColor(hit.direction);
 
   const position =
     hit.direction === "bullish"
@@ -35,7 +36,7 @@ function hitToMarker(hit: CandlePatternHit): SeriesMarker<Time> {
     // Labels live in the below-chart legend only.
     text: "",
     id: `${hit.id}-${hit.barIndex}`,
-    size: 1,
+    size: PATTERN_MARKER_SIZE,
   };
 }
 
@@ -62,7 +63,7 @@ export function visiblePatternLegend(
     return {
       text: meta.markerText,
       label: meta.labelKo,
-      color: directionColor(meta.typicalDirection),
+      color: patternAccentColor(meta.typicalDirection),
     };
   });
 }

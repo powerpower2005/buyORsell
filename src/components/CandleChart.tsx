@@ -33,6 +33,7 @@ import {
   patternsToChartMarkers,
   visiblePatternLegend,
 } from "@/lib/chart/patternMarkers";
+import { patternBarHighlights } from "@/lib/chart/patternBarHighlights";
 import {
   structureToChartMarkers,
   visibleStructureLegend,
@@ -46,6 +47,7 @@ import {
   visibleClassicalPatternInstances,
   visibleClassicalPatternLegend,
 } from "@/lib/chart/classicalPatternMarkers";
+import { patternAccentColor } from "@/lib/candlePatternMeta";
 import {
   buildOscPaneSpecs,
   fmtVolume,
@@ -341,6 +343,22 @@ export function CandleChart({
     classicalPatterns,
     chartClassicalPatternVisibility,
   ]);
+
+  const barHighlights = useMemo(
+    () =>
+      patternBarHighlights(
+        patterns,
+        chartPatternVisibility,
+        classicalPatterns,
+        chartClassicalPatternVisibility,
+      ),
+    [
+      patterns,
+      chartPatternVisibility,
+      classicalPatterns,
+      chartClassicalPatternVisibility,
+    ],
+  );
 
   const srZones = useMemo(
     () =>
@@ -1344,12 +1362,7 @@ export function CandleChart({
         key: `${hit.id}-${hit.barIndex}`,
         text: hit.label,
         detail: hit.date,
-        color:
-          hit.direction === "bullish"
-            ? "#00c471"
-            : hit.direction === "bearish"
-              ? "#f04452"
-              : "#8b95a1",
+        color: patternAccentColor(hit.direction),
       }));
   }, [patterns, chartPatternVisibility]);
 
@@ -1436,13 +1449,23 @@ export function CandleChart({
       const savedRange = shouldFit ? null : captureTimeRange();
 
       candleRef.current.setData(
-        bars.map((b) => ({
-          time: b.date as `${number}-${number}-${number}`,
-          open: b.open,
-          high: b.high,
-          low: b.low,
-          close: b.close,
-        })),
+        bars.map((b) => {
+          const hl = barHighlights.get(b.date);
+          return {
+            time: b.date as `${number}-${number}-${number}`,
+            open: b.open,
+            high: b.high,
+            low: b.low,
+            close: b.close,
+            ...(hl
+              ? {
+                  color: hl.color,
+                  borderColor: hl.borderColor,
+                  wickColor: hl.wickColor,
+                }
+              : {}),
+          };
+        }),
       );
 
       if (volumeRef.current && showVolume) {
@@ -1478,7 +1501,7 @@ export function CandleChart({
       console.error("CandleChart setData failed:", err);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bars, chartMarkers, timeframe, showVolume, volumeSnapshot]);
+  }, [bars, chartMarkers, barHighlights, timeframe, showVolume, volumeSnapshot]);
 
   // ─── SR zone redraw ────────────────────────────────────────────────────────
 
@@ -1670,7 +1693,10 @@ export function CandleChart({
                   >
                     {item.text}
                   </span>
-                  <span className="tabular-nums text-text-tertiary">
+                  <span
+                    className="tabular-nums text-[11px] font-semibold"
+                    style={{ color: item.color }}
+                  >
                     {item.detail}
                   </span>
                 </span>
@@ -1755,19 +1781,33 @@ export function CandleChart({
           {classicalHitLegend.length > 0 ? (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
               <span>차트 패턴:</span>
-              {classicalHitLegend.map((item) => (
-                <span key={item.key} className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.text}
+              {classicalHitLegend.map((item) => {
+                const datePart = item.detail.split(" · ")[0] ?? item.detail;
+                const rest = item.detail.includes(" · ")
+                  ? item.detail.slice(datePart.length)
+                  : "";
+                return (
+                  <span key={item.key} className="flex items-center gap-1.5">
+                    <span
+                      className="font-mono text-[10px] font-semibold"
+                      style={{ color: item.color }}
+                    >
+                      {item.text}
+                    </span>
+                    <span
+                      className="tabular-nums text-[11px] font-semibold"
+                      style={{ color: item.color }}
+                    >
+                      {datePart}
+                    </span>
+                    {rest && (
+                      <span className="tabular-nums text-text-tertiary">
+                        {rest}
+                      </span>
+                    )}
                   </span>
-                  <span className="tabular-nums text-text-tertiary">
-                    {item.detail}
-                  </span>
-                </span>
-              ))}
+                );
+              })}
             </div>
           ) : (
             classicalPatternLegend.length > 0 && (

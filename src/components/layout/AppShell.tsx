@@ -6,7 +6,7 @@ export function Header() {
       <div className="mx-auto flex max-w-content items-center justify-between">
         <div className="text-left">
           <Link to="/" className="text-lg font-semibold text-text-primary no-underline">
-            GF
+            개미브레인롯
           </Link>
           <p className="mt-0.5 text-xs text-text-secondary">
             OHLCV 기술 분석

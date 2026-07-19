@@ -120,3 +120,13 @@ export function directionColor(direction: TrendLabel): string {
   if (direction === "bearish") return "#f04452";
   return "#8b95a1";
 }
+
+/** Brighter marker/bar accents so pattern days stand out from normal candles. */
+export function patternAccentColor(direction: TrendLabel): string {
+  if (direction === "bullish") return "#38bdf8";
+  if (direction === "bearish") return "#fb923c";
+  return "#fbbf24";
+}
+
+/** Chart marker arrow size for candle / classical patterns. */
+export const PATTERN_MARKER_SIZE = 3;
