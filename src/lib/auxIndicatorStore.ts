@@ -6,6 +6,13 @@ export type AuxIndicatorId =
   | "stoch"
   | "mfi"
   | "atr"
+  | "obv"
+  | "keltner"
+  | "vwap"
+  | "adx"
+  | "psar"
+  | "cci"
+  | "supertrend"
   | "bbPercentB";
 
 export const AUX_INDICATOR_ORDER: AuxIndicatorId[] = [
@@ -14,6 +21,13 @@ export const AUX_INDICATOR_ORDER: AuxIndicatorId[] = [
   "stoch",
   "mfi",
   "atr",
+  "obv",
+  "keltner",
+  "vwap",
+  "adx",
+  "psar",
+  "cci",
+  "supertrend",
   "bbPercentB",
 ];
 
@@ -35,11 +49,39 @@ export const AUX_INDICATOR_META: Record<
   },
   mfi: {
     labelKo: "MFI",
-    description: "자금흐름지수 — 같은 차트 안 별도 섹션 (0–100 스케일).",
+    description: "자금흐름지수(거래량 반영 RSI) — 별도 섹션 (0–100).",
   },
   atr: {
     labelKo: "ATR",
     description: "평균진폭 — 같은 차트 안 별도 섹션.",
+  },
+  obv: {
+    labelKo: "OBV",
+    description: "누적 균형 거래량(+시그널·에너지) — 별도 섹션.",
+  },
+  keltner: {
+    labelKo: "켈트너",
+    description: "켈트너 채널(EMA+ATR) — 가격 차트 오버레이.",
+  },
+  vwap: {
+    labelKo: "VWAP",
+    description: "거래량 가중 평균가 + 표준편차 밴드 — 가격 차트 오버레이.",
+  },
+  adx: {
+    labelKo: "ADX",
+    description: "추세 강도(+DI/−DI) — 같은 차트 안 별도 섹션.",
+  },
+  psar: {
+    labelKo: "Parabolic SAR",
+    description: "파라볼릭 SAR — 가격 차트 오버레이(추세·트레일 스탑).",
+  },
+  cci: {
+    labelKo: "CCI",
+    description: "상품채널지수 — 같은 차트 안 별도 섹션.",
+  },
+  supertrend: {
+    labelKo: "슈퍼트렌드",
+    description: "Supertrend — 가격 차트 오버레이(추세 방향 + 트레일링 스탑).",
   },
   bbPercentB: {
     labelKo: "%B",
@@ -47,13 +89,20 @@ export const AUX_INDICATOR_META: Record<
   },
 };
 
-/** Oscillator indicator config ids that map 1:1 to aux pane toggles. */
+/** Oscillator / aux indicator config ids that map 1:1 to aux toggles. */
 export const INDICATOR_TO_AUX: Partial<Record<string, AuxIndicatorId>> = {
   rsi: "rsi",
   macd: "macd",
   stoch: "stoch",
   mfi: "mfi",
   atr: "atr",
+  obv: "obv",
+  keltner: "keltner",
+  vwap: "vwap",
+  adx: "adx",
+  psar: "psar",
+  cci: "cci",
+  supertrend: "supertrend",
 };
 
 const STORAGE_KEY = "gf:config:aux-indicators-legend";
@@ -73,7 +122,7 @@ function saveOverrides(overrides: Overrides): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
 }
 
-/** Default off — opt-in oscillator panes. */
+/** Default off — opt-in oscillator panes / overlays. */
 export function getAuxIndicatorVisibility(): Record<AuxIndicatorId, boolean> {
   const overrides = loadOverrides();
   const out = {} as Record<AuxIndicatorId, boolean>;

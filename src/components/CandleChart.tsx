@@ -77,6 +77,12 @@ import {
   rsiStrategiesToChartMarkers,
   visibleRsiStrategyLegend,
 } from "@/lib/chart/rsiStrategyMarkers";
+import type { VolumeStrategyResult } from "@/lib/evaluation/volumeStrategies";
+import type { VolumeStrategyId } from "@/lib/volumeStrategyMeta";
+import {
+  volumeStrategiesToChartMarkers,
+  visibleVolumeStrategyLegend,
+} from "@/lib/chart/volumeStrategyMarkers";
 import {
   macdStrategiesToChartMarkers,
   visibleMacdStrategyLegend,
@@ -222,6 +228,8 @@ interface Props {
   chartPatternStrategyVisibility?: Record<PatternStrategyId, boolean>;
   rsiStrategies?: RsiStrategyResult;
   chartRsiStrategyVisibility?: Record<RsiStrategyId, boolean>;
+  volumeStrategies?: VolumeStrategyResult;
+  chartVolumeStrategyVisibility?: Record<VolumeStrategyId, boolean>;
   macdStrategies?: MacdStrategyResult;
   chartMacdStrategyVisibility?: Record<MacdStrategyId, boolean>;
   stochStrategies?: StochStrategyResult;
@@ -285,6 +293,8 @@ export function CandleChart({
   chartPatternStrategyVisibility,
   rsiStrategies,
   chartRsiStrategyVisibility,
+  volumeStrategies,
+  chartVolumeStrategyVisibility,
   macdStrategies,
   chartMacdStrategyVisibility,
   stochStrategies,
@@ -414,6 +424,11 @@ export function CandleChart({
       rsiStrategies,
       chartRsiStrategyVisibility ?? ({} as Record<RsiStrategyId, boolean>),
     );
+    const volumeStratMs = volumeStrategiesToChartMarkers(
+      volumeStrategies,
+      chartVolumeStrategyVisibility ??
+        ({} as Record<VolumeStrategyId, boolean>),
+    );
     const macdStratMs = macdStrategiesToChartMarkers(
       macdStrategies,
       chartMacdStrategyVisibility ?? ({} as Record<MacdStrategyId, boolean>),
@@ -434,6 +449,7 @@ export function CandleChart({
       ...classicalMs,
       ...patternStratMs,
       ...rsiStratMs,
+      ...volumeStratMs,
       ...macdStratMs,
       ...stochStratMs,
       ...ichiStratMs,
@@ -455,6 +471,8 @@ export function CandleChart({
     chartPatternStrategyVisibility,
     rsiStrategies,
     chartRsiStrategyVisibility,
+    volumeStrategies,
+    chartVolumeStrategyVisibility,
     macdStrategies,
     chartMacdStrategyVisibility,
     stochStrategies,
@@ -570,6 +588,13 @@ export function CandleChart({
         ? visibleRsiStrategyLegend(chartRsiStrategyVisibility)
         : [],
     [chartRsiStrategyVisibility],
+  );
+  const volumeStrategyLegend = useMemo(
+    () =>
+      chartVolumeStrategyVisibility
+        ? visibleVolumeStrategyLegend(chartVolumeStrategyVisibility)
+        : [],
+    [chartVolumeStrategyVisibility],
   );
   const macdStrategyLegend = useMemo(
     () =>
@@ -1154,6 +1179,7 @@ export function CandleChart({
         color: string;
         lineWidth: 1 | 2;
         visible: boolean;
+        lineStyle?: LineStyle;
       },
     ) => {
       wanted.add(key);
@@ -1162,6 +1188,7 @@ export function CandleChart({
         line = chart.addSeries(LineSeries, {
           color: opts.color,
           lineWidth: opts.lineWidth,
+          lineStyle: opts.lineStyle,
           visible: opts.visible,
           title: "",
           lastValueVisible: false,
@@ -1175,6 +1202,7 @@ export function CandleChart({
         line.applyOptions({
           color: opts.color,
           lineWidth: opts.lineWidth,
+          lineStyle: opts.lineStyle,
           visible: opts.visible,
           title: "",
           lastValueVisible: false,
@@ -1258,6 +1286,117 @@ export function CandleChart({
       }
     }
 
+    const keltnerCfg = getIndicatorConfig("keltner");
+    const keltnerOut = indicators.indicators.keltner;
+    const keltnerVis = auxIndicatorVisibility?.keltner === true;
+    if (keltnerCfg?.enabled && keltnerOut) {
+      const colors = parsePeriodColors(keltnerCfg.params.colors);
+      if (keltnerOut.series.mid?.length) {
+        upsertLine("keltner:mid", keltnerOut.series.mid, {
+          color: colors.mid ?? "#06b6d4",
+          lineWidth: 2,
+          visible: keltnerVis,
+        });
+      }
+      if (keltnerOut.series.upper?.length) {
+        upsertLine("keltner:upper", keltnerOut.series.upper, {
+          color: colors.upper ?? "#22d3ee",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          visible: keltnerVis,
+        });
+      }
+      if (keltnerOut.series.lower?.length) {
+        upsertLine("keltner:lower", keltnerOut.series.lower, {
+          color: colors.lower ?? "#67e8f9",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          visible: keltnerVis,
+        });
+      }
+    }
+
+    const vwapCfg = getIndicatorConfig("vwap");
+    const vwapOut = indicators.indicators.vwap;
+    const vwapVis = auxIndicatorVisibility?.vwap === true;
+    if (vwapCfg?.enabled && vwapOut) {
+      const colors = parsePeriodColors(vwapCfg.params.colors);
+      const vwapColor = colors.vwap ?? "#3b82f6";
+      const band1 = colors.band1 ?? "#f97316";
+      const band2 = colors.band2 ?? "#fb923c";
+      const slope = vwapOut.latest.slope;
+      const centerColor =
+        slope == null || slope === 0
+          ? vwapColor
+          : slope > 0
+            ? "#00c471"
+            : "#f04452";
+      if (vwapOut.series.vwap?.length) {
+        upsertLine("vwap", vwapOut.series.vwap, {
+          color: centerColor,
+          lineWidth: 2,
+          visible: vwapVis,
+        });
+      }
+      if (vwapOut.series.upper1?.length) {
+        upsertLine("vwap:upper1", vwapOut.series.upper1, {
+          color: band1,
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          visible: vwapVis,
+        });
+      }
+      if (vwapOut.series.lower1?.length) {
+        upsertLine("vwap:lower1", vwapOut.series.lower1, {
+          color: band1,
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          visible: vwapVis,
+        });
+      }
+      if (vwapOut.series.upper2?.length) {
+        upsertLine("vwap:upper2", vwapOut.series.upper2, {
+          color: band2,
+          lineWidth: 1,
+          lineStyle: LineStyle.SparseDotted,
+          visible: vwapVis,
+        });
+      }
+      if (vwapOut.series.lower2?.length) {
+        upsertLine("vwap:lower2", vwapOut.series.lower2, {
+          color: band2,
+          lineWidth: 1,
+          lineStyle: LineStyle.SparseDotted,
+          visible: vwapVis,
+        });
+      }
+    }
+
+    const psarCfg = getIndicatorConfig("psar");
+    const psarOut = indicators.indicators.psar;
+    const psarPoints = psarOut?.series.psar;
+    if (psarCfg?.enabled && psarPoints?.length) {
+      const bull = (psarOut?.latest.direction ?? 0) > 0;
+      upsertLine("psar", psarPoints, {
+        color: bull ? "#00c471" : "#f04452",
+        lineWidth: 1,
+        lineStyle: LineStyle.SparseDotted,
+        visible: auxIndicatorVisibility?.psar === true,
+      });
+    }
+
+    const stCfg = getIndicatorConfig("supertrend");
+    const stOut = indicators.indicators.supertrend;
+    const stPoints = stOut?.series.supertrend;
+    if (stCfg?.enabled && stPoints?.length) {
+      const bull = (stOut?.latest.direction ?? 0) > 0;
+      upsertLine("supertrend", stPoints, {
+        color: bull ? "#00c471" : "#f04452",
+        lineWidth: 2,
+        visible: auxIndicatorVisibility?.supertrend === true,
+      });
+    }
+
     for (const [key, line] of [...overlayRefs.current.entries()]) {
       if (wanted.has(key)) continue;
       try {
@@ -1274,6 +1413,7 @@ export function CandleChart({
     maVisibility,
     bbVisibility,
     ichimokuVisibility,
+    auxIndicatorVisibility,
     bars.length,
   ]);
 
@@ -1620,6 +1760,136 @@ export function CandleChart({
         return;
       }
 
+      if (pane.id === "obv") {
+        const line = chart.addSeries(
+          LineSeries,
+          {
+            color: "#38bdf8",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        line.setData(toLineData(out.obv?.series.obv));
+        oscSeriesRefs.current.set("obv", line);
+        if (out.obv?.series.obvSignal?.length) {
+          const sig = chart.addSeries(
+            LineSeries,
+            {
+              color: "rgba(148, 163, 184, 0.85)",
+              lineWidth: 1,
+              lineStyle: LineStyle.Dashed,
+              lastValueVisible: false,
+              priceLineVisible: false,
+              crosshairMarkerVisible: false,
+            },
+            paneIndex,
+          );
+          sig.setData(toLineData(out.obv.series.obvSignal));
+          oscSeriesRefs.current.set("obvSignal", sig);
+        }
+        return;
+      }
+
+      if (pane.id === "adx") {
+        const adxLine = chart.addSeries(
+          LineSeries,
+          {
+            color: "#eab308",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        adxLine.createPriceLine({
+          price: 25,
+          color: "rgba(148, 163, 184, 0.55)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
+        adxLine.setData(toLineData(out.adx?.series.adx));
+        oscSeriesRefs.current.set("adx", adxLine);
+
+        const plusDI = chart.addSeries(
+          LineSeries,
+          {
+            color: "#00c471",
+            lineWidth: 1,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        plusDI.setData(toLineData(out.adx?.series.plusDI));
+        oscSeriesRefs.current.set("adxPlusDI", plusDI);
+
+        const minusDI = chart.addSeries(
+          LineSeries,
+          {
+            color: "#f04452",
+            lineWidth: 1,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        minusDI.setData(toLineData(out.adx?.series.minusDI));
+        oscSeriesRefs.current.set("adxMinusDI", minusDI);
+        return;
+      }
+
+      if (pane.id === "cci") {
+        const cciCfg = getIndicatorConfig("cci");
+        const overbought = cciCfg?.overbought ?? 100;
+        const oversold = cciCfg?.oversold ?? -100;
+        const line = chart.addSeries(
+          LineSeries,
+          {
+            color: "#a78bfa",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        line.createPriceLine({
+          price: overbought,
+          color: "rgba(240, 68, 82, 0.45)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
+        line.createPriceLine({
+          price: 0,
+          color: "rgba(148, 163, 184, 0.4)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: false,
+          title: "",
+        });
+        line.createPriceLine({
+          price: oversold,
+          color: "rgba(0, 196, 113, 0.45)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
+        line.setData(toLineData(out.cci?.series.cci));
+        oscSeriesRefs.current.set("cci", line);
+        return;
+      }
+
       if (pane.id === "bbPercentB") {
         const line = chart.addSeries(
           LineSeries,
@@ -1724,8 +1994,66 @@ export function CandleChart({
       }
     }
 
+    if (
+      auxIndicatorVisibility?.keltner === true &&
+      getIndicatorConfig("keltner")?.enabled &&
+      indicators.indicators.keltner?.series.mid?.length
+    ) {
+      items.push({
+        label: `Keltner · ${fmtLegend(indicators.indicators.keltner.latest.mid)}`,
+        color: "#06b6d4",
+      });
+    }
+
+    if (
+      auxIndicatorVisibility?.vwap === true &&
+      getIndicatorConfig("vwap")?.enabled &&
+      indicators.indicators.vwap?.series.vwap?.length
+    ) {
+      const slope = indicators.indicators.vwap.latest.slope;
+      const color =
+        slope == null || slope === 0
+          ? "#3b82f6"
+          : slope > 0
+            ? "#00c471"
+            : "#f04452";
+      items.push({
+        label: `VWAP · ${fmtLegend(indicators.indicators.vwap.latest.vwap)}`,
+        color,
+      });
+      items.push({
+        label: "VWAP bands",
+        color: "#f97316",
+      });
+    }
+
+    if (
+      auxIndicatorVisibility?.psar === true &&
+      getIndicatorConfig("psar")?.enabled &&
+      indicators.indicators.psar?.series.psar?.length
+    ) {
+      const bull = (indicators.indicators.psar.latest.direction ?? 0) > 0;
+      items.push({
+        label: `PSAR · ${fmtLegend(indicators.indicators.psar.latest.psar)}`,
+        color: bull ? "#00c471" : "#f04452",
+      });
+    }
+
+    if (
+      auxIndicatorVisibility?.supertrend === true &&
+      getIndicatorConfig("supertrend")?.enabled &&
+      indicators.indicators.supertrend?.series.supertrend?.length
+    ) {
+      const bull =
+        (indicators.indicators.supertrend.latest.direction ?? 0) > 0;
+      items.push({
+        label: `Supertrend · ${fmtLegend(indicators.indicators.supertrend.latest.supertrend)}`,
+        color: bull ? "#00c471" : "#f04452",
+      });
+    }
+
     return items;
-  }, [indicators, maVisibility, bbVisibility]);
+  }, [indicators, maVisibility, bbVisibility, auxIndicatorVisibility]);
 
   const patternHitLegend = useMemo(() => {
     if (!patterns?.recent.length || !chartPatternVisibility) return [];
@@ -1778,6 +2106,26 @@ export function CandleChart({
               : "#8b95a1",
       }));
   }, [rsiStrategies, chartRsiStrategyVisibility]);
+
+  const volumeStrategyHitLegend = useMemo(() => {
+    if (!volumeStrategies?.recent.length || !chartVolumeStrategyVisibility)
+      return [];
+    return volumeStrategies.recent
+      .filter((hit) => chartVolumeStrategyVisibility[hit.id])
+      .slice(-8)
+      .reverse()
+      .map((hit) => ({
+        key: `${hit.id}-${hit.barIndex}`,
+        text: hit.label,
+        detail: `${hit.date} · ${hit.summary}`,
+        color:
+          hit.direction === "bullish"
+            ? "#00c471"
+            : hit.direction === "bearish"
+              ? "#f04452"
+              : "#8b95a1",
+      }));
+  }, [volumeStrategies, chartVolumeStrategyVisibility]);
 
   const macdStrategyHitLegend = useMemo(() => {
     if (!macdStrategies?.recent.length || !chartMacdStrategyVisibility)
@@ -2361,6 +2709,39 @@ export function CandleChart({
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
                 <span>RSI 전략:</span>
                 {rsiStrategyLegend.map((item) => (
+                  <span
+                    key={`${item.text}-${item.label}`}
+                    className="text-text-tertiary"
+                  >
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            )
+          )}
+
+          {volumeStrategyHitLegend.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>거래량 전략:</span>
+              {volumeStrategyHitLegend.map((item) => (
+                <span key={item.key} className="flex items-center gap-1.5">
+                  <span
+                    className="font-mono text-[10px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.text}
+                  </span>
+                  <span className="tabular-nums text-text-tertiary">
+                    {item.detail}
+                  </span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            volumeStrategyLegend.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span>거래량 전략:</span>
+                {volumeStrategyLegend.map((item) => (
                   <span
                     key={`${item.text}-${item.label}`}
                     className="text-text-tertiary"

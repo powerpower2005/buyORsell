@@ -43,6 +43,13 @@ export type IndicatorConfigSectionId =
   | "bb"
   | "mfi"
   | "atr"
+  | "obv"
+  | "keltner"
+  | "vwap"
+  | "adx"
+  | "psar"
+  | "cci"
+  | "supertrend"
   | "ichimoku"
   | "all";
 
@@ -60,6 +67,13 @@ export const INDICATOR_CONFIG_SECTION_LABEL: Record<
   bb: "Bollinger Bands",
   mfi: "MFI",
   atr: "ATR",
+  obv: "OBV",
+  keltner: "켈트너",
+  vwap: "VWAP",
+  adx: "ADX",
+  psar: "Parabolic SAR",
+  cci: "CCI",
+  supertrend: "슈퍼트렌드",
   ichimoku: "일목균형표",
 };
 
@@ -327,9 +341,31 @@ export function IndicatorConfigForm({
   const bb = find("bb");
   const mfi = find("mfi");
   const atr = find("atr");
+  const obv = find("obv");
+  const keltner = find("keltner");
+  const vwap = find("vwap");
+  const adx = find("adx");
+  const psar = find("psar");
+  const cci = find("cci");
+  const supertrend = find("supertrend");
   const ichimoku = find("ichimoku");
 
-  if (!sma || !ema || !rsi || !macd || !stoch || !bb || !atr) {
+  if (
+    !sma ||
+    !ema ||
+    !rsi ||
+    !macd ||
+    !stoch ||
+    !bb ||
+    !atr ||
+    !obv ||
+    !keltner ||
+    !vwap ||
+    !adx ||
+    !psar ||
+    !cci ||
+    !supertrend
+  ) {
     throw new ConfigError("IndicatorConfigForm: missing indicator definitions");
   }
 
@@ -350,7 +386,7 @@ export function IndicatorConfigForm({
 
   const indicatorWarnings = runtimeWarnings.filter(
     (w) =>
-      /SMA|EMA|RSI|MACD|STOCH|BB|MFI|ATR|ICHIMOKU|일목|스토캐|sma|ema|rsi|macd|stoch|bb|mfi|atr|ichimoku|점수 규칙/i.test(
+      /SMA|EMA|RSI|MACD|STOCH|BB|MFI|ATR|OBV|KELTNER|켈트너|VWAP|ADX|PSAR|SAR|CCI|슈퍼|SUPER|ICHIMOKU|일목|스토캐|sma|ema|rsi|macd|stoch|bb|mfi|atr|obv|keltner|vwap|adx|psar|cci|supertrend|ichimoku|점수 규칙/i.test(
         w,
       ) || w.includes("봉"),
   );
@@ -714,6 +750,275 @@ export function IndicatorConfigForm({
             max={50}
             onChange={(v) => {
               setIndicatorParam("atr", "period", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
+
+      {show("obv") && (
+        <IndicatorSection
+          title="OBV"
+          help={INDICATOR_HELP.obv}
+          enabled={obv.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("obv", v);
+            patch();
+          }}
+        >
+          <p className="mb-2 text-xs text-text-tertiary">
+            누적 균형 거래량. 시그널(EMA)·에너지(%)는 패스트 OBV 추력 전략에
+            사용됩니다.
+          </p>
+          <NumInput
+            label="Signal EMA"
+            help={PARAM_HELP["obv.signalPeriod"]}
+            value={requireNumber(
+              obv.params.signalPeriod ?? 10,
+              "obv.signalPeriod",
+            )}
+            min={3}
+            max={50}
+            onChange={(v) => {
+              setIndicatorParam("obv", "signalPeriod", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Energy lookback"
+            help={PARAM_HELP["obv.energyLookback"]}
+            value={requireNumber(
+              obv.params.energyLookback ?? 8,
+              "obv.energyLookback",
+            )}
+            min={3}
+            max={30}
+            onChange={(v) => {
+              setIndicatorParam("obv", "energyLookback", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
+
+      {show("keltner") && (
+        <IndicatorSection
+          title="켈트너 채널"
+          help={INDICATOR_HELP.keltner}
+          enabled={keltner.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("keltner", v);
+            patch();
+          }}
+        >
+          <NumInput
+            label="EMA Period"
+            help={PARAM_HELP["keltner.emaPeriod"]}
+            value={requireNumber(
+              keltner.params.emaPeriod ?? 20,
+              "keltner.emaPeriod",
+            )}
+            min={5}
+            max={100}
+            onChange={(v) => {
+              setIndicatorParam("keltner", "emaPeriod", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="ATR Period"
+            help={PARAM_HELP["keltner.atrPeriod"]}
+            value={requireNumber(
+              keltner.params.atrPeriod ?? 10,
+              "keltner.atrPeriod",
+            )}
+            min={5}
+            max={50}
+            onChange={(v) => {
+              setIndicatorParam("keltner", "atrPeriod", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Multiplier"
+            help={PARAM_HELP["keltner.multiplier"]}
+            value={requireNumber(
+              keltner.params.multiplier ?? 2,
+              "keltner.multiplier",
+            )}
+            min={1}
+            max={5}
+            step={0.5}
+            onChange={(v) => {
+              setIndicatorParam("keltner", "multiplier", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
+
+      {show("vwap") && (
+        <IndicatorSection
+          title="VWAP"
+          help={INDICATOR_HELP.vwap}
+          enabled={vwap.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("vwap", v);
+            patch();
+          }}
+        >
+          <p className="mb-2 text-xs text-text-tertiary">
+            창 누적 VWAP 중심선 + 표준편차 밴드(기본 ×2 / ×3). 거래량 전략의
+            눌림목·밴드 반전·스위칭과 함께 씁니다.
+          </p>
+          <NumInput
+            label="Band stdDev1"
+            help={PARAM_HELP["vwap.stdDev1"]}
+            value={requireNumber(vwap.params.stdDev1 ?? 2, "vwap.stdDev1")}
+            min={0.5}
+            max={5}
+            step={0.5}
+            onChange={(v) => {
+              setIndicatorParam("vwap", "stdDev1", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Band stdDev2"
+            help={PARAM_HELP["vwap.stdDev2"]}
+            value={requireNumber(vwap.params.stdDev2 ?? 3, "vwap.stdDev2")}
+            min={0.5}
+            max={6}
+            step={0.5}
+            onChange={(v) => {
+              setIndicatorParam("vwap", "stdDev2", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
+
+      {show("adx") && (
+        <IndicatorSection
+          title="ADX"
+          help={INDICATOR_HELP.adx}
+          enabled={adx.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("adx", v);
+            patch();
+          }}
+        >
+          <NumInput
+            label="Period"
+            help={PARAM_HELP["adx.period"]}
+            value={requireNumber(adx.params.period, "adx.period")}
+            min={5}
+            max={50}
+            onChange={(v) => {
+              setIndicatorParam("adx", "period", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
+
+      {show("psar") && (
+        <IndicatorSection
+          title="Parabolic SAR"
+          help={INDICATOR_HELP.psar}
+          enabled={psar.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("psar", v);
+            patch();
+          }}
+        >
+          <NumInput
+            label="Step"
+            help={PARAM_HELP["psar.step"]}
+            value={requireNumber(psar.params.step ?? 0.02, "psar.step")}
+            min={0.01}
+            max={0.2}
+            step={0.01}
+            onChange={(v) => {
+              setIndicatorParam("psar", "step", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Max"
+            help={PARAM_HELP["psar.max"]}
+            value={requireNumber(psar.params.max ?? 0.2, "psar.max")}
+            min={0.05}
+            max={0.5}
+            step={0.01}
+            onChange={(v) => {
+              setIndicatorParam("psar", "max", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
+
+      {show("cci") && (
+        <IndicatorSection
+          title="CCI"
+          help={INDICATOR_HELP.cci}
+          enabled={cci.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("cci", v);
+            patch();
+          }}
+        >
+          <NumInput
+            label="Period"
+            help={PARAM_HELP["cci.period"]}
+            value={requireNumber(cci.params.period, "cci.period")}
+            min={5}
+            max={50}
+            onChange={(v) => {
+              setIndicatorParam("cci", "period", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
+
+      {show("supertrend") && (
+        <IndicatorSection
+          title="슈퍼트렌드"
+          help={INDICATOR_HELP.supertrend}
+          enabled={supertrend.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("supertrend", v);
+            patch();
+          }}
+        >
+          <NumInput
+            label="ATR Period"
+            help={PARAM_HELP["supertrend.atrPeriod"]}
+            value={requireNumber(
+              supertrend.params.atrPeriod ?? 10,
+              "supertrend.atrPeriod",
+            )}
+            min={5}
+            max={50}
+            onChange={(v) => {
+              setIndicatorParam("supertrend", "atrPeriod", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Multiplier"
+            help={PARAM_HELP["supertrend.multiplier"]}
+            value={requireNumber(
+              supertrend.params.multiplier ?? 3,
+              "supertrend.multiplier",
+            )}
+            min={1}
+            max={10}
+            step={0.5}
+            onChange={(v) => {
+              setIndicatorParam("supertrend", "multiplier", v);
               patch();
             }}
           />

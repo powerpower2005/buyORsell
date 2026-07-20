@@ -121,6 +121,64 @@ export function buildOscPaneSpecs(
       continue;
     }
 
+    if (id === "obv") {
+      const cfg = getIndicatorConfig("obv");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.obv;
+      if (!out?.series.obv?.length) continue;
+      const energy = out.latest.energy;
+      panes.push({
+        id,
+        title: meta.labelKo,
+        latest:
+          energy != null
+            ? `${fmt(out.latest.obv, 0)} · E${fmt(energy, 0)}%`
+            : fmt(out.latest.obv, 0),
+        height: OSC_PANE_HEIGHT,
+      });
+      continue;
+    }
+
+    // Price-scale overlays (main pane), not below-chart oscillators.
+    if (
+      id === "vwap" ||
+      id === "psar" ||
+      id === "supertrend" ||
+      id === "keltner"
+    ) {
+      continue;
+    }
+
+    if (id === "adx") {
+      const cfg = getIndicatorConfig("adx");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.adx;
+      if (!out?.series.adx?.length) continue;
+      const period = (cfg.params.period as number | undefined) ?? 14;
+      panes.push({
+        id,
+        title: `${meta.labelKo}(${period})`,
+        latest: `${fmt(out.latest.adx)} · +${fmt(out.latest.plusDI)}/−${fmt(out.latest.minusDI)}`,
+        height: OSC_PANE_HEIGHT,
+      });
+      continue;
+    }
+
+    if (id === "cci") {
+      const cfg = getIndicatorConfig("cci");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.cci;
+      if (!out?.series.cci?.length) continue;
+      const period = (cfg.params.period as number | undefined) ?? 20;
+      panes.push({
+        id,
+        title: `${meta.labelKo}(${period})`,
+        latest: fmt(out.latest.cci),
+        height: OSC_PANE_HEIGHT,
+      });
+      continue;
+    }
+
     if (id === "bbPercentB") {
       const cfg = getIndicatorConfig("bb");
       if (!cfg?.enabled) continue;

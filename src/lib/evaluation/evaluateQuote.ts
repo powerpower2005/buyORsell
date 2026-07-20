@@ -61,6 +61,10 @@ import {
   detectStochStrategies,
   type StochStrategyResult,
 } from "./stochStrategies";
+import {
+  detectVolumeStrategies,
+  type VolumeStrategyResult,
+} from "./volumeStrategies";
 import { getIndicatorConfig } from "../configStore";
 import {
   EMPTY_SIGNAL_STATS,
@@ -83,6 +87,7 @@ export interface QuoteEvaluation {
   macdStrategies: MacdStrategyResult | null;
   stochStrategies: StochStrategyResult | null;
   ichimokuStrategies: IchimokuStrategyResult | null;
+  volumeStrategies: VolumeStrategyResult | null;
   /** Follow-through rates by pattern/strategy id (this ticker window). */
   signalStats: SignalStatsBundle;
   warnings: string[];
@@ -320,6 +325,16 @@ export function evaluateQuote(
     }
   }
 
+  let volumeStrategies: VolumeStrategyResult | null = null;
+  if (!fatalError) {
+    try {
+      volumeStrategies = detectVolumeStrategies(prepared, indicators);
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
   const signalStats: SignalStatsBundle = {
     candlePattern: patterns?.stats ?? {},
     chartPattern: classicalPatterns?.stats ?? {},
@@ -329,6 +344,7 @@ export function evaluateQuote(
     macdStrategy: macdStrategies?.stats ?? {},
     stochStrategy: stochStrategies?.stats ?? {},
     ichimokuStrategy: ichimokuStrategies?.stats ?? {},
+    volumeStrategy: volumeStrategies?.stats ?? {},
   };
 
   return {
@@ -347,6 +363,7 @@ export function evaluateQuote(
     macdStrategies,
     stochStrategies,
     ichimokuStrategies,
+    volumeStrategies,
     signalStats,
     warnings,
     fatalError,

@@ -38,6 +38,17 @@ import {
   setRsiStrategyGroupVisible,
   setRsiStrategyVisible,
 } from "@/lib/rsiStrategyStore";
+import { volumeStrategyHelp } from "@/lib/volumeStrategyHelp";
+import {
+  VOLUME_STRATEGY_META,
+  VOLUME_STRATEGY_ORDER,
+  type VolumeStrategyId,
+} from "@/lib/volumeStrategyMeta";
+import {
+  getVolumeStrategyVisibility,
+  setVolumeStrategyGroupVisible,
+  setVolumeStrategyVisible,
+} from "@/lib/volumeStrategyStore";
 import { macdStrategyHelp } from "@/lib/macdStrategyHelp";
 import {
   MACD_STRATEGY_META,
@@ -547,6 +558,10 @@ export function ChartSidebar({
     () => getRsiStrategyVisibility(),
     [refreshTick],
   );
+  const volumeStratVis = useMemo(
+    () => getVolumeStrategyVisibility(),
+    [refreshTick],
+  );
   const macdStratVis = useMemo(
     () => getMacdStrategyVisibility(),
     [refreshTick],
@@ -656,6 +671,9 @@ export function ChartSidebar({
   const rsiStratVals = RSI_STRATEGY_ORDER.map((id) => rsiStratVis[id]);
   const rsiStratState = groupState(rsiStratVals);
   const rsiRootState = groupState([auxVis.rsi, ...rsiStratVals]);
+  const volumeStratVals = VOLUME_STRATEGY_ORDER.map((id) => volumeStratVis[id]);
+  const volumeStratState = groupState(volumeStratVals);
+  const volumeRootState = groupState([volumeVis, ...volumeStratVals]);
   const macdStratVals = MACD_STRATEGY_ORDER.map((id) => macdStratVis[id]);
   const macdStratState = groupState(macdStratVals);
   const macdRootState = groupState([auxVis.macd, ...macdStratVals]);
@@ -1006,17 +1024,58 @@ export function ChartSidebar({
           </Group>
         </Group>
 
-        <div className="flex items-center gap-2 border-b border-border px-2.5 py-2">
-          <span className="min-w-0 flex-1 truncate text-xs font-medium text-text-primary">
-            거래량
-          </span>
-          <OnOffSwitch
-            on={volumeVis}
+        <Group
+          title="거래량"
+          open={open.volume}
+          onToggleOpen={() => toggleOpen("volume")}
+          checked={volumeRootState.checked}
+          indeterminate={volumeRootState.indeterminate}
+          help={CHART_LAYER_HELP.volume}
+          onToggleAll={(next) =>
+            bump(() => {
+              setVolumeOverlayVisible(next);
+              setVolumeStrategyGroupVisible(next);
+            })
+          }
+        >
+          <Leaf
+            label="패널"
+            checked={volumeVis}
+            help={CHART_LAYER_HELP.volume}
             onChange={(next) => bump(() => setVolumeOverlayVisible(next))}
-            label="거래량 표시"
           />
-          <HelpTip help={CHART_LAYER_HELP.volume} />
-        </div>
+          <Group
+            nested
+            title="전략"
+            open={open.volumeStrategies}
+            onToggleOpen={() => toggleOpen("volumeStrategies")}
+            checked={volumeStratState.checked}
+            indeterminate={volumeStratState.indeterminate}
+            help={CHART_LAYER_HELP.volumeStrategies}
+            onToggleAll={(next) =>
+              bump(() => setVolumeStrategyGroupVisible(next))
+            }
+          >
+            {VOLUME_STRATEGY_ORDER.map((id: VolumeStrategyId) => (
+              <Leaf
+                key={id}
+                label={VOLUME_STRATEGY_META[id].labelKo}
+                checked={volumeStratVis[id]}
+                rateStat={
+                  stats?.volumeStrategy[id] ?? {
+                    samples: 0,
+                    wins: 0,
+                    ratePct: null,
+                  }
+                }
+                help={volumeStrategyHelp(id)}
+                onChange={(next) =>
+                  bump(() => setVolumeStrategyVisible(id, next))
+                }
+              />
+            ))}
+          </Group>
+        </Group>
 
         <Group
           title="스윙 구조"
@@ -1504,7 +1563,15 @@ export function ChartSidebar({
             const editSection: IndicatorConfigSectionId | null =
               id === "bbPercentB"
                 ? "bb"
-                : id === "mfi" || id === "atr"
+                : id === "mfi" ||
+                    id === "atr" ||
+                    id === "obv" ||
+                    id === "keltner" ||
+                    id === "vwap" ||
+                    id === "adx" ||
+                    id === "psar" ||
+                    id === "cci" ||
+                    id === "supertrend"
                   ? id
                   : null;
             return (

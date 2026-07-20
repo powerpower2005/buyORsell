@@ -15,8 +15,8 @@
       "id": "ema",
       "enabled": true,
       "params": {
-        "periods": [12, 26],
-        "colors": { "12": "#06b6d4", "26": "#ec4899" }
+        "periods": [12, 26, 60],
+        "colors": { "12": "#06b6d4", "26": "#ec4899", "60": "#f97316" }
       },
       "timeframes": ["1d", "1w"],
       "outputs": ["line"]
@@ -66,9 +66,74 @@
     },
     {
       "id": "atr",
-      "enabled": false,
+      "enabled": true,
       "params": { "period": 14 },
-      "timeframes": ["1d"]
+      "timeframes": ["1h", "4h", "1d", "1w"]
+    },
+    {
+      "id": "obv",
+      "enabled": true,
+      "params": { "signalPeriod": 10, "energyLookback": 8 },
+      "timeframes": ["1h", "4h", "1d", "1w"]
+    },
+    {
+      "id": "keltner",
+      "enabled": true,
+      "params": {
+        "emaPeriod": 20,
+        "atrPeriod": 10,
+        "multiplier": 2,
+        "colors": {
+          "mid": "#06b6d4",
+          "upper": "#22d3ee",
+          "lower": "#67e8f9"
+        }
+      },
+      "timeframes": ["1h", "4h", "1d", "1w"],
+      "outputs": ["line"]
+    },
+    {
+      "id": "vwap",
+      "enabled": true,
+      "params": {
+        "stdDev1": 2,
+        "stdDev2": 3,
+        "colors": {
+          "vwap": "#3b82f6",
+          "band1": "#f97316",
+          "band2": "#fb923c"
+        }
+      },
+      "timeframes": ["1h", "4h", "1d", "1w"],
+      "outputs": ["line"]
+    },
+    {
+      "id": "adx",
+      "enabled": true,
+      "params": { "period": 14 },
+      "timeframes": ["1h", "4h", "1d", "1w"]
+    },
+    {
+      "id": "psar",
+      "enabled": true,
+      "params": { "step": 0.02, "max": 0.2 },
+      "timeframes": ["1h", "4h", "1d", "1w"],
+      "outputs": ["line"]
+    },
+    {
+      "id": "cci",
+      "enabled": true,
+      "params": { "period": 20 },
+      "timeframes": ["1h", "4h", "1d", "1w"],
+      "overbought": 100,
+      "oversold": -100
+    },
+    {
+      "id": "supertrend",
+      "enabled": true,
+      "params": { "atrPeriod": 10, "multiplier": 3 },
+      "timeframes": ["1h", "4h", "1d", "1w"],
+      "outputs": ["line"]
     },
     {
       "id": "ichimoku",

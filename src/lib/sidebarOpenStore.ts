@@ -38,6 +38,7 @@ export const SIDEBAR_OPEN_KEYS = [
   "stoch",
   "stochStrategies",
   "volume",
+  "volumeStrategies",
 ] as const;
 
 export type SidebarOpenKey = (typeof SIDEBAR_OPEN_KEYS)[number];

@@ -126,11 +126,122 @@ export function IndicatorPanel({ results }: { results: IndicatorResults }) {
     metrics.push({ label: `MFI(${mfiPeriod})`, value: "데이터 부족", muted: true });
   }
 
+  const atrCfg = getIndicatorConfig("atr");
+  const atrPeriod = (atrCfg?.params.period as number | undefined) ?? 14;
   const atr = results.indicators.atr?.latest.atr;
   if (atr != null) {
-    metrics.push({ label: "ATR", value: fmt(atr) });
-  } else if (getIndicatorConfig("atr")?.enabled) {
-    metrics.push({ label: "ATR", value: "데이터 부족", muted: true });
+    metrics.push({ label: `ATR(${atrPeriod})`, value: fmt(atr) });
+  } else if (atrCfg?.enabled) {
+    metrics.push({ label: `ATR(${atrPeriod})`, value: "데이터 부족", muted: true });
+  }
+
+  const obvCfg = getIndicatorConfig("obv");
+  const obvL = results.indicators.obv?.latest;
+  if (obvL?.obv != null) {
+    const slope =
+      obvL.slope == null
+        ? ""
+        : obvL.slope > 0
+          ? " ↑"
+          : obvL.slope < 0
+            ? " ↓"
+            : "";
+    const energy =
+      obvL.energy != null ? ` · E${fmt(obvL.energy, 0)}%` : "";
+    metrics.push({
+      label: "OBV",
+      value: `${fmt(obvL.obv, 0)}${slope}${energy}`,
+      color: "#38bdf8",
+    });
+  } else if (obvCfg?.enabled) {
+    metrics.push({ label: "OBV", value: "데이터 부족", muted: true });
+  }
+
+  const kcCfg = getIndicatorConfig("keltner");
+  const kc = results.indicators.keltner?.latest;
+  if (kc?.mid != null) {
+    metrics.push({
+      label: "Keltner",
+      value: `${fmt(kc.lower)} / ${fmt(kc.mid)} / ${fmt(kc.upper)}`,
+      color: "#06b6d4",
+    });
+  } else if (kcCfg?.enabled) {
+    metrics.push({ label: "Keltner", value: "데이터 부족", muted: true });
+  }
+
+  const vwapCfg = getIndicatorConfig("vwap");
+  const vwapL = results.indicators.vwap?.latest;
+  if (vwapL?.vwap != null) {
+    const slope =
+      vwapL.slope == null
+        ? ""
+        : vwapL.slope > 0
+          ? " ↑"
+          : vwapL.slope < 0
+            ? " ↓"
+            : " →";
+    metrics.push({
+      label: "VWAP",
+      value: `${fmt(vwapL.vwap)}${slope}`,
+      color: "#3b82f6",
+    });
+    if (vwapL.upper1 != null && vwapL.lower1 != null) {
+      metrics.push({
+        label: "VWAP ±σ1",
+        value: `${fmt(vwapL.lower1)} ~ ${fmt(vwapL.upper1)}`,
+        color: "#f97316",
+      });
+    }
+  } else if (vwapCfg?.enabled) {
+    metrics.push({ label: "VWAP", value: "데이터 부족", muted: true });
+  }
+
+  const adxCfg = getIndicatorConfig("adx");
+  const adxPeriod = (adxCfg?.params.period as number | undefined) ?? 14;
+  const adx = results.indicators.adx?.latest;
+  if (adx?.adx != null) {
+    metrics.push({
+      label: `ADX(${adxPeriod})`,
+      value: `${fmt(adx.adx)} · +${fmt(adx.plusDI)}/−${fmt(adx.minusDI)}`,
+    });
+  } else if (adxCfg?.enabled) {
+    metrics.push({
+      label: `ADX(${adxPeriod})`,
+      value: "데이터 부족",
+      muted: true,
+    });
+  }
+
+  const psarCfg = getIndicatorConfig("psar");
+  const psar = results.indicators.psar?.latest;
+  if (psar?.psar != null) {
+    metrics.push({
+      label: "PSAR",
+      value: `${fmt(psar.psar)} · ${psar.direction != null && psar.direction > 0 ? "↑" : "↓"}`,
+    });
+  } else if (psarCfg?.enabled) {
+    metrics.push({ label: "PSAR", value: "데이터 부족", muted: true });
+  }
+
+  const cciCfg = getIndicatorConfig("cci");
+  const cciPeriod = (cciCfg?.params.period as number | undefined) ?? 20;
+  const cci = results.indicators.cci?.latest.cci;
+  if (cci != null) {
+    metrics.push({ label: `CCI(${cciPeriod})`, value: fmt(cci) });
+  } else if (cciCfg?.enabled) {
+    metrics.push({ label: `CCI(${cciPeriod})`, value: "데이터 부족", muted: true });
+  }
+
+  const stCfg = getIndicatorConfig("supertrend");
+  const st = results.indicators.supertrend?.latest;
+  if (st?.supertrend != null) {
+    metrics.push({
+      label: "Supertrend",
+      value: `${fmt(st.supertrend)} · ${st.direction != null && st.direction > 0 ? "↑" : "↓"}`,
+      color: st.direction != null && st.direction > 0 ? "#00c471" : "#f04452",
+    });
+  } else if (stCfg?.enabled) {
+    metrics.push({ label: "Supertrend", value: "데이터 부족", muted: true });
   }
 
   const ichiCfg = getIndicatorConfig("ichimoku");

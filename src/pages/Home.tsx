@@ -53,6 +53,7 @@ import { getBbStrategyVisibility } from "@/lib/bbStrategyStore";
 import { getClassicalChartPatternVisibility } from "@/lib/chartPatternStore";
 import { getPatternStrategyVisibility } from "@/lib/patternStrategyStore";
 import { getRsiStrategyVisibility } from "@/lib/rsiStrategyStore";
+import { getVolumeStrategyVisibility } from "@/lib/volumeStrategyStore";
 import { getMacdStrategyVisibility } from "@/lib/macdStrategyStore";
 import { getStochStrategyVisibility } from "@/lib/stochStrategyStore";
 import { getIchimokuStrategyVisibility } from "@/lib/ichimokuStrategyStore";
@@ -233,6 +234,10 @@ export function HomePage() {
   );
   const chartRsiStrategyVisibility = useMemo(
     () => getRsiStrategyVisibility(),
+    [chartVisTick],
+  );
+  const chartVolumeStrategyVisibility = useMemo(
+    () => getVolumeStrategyVisibility(),
     [chartVisTick],
   );
   const chartMacdStrategyVisibility = useMemo(
@@ -521,6 +526,12 @@ export function HomePage() {
                       }
                       rsiStrategies={evaluation!.rsiStrategies ?? undefined}
                       chartRsiStrategyVisibility={chartRsiStrategyVisibility}
+                      volumeStrategies={
+                        evaluation!.volumeStrategies ?? undefined
+                      }
+                      chartVolumeStrategyVisibility={
+                        chartVolumeStrategyVisibility
+                      }
                       macdStrategies={evaluation!.macdStrategies ?? undefined}
                       chartMacdStrategyVisibility={chartMacdStrategyVisibility}
                       stochStrategies={evaluation!.stochStrategies ?? undefined}
