@@ -161,6 +161,7 @@ export function evaluateQuote(
       macdStrategies: null,
       stochStrategies: null,
       ichimokuStrategies: null,
+      volumeStrategies: null,
       signalStats: EMPTY_SIGNAL_STATS,
       warnings,
       fatalError: "No OHLCV bars available",
