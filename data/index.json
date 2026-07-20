@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-20T12:55:12.408Z",
+  "updatedAt": "2026-07-20T13:16:48.637Z",
   "entries": [
     {
       "ticker": "000660:KRX",
@@ -49,6 +49,14 @@
       "fetchedAt": "2026-07-20T12:53:40.227Z",
       "lastBarDate": "2026-07-17",
       "barCount": 600
+    },
+    {
+      "ticker": "TSLA:NASDAQ",
+      "timeframe": "1d",
+      "path": "data/TSLA-NASDAQ/1d.json",
+      "fetchedAt": "2026-07-20T13:10:50.466Z",
+      "lastBarDate": "2026-07-17",
+      "barCount": 901
     }
   ]
 }
