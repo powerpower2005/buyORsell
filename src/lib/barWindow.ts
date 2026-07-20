@@ -8,8 +8,9 @@ function addUtcDays(isoDate: string, days: number): string {
 }
 
 /**
- * Soft trim: keep bars inside lookback / maxBars so merges do not grow forever.
- * Daily history longer than 1Y is fine — only drop what exceeds the configured window.
+ * Soft trim: keep bars inside lookback / optional maxBars retention cap.
+ * maxBars is a storage ceiling when set — not the past-backfill stop target
+ * (that is backfillTargetBars in timeframes.json).
  */
 export function windowBars(bars: OHLCVBar[], timeframe: Timeframe): OHLCVBar[] {
   if (!bars.length) return bars;

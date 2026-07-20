@@ -141,14 +141,15 @@ jobs:
         if: steps.parse.outputs.skip == 'true'
         run: echo "Not a fetch request, skipping."
 
-      - name: Fetch, merge, and backfill history to maxBars
+      - name: Fetch, merge, and backfill history to target
         if: steps.parse.outputs.skip == 'false'
         env:
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |
           test -n "${{ steps.parse.outputs.ticker }}"
-          # First fetch recent window, then walk backward in 10-day chunks until maxBars (600 for 1d).
+          # Walk backward in 10-day chunks until backfillTargetBars (900 for 1d).
+          # Target only stops past backfill; tip updates may grow the series beyond 900.
           node scripts/validate-and-merge.mjs \
             "${{ steps.parse.outputs.ticker }}" \
             "${{ steps.parse.outputs.timeframe }}"

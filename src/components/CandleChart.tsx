@@ -143,6 +143,8 @@ type OhlcvReadout = {
   low: number;
   close: number;
   volume: number;
+  /** Previous-close based daily change (%). Null for the first bar. */
+  changePct: number | null;
 };
 
 function fmtLegend(value: number | null | undefined, digits = 2): string {
@@ -155,6 +157,22 @@ function fmtPrice(value: number): string {
   if (Math.abs(value) >= 1000) return value.toFixed(2);
   if (Math.abs(value) >= 1) return value.toFixed(2);
   return value.toFixed(4);
+}
+
+function fmtChangePct(value: number | null): string {
+  if (value == null || !Number.isFinite(value)) return "—";
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(2)}%`;
+}
+
+function dailyChangePct(
+  close: number,
+  prevClose: number | undefined,
+): number | null {
+  if (prevClose == null || prevClose === 0 || !Number.isFinite(close)) {
+    return null;
+  }
+  return ((close - prevClose) / prevClose) * 100;
 }
 
 function isCandleData(
@@ -357,6 +375,7 @@ export function CandleChart({
     if (hoverOhlcv) return hoverOhlcv;
     const last = bars.at(-1);
     if (!last) return null;
+    const prev = bars.at(-2);
     return {
       date: last.date,
       open: last.open,
@@ -364,6 +383,7 @@ export function CandleChart({
       low: last.low,
       close: last.close,
       volume: last.volume,
+      changePct: dailyChangePct(last.close, prev?.close),
     };
   }, [hoverOhlcv, bars]);
 
@@ -996,7 +1016,10 @@ export function CandleChart({
         return;
       }
       const timeStr = String(param.time);
-      const bar = barsRef.current.find((b) => b.date === timeStr);
+      const barsData = barsRef.current;
+      const barIdx = barsData.findIndex((b) => b.date === timeStr);
+      const bar = barIdx >= 0 ? barsData[barIdx] : undefined;
+      const prev = barIdx > 0 ? barsData[barIdx - 1] : undefined;
       setHoverOhlcv({
         date: timeStr,
         open: candleData.open,
@@ -1004,6 +1027,7 @@ export function CandleChart({
         low: candleData.low,
         close: candleData.close,
         volume: bar?.volume ?? 0,
+        changePct: dailyChangePct(candleData.close, prev?.close),
       });
     };
     chart.subscribeCrosshairMove(onCrosshairMove);
@@ -2049,6 +2073,28 @@ export function CandleChart({
                     }}
                   >
                     {fmtPrice(ohlcvReadout.close)}
+                  </span>
+                </span>
+                <span>
+                  <span
+                    style={{
+                      color:
+                        ohlcvReadout.changePct == null
+                          ? undefined
+                          : ohlcvReadout.changePct > 0
+                            ? "#00c471"
+                            : ohlcvReadout.changePct < 0
+                              ? "#f04452"
+                              : undefined,
+                    }}
+                    className={
+                      ohlcvReadout.changePct == null ||
+                      ohlcvReadout.changePct === 0
+                        ? "text-text-primary"
+                        : undefined
+                    }
+                  >
+                    {fmtChangePct(ohlcvReadout.changePct)}
                   </span>
                 </span>
                 <span>

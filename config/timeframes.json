@@ -29,11 +29,11 @@
       "intervalSeconds": 86400,
       "googleWindow": "2Y",
       "googleChartMode": 7,
-      "sheetsLookbackDays": 1100,
+      "sheetsLookbackDays": 1500,
       "sheetsInitialLookbackDays": 730,
       "backfillChunkDays": 10,
-      "enabled": true,
-      "maxBars": 600
+      "backfillTargetBars": 900,
+      "enabled": true
     },
     "1w": {
       "label": "주봉",

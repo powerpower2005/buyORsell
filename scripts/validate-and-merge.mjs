@@ -56,7 +56,7 @@ function addUtcDays(isoDate, days) {
   return d.toISOString().slice(0, 10);
 }
 
-/** Drop bars outside the timeframe lookback / maxBars (stops weekly pollution sticking forever). */
+/** Drop bars outside the timeframe lookback / optional maxBars retention cap. */
 export function windowBars(bars, timeframe) {
   if (!bars.length) return bars;
   const timeframes = loadJson("config/timeframes.json").timeframes;
@@ -148,8 +148,9 @@ function timeframeConfig(timeframe) {
   return timeframes[timeframe] ?? {};
 }
 
+/** Stop walking further into the past once we have at least this many bars. */
 function targetBarCount(tfConfig) {
-  return tfConfig.maxBars ?? null;
+  return tfConfig.backfillTargetBars ?? tfConfig.maxBars ?? null;
 }
 
 function backfillChunkDays(tfConfig) {
@@ -158,7 +159,8 @@ function backfillChunkDays(tfConfig) {
 
 /**
  * After the first fetch, walk backward in chunkDays (default 10) windows
- * and merge until we reach maxBars / target, or a chunk adds nothing.
+ * and merge until we reach backfillTargetBars / maxBars, or a chunk adds nothing.
+ * This does not cap stored history — newer tip bars may grow the series past target.
  */
 export async function backfillPastBars({
   ticker,
@@ -403,7 +405,7 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
 
   assertBarsMatchTimeframe(ohlcv, timeframe, `sanitized ${ticker} ${timeframe}`);
 
-  // After first fetch, extend history backward in 10-day chunks until maxBars.
+  // After first fetch, extend history backward in 10-day chunks until backfill target.
   const filled = await backfillPastBars({
     ticker,
     timeframe,
