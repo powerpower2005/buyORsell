@@ -94,7 +94,6 @@ export function toggleSidebarOpenKey(key: SidebarOpenKey): SidebarOpenState {
 
 const COLLAPSED_KEY = "gf:config:chart-sidebar-collapsed";
 const WATCHLIST_COLLAPSED_KEY = "gf:config:watchlist-collapsed";
-const BROWSE_LIST_COLLAPSED_KEY = "gf:config:browse-ticker-list-collapsed";
 
 function readCollapsedFlag(key: string, defaultValue = false): boolean {
   try {
@@ -122,15 +121,6 @@ export function isWatchlistCollapsed(): boolean {
 
 export function setWatchlistCollapsed(collapsed: boolean): void {
   localStorage.setItem(WATCHLIST_COLLAPSED_KEY, JSON.stringify(collapsed));
-}
-
-/** Browse left ticker list. */
-export function isBrowseTickerListCollapsed(): boolean {
-  return readCollapsedFlag(BROWSE_LIST_COLLAPSED_KEY, false);
-}
-
-export function setBrowseTickerListCollapsed(collapsed: boolean): void {
-  localStorage.setItem(BROWSE_LIST_COLLAPSED_KEY, JSON.stringify(collapsed));
 }
 
 const CANDLE_PATTERN_HELP_COLLAPSED_KEY =

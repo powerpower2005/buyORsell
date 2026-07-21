@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import clsx from "clsx";
-import {
-  isBrowseTickerListCollapsed,
-  setBrowseTickerListCollapsed,
-} from "@/lib/sidebarOpenStore";
 import { loadIndex, loadQuote } from "@/lib/dataLoader";
+import { WatchlistSidebar } from "@/components/WatchlistSidebar";
 import { validateFreshness } from "@/lib/validation";
 import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
 import {
@@ -90,14 +86,6 @@ export function BrowsePage() {
   const [indicatorConfigOpen, setIndicatorConfigOpen] = useState(false);
   const [indicatorConfigSection, setIndicatorConfigSection] =
     useState<IndicatorConfigSectionId>("all");
-  const [tickerListCollapsed, setTickerListCollapsed] = useState(() =>
-    isBrowseTickerListCollapsed(),
-  );
-
-  const setTickerListCollapsedPersisted = (next: boolean) => {
-    setBrowseTickerListCollapsed(next);
-    setTickerListCollapsed(next);
-  };
 
   const entries = useMemo(
     () =>
@@ -362,237 +350,180 @@ export function BrowsePage() {
         <TimeframeTabs value={timeframe} onChange={onTimeframeChange} />
       </Card>
 
-      <div
-        className={clsx(
-          "grid gap-6",
-          tickerListCollapsed
-            ? "lg:grid-cols-[auto_minmax(0,1fr)]"
-            : "lg:grid-cols-[minmax(0,200px)_minmax(0,1fr)]",
-        )}
-      >
-        {tickerListCollapsed ? (
-          <aside className="lg:sticky lg:top-4">
-            <button
-              type="button"
-              className="rounded-xl border border-border bg-surface px-2.5 py-3 text-[11px] font-medium text-text-secondary shadow-sm hover:border-accent/40 hover:text-text-primary lg:[writing-mode:vertical-rl]"
-              onClick={() => setTickerListCollapsedPersisted(false)}
-              title="수집된 종목 펼치기"
-            >
-              수집된 종목
-            </button>
-          </aside>
-        ) : (
-          <Card className="lg:sticky lg:top-4 lg:self-start">
-            <div className="mb-3 flex items-start justify-between gap-2">
-              <SectionTitle>수집된 종목</SectionTitle>
-              <button
-                type="button"
-                className="shrink-0 rounded-md border border-border px-2 py-1 text-[10px] font-medium text-text-tertiary hover:border-accent/40 hover:text-text-primary"
-                onClick={() => setTickerListCollapsedPersisted(true)}
-                title="수집된 종목 접기"
-              >
-                접기
-              </button>
-            </div>
-            {!entries.length ? (
-              <p className="text-sm text-text-secondary">
-                {timeframe} 데이터가 없습니다.{" "}
-                <Link to="/" className="text-accent">
-                  홈
-                </Link>
-                에서 Issue로 수집을 요청하세요.
-              </p>
-            ) : (
-              <ul className="max-h-[min(70vh,640px)] space-y-1 overflow-y-auto">
-                {entries.map((e) => {
-                  const active =
-                    selected?.ticker === e.ticker &&
-                    selected?.timeframe === e.timeframe;
-                  return (
-                    <li key={`${e.ticker}-${e.timeframe}`}>
-                      <button
-                        type="button"
-                        onClick={() => selectEntry(e)}
-                        className={clsx(
-                          "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
-                          active
-                            ? "bg-accent text-white"
-                            : "text-text-secondary hover:bg-surface-elevated hover:text-text-primary",
-                        )}
-                      >
-                        <span className="font-medium">
-                          {formatTickerLabel(e.ticker)}
-                        </span>
-                        <span
-                          className={clsx(
-                            "mt-0.5 block text-xs",
-                            active ? "text-white/80" : "text-text-tertiary",
-                          )}
-                        >
-                          {e.barCount} bars · {e.lastBarDate}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+      <WatchlistSidebar
+        tickers={entries.map((e) => e.ticker)}
+        active={selected?.ticker ?? ""}
+        timeframe={timeframe}
+        loading={!index && !indexError}
+        onSelect={(t) => {
+          const entry = entries.find((e) => e.ticker === t);
+          if (entry) selectEntry(entry);
+        }}
+        emptyMessage={
+          <>
+            {timeframe} 데이터가 없습니다.{" "}
+            <Link to="/" className="text-accent">
+              홈
+            </Link>
+            에서 Issue로 수집을 요청하세요.
+          </>
+        }
+      />
+
+      <div className="min-w-0 space-y-4">
+        {!selected ? (
+          <Card>
+            <p className="text-sm text-text-secondary">
+              위에서 종목을 선택하세요.
+            </p>
           </Card>
-        )}
-
-        <div className="min-w-0 space-y-4">
-          {!selected ? (
-            <Card>
-              <p className="text-sm text-text-secondary">왼쪽에서 종목을 선택하세요.</p>
-            </Card>
-          ) : (
-            <>
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-semibold">
-                  {formatTickerLabel(selected.ticker)}
-                </h2>
-                <span className="text-sm text-text-tertiary">{selected.timeframe}</span>
-                {freshness && (
-                  <Badge variant={freshness.status === "fresh" ? "fresh" : "stale"}>
-                    {freshness.status}
-                  </Badge>
-                )}
-              </div>
-
-              {resultStatus !== "ready" ? (
-                <AnalysisStatusCard
-                  status={resultStatus}
-                  ticker={selected.ticker}
-                  timeframe={selected.timeframe}
-                  detail={statusDetail}
-                />
-              ) : (
-                <div className="space-y-6">
-                  {isStale && (
-                    <StaleDataBanner
-                      ticker={selected.ticker}
-                      timeframe={selected.timeframe}
-                      detail={staleDetail}
-                    />
-                  )}
-                  {evaluation!.warnings.length > 0 && (
-                    <PartialDataBanner warnings={evaluation!.warnings} />
-                  )}
-                  <p className="text-xs text-text-tertiary">{statusDetail}</p>
-                  <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
-                    <div className="min-w-0 w-full flex-1 lg:min-h-0">
-                      <CandleChart
-                        bars={evaluation!.bars}
-                        timeframe={selected.timeframe as Timeframe}
-                        patterns={evaluation!.patterns ?? undefined}
-                        chartPatternVisibility={chartPatternVisibility}
-                        structure={evaluation!.structure ?? undefined}
-                        chartStructureVisibility={chartStructureVisibility}
-                        supportResistance={
-                          evaluation!.supportResistance ?? undefined
-                        }
-                        chartSrVisibility={chartSrVisibility}
-                        trendlines={evaluation!.trendlines ?? undefined}
-                        chartTrendlineVisibility={chartTrendlineVisibility}
-                        chartTrendlineLineVisibility={
-                          chartTrendlineLineVisibility
-                        }
-                        chartTrendlineColors={chartTrendlineColors}
-                        indicators={evaluation!.indicators}
-                        maVisibility={maVisibility}
-                        bbVisibility={bbVisibility}
-                        bbStrategies={evaluation!.bbStrategies ?? undefined}
-                        chartBbStrategyVisibility={chartBbStrategyVisibility}
-                        classicalPatterns={
-                          evaluation!.classicalPatterns ?? undefined
-                        }
-                        chartClassicalPatternVisibility={
-                          chartClassicalPatternVisibility
-                        }
-                        patternStrategies={
-                          evaluation!.patternStrategies ?? undefined
-                        }
-                        chartPatternStrategyVisibility={
-                          chartPatternStrategyVisibility
-                        }
-                        rsiStrategies={evaluation!.rsiStrategies ?? undefined}
-                        chartRsiStrategyVisibility={chartRsiStrategyVisibility}
-                        volumeStrategies={
-                          evaluation!.volumeStrategies ?? undefined
-                        }
-                        chartVolumeStrategyVisibility={
-                          chartVolumeStrategyVisibility
-                        }
-                        macdStrategies={evaluation!.macdStrategies ?? undefined}
-                        chartMacdStrategyVisibility={chartMacdStrategyVisibility}
-                        stochStrategies={evaluation!.stochStrategies ?? undefined}
-                        chartStochStrategyVisibility={
-                          chartStochStrategyVisibility
-                        }
-                        ichimokuVisibility={ichimokuVisibility}
-                        ichimokuStrategies={
-                          evaluation!.ichimokuStrategies ?? undefined
-                        }
-                        chartIchimokuStrategyVisibility={
-                          chartIchimokuStrategyVisibility
-                        }
-                        showVolume={showVolume}
-                        fibDrawMode={fibDrawMode}
-                        fibRetracement={fibRetracement}
-                        fibLevelVisibility={fibLevelVisibility}
-                        fibExtraVisibility={fibExtraVisibility}
-                        auxIndicatorVisibility={auxIndicatorVisibility}
-                        onFibChange={() => setChartVisTick((n) => n + 1)}
-                      />
-                    </div>
-                    <ChartSidebar
-                      visibilityTick={chartVisTick}
-                      configTick={configTick}
-                      onVisibilityChange={() => setChartVisTick((n) => n + 1)}
-                      onConfigChange={() => setConfigTick((n) => n + 1)}
-                      onEditIndicator={(section) => {
-                        setIndicatorConfigSection(section);
-                        setIndicatorConfigOpen(true);
-                      }}
-                      trendlines={evaluation!.trendlines}
-                      signalStats={evaluation!.signalStats}
-                    />
-                  </div>
-                  <IndicatorConfigModal
-                    open={indicatorConfigOpen}
-                    section={indicatorConfigSection}
-                    onClose={() => setIndicatorConfigOpen(false)}
-                    onChange={() => {
-                      setConfigTick((n) => n + 1);
-                      setChartVisTick((n) => n + 1);
-                    }}
-                    runtimeWarnings={evaluation?.warnings ?? []}
-                  />
-                  <div className="grid gap-6 xl:grid-cols-2">
-                    <VolumePanel
-                      snapshot={evaluation!.volume}
-                      timeframe={selected.timeframe as Timeframe}
-                    />
-                    {evaluation!.score && <ScoreCard score={evaluation!.score} />}
-                    <IndicatorPanel results={evaluation!.indicators} />
-                    {evaluation!.structure && (
-                      <SwingStructurePanel structure={evaluation!.structure} />
-                    )}
-                    {evaluation!.supportResistance && (
-                      <SupportResistancePanel
-                        sr={evaluation!.supportResistance}
-                      />
-                    )}
-                    {evaluation!.patterns && (
-                      <CandlePatternPanel patterns={evaluation!.patterns} />
-                    )}
-                  </div>
-                  <MTFAlignmentCard alignment={evaluation!.mtf} />
-                </div>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-semibold">
+                {formatTickerLabel(selected.ticker)}
+              </h2>
+              <span className="text-sm text-text-tertiary">{selected.timeframe}</span>
+              {freshness && (
+                <Badge variant={freshness.status === "fresh" ? "fresh" : "stale"}>
+                  {freshness.status}
+                </Badge>
               )}
-            </>
-          )}
-        </div>
+            </div>
+
+            {resultStatus !== "ready" ? (
+              <AnalysisStatusCard
+                status={resultStatus}
+                ticker={selected.ticker}
+                timeframe={selected.timeframe}
+                detail={statusDetail}
+              />
+            ) : (
+              <div className="space-y-6">
+                {isStale && (
+                  <StaleDataBanner
+                    ticker={selected.ticker}
+                    timeframe={selected.timeframe}
+                    detail={staleDetail}
+                  />
+                )}
+                {evaluation!.warnings.length > 0 && (
+                  <PartialDataBanner warnings={evaluation!.warnings} />
+                )}
+                <p className="text-xs text-text-tertiary">{statusDetail}</p>
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
+                  <div className="min-w-0 w-full flex-1 lg:min-h-0">
+                    <CandleChart
+                      bars={evaluation!.bars}
+                      timeframe={selected.timeframe as Timeframe}
+                      patterns={evaluation!.patterns ?? undefined}
+                      chartPatternVisibility={chartPatternVisibility}
+                      structure={evaluation!.structure ?? undefined}
+                      chartStructureVisibility={chartStructureVisibility}
+                      supportResistance={
+                        evaluation!.supportResistance ?? undefined
+                      }
+                      chartSrVisibility={chartSrVisibility}
+                      trendlines={evaluation!.trendlines ?? undefined}
+                      chartTrendlineVisibility={chartTrendlineVisibility}
+                      chartTrendlineLineVisibility={
+                        chartTrendlineLineVisibility
+                      }
+                      chartTrendlineColors={chartTrendlineColors}
+                      indicators={evaluation!.indicators}
+                      maVisibility={maVisibility}
+                      bbVisibility={bbVisibility}
+                      bbStrategies={evaluation!.bbStrategies ?? undefined}
+                      chartBbStrategyVisibility={chartBbStrategyVisibility}
+                      classicalPatterns={
+                        evaluation!.classicalPatterns ?? undefined
+                      }
+                      chartClassicalPatternVisibility={
+                        chartClassicalPatternVisibility
+                      }
+                      patternStrategies={
+                        evaluation!.patternStrategies ?? undefined
+                      }
+                      chartPatternStrategyVisibility={
+                        chartPatternStrategyVisibility
+                      }
+                      rsiStrategies={evaluation!.rsiStrategies ?? undefined}
+                      chartRsiStrategyVisibility={chartRsiStrategyVisibility}
+                      volumeStrategies={
+                        evaluation!.volumeStrategies ?? undefined
+                      }
+                      chartVolumeStrategyVisibility={
+                        chartVolumeStrategyVisibility
+                      }
+                      macdStrategies={evaluation!.macdStrategies ?? undefined}
+                      chartMacdStrategyVisibility={chartMacdStrategyVisibility}
+                      stochStrategies={evaluation!.stochStrategies ?? undefined}
+                      chartStochStrategyVisibility={
+                        chartStochStrategyVisibility
+                      }
+                      ichimokuVisibility={ichimokuVisibility}
+                      ichimokuStrategies={
+                        evaluation!.ichimokuStrategies ?? undefined
+                      }
+                      chartIchimokuStrategyVisibility={
+                        chartIchimokuStrategyVisibility
+                      }
+                      showVolume={showVolume}
+                      fibDrawMode={fibDrawMode}
+                      fibRetracement={fibRetracement}
+                      fibLevelVisibility={fibLevelVisibility}
+                      fibExtraVisibility={fibExtraVisibility}
+                      auxIndicatorVisibility={auxIndicatorVisibility}
+                      onFibChange={() => setChartVisTick((n) => n + 1)}
+                    />
+                  </div>
+                  <ChartSidebar
+                    visibilityTick={chartVisTick}
+                    configTick={configTick}
+                    onVisibilityChange={() => setChartVisTick((n) => n + 1)}
+                    onConfigChange={() => setConfigTick((n) => n + 1)}
+                    onEditIndicator={(section) => {
+                      setIndicatorConfigSection(section);
+                      setIndicatorConfigOpen(true);
+                    }}
+                    trendlines={evaluation!.trendlines}
+                    signalStats={evaluation!.signalStats}
+                  />
+                </div>
+                <IndicatorConfigModal
+                  open={indicatorConfigOpen}
+                  section={indicatorConfigSection}
+                  onClose={() => setIndicatorConfigOpen(false)}
+                  onChange={() => {
+                    setConfigTick((n) => n + 1);
+                    setChartVisTick((n) => n + 1);
+                  }}
+                  runtimeWarnings={evaluation?.warnings ?? []}
+                />
+                <div className="grid gap-6 xl:grid-cols-2">
+                  <VolumePanel
+                    snapshot={evaluation!.volume}
+                    timeframe={selected.timeframe as Timeframe}
+                  />
+                  {evaluation!.score && <ScoreCard score={evaluation!.score} />}
+                  <IndicatorPanel results={evaluation!.indicators} />
+                  {evaluation!.structure && (
+                    <SwingStructurePanel structure={evaluation!.structure} />
+                  )}
+                  {evaluation!.supportResistance && (
+                    <SupportResistancePanel
+                      sr={evaluation!.supportResistance}
+                    />
+                  )}
+                  {evaluation!.patterns && (
+                    <CandlePatternPanel patterns={evaluation!.patterns} />
+                  )}
+                </div>
+                <MTFAlignmentCard alignment={evaluation!.mtf} />
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

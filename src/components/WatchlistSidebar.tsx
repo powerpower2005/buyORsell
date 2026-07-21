@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { formatTickerLabel } from "@/lib/tickerNames";
 import {
@@ -12,6 +12,8 @@ interface Props {
   timeframe: string;
   loading?: boolean;
   onSelect: (ticker: string) => void;
+  /** Override empty-state copy (e.g. Browse timeframe filter). */
+  emptyMessage?: ReactNode;
 }
 
 export function WatchlistSidebar({
@@ -20,6 +22,7 @@ export function WatchlistSidebar({
   timeframe,
   loading,
   onSelect,
+  emptyMessage,
 }: Props) {
   const [collapsed, setCollapsed] = useState(() => isWatchlistCollapsed());
 
@@ -29,7 +32,7 @@ export function WatchlistSidebar({
   };
 
   return (
-    <div className="mb-6 rounded-xl border border-border bg-surface text-left">
+    <div className="rounded-xl border border-border bg-surface text-left">
       <div className="flex items-center justify-between gap-2 px-3 py-2">
         <p className="text-xs font-medium text-text-tertiary">
           수집된 종목
@@ -54,7 +57,8 @@ export function WatchlistSidebar({
             <p className="text-xs text-text-secondary">목록 불러오는 중…</p>
           ) : tickers.length === 0 ? (
             <p className="text-xs text-text-secondary">
-              아직 수집된 데이터가 없습니다. GitHub Issue로 fetch를 요청하세요.
+              {emptyMessage ??
+                "아직 수집된 데이터가 없습니다. GitHub Issue로 fetch를 요청하세요."}
             </p>
           ) : (
             <div className="flex flex-wrap gap-2">
