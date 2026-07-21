@@ -221,6 +221,19 @@ import {
   type SignalStat,
   type SignalStatsBundle,
 } from "@/lib/evaluation/signalFollowThrough";
+import {
+  filterStrategyCatalog,
+  getCatalogStrategyHelp,
+  getCatalogStrategyStat,
+  getCatalogStrategyVisibility,
+  setAllCatalogStrategiesVisible,
+  setCatalogFamilyVisible,
+  setCatalogStrategyVisible,
+  strategiesByFamily,
+  STRATEGY_CATALOG,
+  STRATEGY_FAMILY_META,
+  type StrategyFamilyId,
+} from "@/lib/strategyCatalog";
 
 const EMPTY_TRENDLINES: Trendline[] = [];
 
@@ -508,9 +521,23 @@ export function ChartSidebar({
 }: Props) {
   const [open, setOpen] = useState<SidebarOpenState>(() => getSidebarOpenState());
   const [collapsed, setCollapsed] = useState(() => isChartSidebarCollapsed());
+  const [strategyQuery, setStrategyQuery] = useState("");
   const refreshTick = visibilityTick + configTick;
   const stats = signalStats ?? null;
   const tlAlgo = useMemo(() => getTrendlineAlgoVersion(), [refreshTick]);
+  const catalogVis = useMemo(
+    () => getCatalogStrategyVisibility(),
+    [refreshTick],
+  );
+  const filteredCatalog = useMemo(
+    () => filterStrategyCatalog(strategyQuery),
+    [strategyQuery],
+  );
+  const catalogGroups = useMemo(
+    () => strategiesByFamily(filteredCatalog),
+    [filteredCatalog],
+  );
+  const catalogSearching = strategyQuery.trim().length > 0;
 
   const smaCfg = useMemo(() => getIndicatorConfig("sma"), [refreshTick]);
   const emaCfg = useMemo(() => getIndicatorConfig("ema"), [refreshTick]);
@@ -644,6 +671,16 @@ export function ChartSidebar({
   const emaVals = emaPeriods.map((p) => emaVis[p]);
   const bbVals = BB_BAND_ORDER.map((band) => bbVis[band]);
   const bbStratVals = BB_STRATEGY_ORDER.map((id) => bbStratVis[id]);
+  const allCatalogVals = STRATEGY_CATALOG.map(
+    (entry) => catalogVis[entry.family][entry.id] ?? false,
+  );
+  const allCatalogState = groupState(allCatalogVals);
+  const familyCatalogState = (family: StrategyFamilyId) =>
+    groupState(
+      (catalogGroups.find((g) => g.family === family)?.entries ?? []).map(
+        (entry) => catalogVis[entry.family][entry.id] ?? false,
+      ),
+    );
   const maVals = [...smaVals, ...emaVals];
   const maState = groupState(maVals);
   const smaState = groupState(smaVals);
@@ -780,6 +817,88 @@ export function ChartSidebar({
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
+        <Group
+          title={`전체 전략 (${STRATEGY_CATALOG.length})`}
+          open={open.allStrategies || catalogSearching}
+          onToggleOpen={() => toggleOpen("allStrategies")}
+          checked={allCatalogState.checked}
+          indeterminate={allCatalogState.indeterminate}
+          help={CHART_LAYER_HELP.allStrategies}
+          onToggleAll={(next) =>
+            bump(() => setAllCatalogStrategiesVisible(next))
+          }
+        >
+          <div className="px-1.5 pb-1.5">
+            <input
+              type="search"
+              value={strategyQuery}
+              onChange={(e) => {
+                const next = e.target.value;
+                setStrategyQuery(next);
+                if (next.trim() && !open.allStrategies) {
+                  setOpen(toggleSidebarOpenKey("allStrategies"));
+                }
+              }}
+              placeholder="전략 검색…"
+              aria-label="전략 검색"
+              className="w-full rounded-md border border-border bg-bg px-2 py-1.5 text-[11px] text-text-primary placeholder:text-text-tertiary focus:border-accent/50 focus:outline-none"
+            />
+            {catalogSearching && (
+              <p className="mt-1 text-[10px] text-text-tertiary">
+                {filteredCatalog.length}개 일치
+              </p>
+            )}
+          </div>
+          {catalogGroups.map(({ family, entries }) => {
+            const familyMeta = STRATEGY_FAMILY_META[family];
+            const familyState = familyCatalogState(family);
+            const familyOpen =
+              catalogSearching || open[familyMeta.catalogOpenKey];
+            return (
+              <Group
+                key={family}
+                nested
+                title={`${familyMeta.labelKo} (${entries.length})`}
+                open={familyOpen}
+                onToggleOpen={() => toggleOpen(familyMeta.catalogOpenKey)}
+                checked={familyState.checked}
+                indeterminate={familyState.indeterminate}
+                onToggleAll={(next) =>
+                  bump(() => setCatalogFamilyVisible(family, next))
+                }
+              >
+                {entries.map((entry) => (
+                  <Leaf
+                    key={`${entry.family}:${entry.id}`}
+                    label={entry.labelKo}
+                    checked={catalogVis[entry.family][entry.id] ?? false}
+                    rateStat={getCatalogStrategyStat(
+                      entry.family,
+                      entry.id,
+                      stats,
+                    )}
+                    help={getCatalogStrategyHelp(entry.family, entry.id)}
+                    onChange={(next) =>
+                      bump(() =>
+                        setCatalogStrategyVisible(
+                          entry.family,
+                          entry.id,
+                          next,
+                        ),
+                      )
+                    }
+                  />
+                ))}
+              </Group>
+            );
+          })}
+          {catalogGroups.length === 0 && (
+            <p className="px-1.5 text-[10px] text-text-tertiary">
+              검색 결과 없음
+            </p>
+          )}
+        </Group>
+
         <Group
           title="이동평균"
           open={open.ma}

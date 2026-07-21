@@ -16,6 +16,14 @@ import type { HelpContent } from "./indicatorHelp";
 import { INDICATOR_HELP } from "./indicatorHelp";
 
 export const CHART_LAYER_HELP = {
+  allStrategies: {
+    title: "전체 전략",
+    summary:
+      "지표·패턴 패밀리에 흩어진 매매 전략(플레이북)을 한곳에서 검색·켜고 끕니다.",
+    howToFind:
+      "이름으로 검색하거나 패밀리 그룹을 펼치세요. 토글은 아래 각 지표의 「전략」과 동일합니다.",
+    tip: "옆 %는 이 종목 최근 구간 추적 성공률입니다(목표·손절 ±1.5%, 표본 3건↑).",
+  },
   ma: {
     title: "이동평균",
     summary:

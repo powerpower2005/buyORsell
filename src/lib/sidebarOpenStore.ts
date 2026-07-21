@@ -3,6 +3,14 @@
 const STORAGE_KEY = "gf:config:chart-sidebar-open";
 
 export const SIDEBAR_OPEN_KEYS = [
+  "allStrategies",
+  "allStrategiesBb",
+  "allStrategiesIchimoku",
+  "allStrategiesVolume",
+  "allStrategiesRsi",
+  "allStrategiesMacd",
+  "allStrategiesStoch",
+  "allStrategiesPattern",
   "ma",
   "sma",
   "ema",
