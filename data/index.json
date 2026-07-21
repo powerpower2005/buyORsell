@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-20T13:16:48.637Z",
+  "updatedAt": "2026-07-21T15:30:27.838Z",
   "entries": [
     {
       "ticker": "000660:KRX",
@@ -57,6 +57,62 @@
       "fetchedAt": "2026-07-20T13:10:50.466Z",
       "lastBarDate": "2026-07-17",
       "barCount": 901
+    },
+    {
+      "ticker": "000660:KRX",
+      "timeframe": "1w",
+      "path": "data/000660-KRX/1w.json",
+      "fetchedAt": "2026-07-18T03:20:11.261Z",
+      "lastBarDate": "2026-07-16",
+      "barCount": 105
+    },
+    {
+      "ticker": "005930:KRX",
+      "timeframe": "1w",
+      "path": "data/005930-KRX/1w.json",
+      "fetchedAt": "2026-07-19T13:40:39.280Z",
+      "lastBarDate": "2026-07-16",
+      "barCount": 105
+    },
+    {
+      "ticker": "KOSPI:KRX",
+      "timeframe": "1w",
+      "path": "data/KOSPI-KRX/1w.json",
+      "fetchedAt": "2026-07-18T07:40:51.560Z",
+      "lastBarDate": "2026-07-16",
+      "barCount": 105
+    },
+    {
+      "ticker": "NDX:INDEXNASDAQ",
+      "timeframe": "1w",
+      "path": "data/NDX-INDEXNASDAQ/1w.json",
+      "fetchedAt": "2026-07-18T07:41:07.989Z",
+      "lastBarDate": "2026-07-17",
+      "barCount": 105
+    },
+    {
+      "ticker": "NVDA:NASDAQ",
+      "timeframe": "1w",
+      "path": "data/NVDA-NASDAQ/1w.json",
+      "fetchedAt": "2026-07-18T07:40:35.146Z",
+      "lastBarDate": "2026-07-17",
+      "barCount": 105
+    },
+    {
+      "ticker": "SOXX:NASDAQ",
+      "timeframe": "1w",
+      "path": "data/SOXX-NASDAQ/1w.json",
+      "fetchedAt": "2026-07-20T12:53:40.227Z",
+      "lastBarDate": "2026-07-17",
+      "barCount": 125
+    },
+    {
+      "ticker": "TSLA:NASDAQ",
+      "timeframe": "1w",
+      "path": "data/TSLA-NASDAQ/1w.json",
+      "fetchedAt": "2026-07-20T13:10:50.466Z",
+      "lastBarDate": "2026-07-17",
+      "barCount": 188
     }
   ]
 }
