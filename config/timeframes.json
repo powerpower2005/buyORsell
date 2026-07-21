@@ -40,8 +40,8 @@
       "intervalSeconds": 604800,
       "aggregateFrom": "1d",
       "aggregateRule": "ohlcv_weekly",
-      "enabled": false,
-      "maxBars": 120
+      "enabled": true,
+      "maxBars": 200
     }
   }
 }

@@ -8,6 +8,10 @@ import {
   assertBarsMatchTimeframe,
   dropLeadingWrongCadence,
 } from "./lib/bar-cadence.mjs";
+import {
+  aggregateWeekly,
+  buildWeeklyQuote,
+} from "./lib/aggregate-ohlcv.mjs";
 import { financeSymbolCandidates } from "./lib/finance-symbol.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -282,9 +286,89 @@ function persistQuote({ ticker, timeframe, rel, quote }) {
   });
 }
 
+/**
+ * Derive enabled aggregate timeframes (e.g. 1w from 1d) and persist them.
+ * @returns {{ timeframe: string, barCount: number }[]}
+ */
+export function persistAggregatesFromDaily(dailyQuote) {
+  if (!dailyQuote?.ohlcv?.length || dailyQuote.timeframe !== "1d") return [];
+
+  const timeframes = loadJson("config/timeframes.json").timeframes;
+  const derived = [];
+
+  for (const [tf, cfg] of Object.entries(timeframes)) {
+    if (!cfg?.enabled) continue;
+    if (cfg.aggregateFrom !== "1d") continue;
+    if (cfg.aggregateRule !== "ohlcv_weekly") continue;
+
+    let weeklyBars = aggregateWeekly(dailyQuote.ohlcv);
+    weeklyBars = sanitizeBars(weeklyBars, tf);
+    if (!weeklyBars.length) {
+      console.warn(`[aggregate] ${dailyQuote.ticker} ${tf}: no bars after sanitize`);
+      continue;
+    }
+
+    const quote = buildWeeklyQuote(dailyQuote, weeklyBars, cfg);
+    const rel = quotePath(dailyQuote.ticker, tf);
+    persistQuote({
+      ticker: dailyQuote.ticker,
+      timeframe: tf,
+      rel,
+      quote,
+    });
+    console.log(
+      `[aggregate] ${dailyQuote.ticker} ${tf}: ${quote.barCount} bars → ${rel}`,
+    );
+    derived.push({ timeframe: tf, barCount: quote.barCount });
+  }
+
+  return derived;
+}
+
+function withDailyAggregates(timeframe, result) {
+  if (timeframe === "1d" && result?.quote?.ohlcv?.length) {
+    result.derived = persistAggregatesFromDaily(result.quote);
+  }
+  return result;
+}
+
 export async function runFetchPipeline({ ticker, timeframe, force = false }) {
   const policy = loadJson("config/data-policy.json");
   const tfConfig = timeframeConfig(timeframe);
+
+  // Aggregated TFs (1w): refresh source (1d) then derive — no Google fetch.
+  if (tfConfig.aggregateFrom && !tfConfig.googleWindow) {
+    const sourceTf = tfConfig.aggregateFrom;
+    const sourceResult = await runFetchPipeline({
+      ticker,
+      timeframe: sourceTf,
+      force,
+    });
+    const dailyQuote = sourceResult.quote;
+    if (!dailyQuote?.ohlcv?.length) {
+      throw new Error(
+        `Cannot aggregate ${timeframe}: missing ${sourceTf} data for ${ticker}`,
+      );
+    }
+    const derived = persistAggregatesFromDaily(dailyQuote);
+    const hit = derived.find((d) => d.timeframe === timeframe);
+    const rel = quotePath(ticker, timeframe);
+    const full = path.join(ROOT, rel);
+    if (!fs.existsSync(full)) {
+      throw new Error(
+        `Aggregate ${timeframe} failed for ${ticker}` +
+          (hit ? "" : " (rule not enabled?)"),
+      );
+    }
+    const quote = loadJson(rel);
+    return {
+      action: "aggregated",
+      reason: `from ${sourceTf}`,
+      quote,
+      source: sourceResult,
+      barsChanged: true,
+    };
+  }
   const target = targetBarCount(tfConfig);
   const rel = quotePath(ticker, timeframe);
   const full = path.join(ROOT, rel);
@@ -309,13 +393,13 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
         }
 
         if (target == null || quote.ohlcv.length >= target) {
-          return {
+          return withDailyAggregates(timeframe, {
             action: wasCleaned ? "cleaned" : "skipped",
             reason: wasCleaned
               ? "trimmed polluted history"
               : "already fresh",
             quote,
-          };
+          });
         }
 
         // Fresh tip, but history shorter than target — walk backward in chunks.
@@ -338,14 +422,14 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
             ticker,
             timeframe,
           });
-          return {
+          return withDailyAggregates(timeframe, {
             action: wasCleaned ? "cleaned" : "skipped",
             reason: wasCleaned
               ? `trimmed polluted history; backfill ${filled.stoppedReason}`
               : `already fresh; backfill ${filled.stoppedReason}`,
             quote,
             backfill: filled,
-          };
+          });
         }
         assertBarsMatchTimeframe(
           filled.ohlcv,
@@ -359,13 +443,13 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
           lastBarDate: filled.ohlcv.at(-1).date,
         };
         persistQuote({ ticker, timeframe, rel, quote: merged });
-        return {
+        return withDailyAggregates(timeframe, {
           action: "backfilled",
           reason: filled.stoppedReason,
           quote: merged,
           backfill: filled,
           barsChanged: true,
-        };
+        });
       }
     }
   }
@@ -431,7 +515,7 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
 
   persistQuote({ ticker, timeframe, rel, quote: merged });
 
-  return {
+  return withDailyAggregates(timeframe, {
     action: "committed",
     quote: merged,
     barsChanged,
@@ -440,7 +524,7 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
       addedBars: filled.addedBars,
       stoppedReason: filled.stoppedReason,
     },
-  };
+  });
 }
 
 async function main() {
