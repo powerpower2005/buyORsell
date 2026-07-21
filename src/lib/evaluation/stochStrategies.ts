@@ -30,6 +30,8 @@ export interface StochStrategyResult {
   latestBarDate: string;
   onLatestBar: StochStrategyHit[];
   recent: StochStrategyHit[];
+  /** Uncapped hits in lookback (backtest / confluence). */
+  signals: StochStrategyHit[];
   stats: SignalStatsMap;
 }
 
@@ -477,6 +479,7 @@ export function detectStochStrategies(
     latestBarDate: bars[lastIdx]?.date ?? "",
     onLatestBar: recent.filter((h) => h.barIndex === lastIdx),
     recent,
+    signals: inWindow,
     stats,
   };
 }

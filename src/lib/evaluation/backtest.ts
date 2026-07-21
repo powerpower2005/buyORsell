@@ -60,17 +60,79 @@ function evalSimpleCondition(
   });
 }
 
+/** Shared metrics from a closed trade list. */
+export function summarizeBacktestTrades(trades: BacktestTrade[]): BacktestResult {
+  let equity = 100;
+  let peak = 100;
+  let maxDd = 0;
+  let wins = 0;
+  let grossProfit = 0;
+  let grossLoss = 0;
+  let winSum = 0;
+  let lossSum = 0;
+  let longCount = 0;
+  let shortCount = 0;
+
+  for (const t of trades) {
+    if (t.returnPct > 0) {
+      wins++;
+      grossProfit += t.returnPct;
+      winSum += t.returnPct;
+    } else if (t.returnPct < 0) {
+      grossLoss += Math.abs(t.returnPct);
+      lossSum += t.returnPct;
+    }
+    if (t.side === "long") longCount++;
+    else if (t.side === "short") shortCount++;
+
+    equity *= 1 + t.returnPct / 100;
+    peak = Math.max(peak, equity);
+    maxDd = Math.max(maxDd, ((peak - equity) / peak) * 100);
+  }
+
+  const n = trades.length;
+  const lossCount = n - wins;
+  const avgReturn = n ? trades.reduce((s, t) => s + t.returnPct, 0) / n : 0;
+  const avgWin = wins ? winSum / wins : 0;
+  const avgLoss = lossCount ? lossSum / lossCount : 0;
+  const profitFactor =
+    grossLoss > 0
+      ? grossProfit / grossLoss
+      : grossProfit > 0
+        ? Infinity
+        : 0;
+
+  return {
+    totalReturnPct: Math.round((equity - 100) * 100) / 100,
+    maxDrawdownPct: Math.round(maxDd * 100) / 100,
+    winRate: n ? Math.round((wins / n) * 1000) / 10 : 0,
+    trades,
+    tradeCount: n,
+    avgReturnPct: Math.round(avgReturn * 100) / 100,
+    avgWinPct: Math.round(avgWin * 100) / 100,
+    avgLossPct: Math.round(avgLoss * 100) / 100,
+    profitFactor:
+      profitFactor === Infinity
+        ? null
+        : Math.round(profitFactor * 100) / 100,
+    expectancyPct: Math.round(avgReturn * 100) / 100,
+    longCount,
+    shortCount,
+    winCount: wins,
+    lossCount,
+  };
+}
+
 export function runBacktest(
   bars: OHLCVBar[],
   rules: StrategyRules,
   _indicators?: IndicatorResults,
 ): BacktestResult {
   const trades: BacktestTrade[] = [];
-  let position: { entryIdx: number; entryPrice: number } | null = null;
-  let equity = 100;
-  let peak = 100;
-  let maxDd = 0;
-  let wins = 0;
+  let position: {
+    entryIdx: number;
+    entryPrice: number;
+  } | null = null;
 
   const stopPct = rules.stop_loss_pct ?? 0;
   const takePct = rules.take_profit_pct ?? 0;
@@ -90,12 +152,12 @@ export function runBacktest(
           exitDate: bars[i].date,
           entryPrice: position.entryPrice,
           exitPrice: price,
-          returnPct: ret,
+          returnPct: Math.round(ret * 100) / 100,
+          side: "long",
+          entryBarIndex: position.entryIdx,
+          exitBarIndex: i,
+          exitReason: hitStop ? "stop" : hitTake ? "take" : "signal",
         });
-        if (ret > 0) wins++;
-        equity *= 1 + ret / 100;
-        peak = Math.max(peak, equity);
-        maxDd = Math.max(maxDd, ((peak - equity) / peak) * 100);
         position = null;
       }
     } else if (evalSimpleCondition(rules.entry, bars, i)) {
@@ -111,20 +173,15 @@ export function runBacktest(
       exitDate: bars.at(-1)!.date,
       entryPrice: position.entryPrice,
       exitPrice: price,
-      returnPct: ret,
+      returnPct: Math.round(ret * 100) / 100,
+      side: "long",
+      entryBarIndex: position.entryIdx,
+      exitBarIndex: bars.length - 1,
+      exitReason: "eod",
     });
-    if (ret > 0) wins++;
-    equity *= 1 + ret / 100;
   }
 
-  const totalReturnPct = equity - 100;
-  return {
-    totalReturnPct: Math.round(totalReturnPct * 100) / 100,
-    maxDrawdownPct: Math.round(maxDd * 100) / 100,
-    winRate: trades.length ? Math.round((wins / trades.length) * 100) : 0,
-    trades,
-    tradeCount: trades.length,
-  };
+  return summarizeBacktestTrades(trades);
 }
 
 export const DEFAULT_STRATEGY: StrategyRules = {

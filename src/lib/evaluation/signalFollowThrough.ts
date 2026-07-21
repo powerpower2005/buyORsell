@@ -135,5 +135,5 @@ export function signalRateTitle(stat: SignalStat | undefined): string | undefine
   if (stat.ratePct == null) {
     return `표본 ${stat.samples}건 (표시는 ${MIN_SAMPLES}건 이상)`;
   }
-  return `이 종목 최근 구간 · ${stat.samples}건 중 ${stat.wins}건이 목표·방향대로 진행`;
+  return `이 종목 전 구간 · ${stat.samples}건 중 ${stat.wins}건이 목표·방향대로 진행`;
 }

@@ -26,6 +26,8 @@ export interface RsiStrategyResult {
   latestBarDate: string;
   onLatestBar: RsiStrategyHit[];
   recent: RsiStrategyHit[];
+  /** Uncapped hits in lookback (backtest / confluence). */
+  signals: RsiStrategyHit[];
   stats: SignalStatsMap;
 }
 
@@ -433,6 +435,7 @@ export function detectRsiStrategies(
     latestBarDate: bars[lastIdx]?.date ?? "",
     onLatestBar,
     recent,
+    signals: inWindow,
     stats,
   };
 }

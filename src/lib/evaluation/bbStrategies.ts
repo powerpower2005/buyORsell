@@ -24,6 +24,8 @@ export interface BbStrategyResult {
   latestBarDate: string;
   onLatestBar: BbStrategyHit[];
   recent: BbStrategyHit[];
+  /** Uncapped hits in lookback (backtest / confluence). */
+  signals: BbStrategyHit[];
   stats: SignalStatsMap;
 }
 
@@ -492,6 +494,7 @@ export function detectBbStrategies(
     latestBarDate: bars[lastIdx]?.date ?? "",
     onLatestBar,
     recent,
+    signals: inWindow,
     stats,
   };
 }

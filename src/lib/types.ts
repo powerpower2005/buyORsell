@@ -95,6 +95,12 @@ export interface BacktestTrade {
   entryPrice: number;
   exitPrice: number;
   returnPct: number;
+  side?: "long" | "short";
+  entryBarIndex?: number;
+  exitBarIndex?: number;
+  strategyId?: string;
+  strategyLabel?: string;
+  exitReason?: string;
 }
 
 export interface BacktestResult {
@@ -103,6 +109,16 @@ export interface BacktestResult {
   winRate: number;
   trades: BacktestTrade[];
   tradeCount: number;
+  avgReturnPct?: number;
+  avgWinPct?: number;
+  avgLossPct?: number;
+  /** null when no losses (infinite). */
+  profitFactor?: number | null;
+  expectancyPct?: number;
+  longCount?: number;
+  shortCount?: number;
+  winCount?: number;
+  lossCount?: number;
 }
 
 export interface MTFAlignment {

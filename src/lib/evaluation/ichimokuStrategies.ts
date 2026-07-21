@@ -24,6 +24,8 @@ export interface IchimokuStrategyResult {
   latestBarDate: string;
   onLatestBar: IchimokuStrategyHit[];
   recent: IchimokuStrategyHit[];
+  /** Uncapped hits in lookback (backtest / confluence). */
+  signals: IchimokuStrategyHit[];
   stats: SignalStatsMap;
 }
 
@@ -527,6 +529,7 @@ export function detectIchimokuStrategies(
     latestBarDate: bars[lastIdx]?.date ?? "",
     onLatestBar,
     recent,
+    signals: inWindow,
     stats,
   };
 }

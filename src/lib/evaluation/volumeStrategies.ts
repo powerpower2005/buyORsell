@@ -26,6 +26,8 @@ export interface VolumeStrategyResult {
   latestBarDate: string;
   onLatestBar: VolumeStrategyHit[];
   recent: VolumeStrategyHit[];
+  /** Uncapped hits in lookback (backtest / confluence). */
+  signals: VolumeStrategyHit[];
   stats: SignalStatsMap;
 }
 
@@ -723,6 +725,7 @@ export function detectVolumeStrategies(
     latestBarDate: bars[lastIdx]?.date ?? "",
     onLatestBar,
     recent,
+    signals: inWindow,
     stats,
   };
 }

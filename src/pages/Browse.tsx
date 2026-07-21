@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { loadIndex, loadQuote } from "@/lib/dataLoader";
 import { WatchlistSidebar } from "@/components/WatchlistSidebar";
+import { TradeJournalPanel } from "@/components/TradeJournalPanel";
+import { StrategyBuilder } from "@/components/StrategyBuilder";
+import { listJournalEntries } from "@/lib/tradeJournalStore";
+import { confluencesFromEvaluation } from "@/lib/evaluation/strategyConfluence";
+import { isStrategyConfluenceVisible } from "@/lib/strategyConfluenceStore";
 import { validateFreshness } from "@/lib/validation";
 import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
 import {
@@ -61,7 +66,13 @@ import { StaleDataBanner } from "@/components/StaleDataBanner";
 import { Card, SectionTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { errorMessage } from "@/lib/errors";
-import type { IndexEntry, IndexFile, QuoteFile, Timeframe } from "@/lib/types";
+import type {
+  BacktestResult,
+  IndexEntry,
+  IndexFile,
+  QuoteFile,
+  Timeframe,
+} from "@/lib/types";
 
 const VALID_TIMEFRAMES: Timeframe[] = ["15m", "1h", "4h", "1d", "1w"];
 
@@ -86,6 +97,8 @@ export function BrowsePage() {
   const [indicatorConfigOpen, setIndicatorConfigOpen] = useState(false);
   const [indicatorConfigSection, setIndicatorConfigSection] =
     useState<IndicatorConfigSectionId>("all");
+  const [journalTick, setJournalTick] = useState(0);
+  const [, setBacktest] = useState<BacktestResult | undefined>();
 
   const entries = useMemo(
     () =>
@@ -220,6 +233,17 @@ export function BrowsePage() {
   );
   const fibDrawMode = useMemo(() => isFibDrawMode(), [chartVisTick]);
   const fibRetracement = useMemo(() => getFibRetracement(), [chartVisTick]);
+  const journalEntries = useMemo(
+    () =>
+      selected
+        ? listJournalEntries(selected.ticker, selected.timeframe)
+        : [],
+    [selected?.ticker, selected?.timeframe, journalTick],
+  );
+  const showStrategyConfluence = useMemo(
+    () => isStrategyConfluenceVisible(),
+    [chartVisTick],
+  );
   const fibLevelVisibility = useMemo(
     () => getFibLevelVisibility(),
     [chartVisTick],
@@ -264,6 +288,11 @@ export function BrowsePage() {
       indicatorConfig,
       trendlineAlgo,
     ],
+  );
+
+  const strategyConfluences = useMemo(
+    () => (evaluation ? confluencesFromEvaluation(evaluation) : []),
+    [evaluation],
   );
 
   const trendlineIdsKey = evaluation?.trendlines
@@ -475,6 +504,9 @@ export function BrowsePage() {
                       fibExtraVisibility={fibExtraVisibility}
                       auxIndicatorVisibility={auxIndicatorVisibility}
                       onFibChange={() => setChartVisTick((n) => n + 1)}
+                      journalEntries={journalEntries}
+                      strategyConfluences={strategyConfluences}
+                      showStrategyConfluence={showStrategyConfluence}
                     />
                   </div>
                   <ChartSidebar
@@ -518,8 +550,23 @@ export function BrowsePage() {
                   {evaluation!.patterns && (
                     <CandlePatternPanel patterns={evaluation!.patterns} />
                   )}
+                  <TradeJournalPanel
+                    ticker={selected.ticker}
+                    timeframe={selected.timeframe}
+                    bars={evaluation!.bars}
+                    refreshTick={journalTick}
+                    onChange={() => {
+                      setJournalTick((n) => n + 1);
+                      setChartVisTick((n) => n + 1);
+                    }}
+                  />
                 </div>
                 <MTFAlignmentCard alignment={evaluation!.mtf} />
+                <StrategyBuilder
+                  bars={evaluation!.bars}
+                  evaluation={evaluation!}
+                  onResult={setBacktest}
+                />
               </div>
             )}
           </>

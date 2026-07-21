@@ -88,7 +88,7 @@ export interface QuoteEvaluation {
   stochStrategies: StochStrategyResult | null;
   ichimokuStrategies: IchimokuStrategyResult | null;
   volumeStrategies: VolumeStrategyResult | null;
-  /** Follow-through rates by pattern/strategy id (this ticker window). */
+  /** Follow-through rates by pattern/strategy id (full prepared ticker window). */
   signalStats: SignalStatsBundle;
   warnings: string[];
   fatalError: string | null;
@@ -239,10 +239,13 @@ export function evaluateQuote(
     }
   }
 
+  /** Score follow-through on the full prepared ticker window. */
+  const fullLookback = { lookbackBars: prepared.length };
+
   let bbStrategies: BbStrategyResult | null = null;
   if (!fatalError) {
     try {
-      bbStrategies = detectBbStrategies(prepared, indicators);
+      bbStrategies = detectBbStrategies(prepared, indicators, fullLookback);
     } catch (err) {
       const fatal = absorbError(err, warnings);
       if (fatal) fatalError = fatal;
@@ -252,7 +255,7 @@ export function evaluateQuote(
   let classicalPatterns: ChartPatternResult | null = null;
   if (!fatalError) {
     try {
-      classicalPatterns = detectChartPatterns(prepared);
+      classicalPatterns = detectChartPatterns(prepared, fullLookback);
     } catch (err) {
       const fatal = absorbError(err, warnings);
       if (fatal) fatalError = fatal;
@@ -276,6 +279,7 @@ export function evaluateQuote(
       rsiStrategies = detectRsiStrategies(prepared, indicators, {
         overbought: (rsiCfg?.overbought as number | undefined) ?? 70,
         oversold: (rsiCfg?.oversold as number | undefined) ?? 30,
+        ...fullLookback,
       });
     } catch (err) {
       const fatal = absorbError(err, warnings);
@@ -286,7 +290,11 @@ export function evaluateQuote(
   let macdStrategies: MacdStrategyResult | null = null;
   if (!fatalError) {
     try {
-      macdStrategies = detectMacdStrategies(prepared, indicators);
+      macdStrategies = detectMacdStrategies(
+        prepared,
+        indicators,
+        fullLookback,
+      );
     } catch (err) {
       const fatal = absorbError(err, warnings);
       if (fatal) fatalError = fatal;
@@ -304,6 +312,7 @@ export function evaluateQuote(
         {
           overbought: (stochCfg?.overbought as number | undefined) ?? 80,
           oversold: (stochCfg?.oversold as number | undefined) ?? 20,
+          ...fullLookback,
         },
       );
     } catch (err) {
@@ -319,6 +328,7 @@ export function evaluateQuote(
       ichimokuStrategies = detectIchimokuStrategies(prepared, indicators, {
         displacement:
           (ichiCfg?.params.displacement as number | undefined) ?? 26,
+        ...fullLookback,
       });
     } catch (err) {
       const fatal = absorbError(err, warnings);
@@ -329,7 +339,11 @@ export function evaluateQuote(
   let volumeStrategies: VolumeStrategyResult | null = null;
   if (!fatalError) {
     try {
-      volumeStrategies = detectVolumeStrategies(prepared, indicators);
+      volumeStrategies = detectVolumeStrategies(
+        prepared,
+        indicators,
+        fullLookback,
+      );
     } catch (err) {
       const fatal = absorbError(err, warnings);
       if (fatal) fatalError = fatal;

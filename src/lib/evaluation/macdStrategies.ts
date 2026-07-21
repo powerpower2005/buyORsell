@@ -24,6 +24,8 @@ export interface MacdStrategyResult {
   latestBarDate: string;
   onLatestBar: MacdStrategyHit[];
   recent: MacdStrategyHit[];
+  /** Uncapped hits in lookback (backtest / confluence). */
+  signals: MacdStrategyHit[];
   stats: SignalStatsMap;
 }
 
@@ -475,6 +477,7 @@ export function detectMacdStrategies(
     latestBarDate: bars[lastIdx]?.date ?? "",
     onLatestBar: recent.filter((h) => h.barIndex === lastIdx),
     recent,
+    signals: inWindow,
     stats,
   };
 }

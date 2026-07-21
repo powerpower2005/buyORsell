@@ -138,6 +138,10 @@ import {
   type FibRetracement,
 } from "@/lib/fibonacciStore";
 import type { AuxIndicatorId } from "@/lib/auxIndicatorStore";
+import type { TradeJournalEntry } from "@/lib/tradeJournalStore";
+import { tradeJournalToChartMarkers } from "@/lib/chart/tradeJournalMarkers";
+import type { StrategyConfluence } from "@/lib/evaluation/strategyConfluence";
+import { strategyConfluencesToChartMarkers } from "@/lib/chart/strategyConfluenceMarkers";
 import { Card } from "./ui/Card";
 
 type OscSeries = ISeriesApi<"Line"> | ISeriesApi<"Histogram">;
@@ -244,6 +248,9 @@ interface Props {
   /** Below-chart oscillator pane toggles. Missing / false = hidden. */
   auxIndicatorVisibility?: Partial<Record<AuxIndicatorId, boolean>>;
   onFibChange?: () => void;
+  journalEntries?: TradeJournalEntry[];
+  strategyConfluences?: StrategyConfluence[];
+  showStrategyConfluence?: boolean;
 }
 
 function useViewportChartHeight(fixed?: number) {
@@ -307,6 +314,9 @@ export function CandleChart({
   fibExtraVisibility,
   auxIndicatorVisibility,
   onFibChange,
+  journalEntries,
+  strategyConfluences,
+  showStrategyConfluence = true,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -442,6 +452,11 @@ export function CandleChart({
       chartIchimokuStrategyVisibility ??
         ({} as Record<IchimokuStrategyId, boolean>),
     );
+    const journalMs = tradeJournalToChartMarkers(journalEntries);
+    const confluenceMs = strategyConfluencesToChartMarkers(
+      strategyConfluences,
+      showStrategyConfluence,
+    );
     return [
       ...patternMs,
       ...structureMs,
@@ -453,6 +468,8 @@ export function CandleChart({
       ...macdStratMs,
       ...stochStratMs,
       ...ichiStratMs,
+      ...journalMs,
+      ...confluenceMs,
     ].sort((a, b) => {
       const byDate = String(a.time).localeCompare(String(b.time));
       if (byDate !== 0) return byDate;
@@ -479,6 +496,9 @@ export function CandleChart({
     chartStochStrategyVisibility,
     ichimokuStrategies,
     chartIchimokuStrategyVisibility,
+    journalEntries,
+    strategyConfluences,
+    showStrategyConfluence,
   ]);
 
   const barHighlights = useMemo(
@@ -2354,6 +2374,12 @@ export function CandleChart({
 
   const hasFib =
     !!fibRetracement && fibRetracement.high.price > fibRetracement.low.price;
+  const visibleFibLevels = FIB_RETRACEMENT_LEVELS.filter(
+    (r) => fibLevelVisibility?.[r] === true,
+  );
+  /** Legend only when something is actually shown (not just a stored anchor). */
+  const showFibLegend =
+    hasFib && (showFibAnchors || visibleFibLevels.length > 0);
 
   return (
     <Card className="overflow-hidden p-2 sm:p-3">
@@ -2899,7 +2925,43 @@ export function CandleChart({
             </div>
           )}
 
-          {hasFib && (
+          {journalEntries && journalEntries.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>매매 기록 ({journalEntries.length}):</span>
+              {journalEntries.slice(-8).map((e) => (
+                <span key={e.id} className="tabular-nums text-text-tertiary">
+                  <span
+                    className={
+                      e.side === "buy" ? "text-positive" : "text-negative"
+                    }
+                  >
+                    {e.side === "buy" ? "매수" : "매도"}
+                  </span>{" "}
+                  {e.date} {e.price}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {showStrategyConfluence &&
+            strategyConfluences &&
+            strategyConfluences.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span>전략 겹침 ({strategyConfluences.length}):</span>
+                {strategyConfluences.slice(-8).map((c) => (
+                  <span
+                    key={`${c.barIndex}-${c.direction}`}
+                    className="tabular-nums text-text-tertiary"
+                  >
+                    {c.date} ×{c.hits.length}{" "}
+                    {c.direction === "bullish" ? "↑" : "↓"} (
+                    {c.hits.map((h) => h.label).join(", ")})
+                  </span>
+                ))}
+              </div>
+            )}
+
+          {showFibLegend && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
               <span>피보나치 되돌림:</span>
               {showFibAnchors && (
@@ -2912,9 +2974,7 @@ export function CandleChart({
                   </span>
                 </>
               )}
-              {FIB_RETRACEMENT_LEVELS.filter(
-                (r) => fibLevelVisibility?.[r] === true,
-              ).map((ratio) => (
+              {visibleFibLevels.map((ratio) => (
                 <span key={ratio} className="flex items-center gap-1.5">
                   <span
                     className="inline-block h-0.5 w-4 rounded-sm"

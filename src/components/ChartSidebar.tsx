@@ -234,6 +234,10 @@ import {
   STRATEGY_FAMILY_META,
   type StrategyFamilyId,
 } from "@/lib/strategyCatalog";
+import {
+  isStrategyConfluenceVisible,
+  setStrategyConfluenceVisible,
+} from "@/lib/strategyConfluenceStore";
 
 const EMPTY_TRENDLINES: Trendline[] = [];
 
@@ -606,6 +610,10 @@ export function ChartSidebar({
   const fibDraw = useMemo(() => isFibDrawMode(), [refreshTick]);
   const fibRet = useMemo(() => getFibRetracement(), [refreshTick]);
   const fibPending = useMemo(() => getFibPendingLow(), [refreshTick]);
+  const strategyConfluenceOn = useMemo(
+    () => isStrategyConfluenceVisible(),
+    [refreshTick],
+  );
   const tlVis = useMemo(() => getTrendlineChartVisibility(), [refreshTick]);
   const tlKindColors = useMemo(
     () => getTrendlineKindColors(),
@@ -897,6 +905,15 @@ export function ChartSidebar({
               검색 결과 없음
             </p>
           )}
+          <Leaf
+            label="전략 겹침 강조"
+            hint="같은 봉·방향에 전략 2개↑이면 ×N 마커"
+            checked={strategyConfluenceOn}
+            help={CHART_LAYER_HELP.strategyConfluence}
+            onChange={(next) =>
+              bump(() => setStrategyConfluenceVisible(next))
+            }
+          />
         </Group>
 
         <Group

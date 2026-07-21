@@ -27,6 +27,8 @@ export interface PatternStrategyResult {
   latestBarDate: string;
   onLatestBar: PatternStrategyHit[];
   recent: PatternStrategyHit[];
+  /** Uncapped hits (backtest / confluence). */
+  signals: PatternStrategyHit[];
   stats: SignalStatsMap;
 }
 
@@ -187,6 +189,7 @@ export function detectPatternStrategies(
     latestBarDate: bars[lastIdx]?.date ?? "",
     onLatestBar: recent.filter((h) => h.barIndex === lastIdx),
     recent,
+    signals: hits,
     stats,
   };
 }
