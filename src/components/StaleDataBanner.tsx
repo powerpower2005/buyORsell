@@ -25,7 +25,7 @@ export function StaleDataBanner({ ticker, timeframe, detail }: Props) {
       <div className="mt-3 rounded-md border border-border/60 bg-bg px-3 py-2.5 text-sm text-text-secondary">
         <p>
           <span className="font-medium text-text-primary">자동 갱신</span>
-          {" · "}6시간마다 (GitHub Actions cron)
+          {" · "}평일 6시간마다 (GitHub Actions cron)
         </p>
         <p className="mt-1">
           다음 실행: <span className="text-text-primary">{schedule.nextRun}</span>

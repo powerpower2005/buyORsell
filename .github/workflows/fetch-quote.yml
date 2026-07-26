@@ -14,8 +14,9 @@ on:
         description: "Timeframe"
         required: false
         default: "1d"
+  # Weekdays only (Mon–Fri UTC). Sat/Sun markets are closed — no auto refresh.
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 */6 * * 1-5"
 
 permissions:
   contents: write

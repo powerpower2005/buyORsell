@@ -15,7 +15,7 @@ const policy = {
   freshness: {
     maxAgeHours: 24,
     minBarCount: 50,
-    maxTradingDayLag: 3,
+    maxTradingDayLag: 0,
   },
   freshnessByTimeframe: {
     "1d": { freshnessMode: "tradingDay" },

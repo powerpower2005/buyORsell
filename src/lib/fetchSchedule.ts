@@ -1,18 +1,47 @@
-/** Matches fetch-quote.yml schedule: every 6 hours at UTC 00, 06, 12, 18. */
+/** Matches fetch-quote.yml: every 6 hours Mon–Fri UTC (00, 06, 12, 18). */
 export const FETCH_CRON_UTC_HOURS = [0, 6, 12, 18] as const;
 
+function isUtcWeekday(date: Date): boolean {
+  const dow = date.getUTCDay(); // 0=Sun … 6=Sat
+  return dow >= 1 && dow <= 5;
+}
+
 export function getNextFetchRun(from = new Date()): Date {
-  const y = from.getUTCFullYear();
-  const m = from.getUTCMonth();
-  const d = from.getUTCDate();
   const nowMs = from.getTime();
-
-  for (const hour of FETCH_CRON_UTC_HOURS) {
-    const t = Date.UTC(y, m, d, hour, 0, 0, 0);
-    if (t > nowMs) return new Date(t);
+  // Search up to 10 days ahead so weekends are skipped cleanly.
+  for (let dayOffset = 0; dayOffset < 10; dayOffset++) {
+    const base = new Date(
+      Date.UTC(
+        from.getUTCFullYear(),
+        from.getUTCMonth(),
+        from.getUTCDate() + dayOffset,
+      ),
+    );
+    if (!isUtcWeekday(base)) continue;
+    for (const hour of FETCH_CRON_UTC_HOURS) {
+      const t = Date.UTC(
+        base.getUTCFullYear(),
+        base.getUTCMonth(),
+        base.getUTCDate(),
+        hour,
+        0,
+        0,
+        0,
+      );
+      if (t > nowMs) return new Date(t);
+    }
   }
-
-  return new Date(Date.UTC(y, m, d + 1, FETCH_CRON_UTC_HOURS[0], 0, 0, 0));
+  return new Date(
+    Date.UTC(
+      from.getUTCFullYear(),
+      from.getUTCMonth(),
+      from.getUTCDate() + 1,
+      FETCH_CRON_UTC_HOURS[0],
+      0,
+      0,
+      0,
+    ),
+  );
 }
 
 function localHourLabel(utcHour: number, ref = new Date()): string {

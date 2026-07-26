@@ -695,8 +695,8 @@ export function ChartSidebar({
   const emaState = groupState(emaVals);
   const bbBandState = groupState(bbVals);
   const bbStratState = groupState(bbStratVals);
-  // Parent BB checkbox follows bands only (strategies stay in their subgroup).
-  const bbState = bbBandState;
+  // Parent reflects bands + strategies (same pattern as RSI / Ichimoku / …).
+  const bbState = groupState([...bbVals, ...bbStratVals]);
   const ichiPartVals = ICHIMOKU_PART_ORDER.map((id) => ichiVis[id]);
   const ichiStratVals = ICHIMOKU_STRATEGY_ORDER.map((id) => ichiStratVis[id]);
   const ichiPartState = groupState(ichiPartVals);
@@ -1009,7 +1009,10 @@ export function ChartSidebar({
           help={INDICATOR_HELP.bb}
           onEdit={onEditIndicator ? () => onEditIndicator("bb") : undefined}
           onToggleAll={(next) =>
-            bump(() => setBbOverlayGroupVisible(next))
+            bump(() => {
+              setBbOverlayGroupVisible(next);
+              setBbStrategyGroupVisible(next);
+            })
           }
         >
             <Group

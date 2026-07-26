@@ -4,7 +4,7 @@
   "defaultWindow": "1Y",
   "freshness": {
     "maxAgeHours": 24,
-    "maxTradingDayLag": 3,
+    "maxTradingDayLag": 0,
     "minBarCount": 50
   },
   "accuracy": {
