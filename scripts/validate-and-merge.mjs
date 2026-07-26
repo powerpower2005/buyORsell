@@ -538,7 +538,28 @@ async function main() {
   }
 
   const result = await runFetchPipeline({ ticker, timeframe, force });
-  console.log(JSON.stringify(result, null, 2));
+  // Slim CLI/CI output — omit full OHLCV arrays.
+  const slim = {
+    action: result.action,
+    reason: result.reason,
+    barsChanged: result.barsChanged,
+    ticker: result.quote?.ticker,
+    timeframe: result.quote?.timeframe,
+    lastBarDate: result.quote?.lastBarDate,
+    barCount: result.quote?.barCount,
+    fetchedAt: result.quote?.fetchedAt,
+    source: result.quote?.source,
+    resolvedSymbol: result.quote?.resolvedSymbol,
+    derived: result.derived,
+    backfill: result.backfill
+      ? {
+          rounds: result.backfill.rounds,
+          addedBars: result.backfill.addedBars,
+          stoppedReason: result.backfill.stoppedReason,
+        }
+      : undefined,
+  };
+  console.log(JSON.stringify(slim, null, 2));
 }
 
 if (process.argv[1]?.includes("validate-and-merge")) {

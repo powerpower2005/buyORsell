@@ -143,49 +143,95 @@ jobs:
         run: echo "Not a fetch request, skipping."
 
       - name: Fetch, merge, and backfill history to target
+        id: manual_fetch
         if: steps.parse.outputs.skip == 'false'
         env:
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |
           test -n "${{ steps.parse.outputs.ticker }}"
+          mkdir -p artifacts
           # Walk backward in 10-day chunks until backfillTargetBars (900 for 1d).
           # Target only stops past backfill; tip updates may grow the series beyond 900.
           node scripts/validate-and-merge.mjs \
             "${{ steps.parse.outputs.ticker }}" \
-            "${{ steps.parse.outputs.timeframe }}"
+            "${{ steps.parse.outputs.timeframe }}" \
+            | tee artifacts/manual-fetch-result.json
+
+      - name: Manual fetch summary
+        if: steps.parse.outputs.skip == 'false' && always()
+        env:
+          TICKER: ${{ steps.parse.outputs.ticker }}
+          TIMEFRAME: ${{ steps.parse.outputs.timeframe }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const ticker = process.env.TICKER;
+          const tf = process.env.TIMEFRAME;
+          const slug = ticker.replace(/:/g, '-');
+          const quotePath = path.join('data', slug, `${tf}.json`);
+          let quote = null;
+          if (fs.existsSync(quotePath)) {
+            quote = JSON.parse(fs.readFileSync(quotePath, 'utf8'));
+          }
+          let pipeline = null;
+          try {
+            pipeline = JSON.parse(fs.readFileSync('artifacts/manual-fetch-result.json', 'utf8'));
+          } catch {}
+
+          const lines = [
+            `# Fetch Quote — manual`,
+            ``,
+            `- **Ticker:** \`${ticker}\``,
+            `- **Timeframe:** \`${tf}\``,
+            `- **Pipeline action:** ${pipeline?.action ?? '—'}`,
+            `- **Reason:** ${pipeline?.reason ?? '—'}`,
+            `- **Bars changed:** ${pipeline?.barsChanged ?? '—'}`,
+            `- **Last bar:** ${quote?.lastBarDate ?? '—'}`,
+            `- **Bar count:** ${quote?.barCount ?? '—'}`,
+            `- **Fetched at:** ${quote?.fetchedAt ?? '—'}`,
+            `- **Source:** ${quote?.source ?? '—'}`,
+            `- **Resolved symbol:** ${quote?.resolvedSymbol ?? '—'}`,
+          ];
+          if (pipeline?.derived?.length) {
+            lines.push(`- **Derived:** ${pipeline.derived.map((d) => `${d.timeframe} (${d.barCount})`).join(', ')}`);
+          }
+          if (pipeline?.backfill) {
+            lines.push(
+              `- **Backfill:** +${pipeline.backfill.addedBars ?? 0} bars` +
+                ` / ${pipeline.backfill.rounds ?? 0} rounds` +
+                ` (${pipeline.backfill.stoppedReason ?? '—'})`,
+            );
+          }
+          lines.push('');
+          const md = lines.join('\n');
+          fs.mkdirSync('artifacts', { recursive: true });
+          fs.writeFileSync('artifacts/fetch-run-report.md', md + '\n');
+          if (process.env.GITHUB_STEP_SUMMARY) {
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md + '\n');
+          }
+          console.log(md);
+          NODE
 
       - name: Scheduled stale refresh
+        id: cron_refresh
         if: github.event_name == 'schedule'
         env:
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-        run: |
-          node <<'NODE'
-          (async () => {
-          const fs = require('fs');
-          const path = require('path');
-          const indexPath = 'data/index.json';
-          if (!fs.existsSync(indexPath)) process.exit(0);
-          const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
-          const policy = JSON.parse(fs.readFileSync('config/data-policy.json', 'utf8'));
-          const { validateFreshness } = await import('./scripts/validate-and-merge.mjs');
-          for (const entry of index.entries) {
-            if (!entry.ticker || !entry.timeframe) continue;
-            const full = path.join('data', entry.ticker.replace(/:/g, '-'), entry.timeframe + '.json');
-            if (!fs.existsSync(full)) continue;
-            const quote = JSON.parse(fs.readFileSync(full, 'utf8'));
-            const freshness = validateFreshness(quote, policy, entry.timeframe);
-            if (freshness.status === 'stale') {
-              console.log('Stale:', entry.ticker, entry.timeframe, freshness.reason);
-              require('child_process').execSync(
-                `node scripts/validate-and-merge.mjs "${entry.ticker}" "${entry.timeframe}"`,
-                { stdio: 'inherit' }
-              );
-            }
-          }
-          })().catch((e) => { console.error(e); process.exit(1); });
-          NODE
+        run: node scripts/scheduled-stale-refresh.mjs
+
+      - name: Upload fetch report
+        if: always() && (github.event_name == 'schedule' || steps.parse.outputs.skip == 'false')
+        uses: actions/upload-artifact@v4
+        with:
+          name: fetch-run-report
+          path: |
+            artifacts/fetch-run-report.md
+            artifacts/fetch-run-report.json
+            artifacts/manual-fetch-result.json
+          if-no-files-found: ignore
 
       - name: Commit data
         if: steps.parse.outputs.skip == 'false' || github.event_name == 'schedule'
