@@ -1,23 +1,7 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-23T02:29:30.410Z",
+  "updatedAt": "2026-07-26T14:37:42.239Z",
   "entries": [
-    {
-      "ticker": "000660:KRX",
-      "timeframe": "1d",
-      "path": "data/000660-KRX/1d.json",
-      "fetchedAt": "2026-07-22T02:05:23.462Z",
-      "lastBarDate": "2026-07-21",
-      "barCount": 900
-    },
-    {
-      "ticker": "000660:KRX",
-      "timeframe": "1w",
-      "path": "data/000660-KRX/1w.json",
-      "fetchedAt": "2026-07-22T02:05:23.462Z",
-      "lastBarDate": "2026-07-21",
-      "barCount": 194
-    },
     {
       "ticker": "KOSPI:KRX",
       "timeframe": "1d",
@@ -113,6 +97,22 @@
       "fetchedAt": "2026-07-23T02:29:30.398Z",
       "lastBarDate": "2026-07-22",
       "barCount": 189
+    },
+    {
+      "ticker": "000660:KRX",
+      "timeframe": "1d",
+      "path": "data/000660-KRX/1d.json",
+      "fetchedAt": "2026-07-26T14:37:42.228Z",
+      "lastBarDate": "2026-07-24",
+      "barCount": 903
+    },
+    {
+      "ticker": "000660:KRX",
+      "timeframe": "1w",
+      "path": "data/000660-KRX/1w.json",
+      "fetchedAt": "2026-07-26T14:37:42.228Z",
+      "lastBarDate": "2026-07-24",
+      "barCount": 194
     }
   ]
 }
