@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-26T14:37:42.239Z",
+  "updatedAt": "2026-07-27T02:32:53.437Z",
   "entries": [
     {
       "ticker": "KOSPI:KRX",
@@ -113,6 +113,22 @@
       "fetchedAt": "2026-07-26T14:37:42.228Z",
       "lastBarDate": "2026-07-24",
       "barCount": 194
+    },
+    {
+      "ticker": "MU:NASDAQ",
+      "timeframe": "1d",
+      "path": "data/MU-NASDAQ/1d.json",
+      "fetchedAt": "2026-07-27T02:26:51.267Z",
+      "lastBarDate": "2026-07-24",
+      "barCount": 901
+    },
+    {
+      "ticker": "MU:NASDAQ",
+      "timeframe": "1w",
+      "path": "data/MU-NASDAQ/1w.json",
+      "fetchedAt": "2026-07-27T02:26:51.267Z",
+      "lastBarDate": "2026-07-24",
+      "barCount": 188
     }
   ]
 }
