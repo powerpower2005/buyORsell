@@ -83,6 +83,12 @@ import {
   volumeStrategiesToChartMarkers,
   visibleVolumeStrategyLegend,
 } from "@/lib/chart/volumeStrategyMarkers";
+import type { ComboStrategyResult } from "@/lib/evaluation/comboStrategies";
+import type { ComboStrategyId } from "@/lib/comboStrategyMeta";
+import {
+  comboStrategiesToChartMarkers,
+  visibleComboStrategyLegend,
+} from "@/lib/chart/comboStrategyMarkers";
 import {
   macdStrategiesToChartMarkers,
   visibleMacdStrategyLegend,
@@ -234,6 +240,8 @@ interface Props {
   chartRsiStrategyVisibility?: Record<RsiStrategyId, boolean>;
   volumeStrategies?: VolumeStrategyResult;
   chartVolumeStrategyVisibility?: Record<VolumeStrategyId, boolean>;
+  comboStrategies?: ComboStrategyResult;
+  chartComboStrategyVisibility?: Record<ComboStrategyId, boolean>;
   macdStrategies?: MacdStrategyResult;
   chartMacdStrategyVisibility?: Record<MacdStrategyId, boolean>;
   stochStrategies?: StochStrategyResult;
@@ -302,6 +310,8 @@ export function CandleChart({
   chartRsiStrategyVisibility,
   volumeStrategies,
   chartVolumeStrategyVisibility,
+  comboStrategies,
+  chartComboStrategyVisibility,
   macdStrategies,
   chartMacdStrategyVisibility,
   stochStrategies,
@@ -439,6 +449,11 @@ export function CandleChart({
       chartVolumeStrategyVisibility ??
         ({} as Record<VolumeStrategyId, boolean>),
     );
+    const comboStratMs = comboStrategiesToChartMarkers(
+      comboStrategies,
+      chartComboStrategyVisibility ??
+        ({} as Record<ComboStrategyId, boolean>),
+    );
     const macdStratMs = macdStrategiesToChartMarkers(
       macdStrategies,
       chartMacdStrategyVisibility ?? ({} as Record<MacdStrategyId, boolean>),
@@ -465,6 +480,7 @@ export function CandleChart({
       ...patternStratMs,
       ...rsiStratMs,
       ...volumeStratMs,
+      ...comboStratMs,
       ...macdStratMs,
       ...stochStratMs,
       ...ichiStratMs,
@@ -490,6 +506,8 @@ export function CandleChart({
     chartRsiStrategyVisibility,
     volumeStrategies,
     chartVolumeStrategyVisibility,
+    comboStrategies,
+    chartComboStrategyVisibility,
     macdStrategies,
     chartMacdStrategyVisibility,
     stochStrategies,
@@ -615,6 +633,13 @@ export function CandleChart({
         ? visibleVolumeStrategyLegend(chartVolumeStrategyVisibility)
         : [],
     [chartVolumeStrategyVisibility],
+  );
+  const comboStrategyLegend = useMemo(
+    () =>
+      chartComboStrategyVisibility
+        ? visibleComboStrategyLegend(chartComboStrategyVisibility)
+        : [],
+    [chartComboStrategyVisibility],
   );
   const macdStrategyLegend = useMemo(
     () =>
@@ -2147,6 +2172,26 @@ export function CandleChart({
       }));
   }, [volumeStrategies, chartVolumeStrategyVisibility]);
 
+  const comboStrategyHitLegend = useMemo(() => {
+    if (!comboStrategies?.recent.length || !chartComboStrategyVisibility)
+      return [];
+    return comboStrategies.recent
+      .filter((hit) => chartComboStrategyVisibility[hit.id])
+      .slice(-8)
+      .reverse()
+      .map((hit) => ({
+        key: `${hit.id}-${hit.barIndex}`,
+        text: hit.label,
+        detail: `${hit.date} · ${hit.summary}`,
+        color:
+          hit.direction === "bullish"
+            ? "#00c471"
+            : hit.direction === "bearish"
+              ? "#f04452"
+              : "#8b95a1",
+      }));
+  }, [comboStrategies, chartComboStrategyVisibility]);
+
   const macdStrategyHitLegend = useMemo(() => {
     if (!macdStrategies?.recent.length || !chartMacdStrategyVisibility)
       return [];
@@ -2768,6 +2813,39 @@ export function CandleChart({
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
                 <span>거래량 전략:</span>
                 {volumeStrategyLegend.map((item) => (
+                  <span
+                    key={`${item.text}-${item.label}`}
+                    className="text-text-tertiary"
+                  >
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            )
+          )}
+
+          {comboStrategyHitLegend.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>복합 전략:</span>
+              {comboStrategyHitLegend.map((item) => (
+                <span key={item.key} className="flex items-center gap-1.5">
+                  <span
+                    className="font-mono text-[10px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.text}
+                  </span>
+                  <span className="tabular-nums text-text-tertiary">
+                    {item.detail}
+                  </span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            comboStrategyLegend.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span>복합 전략:</span>
+                {comboStrategyLegend.map((item) => (
                   <span
                     key={`${item.text}-${item.label}`}
                     className="text-text-tertiary"

@@ -15,6 +15,8 @@ export interface HelpContent {
   lowerLabel?: string;
   /** Indicators / layers that commonly raise confidence when combined. */
   worksWith?: string;
+  /** When / which markets this playbook tends to fit. */
+  bestFor?: string;
   tip?: string;
 }
 
@@ -114,7 +116,7 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     lower:
       "MFI가 낮을수록(예: 20 이하) 자금이 유출되며 단기 과매도 쪽으로 봅니다.",
     worksWith:
-      "RSI(가격 모멘텀 vs 자금 흐름), 거래량·OBV, MACD 다이버전스. RSI와 MFI가 같은 방향이면 과열·과매도 신뢰↑.",
+      "VWAP자금흐름·OBV다이버전스+ST 전략, RSI(가격 vs 자금), 거래량·OBV, MACD 다이버전스. RSI와 MFI가 같은 방향이면 과열·과매도 신뢰↑.",
     tip: "가격은 오르는데 MFI가 내려가면(다이버전스) 상승 힘이 약해질 수 있습니다.",
   },
   atr: {
@@ -126,8 +128,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     lower:
       "ATR이 작으면 변동성이 작아 조용한 구간입니다. 스퀴즈 이후 변동성 확대를 대비하기도 합니다.",
     worksWith:
-      "볼린저 스퀴즈·돌파, 추세선·패턴 목표가, 스토캐/MACD 진입 후 손절·익절 거리 설정. 방향 신호와 짝을 이룹니다.",
-    tip: "ATR은 방향(상승/하락)이 아니라 ‘크기’만 봅니다.",
+      "켈트너+CCI(확대 필터)·%B평균회귀(급등 회피)·PSAR+ADX(트레일), 볼린저 스퀴즈·돌파, 손절·익절 거리. 방향 신호와 짝을 이룹니다.",
+    tip: "ATR은 방향(상승/하락)이 아니라 ‘크기’만 봅니다. 복합 전략 손절·필터에 자주 쓰입니다.",
   },
   obv: {
     title: "OBV (On-Balance Volume)",
@@ -140,7 +142,7 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     lower:
       "OBV 우하향=매도세 우위. 하락 다이버전스(가격 HH·OBV LH)는 물량 정리·숏/익절 신호로 봅니다.",
     worksWith:
-      "켈트너 채널(돌파 확인), 거래량 전략의 OBV 다이버전스·OBV+켈트너·패스트 OBV 추력, VWAP·히트맵. 가격↑+거래량 폭발이 차익실현인지 돌파인지 OBV로 구분하세요.",
+      "VWAP자금흐름·OBV다이버전스+ST·OBV+켈트너·패스트 OBV, 켈트너·VWAP·히트맵. 가격↑+거래량 폭발이 차익실현인지 돌파인지 OBV로 구분하세요.",
     tip: "과매수/과매도 기준선이 없습니다. 방향성과 다이버전스만 보세요. 상용 Fast OBV 3D 박스는 별도이며, 앱의 ‘패스트 OBV 추력’이 그 빠른 타점을 근사합니다.",
   },
   keltner: {
@@ -148,13 +150,13 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     summary:
       "EMA 중심선 ± ATR 배수 밴드입니다. 볼린저보다 밴드 변화가 완만해 돌파 노이즈가 적습니다. OBV와 결합해 ‘진짜 돌파’를 확인하는 데 씁니다.",
     howToFind:
-      "사이드바 보조 지표에서 켈트너를 켜면 가격 차트에 중심·상·하 밴드가 겹칩니다. 기본 EMA20 · ATR10 · mult 2. 상단 돌파+OBV↑→롱, 하단 이탈+OBV↓→숏.",
+      "사이드바 보조 지표에서 켈트너를 켜면 가격 차트에 중심·상·하 밴드가 겹칩니다. 기본 EMA20 · ATR10 · mult 2. 상단 돌파+OBV↑→롱, 하단 이탈+OBV↓→숏. 복합 전략: 켈트너+CCI.",
     higher:
       "종가가 상단 위+OBV 상승이면 추세 가속·롱. 손절은 중심선 아래를 참고합니다.",
     lower:
       "종가가 하단 아래+OBV 하락이면 하락 가속·숏. 중심선 상향 복귀+OBV 상승 시 숏 익절 후보.",
     worksWith:
-      "OBV(필수에 가깝게), OBV 다이버전스(익절), 패스트 OBV 추력(더 빠른 진입), ADX. 볼린저 대신 안정적인 채널이 필요할 때 선택합니다.",
+      "켈트너+CCI·OBV+켈트너, OBV 다이버전스(익절), 패스트 OBV 추력, ADX. 볼린저 대신 안정적인 채널이 필요할 때 선택합니다.",
     tip: "볼린저는 SMA+표준편차로 급격히 벌어지고, 켈트너는 ATR이라 더 부드럽습니다.",
   },
   vwap: {
@@ -168,7 +170,7 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     lower:
       "가격 < VWAP이면 하락 우위·저항 후보. 하단 밴드 근처는 과매도·상승 반전 후보. 저점 숏보다 VWAP 저항에서 숏이 낫습니다.",
     worksWith:
-      "거래량 전략(VWAP 눌림목·밴드 반전·스위칭), OBV, ADX(횡보/추세), 캔들 패턴. 밴드에 붙어 달리는 강한 추세에서는 반전을 피하세요.",
+      "VWAP자금흐름·VWAP 눌림목·밴드·스위칭, OBV, ADX(횡보/추세), 캔들 패턴. 밴드에 붙어 달리는 강한 추세에서는 반전을 피하세요.",
     tip: "변동의 약 66%는 ±1σ, 95%는 ±2σ 안. 창 누적 VWAP은 장중 세션 VWAP과 다를 수 있습니다. 가격↑·VWAP↓(또는 반대)가 스위칭 기회입니다.",
   },
   adx: {
@@ -176,13 +178,13 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     summary:
       "추세의 ‘강도’를 0~100으로 봅니다. +DI/−DI는 상승·하락 압력 방향입니다. ADX가 높아도 방향은 DI가 알려 줍니다.",
     howToFind:
-      "사이드바 보조 지표에서 ADX를 켜세요. 노란 ADX선, 초록 +DI, 빨강 −DI. 참고선 25 위를 추세장으로 보는 경우가 많습니다.",
+      "사이드바 보조 지표에서 ADX를 켜세요. 노란 ADX선, 초록 +DI, 빨강 −DI. 참고선 25 위를 추세장으로 보는 경우가 많습니다. 복합 전략: 슈퍼트렌드+ADX, PSAR+ADX(%B평균회귀는 ADX<20 필터).",
     higher:
       "ADX≥25이면 추세가 있는 구간으로 보고, +DI>−DI면 상승 추세·반대면 하락 추세로 읽습니다.",
     lower:
-      "ADX가 낮으면(예: 20 아래) 횡보·약한 추세로 보고 추세 추종 전략은 줄이는 편이 낫습니다.",
+      "ADX가 낮으면(예: 20 아래) 횡보·약한 추세로 보고 추세 추종 전략은 줄이고 %B평균회귀 쪽이 맞습니다.",
     worksWith:
-      "EMA60·파라볼릭/추세선(방향), ATR(변동성), RSI/MACD(타점). ADX로 ‘들어갈 장’인지 먼저 걸러 보세요.",
+      "슈퍼트렌드+ADX·PSAR+ADX 전략, ATR(변동성), RSI/MACD(타점). ADX로 ‘들어갈 장’인지 먼저 걸러 보세요.",
     tip: "ADX 상승=+DI/−DI 방향과 같은 포지션이 유리한 편입니다. ADX만으로 롱/숏을 정하지 마세요.",
   },
   psar: {
@@ -190,13 +192,13 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     summary:
       "추세 방향과 트레일링 스탑을 점으로 보여주는 지표입니다. 종가가 SAR 위면 상승, 아래면 하락으로 읽습니다.",
     howToFind:
-      "사이드바 보조 지표에서 Parabolic SAR을 켜면 가격 차트에 점선이 겹칩니다. SAR이 가격 아래로 뒤집히면 매수(바이), 위로 뒤집히면 매도(셀) 후보입니다.",
+      "사이드바 보조 지표에서 Parabolic SAR을 켜면 가격 차트에 점선이 겹칩니다. SAR이 가격 아래로 뒤집히면 매수(바이), 위로 뒤집히면 매도(셀) 후보입니다. 복합 전략: PSAR+ADX.",
     higher:
       "종가 > SAR이면 상승 추세·롱 우위. SAR을 손절·트레일 스탑 참고로 씁니다.",
     lower:
       "종가 < SAR이면 하락 추세·숏 우위. 횡보장에서는 신호가 잦아 휩쏘가 많습니다.",
     worksWith:
-      "EMA60·슈퍼트렌드(추세 필터), ADX(추세 강도), 거래량 전략. ADX가 낮을 때 SAR 단독 진입은 피하세요.",
+      "PSAR+ADX 전략, EMA60·슈퍼트렌드, ATR(×2 트레일). ADX가 낮을 때 SAR 단독 진입은 피하세요.",
     tip: "기본 step 0.02 / max 0.2입니다. step이 클수록 SAR이 가격에 빨리 달라붙습니다.",
   },
   cci: {
@@ -204,13 +206,13 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     summary:
       "가격이 통계적 평균에서 얼마나 벗어났는지 보는 오실레이터입니다. ±100을 과매수·과매도 참고로 씁니다.",
     howToFind:
-      "사이드바 보조 지표에서 CCI를 켜세요. +100/−100 참고선이 있습니다. 0선 위·아래와 ±100 돌파·이탈을 봅니다.",
+      "사이드바 보조 지표에서 CCI를 켜세요. +100/−100 참고선이 있습니다. 0선 위·아래와 ±100 돌파·이탈을 봅니다. 복합 전략: 켈트너+CCI, %B평균회귀.",
     higher:
       "CCI가 +100 위면 단기 과열·강한 상승, −100을 상향 돌파하면 과매도 탈출·반등 후보로 봅니다.",
     lower:
       "CCI가 −100 아래면 단기 과매도·강한 하락, +100을 하향 이탈하면 과열 해소·조정 후보로 봅니다.",
     worksWith:
-      "RSI/MFI(과열 확인), ADX·슈퍼트렌드(추세 필터), 볼린저. 추세장에서는 ±100 돌파를 추세 지속으로 읽기도 합니다.",
+      "켈트너+CCI(돌파)·%B평균회귀(되돌림), RSI/MFI, ADX·슈퍼트렌드. 추세장에서는 ±100 돌파를 추세 지속으로 읽기도 합니다.",
     tip: "기본 기간 20. 박스권에서는 ±100 왕복, 추세장에서는 한쪽에 오래 머물 수 있습니다.",
   },
   supertrend: {
@@ -218,13 +220,13 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     summary:
       "ATR 기반 트레일링 스탑으로 추세 방향을 보여 줍니다. TradingView에서 많이 쓰는 추세·손절 라인입니다.",
     howToFind:
-      "사이드바 보조 지표에서 슈퍼트렌드를 켜면 가격 차트에 선이 겹칩니다. 선이 가격 아래(초록)면 상승 추세, 위(빨강)면 하락 추세입니다. 선이 뒤집힐 때 추세 전환 후보입니다.",
+      "사이드바 보조 지표에서 슈퍼트렌드를 켜면 가격 차트에 선이 겹칩니다. 선이 가격 아래(초록)면 상승 추세, 위(빨강)면 하락 추세입니다. 선이 뒤집힐 때 추세 전환 후보입니다. 복합 전략: 슈퍼트렌드+ADX, OBV다이버전스+ST.",
     higher:
       "상승 추세(가격 > Supertrend)에서는 롱 우위·선을 트레일 손절로 참고합니다.",
     lower:
       "하락 추세(가격 < Supertrend)에서는 숏 우위. 횡보에서는 잦은 뒤집힘에 주의하세요.",
     worksWith:
-      "ADX(추세 강도), Parabolic SAR, EMA60, 거래량. ADX≥25일 때 슈퍼트렌드 방향 추종이 유리한 편입니다.",
+      "슈퍼트렌드+ADX·OBV다이버전스+ST 전략, Parabolic SAR, EMA60, 거래량. ADX≥25일 때 방향 추종이 유리한 편입니다.",
     tip: "기본 ATR 10 · multiplier 3. multiplier를 키우면 선이 멀어져 신호가 줄고, 줄이면 민감해집니다.",
   },
   ichimoku: {

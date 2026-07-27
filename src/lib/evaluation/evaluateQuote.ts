@@ -65,6 +65,10 @@ import {
   detectVolumeStrategies,
   type VolumeStrategyResult,
 } from "./volumeStrategies";
+import {
+  detectComboStrategies,
+  type ComboStrategyResult,
+} from "./comboStrategies";
 import { getIndicatorConfig } from "../configStore";
 import {
   EMPTY_SIGNAL_STATS,
@@ -88,6 +92,7 @@ export interface QuoteEvaluation {
   stochStrategies: StochStrategyResult | null;
   ichimokuStrategies: IchimokuStrategyResult | null;
   volumeStrategies: VolumeStrategyResult | null;
+  comboStrategies: ComboStrategyResult | null;
   /** Follow-through rates by pattern/strategy id (full prepared ticker window). */
   signalStats: SignalStatsBundle;
   warnings: string[];
@@ -162,6 +167,7 @@ export function evaluateQuote(
       stochStrategies: null,
       ichimokuStrategies: null,
       volumeStrategies: null,
+      comboStrategies: null,
       signalStats: EMPTY_SIGNAL_STATS,
       warnings,
       fatalError: "No OHLCV bars available",
@@ -350,6 +356,20 @@ export function evaluateQuote(
     }
   }
 
+  let comboStrategies: ComboStrategyResult | null = null;
+  if (!fatalError) {
+    try {
+      comboStrategies = detectComboStrategies(
+        prepared,
+        indicators,
+        fullLookback,
+      );
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
   const signalStats: SignalStatsBundle = {
     candlePattern: patterns?.stats ?? {},
     chartPattern: classicalPatterns?.stats ?? {},
@@ -360,6 +380,7 @@ export function evaluateQuote(
     stochStrategy: stochStrategies?.stats ?? {},
     ichimokuStrategy: ichimokuStrategies?.stats ?? {},
     volumeStrategy: volumeStrategies?.stats ?? {},
+    comboStrategy: comboStrategies?.stats ?? {},
   };
 
   return {
@@ -379,6 +400,7 @@ export function evaluateQuote(
     stochStrategies,
     ichimokuStrategies,
     volumeStrategies,
+    comboStrategies,
     signalStats,
     warnings,
     fatalError,

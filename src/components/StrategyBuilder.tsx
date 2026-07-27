@@ -29,6 +29,7 @@ export type PlaybookSource = {
   macdStrategies?: HitBag | null;
   stochStrategies?: HitBag | null;
   patternStrategies?: HitBag | null;
+  comboStrategies?: HitBag | null;
 };
 
 interface Props {
@@ -55,6 +56,7 @@ function collectSelectedSignals(
     { family: "macd", bag: evaluation.macdStrategies },
     { family: "stoch", bag: evaluation.stochStrategies },
     { family: "pattern", bag: evaluation.patternStrategies },
+    { family: "combo", bag: evaluation.comboStrategies },
   ];
 
   const out: PlaybookEntrySignal[] = [];

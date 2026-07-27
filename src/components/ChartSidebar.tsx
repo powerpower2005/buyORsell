@@ -49,6 +49,20 @@ import {
   setVolumeStrategyGroupVisible,
   setVolumeStrategyVisible,
 } from "@/lib/volumeStrategyStore";
+import { comboStrategyHelp } from "@/lib/comboStrategyHelp";
+import {
+  AUX_WITH_COMBO_STRATEGIES,
+  COMBO_STRATEGY_META,
+  comboStrategiesForAux,
+  comboStrategiesForBb,
+  comboStrategiesForVolume,
+  type ComboStrategyId,
+} from "@/lib/comboStrategyMeta";
+import {
+  getComboStrategyVisibility,
+  setComboStrategyIdsVisible,
+  setComboStrategyVisible,
+} from "@/lib/comboStrategyStore";
 import { macdStrategyHelp } from "@/lib/macdStrategyHelp";
 import {
   MACD_STRATEGY_META,
@@ -240,6 +254,62 @@ import {
 } from "@/lib/strategyConfluenceStore";
 
 const EMPTY_TRENDLINES: Trendline[] = [];
+
+/** Accordion keys for aux indicators that host nested combo strategies. */
+const AUX_COMBO_OPEN_KEYS: Record<
+  (typeof AUX_WITH_COMBO_STRATEGIES)[number],
+  { root: SidebarOpenKey; strategies: SidebarOpenKey }
+> = {
+  mfi: { root: "auxMfi", strategies: "auxMfiStrategies" },
+  atr: { root: "auxAtr", strategies: "auxAtrStrategies" },
+  obv: { root: "auxObv", strategies: "auxObvStrategies" },
+  keltner: { root: "auxKeltner", strategies: "auxKeltnerStrategies" },
+  vwap: { root: "auxVwap", strategies: "auxVwapStrategies" },
+  adx: { root: "auxAdx", strategies: "auxAdxStrategies" },
+  psar: { root: "auxPsar", strategies: "auxPsarStrategies" },
+  cci: { root: "auxCci", strategies: "auxCciStrategies" },
+  supertrend: {
+    root: "auxSupertrend",
+    strategies: "auxSupertrendStrategies",
+  },
+  bbPercentB: {
+    root: "auxBbPercentB",
+    strategies: "auxBbPercentBStrategies",
+  },
+};
+
+function ComboStrategyLeaves({
+  ids,
+  visibility,
+  stats,
+  bump,
+}: {
+  ids: ComboStrategyId[];
+  visibility: Record<ComboStrategyId, boolean>;
+  stats?: SignalStatsBundle | null;
+  bump: (fn: () => void) => void;
+}) {
+  return (
+    <>
+      {ids.map((id) => (
+        <Leaf
+          key={`combo-${id}`}
+          label={COMBO_STRATEGY_META[id].labelKo}
+          checked={visibility[id]}
+          rateStat={
+            stats?.comboStrategy[id] ?? {
+              samples: 0,
+              wins: 0,
+              ratePct: null,
+            }
+          }
+          help={comboStrategyHelp(id)}
+          onChange={(next) => bump(() => setComboStrategyVisible(id, next))}
+        />
+      ))}
+    </>
+  );
+}
 
 interface Props {
   /** Bumps when any visibility store changes (parent tick). */
@@ -593,6 +663,10 @@ export function ChartSidebar({
     () => getVolumeStrategyVisibility(),
     [refreshTick],
   );
+  const comboStratVis = useMemo(
+    () => getComboStrategyVisibility(),
+    [refreshTick],
+  );
   const macdStratVis = useMemo(
     () => getMacdStrategyVisibility(),
     [refreshTick],
@@ -678,7 +752,12 @@ export function ChartSidebar({
   const smaVals = smaPeriods.map((p) => smaVis[p]);
   const emaVals = emaPeriods.map((p) => emaVis[p]);
   const bbVals = BB_BAND_ORDER.map((band) => bbVis[band]);
-  const bbStratVals = BB_STRATEGY_ORDER.map((id) => bbStratVis[id]);
+  const bbComboIds = comboStrategiesForBb();
+  const volumeComboIds = comboStrategiesForVolume();
+  const bbStratVals = [
+    ...BB_STRATEGY_ORDER.map((id) => bbStratVis[id]),
+    ...bbComboIds.map((id) => comboStratVis[id]),
+  ];
   const allCatalogVals = STRATEGY_CATALOG.map(
     (entry) => catalogVis[entry.family][entry.id] ?? false,
   );
@@ -716,7 +795,10 @@ export function ChartSidebar({
   const rsiStratVals = RSI_STRATEGY_ORDER.map((id) => rsiStratVis[id]);
   const rsiStratState = groupState(rsiStratVals);
   const rsiRootState = groupState([auxVis.rsi, ...rsiStratVals]);
-  const volumeStratVals = VOLUME_STRATEGY_ORDER.map((id) => volumeStratVis[id]);
+  const volumeStratVals = [
+    ...VOLUME_STRATEGY_ORDER.map((id) => volumeStratVis[id]),
+    ...volumeComboIds.map((id) => comboStratVis[id]),
+  ];
   const volumeStratState = groupState(volumeStratVals);
   const volumeRootState = groupState([volumeVis, ...volumeStratVals]);
   const macdStratVals = MACD_STRATEGY_ORDER.map((id) => macdStratVis[id]);
@@ -728,7 +810,11 @@ export function ChartSidebar({
   const auxOtherIds = AUX_INDICATOR_ORDER.filter(
     (id) => id !== "rsi" && id !== "macd" && id !== "stoch",
   );
-  const auxOtherState = groupState(auxOtherIds.map((id) => auxVis[id]));
+  const auxOtherVals = auxOtherIds.flatMap((id) => {
+    const comboIds = comboStrategiesForAux(id);
+    return [auxVis[id], ...comboIds.map((cid) => comboStratVis[cid])];
+  });
+  const auxOtherState = groupState(auxOtherVals);
   const classicalRootState = groupState([
     ...CHART_PATTERN_ORDER.map((id) => classicalPatternVis[id]),
     ...PATTERN_STRATEGY_ORDER.map((id) => patternStratVis[id]),
@@ -1012,6 +1098,7 @@ export function ChartSidebar({
             bump(() => {
               setBbOverlayGroupVisible(next);
               setBbStrategyGroupVisible(next);
+              setComboStrategyIdsVisible(bbComboIds, next);
             })
           }
         >
@@ -1056,7 +1143,10 @@ export function ChartSidebar({
               indeterminate={bbStratState.indeterminate}
               help={CHART_LAYER_HELP.bbStrategies}
               onToggleAll={(next) =>
-                bump(() => setBbStrategyGroupVisible(next))
+                bump(() => {
+                  setBbStrategyGroupVisible(next);
+                  setComboStrategyIdsVisible(bbComboIds, next);
+                })
               }
             >
               {BB_STRATEGY_ORDER.map((id: BbStrategyId) => (
@@ -1077,6 +1167,12 @@ export function ChartSidebar({
                   }
                 />
               ))}
+              <ComboStrategyLeaves
+                ids={bbComboIds}
+                visibility={comboStratVis}
+                stats={stats}
+                bump={bump}
+              />
             </Group>
         </Group>
 
@@ -1174,6 +1270,7 @@ export function ChartSidebar({
             bump(() => {
               setVolumeOverlayVisible(next);
               setVolumeStrategyGroupVisible(next);
+              setComboStrategyIdsVisible(volumeComboIds, next);
             })
           }
         >
@@ -1192,7 +1289,10 @@ export function ChartSidebar({
             indeterminate={volumeStratState.indeterminate}
             help={CHART_LAYER_HELP.volumeStrategies}
             onToggleAll={(next) =>
-              bump(() => setVolumeStrategyGroupVisible(next))
+              bump(() => {
+                setVolumeStrategyGroupVisible(next);
+                setComboStrategyIdsVisible(volumeComboIds, next);
+              })
             }
           >
             {VOLUME_STRATEGY_ORDER.map((id: VolumeStrategyId) => (
@@ -1213,6 +1313,12 @@ export function ChartSidebar({
                 }
               />
             ))}
+            <ComboStrategyLeaves
+              ids={volumeComboIds}
+              visibility={comboStratVis}
+              stats={stats}
+              bump={bump}
+            />
           </Group>
         </Group>
 
@@ -1694,6 +1800,10 @@ export function ChartSidebar({
             bump(() => {
               for (const id of auxOtherIds) {
                 setAuxIndicatorVisible(id, next);
+                const comboIds = comboStrategiesForAux(id);
+                if (comboIds.length) {
+                  setComboStrategyIdsVisible(comboIds, next);
+                }
               }
             })
           }
@@ -1713,21 +1823,87 @@ export function ChartSidebar({
                     id === "supertrend"
                   ? id
                   : null;
+            const comboIds = comboStrategiesForAux(id);
+            if (!comboIds.length) {
+              return (
+                <Leaf
+                  key={id}
+                  label={AUX_INDICATOR_META[id].labelKo}
+                  checked={auxVis[id]}
+                  help={auxHelp(id)}
+                  onChange={(next) =>
+                    bump(() => setAuxIndicatorVisible(id, next))
+                  }
+                  onEdit={
+                    onEditIndicator && editSection
+                      ? () => onEditIndicator(editSection)
+                      : undefined
+                  }
+                />
+              );
+            }
+
+            const keys =
+              AUX_COMBO_OPEN_KEYS[id as keyof typeof AUX_COMBO_OPEN_KEYS];
+            const stratVals = comboIds.map((cid) => comboStratVis[cid]);
+            const stratState = groupState(stratVals);
+            const rootState = groupState([auxVis[id], ...stratVals]);
+
             return (
-              <Leaf
+              <Group
+                nested
                 key={id}
-                label={AUX_INDICATOR_META[id].labelKo}
-                checked={auxVis[id]}
+                title={AUX_INDICATOR_META[id].labelKo}
+                open={open[keys.root]}
+                onToggleOpen={() => toggleOpen(keys.root)}
+                checked={rootState.checked}
+                indeterminate={rootState.indeterminate}
                 help={auxHelp(id)}
-                onChange={(next) =>
-                  bump(() => setAuxIndicatorVisible(id, next))
-                }
                 onEdit={
                   onEditIndicator && editSection
                     ? () => onEditIndicator(editSection)
                     : undefined
                 }
-              />
+                onToggleAll={(next) =>
+                  bump(() => {
+                    setAuxIndicatorVisible(id, next);
+                    setComboStrategyIdsVisible(comboIds, next);
+                  })
+                }
+              >
+                <Leaf
+                  label="패널"
+                  checked={auxVis[id]}
+                  help={auxHelp(id)}
+                  onChange={(next) =>
+                    bump(() => setAuxIndicatorVisible(id, next))
+                  }
+                  onEdit={
+                    onEditIndicator && editSection
+                      ? () => onEditIndicator(editSection)
+                      : undefined
+                  }
+                />
+                <Group
+                  nested
+                  title="전략"
+                  open={open[keys.strategies]}
+                  onToggleOpen={() => toggleOpen(keys.strategies)}
+                  checked={stratState.checked}
+                  indeterminate={stratState.indeterminate}
+                  help={CHART_LAYER_HELP.comboStrategies}
+                  onToggleAll={(next) =>
+                    bump(() => setComboStrategyIdsVisible(comboIds, next))
+                  }
+                >
+                  <ComboStrategyLeaves
+                    ids={comboIds}
+                    visibility={comboStratVis}
+                    stats={stats}
+                    bump={bump}
+                  />
+                </Group>
+              </Group>
             );
           })}
         </Group>

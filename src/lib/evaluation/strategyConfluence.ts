@@ -65,6 +65,7 @@ export function collectStrategyHits(ev: QuoteEvaluation): StrategyHitRef[] {
   pushHits(out, "macd", ev.macdStrategies);
   pushHits(out, "stoch", ev.stochStrategies);
   pushHits(out, "pattern", ev.patternStrategies);
+  pushHits(out, "combo", ev.comboStrategies);
   return out;
 }
 

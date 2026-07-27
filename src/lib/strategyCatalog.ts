@@ -86,6 +86,17 @@ import {
   setVolumeStrategyVisible,
 } from "./volumeStrategyStore";
 import { volumeStrategyHelp } from "./volumeStrategyHelp";
+import {
+  COMBO_STRATEGY_META,
+  COMBO_STRATEGY_ORDER,
+  type ComboStrategyId,
+} from "./comboStrategyMeta";
+import {
+  getComboStrategyVisibility,
+  setComboStrategyGroupVisible,
+  setComboStrategyVisible,
+} from "./comboStrategyStore";
+import { comboStrategyHelp } from "./comboStrategyHelp";
 
 export type StrategyFamilyId =
   | "bb"
@@ -94,7 +105,8 @@ export type StrategyFamilyId =
   | "rsi"
   | "macd"
   | "stoch"
-  | "pattern";
+  | "pattern"
+  | "combo";
 
 /** Sidebar accordion keys for nested groups under 「전체 전략」. */
 export type StrategyCatalogOpenKey =
@@ -104,7 +116,8 @@ export type StrategyCatalogOpenKey =
   | "allStrategiesRsi"
   | "allStrategiesMacd"
   | "allStrategiesStoch"
-  | "allStrategiesPattern";
+  | "allStrategiesPattern"
+  | "allStrategiesCombo";
 
 export const STRATEGY_FAMILY_ORDER: StrategyFamilyId[] = [
   "bb",
@@ -114,6 +127,7 @@ export const STRATEGY_FAMILY_ORDER: StrategyFamilyId[] = [
   "macd",
   "stoch",
   "pattern",
+  "combo",
 ];
 
 export const STRATEGY_FAMILY_META: Record<
@@ -158,6 +172,11 @@ export const STRATEGY_FAMILY_META: Record<
     label: "Chart pattern",
     labelKo: "차트 패턴",
     catalogOpenKey: "allStrategiesPattern",
+  },
+  combo: {
+    label: "Combo",
+    labelKo: "복합 지표",
+    catalogOpenKey: "allStrategiesCombo",
   },
 };
 
@@ -214,6 +233,7 @@ export const STRATEGY_CATALOG: StrategyCatalogEntry[] = [
     PATTERN_STRATEGY_ORDER,
     PATTERN_STRATEGY_META,
   ),
+  ...entriesFromFamily("combo", COMBO_STRATEGY_ORDER, COMBO_STRATEGY_META),
 ];
 
 export function filterStrategyCatalog(
@@ -263,6 +283,7 @@ export function getCatalogStrategyVisibility(): StrategyVisibilityByFamily {
     macd: getMacdStrategyVisibility(),
     stoch: getStochStrategyVisibility(),
     pattern: getPatternStrategyVisibility(),
+    combo: getComboStrategyVisibility(),
   };
 }
 
@@ -293,6 +314,9 @@ export function setCatalogStrategyVisible(
     case "pattern":
       setPatternStrategyVisible(id as PatternStrategyId, visible);
       break;
+    case "combo":
+      setComboStrategyVisible(id as ComboStrategyId, visible);
+      break;
   }
 }
 
@@ -322,6 +346,9 @@ export function setCatalogFamilyVisible(
     case "pattern":
       setPatternStrategyGroupVisible(visible);
       break;
+    case "combo":
+      setComboStrategyGroupVisible(visible);
+      break;
   }
 }
 
@@ -339,6 +366,7 @@ const STATS_KEY: Record<StrategyFamilyId, keyof SignalStatsBundle> = {
   macd: "macdStrategy",
   stoch: "stochStrategy",
   pattern: "patternStrategy",
+  combo: "comboStrategy",
 };
 
 const EMPTY_STAT: SignalStat = { samples: 0, wins: 0, ratePct: null };
@@ -371,5 +399,7 @@ export function getCatalogStrategyHelp(
       return stochStrategyHelp(id as StochStrategyId);
     case "pattern":
       return patternStrategyHelp(id as PatternStrategyId);
+    case "combo":
+      return comboStrategyHelp(id as ComboStrategyId);
   }
 }
