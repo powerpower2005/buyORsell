@@ -103,7 +103,7 @@ export const COMBO_STRATEGY_META: Record<
 };
 
 /** Aux ids that host nested 「전략」 under 보조 지표. */
-export const AUX_WITH_COMBO_STRATEGIES: AuxIndicatorId[] = [
+export const AUX_WITH_COMBO_STRATEGIES = [
   "mfi",
   "atr",
   "obv",
@@ -114,7 +114,15 @@ export const AUX_WITH_COMBO_STRATEGIES: AuxIndicatorId[] = [
   "cci",
   "supertrend",
   "bbPercentB",
-];
+] as const;
+
+export type AuxWithComboStrategies = (typeof AUX_WITH_COMBO_STRATEGIES)[number];
+
+export function isAuxWithComboStrategies(
+  id: AuxIndicatorId,
+): id is AuxWithComboStrategies {
+  return (AUX_WITH_COMBO_STRATEGIES as readonly string[]).includes(id);
+}
 
 export function comboStrategiesForAux(
   auxId: AuxIndicatorId,

@@ -51,11 +51,12 @@ import {
 } from "@/lib/volumeStrategyStore";
 import { comboStrategyHelp } from "@/lib/comboStrategyHelp";
 import {
-  AUX_WITH_COMBO_STRATEGIES,
   COMBO_STRATEGY_META,
   comboStrategiesForAux,
   comboStrategiesForBb,
   comboStrategiesForVolume,
+  isAuxWithComboStrategies,
+  type AuxWithComboStrategies,
   type ComboStrategyId,
 } from "@/lib/comboStrategyMeta";
 import {
@@ -257,7 +258,7 @@ const EMPTY_TRENDLINES: Trendline[] = [];
 
 /** Accordion keys for aux indicators that host nested combo strategies. */
 const AUX_COMBO_OPEN_KEYS: Record<
-  (typeof AUX_WITH_COMBO_STRATEGIES)[number],
+  AuxWithComboStrategies,
   { root: SidebarOpenKey; strategies: SidebarOpenKey }
 > = {
   mfi: { root: "auxMfi", strategies: "auxMfiStrategies" },
@@ -1824,7 +1825,7 @@ export function ChartSidebar({
                   ? id
                   : null;
             const comboIds = comboStrategiesForAux(id);
-            if (!comboIds.length) {
+            if (!isAuxWithComboStrategies(id) || !comboIds.length) {
               return (
                 <Leaf
                   key={id}
@@ -1843,8 +1844,7 @@ export function ChartSidebar({
               );
             }
 
-            const keys =
-              AUX_COMBO_OPEN_KEYS[id as keyof typeof AUX_COMBO_OPEN_KEYS];
+            const keys = AUX_COMBO_OPEN_KEYS[id];
             const stratVals = comboIds.map((cid) => comboStratVis[cid]);
             const stratState = groupState(stratVals);
             const rootState = groupState([auxVis[id], ...stratVals]);
