@@ -90,6 +90,10 @@ import {
   visibleComboStrategyLegend,
 } from "@/lib/chart/comboStrategyMarkers";
 import {
+  buildStrategyMarkerTooltips,
+  type MarkerTooltip,
+} from "@/lib/chart/markerTooltips";
+import {
   macdStrategiesToChartMarkers,
   visibleMacdStrategyLegend,
 } from "@/lib/chart/macdStrategyMarkers";
@@ -400,6 +404,14 @@ export function CandleChart({
 
   const [pickHint, setPickHint] = useState<string | null>(null);
   const [hoverOhlcv, setHoverOhlcv] = useState<OhlcvReadout | null>(null);
+  const [markerHover, setMarkerHover] = useState<{
+    x: number;
+    y: number;
+    tip: MarkerTooltip;
+  } | null>(null);
+  const markerTooltipsRef = useRef<Map<string, MarkerTooltip>>(new Map());
+  const setMarkerHoverRef = useRef(setMarkerHover);
+  setMarkerHoverRef.current = setMarkerHover;
 
   const ohlcvReadout = useMemo((): OhlcvReadout | null => {
     if (hoverOhlcv) return hoverOhlcv;
@@ -418,6 +430,26 @@ export function CandleChart({
   }, [hoverOhlcv, bars]);
 
   const chartMarkers = useMemo(() => {
+    const bbVis =
+      chartBbStrategyVisibility ?? ({} as Record<BbStrategyId, boolean>);
+    const rsiVis =
+      chartRsiStrategyVisibility ?? ({} as Record<RsiStrategyId, boolean>);
+    const volumeVisMap =
+      chartVolumeStrategyVisibility ??
+      ({} as Record<VolumeStrategyId, boolean>);
+    const comboVis =
+      chartComboStrategyVisibility ?? ({} as Record<ComboStrategyId, boolean>);
+    const macdVis =
+      chartMacdStrategyVisibility ?? ({} as Record<MacdStrategyId, boolean>);
+    const stochVis =
+      chartStochStrategyVisibility ?? ({} as Record<StochStrategyId, boolean>);
+    const ichiVis =
+      chartIchimokuStrategyVisibility ??
+      ({} as Record<IchimokuStrategyId, boolean>);
+    const patternVisMap =
+      chartPatternStrategyVisibility ??
+      ({} as Record<PatternStrategyId, boolean>);
+
     const patternMs = patternsToChartMarkers(
       patterns,
       chartPatternVisibility ?? ({} as Record<CandlePatternId, boolean>),
@@ -426,10 +458,7 @@ export function CandleChart({
       structure,
       chartStructureVisibility ?? ({} as Record<SwingChartToggleId, boolean>),
     );
-    const bbStratMs = bbStrategiesToChartMarkers(
-      bbStrategies,
-      chartBbStrategyVisibility ?? ({} as Record<BbStrategyId, boolean>),
-    );
+    const bbStratMs = bbStrategiesToChartMarkers(bbStrategies, bbVis);
     const classicalMs = classicalPatternsToChartMarkers(
       classicalPatterns,
       chartClassicalPatternVisibility ??
@@ -437,41 +466,39 @@ export function CandleChart({
     );
     const patternStratMs = patternStrategiesToChartMarkers(
       patternStrategies,
-      chartPatternStrategyVisibility ??
-        ({} as Record<PatternStrategyId, boolean>),
+      patternVisMap,
     );
-    const rsiStratMs = rsiStrategiesToChartMarkers(
-      rsiStrategies,
-      chartRsiStrategyVisibility ?? ({} as Record<RsiStrategyId, boolean>),
-    );
+    const rsiStratMs = rsiStrategiesToChartMarkers(rsiStrategies, rsiVis);
     const volumeStratMs = volumeStrategiesToChartMarkers(
       volumeStrategies,
-      chartVolumeStrategyVisibility ??
-        ({} as Record<VolumeStrategyId, boolean>),
+      volumeVisMap,
     );
-    const comboStratMs = comboStrategiesToChartMarkers(
-      comboStrategies,
-      chartComboStrategyVisibility ??
-        ({} as Record<ComboStrategyId, boolean>),
-    );
-    const macdStratMs = macdStrategiesToChartMarkers(
-      macdStrategies,
-      chartMacdStrategyVisibility ?? ({} as Record<MacdStrategyId, boolean>),
-    );
-    const stochStratMs = stochStrategiesToChartMarkers(
-      stochStrategies,
-      chartStochStrategyVisibility ?? ({} as Record<StochStrategyId, boolean>),
-    );
+    const comboStratMs = comboStrategiesToChartMarkers(comboStrategies, comboVis);
+    const macdStratMs = macdStrategiesToChartMarkers(macdStrategies, macdVis);
+    const stochStratMs = stochStrategiesToChartMarkers(stochStrategies, stochVis);
     const ichiStratMs = ichimokuStrategiesToChartMarkers(
       ichimokuStrategies,
-      chartIchimokuStrategyVisibility ??
-        ({} as Record<IchimokuStrategyId, boolean>),
+      ichiVis,
     );
     const journalMs = tradeJournalToChartMarkers(journalEntries);
     const confluenceMs = strategyConfluencesToChartMarkers(
       strategyConfluences,
       showStrategyConfluence,
     );
+
+    markerTooltipsRef.current = buildStrategyMarkerTooltips({
+      bb: { hits: bbStrategies?.recent, visibility: bbVis },
+      rsi: { hits: rsiStrategies?.recent, visibility: rsiVis },
+      macd: { hits: macdStrategies?.recent, visibility: macdVis },
+      stoch: { hits: stochStrategies?.recent, visibility: stochVis },
+      volume: { hits: volumeStrategies?.recent, visibility: volumeVisMap },
+      combo: { hits: comboStrategies?.recent, visibility: comboVis },
+      ichimoku: { hits: ichimokuStrategies?.recent, visibility: ichiVis },
+      pattern: { hits: patternStrategies?.recent, visibility: patternVisMap },
+      confluences: strategyConfluences,
+      showConfluence: showStrategyConfluence,
+    });
+
     return [
       ...patternMs,
       ...structureMs,
@@ -1078,8 +1105,29 @@ export function CandleChart({
         param.point.y < 0
       ) {
         setHoverOhlcv(null);
+        setMarkerHoverRef.current(null);
         return;
       }
+
+      const hovered = param.hoveredInfo;
+      if (
+        hovered?.objectKind === "series-marker" &&
+        hovered.objectId != null
+      ) {
+        const tip = markerTooltipsRef.current.get(String(hovered.objectId));
+        if (tip) {
+          setMarkerHoverRef.current({
+            x: param.point.x,
+            y: param.point.y,
+            tip,
+          });
+        } else {
+          setMarkerHoverRef.current(null);
+        }
+      } else {
+        setMarkerHoverRef.current(null);
+      }
+
       const candleData = param.seriesData.get(candles);
       if (!isCandleData(candleData)) {
         setHoverOhlcv(null);
@@ -1175,6 +1223,7 @@ export function CandleChart({
       oscSeriesRefs.current = new Map();
       fittedBarsKeyRef.current = "";
       setHoverOhlcv(null);
+      setMarkerHoverRef.current(null);
     };
     // recreate chart on timeframe only; overlay redraw bound via other deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -2454,6 +2503,30 @@ export function CandleChart({
             className="pointer-events-none absolute inset-0 z-[1]"
             aria-hidden
           />
+          {markerHover && (
+            <div
+              className="pointer-events-none absolute z-[3] max-w-[240px] rounded-md border border-border/80 bg-bg/95 px-2.5 py-1.5 text-left shadow-lg backdrop-blur-[2px]"
+              style={{
+                left: Math.min(
+                  markerHover.x + 14,
+                  (wrapRef.current?.clientWidth ?? 320) - 250,
+                ),
+                top: Math.max(8, markerHover.y - 8),
+              }}
+            >
+              <p className="text-[11px] font-semibold text-text-primary">
+                {markerHover.tip.title}
+              </p>
+              {markerHover.tip.lines.map((line) => (
+                <p
+                  key={line}
+                  className="mt-0.5 text-[10px] leading-snug text-text-secondary"
+                >
+                  {line}
+                </p>
+              ))}
+            </div>
+          )}
           {ohlcvReadout && (
             <div
               className="pointer-events-none absolute left-2 top-2 z-[2] rounded bg-black/55 px-2.5 py-1.5 text-[11px] leading-relaxed text-text-secondary backdrop-blur-[2px]"

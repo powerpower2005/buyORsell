@@ -2,6 +2,10 @@ import {
   MACD_STRATEGY_ORDER,
   type MacdStrategyId,
 } from "./macdStrategyMeta";
+import {
+  enableIndicatorsForStrategy,
+  enableIndicatorsForStrategies,
+} from "./strategyIndicatorDeps";
 
 const STORAGE_KEY = "gf:config:macd-strategies";
 
@@ -37,6 +41,7 @@ export function setMacdStrategyVisible(
   const overrides = loadOverrides();
   overrides[id] = visible;
   saveOverrides(overrides);
+  if (visible) enableIndicatorsForStrategy("macd", id);
 }
 
 export function setMacdStrategyGroupVisible(visible: boolean): void {
@@ -45,4 +50,5 @@ export function setMacdStrategyGroupVisible(visible: boolean): void {
     overrides[id] = visible;
   }
   saveOverrides(overrides);
+  if (visible) enableIndicatorsForStrategies("macd", MACD_STRATEGY_ORDER);
 }

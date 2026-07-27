@@ -2,6 +2,10 @@ import {
   PATTERN_STRATEGY_ORDER,
   type PatternStrategyId,
 } from "./patternStrategyMeta";
+import {
+  enableIndicatorsForStrategy,
+  enableIndicatorsForStrategies,
+} from "./strategyIndicatorDeps";
 
 const STORAGE_KEY = "gf:config:pattern-strategies";
 
@@ -40,6 +44,7 @@ export function setPatternStrategyVisible(
   const overrides = loadOverrides();
   overrides[id] = visible;
   saveOverrides(overrides);
+  if (visible) enableIndicatorsForStrategy("pattern", id);
 }
 
 export function setPatternStrategyGroupVisible(visible: boolean): void {
@@ -48,4 +53,7 @@ export function setPatternStrategyGroupVisible(visible: boolean): void {
     overrides[id] = visible;
   }
   saveOverrides(overrides);
+  if (visible) {
+    enableIndicatorsForStrategies("pattern", PATTERN_STRATEGY_ORDER);
+  }
 }
