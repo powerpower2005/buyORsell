@@ -548,7 +548,12 @@ export function BrowsePage() {
                     snapshot={evaluation!.volume}
                     timeframe={selected.timeframe as Timeframe}
                   />
-                  {evaluation!.score && <ScoreCard score={evaluation!.score} />}
+                  {evaluation!.score && (
+                    <ScoreCard
+                      score={evaluation!.score}
+                      timeframe={selected.timeframe as Timeframe}
+                    />
+                  )}
                   <IndicatorPanel results={evaluation!.indicators} />
                   {evaluation!.structure && (
                     <SwingStructurePanel structure={evaluation!.structure} />

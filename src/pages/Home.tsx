@@ -614,7 +614,9 @@ export function HomePage() {
                     snapshot={evaluation!.volume}
                     timeframe={timeframe}
                   />
-                  {evaluation!.score && <ScoreCard score={evaluation!.score} />}
+                  {evaluation!.score && (
+                    <ScoreCard score={evaluation!.score} timeframe={timeframe} />
+                  )}
                   <IndicatorPanel results={evaluation!.indicators} />
                   {evaluation!.structure && (
                     <SwingStructurePanel structure={evaluation!.structure} />
