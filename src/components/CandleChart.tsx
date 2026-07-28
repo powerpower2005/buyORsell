@@ -384,31 +384,29 @@ export function CandleChart({
     mainHeight + volumePaneHeight + oscExtraHeight(oscPanes);
   const latestVolume = bars.length ? bars[bars.length - 1]!.volume : undefined;
 
-  /** Labels drawn on each secondary pane so stacked oscillators stay identifiable. */
-  const secondaryPaneLabels = useMemo(() => {
-    const labels: { key: string; top: number; title: string; detail?: string }[] =
-      [];
-    let top = mainHeight;
+  /** Label content for secondary panes (tops measured from live pane DOM). */
+  const secondaryPaneLabelMeta = useMemo(() => {
+    const labels: { key: string; title: string; detail?: string }[] = [];
     if (showVolume) {
       labels.push({
         key: "volume",
-        top: top + 4,
         title: "거래량",
         detail: fmtVolume(latestVolume),
       });
-      top += VOLUME_PANE_HEIGHT;
     }
     for (const pane of oscPanes) {
       labels.push({
         key: pane.id,
-        top: top + 4,
         title: pane.title,
         detail: pane.latest,
       });
-      top += pane.height;
     }
     return labels;
-  }, [mainHeight, showVolume, oscPanes, latestVolume]);
+  }, [showVolume, oscPanes, latestVolume]);
+
+  const [paneLabelTops, setPaneLabelTops] = useState<Record<string, number>>(
+    {},
+  );
 
   // Mutable refs so event handlers always read fresh values without re-subscribing
   const barsRef = useRef<OHLCVBar[]>(bars);
@@ -2075,6 +2073,99 @@ export function CandleChart({
     totalHeight,
   ]);
 
+  // Keep pane name tags aligned when the user drags pane separators.
+  useEffect(() => {
+    const measure = () => {
+      const chart = chartRef.current;
+      const wrap = wrapRef.current;
+      if (!chart || !wrap) return;
+      const wrapTop = wrap.getBoundingClientRect().top;
+      const panes = chart.panes();
+      const next: Record<string, number> = {};
+      let paneIndex = 1;
+      if (showVolume) {
+        const el = panes[paneIndex]?.getHTMLElement();
+        if (el) {
+          next.volume = el.getBoundingClientRect().top - wrapTop + 4;
+        }
+        paneIndex += 1;
+      }
+      oscPanes.forEach((pane, i) => {
+        const el = panes[paneIndex + i]?.getHTMLElement();
+        if (el) {
+          next[pane.id] = el.getBoundingClientRect().top - wrapTop + 4;
+        }
+      });
+      setPaneLabelTops((prev) => {
+        const keys = Object.keys(next);
+        if (
+          keys.length === Object.keys(prev).length &&
+          keys.every((k) => prev[k] === next[k])
+        ) {
+          return prev;
+        }
+        return next;
+      });
+    };
+
+    measure();
+    const raf = requestAnimationFrame(measure);
+
+    const chart = chartRef.current;
+    const observed = new Set<Element>();
+    const ro = new ResizeObserver(() => measure());
+    if (wrapRef.current) {
+      ro.observe(wrapRef.current);
+      observed.add(wrapRef.current);
+    }
+    if (chart) {
+      for (const pane of chart.panes()) {
+        const el = pane.getHTMLElement();
+        if (el && !observed.has(el)) {
+          ro.observe(el);
+          observed.add(el);
+        }
+      }
+    }
+
+    // Separator drag updates heights continuously; poll while pointer is down.
+    const wrap = wrapRef.current;
+    let dragging = false;
+    let rafLoop = 0;
+    const onPointerDown = (e: PointerEvent) => {
+      const t = e.target;
+      if (!(t instanceof Element)) return;
+      // Pane separators live inside the chart; any drag on chart can resize panes.
+      if (!containerRef.current?.contains(t)) return;
+      dragging = true;
+      const tick = () => {
+        if (!dragging) return;
+        measure();
+        rafLoop = requestAnimationFrame(tick);
+      };
+      cancelAnimationFrame(rafLoop);
+      rafLoop = requestAnimationFrame(tick);
+    };
+    const stopDrag = () => {
+      if (!dragging) return;
+      dragging = false;
+      cancelAnimationFrame(rafLoop);
+      measure();
+    };
+    wrap?.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointerup", stopDrag);
+    window.addEventListener("pointercancel", stopDrag);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      cancelAnimationFrame(rafLoop);
+      ro.disconnect();
+      wrap?.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointerup", stopDrag);
+      window.removeEventListener("pointercancel", stopDrag);
+    };
+  }, [oscPanes, showVolume, totalHeight, timeframe, mainHeight]);
+
   const overlayLegend = useMemo(() => {
     if (!indicators) return [];
     const items: { label: string; color: string }[] = [];
@@ -2624,25 +2715,29 @@ export function CandleChart({
               </div>
             </div>
           )}
-          {secondaryPaneLabels.map((label) => (
-            <div
-              key={label.key}
-              className="pointer-events-none absolute left-2 z-[2] max-w-[min(100%,220px)] truncate rounded bg-black/50 px-1.5 py-0.5 text-[10px] font-medium text-text-primary backdrop-blur-[2px]"
-              style={{ top: label.top }}
-              title={
-                label.detail
-                  ? `${label.title} ${label.detail}`
-                  : label.title
-              }
-            >
-              <span>{label.title}</span>
-              {label.detail != null && label.detail !== "" && (
-                <span className="ml-1.5 tabular-nums font-normal text-text-tertiary">
-                  {label.detail}
-                </span>
-              )}
-            </div>
-          ))}
+          {secondaryPaneLabelMeta.map((label) => {
+            const top = paneLabelTops[label.key];
+            if (top == null) return null;
+            return (
+              <div
+                key={label.key}
+                className="pointer-events-none absolute left-2 z-[2] max-w-[min(100%,220px)] truncate rounded bg-black/50 px-1.5 py-0.5 text-[10px] font-medium text-text-primary backdrop-blur-[2px]"
+                style={{ top }}
+                title={
+                  label.detail
+                    ? `${label.title} ${label.detail}`
+                    : label.title
+                }
+              >
+                <span>{label.title}</span>
+                {label.detail != null && label.detail !== "" && (
+                  <span className="ml-1.5 tabular-nums font-normal text-text-tertiary">
+                    {label.detail}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         <div className="mt-3 space-y-2 border-t border-border pt-3">
