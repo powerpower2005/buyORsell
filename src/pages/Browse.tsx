@@ -7,6 +7,7 @@ import { StrategyBuilder } from "@/components/StrategyBuilder";
 import { listJournalEntries } from "@/lib/tradeJournalStore";
 import { confluencesFromEvaluation } from "@/lib/evaluation/strategyConfluence";
 import { isStrategyConfluenceVisible } from "@/lib/strategyConfluenceStore";
+import { buildStrategyRecencyMap } from "@/lib/strategyRecency";
 import { validateFreshness } from "@/lib/validation";
 import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
 import {
@@ -300,6 +301,11 @@ export function BrowsePage() {
     [evaluation],
   );
 
+  const strategyRecency = useMemo(
+    () => buildStrategyRecencyMap(evaluation),
+    [evaluation],
+  );
+
   const trendlineIdsKey = evaluation?.trendlines
     ? [
         ...evaluation.trendlines.ascending.map((l) => l.id),
@@ -531,6 +537,7 @@ export function BrowsePage() {
                     }}
                     trendlines={evaluation!.trendlines}
                     signalStats={evaluation!.signalStats}
+                    strategyRecency={strategyRecency}
                   />
                 </div>
                 <IndicatorConfigModal

@@ -253,8 +253,25 @@ import {
   isStrategyConfluenceVisible,
   setStrategyConfluenceVisible,
 } from "@/lib/strategyConfluenceStore";
+import {
+  formatStrategyRecencyLabel,
+  isWithinRecentWindow,
+  strategyRecencyKey,
+  strategyRecencyTitle,
+  type StrategyRecency,
+} from "@/lib/strategyRecency";
+import {
+  clampRecentBars,
+  getStrategyRecentBars,
+  getStrategyRecentOnly,
+  MAX_RECENT_BARS,
+  MIN_RECENT_BARS,
+  setStrategyRecentBars,
+  setStrategyRecentOnly,
+} from "@/lib/strategyRecencyFilterStore";
 
 const EMPTY_TRENDLINES: Trendline[] = [];
+const EMPTY_STRATEGY_RECENCY = new Map<string, StrategyRecency>();
 
 /** Accordion keys for aux indicators that host nested combo strategies. */
 const AUX_COMBO_OPEN_KEYS: Record<
@@ -283,11 +300,13 @@ function ComboStrategyLeaves({
   ids,
   visibility,
   stats,
+  recencyMap,
   bump,
 }: {
   ids: ComboStrategyId[];
   visibility: Record<ComboStrategyId, boolean>;
   stats?: SignalStatsBundle | null;
+  recencyMap?: ReadonlyMap<string, StrategyRecency> | null;
   bump: (fn: () => void) => void;
 }) {
   return (
@@ -304,6 +323,7 @@ function ComboStrategyLeaves({
               ratePct: null,
             }
           }
+          recency={recencyMap?.get(strategyRecencyKey("combo", id))}
           help={comboStrategyHelp(id)}
           onChange={(next) => bump(() => setComboStrategyVisible(id, next))}
         />
@@ -326,6 +346,8 @@ interface Props {
   trendlines?: TrendlineResult | null;
   /** Follow-through % for patterns/strategies on this ticker. */
   signalStats?: SignalStatsBundle | null;
+  /** Latest signal date per strategy (`family:id`). */
+  strategyRecency?: ReadonlyMap<string, StrategyRecency> | null;
   className?: string;
 }
 
@@ -490,6 +512,26 @@ function BiasBadge({ bias }: { bias: PatternBias }) {
   );
 }
 
+function RecencyBadge({ recency }: { recency: StrategyRecency }) {
+  const fresh = recency.barsAgo === 0;
+  const near = recency.barsAgo > 0 && recency.barsAgo <= 9;
+  return (
+    <span
+      className={clsx(
+        "shrink-0 rounded border px-1 py-px text-[10px] font-medium leading-none tabular-nums",
+        fresh
+          ? "border-accent/50 bg-accent/15 text-accent"
+          : near
+            ? "border-border bg-surface-elevated text-text-secondary"
+            : "border-border text-text-tertiary",
+      )}
+      title={strategyRecencyTitle(recency)}
+    >
+      {formatStrategyRecencyLabel(recency)}
+    </span>
+  );
+}
+
 function Leaf({
   label,
   checked,
@@ -498,6 +540,7 @@ function Leaf({
   hint,
   bias,
   rateStat,
+  recency,
   colorValue,
   onColorChange,
   colorOptions,
@@ -512,6 +555,8 @@ function Leaf({
   bias?: PatternBias;
   /** Historical follow-through on this ticker (pattern/strategy). */
   rateStat?: SignalStat;
+  /** Latest signal recency for strategy rows. */
+  recency?: StrategyRecency;
   colorValue?: string;
   onColorChange?: (color: string) => void;
   colorOptions?: readonly string[];
@@ -533,6 +578,7 @@ function Leaf({
             )}
             <span className="truncate">{label}</span>
             {bias && <BiasBadge bias={bias} />}
+            {recency && <RecencyBadge recency={recency} />}
             {rateStat != null && (
               <span
                 className={clsx(
@@ -592,27 +638,55 @@ export function ChartSidebar({
   onEditIndicator,
   trendlines,
   signalStats,
+  strategyRecency,
   className,
 }: Props) {
   const [open, setOpen] = useState<SidebarOpenState>(() => getSidebarOpenState());
   const [collapsed, setCollapsed] = useState(() => isChartSidebarCollapsed());
   const [strategyQuery, setStrategyQuery] = useState("");
+  const [recentOnly, setRecentOnlyState] = useState(() =>
+    getStrategyRecentOnly(),
+  );
+  const [recentBars, setRecentBarsState] = useState(() =>
+    getStrategyRecentBars(),
+  );
   const refreshTick = visibilityTick + configTick;
   const stats = signalStats ?? null;
+  const recencyMap = strategyRecency ?? EMPTY_STRATEGY_RECENCY;
   const tlAlgo = useMemo(() => getTrendlineAlgoVersion(), [refreshTick]);
   const catalogVis = useMemo(
     () => getCatalogStrategyVisibility(),
     [refreshTick],
   );
-  const filteredCatalog = useMemo(
-    () => filterStrategyCatalog(strategyQuery),
-    [strategyQuery],
-  );
+  const filteredCatalog = useMemo(() => {
+    let entries = filterStrategyCatalog(strategyQuery);
+    if (recentOnly) {
+      entries = entries.filter((entry) =>
+        isWithinRecentWindow(
+          recencyMap.get(strategyRecencyKey(entry.family, entry.id)),
+          recentBars,
+        ),
+      );
+    }
+    return entries;
+  }, [strategyQuery, recentOnly, recentBars, recencyMap]);
   const catalogGroups = useMemo(
     () => strategiesByFamily(filteredCatalog),
     [filteredCatalog],
   );
   const catalogSearching = strategyQuery.trim().length > 0;
+  const catalogFiltering = catalogSearching || recentOnly;
+
+  const setRecentOnlyPersisted = (next: boolean) => {
+    setStrategyRecentOnly(next);
+    setRecentOnlyState(next);
+  };
+
+  const setRecentBarsPersisted = (raw: number) => {
+    const next = clampRecentBars(raw);
+    setStrategyRecentBars(next);
+    setRecentBarsState(next);
+  };
 
   const smaCfg = useMemo(() => getIndicatorConfig("sma"), [refreshTick]);
   const emaCfg = useMemo(() => getIndicatorConfig("ema"), [refreshTick]);
@@ -913,8 +987,8 @@ export function ChartSidebar({
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         <Group
-          title={`전체 전략 (${STRATEGY_CATALOG.length})`}
-          open={open.allStrategies || catalogSearching}
+          title={`전체 전략 (${catalogFiltering ? `${filteredCatalog.length}/` : ""}${STRATEGY_CATALOG.length})`}
+          open={open.allStrategies || catalogFiltering}
           onToggleOpen={() => toggleOpen("allStrategies")}
           checked={allCatalogState.checked}
           indeterminate={allCatalogState.indeterminate}
@@ -923,7 +997,7 @@ export function ChartSidebar({
             bump(() => setAllCatalogStrategiesVisible(next))
           }
         >
-          <div className="px-1.5 pb-1.5">
+          <div className="space-y-1.5 px-1.5 pb-1.5">
             <input
               type="search"
               value={strategyQuery}
@@ -938,9 +1012,45 @@ export function ChartSidebar({
               aria-label="전략 검색"
               className="w-full rounded-md border border-border bg-bg px-2 py-1.5 text-[11px] text-text-primary placeholder:text-text-tertiary focus:border-accent/50 focus:outline-none"
             />
-            {catalogSearching && (
-              <p className="mt-1 text-[10px] text-text-tertiary">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <label className="inline-flex cursor-pointer items-center gap-1 text-[10px] text-text-secondary">
+                <input
+                  type="checkbox"
+                  checked={recentOnly}
+                  onChange={(e) => {
+                    const next = e.target.checked;
+                    setRecentOnlyPersisted(next);
+                    if (next && !open.allStrategies) {
+                      setOpen(toggleSidebarOpenKey("allStrategies"));
+                    }
+                  }}
+                  className="accent-accent"
+                />
+                최근만
+              </label>
+              <label className="inline-flex items-center gap-1 text-[10px] text-text-tertiary">
+                <span>N봉</span>
+                <input
+                  type="number"
+                  min={MIN_RECENT_BARS}
+                  max={MAX_RECENT_BARS}
+                  value={recentBars}
+                  onChange={(e) => {
+                    const n = Number(e.target.value);
+                    if (!Number.isFinite(n)) return;
+                    setRecentBarsPersisted(n);
+                  }}
+                  onBlur={() => setRecentBarsPersisted(recentBars)}
+                  aria-label="최근 시그널 봉 수"
+                  title={`최근 ${MIN_RECENT_BARS}~${MAX_RECENT_BARS}봉`}
+                  className="w-12 rounded border border-border bg-bg px-1 py-0.5 text-[11px] tabular-nums text-text-primary focus:border-accent/50 focus:outline-none"
+                />
+              </label>
+            </div>
+            {catalogFiltering && (
+              <p className="text-[10px] text-text-tertiary">
                 {filteredCatalog.length}개 일치
+                {recentOnly ? ` · 최근 ${recentBars}봉` : ""}
               </p>
             )}
           </div>
@@ -948,7 +1058,7 @@ export function ChartSidebar({
             const familyMeta = STRATEGY_FAMILY_META[family];
             const familyState = familyCatalogState(family);
             const familyOpen =
-              catalogSearching || open[familyMeta.catalogOpenKey];
+              catalogFiltering || open[familyMeta.catalogOpenKey];
             return (
               <Group
                 key={family}
@@ -972,6 +1082,9 @@ export function ChartSidebar({
                       entry.id,
                       stats,
                     )}
+                    recency={recencyMap.get(
+                      strategyRecencyKey(entry.family, entry.id),
+                    )}
                     help={getCatalogStrategyHelp(entry.family, entry.id)}
                     onChange={(next) =>
                       bump(() =>
@@ -989,7 +1102,9 @@ export function ChartSidebar({
           })}
           {catalogGroups.length === 0 && (
             <p className="px-1.5 text-[10px] text-text-tertiary">
-              검색 결과 없음
+              {recentOnly
+                ? `최근 ${recentBars}봉 시그널 없음`
+                : "검색 결과 없음"}
             </p>
           )}
           <Leaf
@@ -1162,6 +1277,7 @@ export function ChartSidebar({
                       ratePct: null,
                     }
                   }
+                  recency={recencyMap.get(strategyRecencyKey("bb", id))}
                   help={bbStrategyHelp(id)}
                   onChange={(next) =>
                     bump(() => setBbStrategyVisible(id, next))
@@ -1172,6 +1288,7 @@ export function ChartSidebar({
                 ids={bbComboIds}
                 visibility={comboStratVis}
                 stats={stats}
+                recencyMap={recencyMap}
                 bump={bump}
               />
             </Group>
@@ -1251,6 +1368,7 @@ export function ChartSidebar({
                     ratePct: null,
                   }
                 }
+                recency={recencyMap.get(strategyRecencyKey("ichimoku", id))}
                 help={ichimokuStrategyHelp(id)}
                 onChange={(next) =>
                   bump(() => setIchimokuStrategyVisible(id, next))
@@ -1308,6 +1426,7 @@ export function ChartSidebar({
                     ratePct: null,
                   }
                 }
+                recency={recencyMap.get(strategyRecencyKey("volume", id))}
                 help={volumeStrategyHelp(id)}
                 onChange={(next) =>
                   bump(() => setVolumeStrategyVisible(id, next))
@@ -1318,6 +1437,7 @@ export function ChartSidebar({
               ids={volumeComboIds}
               visibility={comboStratVis}
               stats={stats}
+              recencyMap={recencyMap}
               bump={bump}
             />
           </Group>
@@ -1659,6 +1779,7 @@ export function ChartSidebar({
                     ratePct: null,
                   }
                 }
+                recency={recencyMap.get(strategyRecencyKey("rsi", id))}
                 help={rsiStrategyHelp(id)}
                 onChange={(next) =>
                   bump(() => setRsiStrategyVisible(id, next))
@@ -1720,6 +1841,7 @@ export function ChartSidebar({
                     ratePct: null,
                   }
                 }
+                recency={recencyMap.get(strategyRecencyKey("macd", id))}
                 help={macdStrategyHelp(id)}
                 onChange={(next) =>
                   bump(() => setMacdStrategyVisible(id, next))
@@ -1781,6 +1903,7 @@ export function ChartSidebar({
                     ratePct: null,
                   }
                 }
+                recency={recencyMap.get(strategyRecencyKey("stoch", id))}
                 help={stochStrategyHelp(id)}
                 onChange={(next) =>
                   bump(() => setStochStrategyVisible(id, next))
@@ -1900,6 +2023,7 @@ export function ChartSidebar({
                     ids={comboIds}
                     visibility={comboStratVis}
                     stats={stats}
+                    recencyMap={recencyMap}
                     bump={bump}
                   />
                 </Group>
@@ -2012,6 +2136,7 @@ export function ChartSidebar({
                     ratePct: null,
                   }
                 }
+                recency={recencyMap.get(strategyRecencyKey("pattern", id))}
                 help={patternStrategyHelp(id)}
                 onChange={(next) =>
                   bump(() => setPatternStrategyVisible(id, next))

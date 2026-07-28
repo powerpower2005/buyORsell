@@ -384,6 +384,32 @@ export function CandleChart({
     mainHeight + volumePaneHeight + oscExtraHeight(oscPanes);
   const latestVolume = bars.length ? bars[bars.length - 1]!.volume : undefined;
 
+  /** Labels drawn on each secondary pane so stacked oscillators stay identifiable. */
+  const secondaryPaneLabels = useMemo(() => {
+    const labels: { key: string; top: number; title: string; detail?: string }[] =
+      [];
+    let top = mainHeight;
+    if (showVolume) {
+      labels.push({
+        key: "volume",
+        top: top + 4,
+        title: "거래량",
+        detail: fmtVolume(latestVolume),
+      });
+      top += VOLUME_PANE_HEIGHT;
+    }
+    for (const pane of oscPanes) {
+      labels.push({
+        key: pane.id,
+        top: top + 4,
+        title: pane.title,
+        detail: pane.latest,
+      });
+      top += pane.height;
+    }
+    return labels;
+  }, [mainHeight, showVolume, oscPanes, latestVolume]);
+
   // Mutable refs so event handlers always read fresh values without re-subscribing
   const barsRef = useRef<OHLCVBar[]>(bars);
   barsRef.current = bars;
@@ -2598,6 +2624,25 @@ export function CandleChart({
               </div>
             </div>
           )}
+          {secondaryPaneLabels.map((label) => (
+            <div
+              key={label.key}
+              className="pointer-events-none absolute left-2 z-[2] max-w-[min(100%,220px)] truncate rounded bg-black/50 px-1.5 py-0.5 text-[10px] font-medium text-text-primary backdrop-blur-[2px]"
+              style={{ top: label.top }}
+              title={
+                label.detail
+                  ? `${label.title} ${label.detail}`
+                  : label.title
+              }
+            >
+              <span>{label.title}</span>
+              {label.detail != null && label.detail !== "" && (
+                <span className="ml-1.5 tabular-nums font-normal text-text-tertiary">
+                  {label.detail}
+                </span>
+              )}
+            </div>
+          ))}
         </div>
 
         <div className="mt-3 space-y-2 border-t border-border pt-3">

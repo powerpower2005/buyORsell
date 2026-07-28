@@ -25,6 +25,7 @@ import {
 } from "@/lib/tradeJournalStore";
 import { confluencesFromEvaluation } from "@/lib/evaluation/strategyConfluence";
 import { isStrategyConfluenceVisible } from "@/lib/strategyConfluenceStore";
+import { buildStrategyRecencyMap } from "@/lib/strategyRecency";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { PartialDataBanner } from "@/components/PartialDataBanner";
 import { StaleDataBanner } from "@/components/StaleDataBanner";
@@ -322,6 +323,11 @@ export function HomePage() {
     [evaluation],
   );
 
+  const strategyRecency = useMemo(
+    () => buildStrategyRecencyMap(evaluation),
+    [evaluation],
+  );
+
   const trendlineIdsKey = evaluation?.trendlines
     ? [
         ...evaluation.trendlines.ascending.map((l) => l.id),
@@ -597,6 +603,7 @@ export function HomePage() {
                     }}
                     trendlines={evaluation!.trendlines}
                     signalStats={evaluation!.signalStats}
+                    strategyRecency={strategyRecency}
                   />
                 </div>
                 <IndicatorConfigModal
