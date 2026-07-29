@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "gf",
   "resolvedSymbol": "KRX:KOSPI",
-  "fetchedAt": "2026-07-29T03:11:46.421Z",
+  "fetchedAt": "2026-07-29T08:48:29.330Z",
   "lastBarDate": "2026-07-28",
   "barCount": 905,
   "checksum": "5dccc2c8",
@@ -5645,8 +5645,8 @@
     },
     {
       "date": "2025-09-26",
-      "open": 3458.98,
-      "high": 3479.42,
+      "open": 3440.39,
+      "high": 3441.91,
       "low": 3365.73,
       "close": 3386.05,
       "volume": 399150
