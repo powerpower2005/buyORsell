@@ -240,6 +240,7 @@ import {
 import {
   getSidebarOpenState,
   isChartSidebarCollapsed,
+  patchSidebarOpenState,
   setChartSidebarCollapsed,
   toggleSidebarOpenKey,
   type SidebarOpenKey,
@@ -266,6 +267,7 @@ import {
   strategiesByFamily,
   STRATEGY_CATALOG,
   STRATEGY_FAMILY_META,
+  STRATEGY_FAMILY_ORDER,
   type StrategyFamilyId,
 } from "@/lib/strategyCatalog";
 import {
@@ -1080,9 +1082,15 @@ export function ChartSidebar({
                   onChange={(e) => {
                     const next = e.target.checked;
                     setRecentOnlyPersisted(next);
-                    if (next && !open.allStrategies) {
-                      setOpen(toggleSidebarOpenKey("allStrategies"));
+                    if (!next) return;
+                    const patch: Partial<SidebarOpenState> = {
+                      allStrategies: true,
+                    };
+                    for (const family of STRATEGY_FAMILY_ORDER) {
+                      patch[STRATEGY_FAMILY_META[family].catalogOpenKey] =
+                        false;
                     }
+                    setOpen(patchSidebarOpenState(patch));
                   }}
                   className="accent-accent"
                 />
@@ -1118,7 +1126,7 @@ export function ChartSidebar({
             const familyMeta = STRATEGY_FAMILY_META[family];
             const familyState = familyCatalogState(family);
             const familyOpen =
-              catalogFiltering || open[familyMeta.catalogOpenKey];
+              catalogSearching || open[familyMeta.catalogOpenKey];
             return (
               <Group
                 key={family}

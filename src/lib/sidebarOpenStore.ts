@@ -109,6 +109,15 @@ export function setSidebarOpenKey(key: SidebarOpenKey, open: boolean): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+/** Merge open/closed flags and persist. Returns the new full state. */
+export function patchSidebarOpenState(
+  patch: Partial<SidebarOpenState>,
+): SidebarOpenState {
+  const state = { ...getSidebarOpenState(), ...patch };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  return state;
+}
+
 export function toggleSidebarOpenKey(key: SidebarOpenKey): SidebarOpenState {
   const state = getSidebarOpenState();
   state[key] = !state[key];
