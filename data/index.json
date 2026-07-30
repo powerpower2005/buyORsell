@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-30T02:51:47.437Z",
+  "updatedAt": "2026-07-30T05:17:58.724Z",
   "entries": [
     {
       "ticker": "KOSPI:KRX",
@@ -175,6 +175,22 @@
       "timeframe": "1w",
       "path": "data/.IXIC-INDEXNASDAQ/1w.json",
       "fetchedAt": "2026-07-30T02:50:40.477Z",
+      "lastBarDate": "2026-07-29",
+      "barCount": 189
+    },
+    {
+      "ticker": "QQQ:NASDAQ",
+      "timeframe": "1d",
+      "path": "data/QQQ-NASDAQ/1d.json",
+      "fetchedAt": "2026-07-30T05:11:40.592Z",
+      "lastBarDate": "2026-07-29",
+      "barCount": 903
+    },
+    {
+      "ticker": "QQQ:NASDAQ",
+      "timeframe": "1w",
+      "path": "data/QQQ-NASDAQ/1w.json",
+      "fetchedAt": "2026-07-30T05:11:40.592Z",
       "lastBarDate": "2026-07-29",
       "barCount": 189
     }
