@@ -23,6 +23,7 @@ import type { IndicatorConfigSectionId } from "@/components/IndicatorConfigForm"
 import { formatTickerLabel } from "@/lib/tickerNames";
 import { getChartPatternVisibility } from "@/lib/candlePatternStore";
 import { getSwingChartVisibility } from "@/lib/swingStructureStore";
+import { getElliottWaveVisibility } from "@/lib/elliottWaveStore";
 import { getSrChartVisibility } from "@/lib/srZoneStore";
 import {
   getBbOverlayVisibility,
@@ -37,6 +38,7 @@ import { getRsiStrategyVisibility } from "@/lib/rsiStrategyStore";
 import { getVolumeStrategyVisibility } from "@/lib/volumeStrategyStore";
 import { getComboStrategyVisibility } from "@/lib/comboStrategyStore";
 import { getMacdStrategyVisibility } from "@/lib/macdStrategyStore";
+import { getClassicStrategyVisibility } from "@/lib/classicStrategyStore";
 import { getStochStrategyVisibility } from "@/lib/stochStrategyStore";
 import { getIchimokuStrategyVisibility } from "@/lib/ichimokuStrategyStore";
 import {
@@ -175,6 +177,10 @@ export function BrowsePage() {
     () => getSwingChartVisibility(),
     [chartVisTick],
   );
+  const chartElliottWaveVisibility = useMemo(
+    () => getElliottWaveVisibility(),
+    [chartVisTick],
+  );
   const chartSrVisibility = useMemo(
     () => getSrChartVisibility(),
     [chartVisTick],
@@ -219,6 +225,10 @@ export function BrowsePage() {
   );
   const chartMacdStrategyVisibility = useMemo(
     () => getMacdStrategyVisibility(),
+    [chartVisTick],
+  );
+  const chartClassicStrategyVisibility = useMemo(
+    () => getClassicStrategyVisibility(),
     [chartVisTick],
   );
   const chartStochStrategyVisibility = useMemo(
@@ -460,6 +470,8 @@ export function BrowsePage() {
                       chartPatternVisibility={chartPatternVisibility}
                       structure={evaluation!.structure ?? undefined}
                       chartStructureVisibility={chartStructureVisibility}
+                      elliottWaves={evaluation!.elliottWaves ?? undefined}
+                      chartElliottWaveVisibility={chartElliottWaveVisibility}
                       supportResistance={
                         evaluation!.supportResistance ?? undefined
                       }
@@ -503,6 +515,12 @@ export function BrowsePage() {
                       }
                       macdStrategies={evaluation!.macdStrategies ?? undefined}
                       chartMacdStrategyVisibility={chartMacdStrategyVisibility}
+                      classicStrategies={
+                        evaluation!.classicStrategies ?? undefined
+                      }
+                      chartClassicStrategyVisibility={
+                        chartClassicStrategyVisibility
+                      }
                       stochStrategies={evaluation!.stochStrategies ?? undefined}
                       chartStochStrategyVisibility={
                         chartStochStrategyVisibility

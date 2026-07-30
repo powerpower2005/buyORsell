@@ -5,6 +5,7 @@ const STORAGE_KEY = "gf:config:chart-sidebar-open";
 export const SIDEBAR_OPEN_KEYS = [
   "allStrategies",
   "allStrategiesBb",
+  "allStrategiesClassic",
   "allStrategiesIchimoku",
   "allStrategiesVolume",
   "allStrategiesRsi",
@@ -22,6 +23,7 @@ export const SIDEBAR_OPEN_KEYS = [
   "ichimokuParts",
   "ichimokuStrategies",
   "swing",
+  "elliottWaves",
   "sr",
   "trendlines",
   "tlAscending",
@@ -39,6 +41,7 @@ export const SIDEBAR_OPEN_KEYS = [
   "fib",
   "fibLevels",
   "fibExtras",
+  "classicStrategies",
   "aux",
   "auxMfi",
   "auxMfiStrategies",

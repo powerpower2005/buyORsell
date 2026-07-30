@@ -19,6 +19,7 @@ export interface SignalStatsBundle {
   ichimokuStrategy: SignalStatsMap;
   volumeStrategy: SignalStatsMap;
   comboStrategy: SignalStatsMap;
+  classicStrategy: SignalStatsMap;
 }
 
 export const EMPTY_SIGNAL_STATS: SignalStatsBundle = {
@@ -32,6 +33,7 @@ export const EMPTY_SIGNAL_STATS: SignalStatsBundle = {
   ichimokuStrategy: {},
   volumeStrategy: {},
   comboStrategy: {},
+  classicStrategy: {},
 };
 
 const MIN_SAMPLES = 3;

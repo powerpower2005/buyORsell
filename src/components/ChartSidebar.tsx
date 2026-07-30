@@ -75,6 +75,17 @@ import {
   setMacdStrategyGroupVisible,
   setMacdStrategyVisible,
 } from "@/lib/macdStrategyStore";
+import { classicStrategyHelp } from "@/lib/classicStrategyHelp";
+import {
+  CLASSIC_STRATEGY_META,
+  CLASSIC_STRATEGY_ORDER,
+  type ClassicStrategyId,
+} from "@/lib/classicStrategyMeta";
+import {
+  getClassicStrategyVisibility,
+  setClassicStrategyGroupVisible,
+  setClassicStrategyVisible,
+} from "@/lib/classicStrategyStore";
 import { stochStrategyHelp } from "@/lib/stochStrategyHelp";
 import {
   STOCH_STRATEGY_META,
@@ -164,6 +175,14 @@ import {
   getSwingChartVisibility,
   setSwingChartVisible,
 } from "@/lib/swingStructureStore";
+import {
+  ELLIOTT_WAVE_TOGGLE_META,
+  ELLIOTT_WAVE_TOGGLE_ORDER,
+  getElliottWaveVisibility,
+  setElliottWaveGroupVisible,
+  setElliottWaveVisible,
+  type ElliottWaveToggleId,
+} from "@/lib/elliottWaveStore";
 import {
   SR_CHART_TOGGLE_META,
   SR_CHART_TOGGLE_ORDER,
@@ -777,11 +796,16 @@ export function ChartSidebar({
     () => getMacdStrategyVisibility(),
     [refreshTick],
   );
+  const classicStratVis = useMemo(
+    () => getClassicStrategyVisibility(),
+    [refreshTick],
+  );
   const stochStratVis = useMemo(
     () => getStochStrategyVisibility(),
     [refreshTick],
   );
   const swingVis = useMemo(() => getSwingChartVisibility(), [refreshTick]);
+  const elliottVis = useMemo(() => getElliottWaveVisibility(), [refreshTick]);
   const srVis = useMemo(() => getSrChartVisibility(), [refreshTick]);
   const volumeVis = useMemo(() => isVolumeOverlayVisible(), [refreshTick]);
   const fibVis = useMemo(() => getFibLevelVisibility(), [refreshTick]);
@@ -888,6 +912,9 @@ export function ChartSidebar({
   const ichiStratState = groupState(ichiStratVals);
   const ichiRootState = groupState([...ichiPartVals, ...ichiStratVals]);
   const swingState = groupState(SWING_CHART_TOGGLE_ORDER.map((id) => swingVis[id]));
+  const elliottState = groupState(
+    ELLIOTT_WAVE_TOGGLE_ORDER.map((id) => elliottVis[id]),
+  );
   const srState = groupState(SR_CHART_TOGGLE_ORDER.map((id) => srVis[id]));
   const patternState = groupState(
     CANDLE_PATTERN_ORDER.map((id) => patternVis[id]),
@@ -910,6 +937,8 @@ export function ChartSidebar({
   const macdStratVals = MACD_STRATEGY_ORDER.map((id) => macdStratVis[id]);
   const macdStratState = groupState(macdStratVals);
   const macdRootState = groupState([auxVis.macd, ...macdStratVals]);
+  const classicStratVals = CLASSIC_STRATEGY_ORDER.map((id) => classicStratVis[id]);
+  const classicStratState = groupState(classicStratVals);
   const stochStratVals = STOCH_STRATEGY_ORDER.map((id) => stochStratVis[id]);
   const stochStratState = groupState(stochStratVals);
   const stochRootState = groupState([auxVis.stoch, ...stochStratVals]);
@@ -1504,6 +1533,29 @@ export function ChartSidebar({
         </Group>
 
         <Group
+          title="엘리어트 파동"
+          open={open.elliottWaves}
+          onToggleOpen={() => toggleOpen("elliottWaves")}
+          checked={elliottState.checked}
+          indeterminate={elliottState.indeterminate}
+          help={CHART_LAYER_HELP.elliottWaves}
+          onToggleAll={(next) => bump(() => setElliottWaveGroupVisible(next))}
+        >
+          {ELLIOTT_WAVE_TOGGLE_ORDER.map((id: ElliottWaveToggleId) => (
+            <Leaf
+              key={id}
+              label={ELLIOTT_WAVE_TOGGLE_META[id].labelKo}
+              checked={elliottVis[id]}
+              help={{
+                title: ELLIOTT_WAVE_TOGGLE_META[id].labelKo,
+                summary: ELLIOTT_WAVE_TOGGLE_META[id].description,
+              }}
+              onChange={(next) => bump(() => setElliottWaveVisible(id, next))}
+            />
+          ))}
+        </Group>
+
+        <Group
           title="동적 추세선"
           open={open.trendlines}
           onToggleOpen={() => toggleOpen("trendlines")}
@@ -1761,6 +1813,38 @@ export function ChartSidebar({
               피보나치 지우기
             </button>
           )}
+        </Group>
+
+        <Group
+          title="고전 이론"
+          open={open.classicStrategies}
+          onToggleOpen={() => toggleOpen("classicStrategies")}
+          checked={classicStratState.checked}
+          indeterminate={classicStratState.indeterminate}
+          help={CHART_LAYER_HELP.classicStrategies}
+          onToggleAll={(next) =>
+            bump(() => setClassicStrategyGroupVisible(next))
+          }
+        >
+          {CLASSIC_STRATEGY_ORDER.map((id: ClassicStrategyId) => (
+            <Leaf
+              key={id}
+              label={CLASSIC_STRATEGY_META[id].labelKo}
+              checked={classicStratVis[id]}
+              rateStat={
+                stats?.classicStrategy[id] ?? {
+                  samples: 0,
+                  wins: 0,
+                  ratePct: null,
+                }
+              }
+              recency={recencyMap.get(strategyRecencyKey("classic", id))}
+              help={classicStrategyHelp(id)}
+              onChange={(next) =>
+                bump(() => setClassicStrategyVisible(id, next))
+              }
+            />
+          ))}
         </Group>
 
         <Group

@@ -69,6 +69,14 @@ import {
   detectComboStrategies,
   type ComboStrategyResult,
 } from "./comboStrategies";
+import {
+  detectClassicStrategies,
+  type ClassicStrategyResult,
+} from "./classicStrategies";
+import {
+  detectElliottWaves,
+  type ElliottWaveResult,
+} from "./elliottWaves";
 import { getIndicatorConfig } from "../configStore";
 import {
   EMPTY_SIGNAL_STATS,
@@ -93,6 +101,8 @@ export interface QuoteEvaluation {
   ichimokuStrategies: IchimokuStrategyResult | null;
   volumeStrategies: VolumeStrategyResult | null;
   comboStrategies: ComboStrategyResult | null;
+  classicStrategies: ClassicStrategyResult | null;
+  elliottWaves: ElliottWaveResult | null;
   /** Follow-through rates by pattern/strategy id (full prepared ticker window). */
   signalStats: SignalStatsBundle;
   warnings: string[];
@@ -168,6 +178,8 @@ export function evaluateQuote(
       ichimokuStrategies: null,
       volumeStrategies: null,
       comboStrategies: null,
+      classicStrategies: null,
+      elliottWaves: null,
       signalStats: EMPTY_SIGNAL_STATS,
       warnings,
       fatalError: "No OHLCV bars available",
@@ -370,6 +382,30 @@ export function evaluateQuote(
     }
   }
 
+  let classicStrategies: ClassicStrategyResult | null = null;
+  if (!fatalError) {
+    try {
+      classicStrategies = detectClassicStrategies(
+        prepared,
+        indicators,
+        fullLookback,
+      );
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
+  let elliottWaves: ElliottWaveResult | null = null;
+  if (!fatalError) {
+    try {
+      elliottWaves = detectElliottWaves(prepared, structure);
+    } catch (err) {
+      const fatal = absorbError(err, warnings);
+      if (fatal) fatalError = fatal;
+    }
+  }
+
   const signalStats: SignalStatsBundle = {
     candlePattern: patterns?.stats ?? {},
     chartPattern: classicalPatterns?.stats ?? {},
@@ -381,6 +417,7 @@ export function evaluateQuote(
     ichimokuStrategy: ichimokuStrategies?.stats ?? {},
     volumeStrategy: volumeStrategies?.stats ?? {},
     comboStrategy: comboStrategies?.stats ?? {},
+    classicStrategy: classicStrategies?.stats ?? {},
   };
 
   return {
@@ -401,6 +438,8 @@ export function evaluateQuote(
     ichimokuStrategies,
     volumeStrategies,
     comboStrategies,
+    classicStrategies,
+    elliottWaves,
     signalStats,
     warnings,
     fatalError,

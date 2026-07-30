@@ -18,6 +18,7 @@ import {
 import type { OHLCVBar, Timeframe, IndicatorResults } from "@/lib/types";
 import type { CandlePatternId, CandlePatternResult } from "@/lib/evaluation/candlePatterns";
 import type { SwingStructureResult } from "@/lib/evaluation/swingStructure";
+import type { ElliottWaveResult } from "@/lib/evaluation/elliottWaves";
 import type { SupportResistanceResult } from "@/lib/evaluation/supportResistance";
 import type { TrendlineResult } from "@/lib/evaluation/trendlines";
 import { getIndicatorConfig } from "@/lib/configStore";
@@ -109,6 +110,12 @@ import type { IchimokuStrategyResult } from "@/lib/evaluation/ichimokuStrategies
 import type { IchimokuStrategyId } from "@/lib/ichimokuStrategyMeta";
 import type { MacdStrategyResult } from "@/lib/evaluation/macdStrategies";
 import type { MacdStrategyId } from "@/lib/macdStrategyMeta";
+import type { ClassicStrategyResult } from "@/lib/evaluation/classicStrategies";
+import type { ClassicStrategyId } from "@/lib/classicStrategyMeta";
+import {
+  classicStrategiesToChartMarkers,
+  visibleClassicStrategyLegend,
+} from "@/lib/chart/classicStrategyMarkers";
 import type { StochStrategyResult } from "@/lib/evaluation/stochStrategies";
 import type { StochStrategyId } from "@/lib/stochStrategyMeta";
 import {
@@ -125,6 +132,10 @@ import {
 } from "@/lib/chartPatternMeta";
 import { SR_ZONE_COLORS, visibleSrZones } from "@/lib/chart/srZoneOverlay";
 import type { SwingChartToggleId } from "@/lib/swingStructureStore";
+import {
+  anyElliottWaveVisible,
+  type ElliottWaveToggleId,
+} from "@/lib/elliottWaveStore";
 import type { SrChartToggleId } from "@/lib/srZoneStore";
 import {
   TRENDLINE_COLORS,
@@ -215,6 +226,8 @@ interface Props {
   chartPatternVisibility?: Record<CandlePatternId, boolean>;
   structure?: SwingStructureResult;
   chartStructureVisibility?: Record<SwingChartToggleId, boolean>;
+  elliottWaves?: ElliottWaveResult;
+  chartElliottWaveVisibility?: Record<ElliottWaveToggleId, boolean>;
   supportResistance?: SupportResistanceResult;
   chartSrVisibility?: Record<SrChartToggleId, boolean>;
   trendlines?: TrendlineResult;
@@ -248,6 +261,8 @@ interface Props {
   chartComboStrategyVisibility?: Record<ComboStrategyId, boolean>;
   macdStrategies?: MacdStrategyResult;
   chartMacdStrategyVisibility?: Record<MacdStrategyId, boolean>;
+  classicStrategies?: ClassicStrategyResult;
+  chartClassicStrategyVisibility?: Record<ClassicStrategyId, boolean>;
   stochStrategies?: StochStrategyResult;
   chartStochStrategyVisibility?: Record<StochStrategyId, boolean>;
   showVolume?: boolean;
@@ -292,6 +307,8 @@ export function CandleChart({
   chartPatternVisibility,
   structure,
   chartStructureVisibility,
+  elliottWaves,
+  chartElliottWaveVisibility,
   supportResistance,
   chartSrVisibility,
   trendlines,
@@ -318,6 +335,8 @@ export function CandleChart({
   chartComboStrategyVisibility,
   macdStrategies,
   chartMacdStrategyVisibility,
+  classicStrategies,
+  chartClassicStrategyVisibility,
   stochStrategies,
   chartStochStrategyVisibility,
   showVolume = false,
@@ -465,6 +484,9 @@ export function CandleChart({
       chartComboStrategyVisibility ?? ({} as Record<ComboStrategyId, boolean>);
     const macdVis =
       chartMacdStrategyVisibility ?? ({} as Record<MacdStrategyId, boolean>);
+    const classicVis =
+      chartClassicStrategyVisibility ??
+      ({} as Record<ClassicStrategyId, boolean>);
     const stochVis =
       chartStochStrategyVisibility ?? ({} as Record<StochStrategyId, boolean>);
     const ichiVis =
@@ -499,6 +521,10 @@ export function CandleChart({
     );
     const comboStratMs = comboStrategiesToChartMarkers(comboStrategies, comboVis);
     const macdStratMs = macdStrategiesToChartMarkers(macdStrategies, macdVis);
+    const classicStratMs = classicStrategiesToChartMarkers(
+      classicStrategies,
+      classicVis,
+    );
     const stochStratMs = stochStrategiesToChartMarkers(stochStrategies, stochVis);
     const ichiStratMs = ichimokuStrategiesToChartMarkers(
       ichimokuStrategies,
@@ -514,6 +540,7 @@ export function CandleChart({
       bb: { hits: bbStrategies?.recent, visibility: bbVis },
       rsi: { hits: rsiStrategies?.recent, visibility: rsiVis },
       macd: { hits: macdStrategies?.recent, visibility: macdVis },
+      classic: { hits: classicStrategies?.recent, visibility: classicVis },
       stoch: { hits: stochStrategies?.recent, visibility: stochVis },
       volume: { hits: volumeStrategies?.recent, visibility: volumeVisMap },
       combo: { hits: comboStrategies?.recent, visibility: comboVis },
@@ -533,6 +560,7 @@ export function CandleChart({
       ...volumeStratMs,
       ...comboStratMs,
       ...macdStratMs,
+      ...classicStratMs,
       ...stochStratMs,
       ...ichiStratMs,
       ...journalMs,
@@ -561,6 +589,8 @@ export function CandleChart({
     chartComboStrategyVisibility,
     macdStrategies,
     chartMacdStrategyVisibility,
+    classicStrategies,
+    chartClassicStrategyVisibility,
     stochStrategies,
     chartStochStrategyVisibility,
     ichimokuStrategies,
@@ -699,6 +729,13 @@ export function CandleChart({
         : [],
     [chartMacdStrategyVisibility],
   );
+  const classicStrategyLegend = useMemo(
+    () =>
+      chartClassicStrategyVisibility
+        ? visibleClassicStrategyLegend(chartClassicStrategyVisibility)
+        : [],
+    [chartClassicStrategyVisibility],
+  );
   const stochStrategyLegend = useMemo(
     () =>
       chartStochStrategyVisibility
@@ -738,6 +775,39 @@ export function CandleChart({
   );
   const classicalInstancesRef = useRef(visibleClassicalInstances);
   classicalInstancesRef.current = visibleClassicalInstances;
+  const classicStrategiesRef = useRef(classicStrategies);
+  classicStrategiesRef.current = classicStrategies;
+  const chartClassicStrategyVisibilityRef = useRef(
+    chartClassicStrategyVisibility,
+  );
+  chartClassicStrategyVisibilityRef.current = chartClassicStrategyVisibility;
+
+  const elliottWavesRef = useRef(elliottWaves);
+  elliottWavesRef.current = elliottWaves;
+  const chartElliottWaveVisibilityRef = useRef(chartElliottWaveVisibility);
+  chartElliottWaveVisibilityRef.current = chartElliottWaveVisibility;
+
+  const elliottWaveLegend = useMemo(() => {
+    if (!elliottWaves || !chartElliottWaveVisibility) return [];
+    if (!anyElliottWaveVisible(chartElliottWaveVisibility)) return [];
+    const patterns = elliottWaves.primary.length
+      ? elliottWaves.primary
+      : elliottWaves.patterns.slice(0, 2);
+    return patterns
+      .filter((p) => {
+        if (p.kind === "impulse" && !chartElliottWaveVisibility.impulse)
+          return false;
+        if (p.kind === "corrective" && !chartElliottWaveVisibility.corrective)
+          return false;
+        return true;
+      })
+      .map((p) => ({
+        key: p.id,
+        text: p.kind === "impulse" ? "추진" : "조정",
+        detail: `${p.summary} · 점수 ${p.score}`,
+        color: p.direction === "bullish" ? "#22c55e" : "#ef4444",
+      }));
+  }, [elliottWaves, chartElliottWaveVisibility]);
 
   const showFibAnchors = fibExtraVisibility?.anchors === true;
   const showFibConfluence = fibExtraVisibility?.confluence === true;
@@ -939,6 +1009,73 @@ export function CandleChart({
       }
     }
 
+    // ── Gann fans & retracement zones (classic gann_zone strategy) ───────────
+    const classic = classicStrategiesRef.current;
+    const classicVis = chartClassicStrategyVisibilityRef.current;
+    if (classicVis?.gann_zone && classic) {
+      for (const zone of classic.gannZones ?? []) {
+        const yTop = series.priceToCoordinate(zone.rzh);
+        const yBot = series.priceToCoordinate(zone.rzl);
+        if (yTop == null || yBot == null) continue;
+        const top = Math.min(yTop, yBot);
+        const bandH = Math.max(2, Math.abs(yBot - yTop));
+        ctx.fillStyle =
+          zone.bias === "bullish"
+            ? "rgba(34, 197, 94, 0.12)"
+            : "rgba(239, 68, 68, 0.12)";
+        ctx.fillRect(0, top, width, bandH);
+        ctx.save();
+        ctx.strokeStyle =
+          zone.bias === "bullish"
+            ? "rgba(34, 197, 94, 0.35)"
+            : "rgba(239, 68, 68, 0.35)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(0, yTop);
+        ctx.lineTo(width, yTop);
+        ctx.moveTo(0, yBot);
+        ctx.lineTo(width, yBot);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+
+      const barsSnap = barsRef.current;
+      const endIdx = barsSnap.length - 1;
+      const endDate = endIdx >= 0 ? barsSnap[endIdx]!.date : null;
+      for (const ray of classic.gannFans ?? []) {
+        const x0 = chart
+          .timeScale()
+          .timeToCoordinate(ray.anchorDate as `${number}-${number}-${number}`);
+        const y0 = series.priceToCoordinate(ray.anchorPrice);
+        if (x0 == null || y0 == null || !endDate) continue;
+        const endPrice =
+          ray.anchorPrice + ray.slope * (endIdx - ray.anchorIndex);
+        const x1 = chart
+          .timeScale()
+          .timeToCoordinate(endDate as `${number}-${number}-${number}`);
+        const y1 = series.priceToCoordinate(endPrice);
+        if (x1 == null || y1 == null) continue;
+        const color =
+          ray.bias === "bullish"
+            ? "rgba(34, 197, 94, 0.45)"
+            : "rgba(239, 68, 68, 0.45)";
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = ray.kind === "1x1" ? 1.5 : 1;
+        ctx.globalAlpha = 0.55;
+        ctx.setLineDash(ray.kind === "2x1" ? [3, 3] : []);
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+    }
+
     // ── Fibonacci retracement ─────────────────────────────────────────────────
     const fib = fibRetRef.current;
     const levelVis = fibLevelsRef.current;
@@ -1039,6 +1176,70 @@ export function CandleChart({
           ctx.lineTo(width, yFib);
           ctx.stroke();
           ctx.restore();
+        }
+      }
+    }
+
+    // ── Elliott wave zigzag overlays ─────────────────────────────────────────
+    const ew = elliottWavesRef.current;
+    const ewVis = chartElliottWaveVisibilityRef.current;
+    if (ew && ewVis && anyElliottWaveVisible(ewVis)) {
+      const patterns = ew.primary.length
+        ? ew.primary
+        : ew.patterns.slice(0, 2);
+      for (const pattern of patterns) {
+        if (pattern.kind === "impulse" && !ewVis.impulse) continue;
+        if (pattern.kind === "corrective" && !ewVis.corrective) continue;
+
+        const color = pattern.direction === "bullish" ? "#22c55e" : "#ef4444";
+        ctx.strokeStyle = color;
+        ctx.lineWidth = pattern.kind === "impulse" ? 2 : 1.5;
+        ctx.setLineDash(pattern.kind === "corrective" ? [5, 4] : []);
+
+        const pivots = pattern.pivots;
+        if (pivots.length >= 2) {
+          ctx.beginPath();
+          let started = false;
+          for (const p of pivots) {
+            const x = chart
+              .timeScale()
+              .timeToCoordinate(p.date as `${number}-${number}-${number}`);
+            const y = series.priceToCoordinate(p.price);
+            if (x == null || y == null) continue;
+            if (!started) {
+              ctx.moveTo(x, y);
+              started = true;
+            } else {
+              ctx.lineTo(x, y);
+            }
+          }
+          if (started) ctx.stroke();
+        }
+        ctx.setLineDash([]);
+
+        if (ewVis.labels) {
+          for (const p of pivots) {
+            if (p.label == null) continue;
+            const x = chart
+              .timeScale()
+              .timeToCoordinate(p.date as `${number}-${number}-${number}`);
+            const y = series.priceToCoordinate(p.price);
+            if (x == null || y == null) continue;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(x, y, 8, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 10px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(p.label, x, y);
+          }
         }
       }
     }
@@ -2378,6 +2579,26 @@ export function CandleChart({
       }));
   }, [macdStrategies, chartMacdStrategyVisibility]);
 
+  const classicStrategyHitLegend = useMemo(() => {
+    if (!classicStrategies?.recent.length || !chartClassicStrategyVisibility)
+      return [];
+    return classicStrategies.recent
+      .filter((hit) => chartClassicStrategyVisibility[hit.id])
+      .slice(-8)
+      .reverse()
+      .map((hit) => ({
+        key: `${hit.id}-${hit.barIndex}`,
+        text: hit.label,
+        detail: `${hit.date} · ${hit.summary}`,
+        color:
+          hit.direction === "bullish"
+            ? "#00c471"
+            : hit.direction === "bearish"
+              ? "#f04452"
+              : "#8b95a1",
+      }));
+  }, [classicStrategies, chartClassicStrategyVisibility]);
+
   const stochStrategyHitLegend = useMemo(() => {
     if (!stochStrategies?.recent.length || !chartStochStrategyVisibility)
       return [];
@@ -2563,8 +2784,12 @@ export function CandleChart({
     srZones,
     chartTrendlineColors,
     visibleClassicalInstances,
+    classicStrategies,
+    chartClassicStrategyVisibility,
     ichimokuVisibility,
     indicators,
+    elliottWaves,
+    chartElliottWaveVisibility,
   ]);
 
   // ─── Fib draw mode lifecycle ───────────────────────────────────────────────
@@ -2855,6 +3080,25 @@ export function CandleChart({
             )
           )}
 
+          {elliottWaveLegend.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>엘리어트 파동:</span>
+              {elliottWaveLegend.map((item) => (
+                <span key={item.key} className="flex items-center gap-1.5">
+                  <span
+                    className="font-mono text-[10px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.text}
+                  </span>
+                  <span className="tabular-nums text-text-tertiary">
+                    {item.detail}
+                  </span>
+                </span>
+              ))}
+            </div>
+          )}
+
           {bbStrategyHitLegend.length > 0 ? (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
               <span>BB 전략:</span>
@@ -3092,6 +3336,39 @@ export function CandleChart({
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
                 <span>MACD 전략:</span>
                 {macdStrategyLegend.map((item) => (
+                  <span
+                    key={`${item.text}-${item.label}`}
+                    className="text-text-tertiary"
+                  >
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            )
+          )}
+
+          {classicStrategyHitLegend.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>고전 이론:</span>
+              {classicStrategyHitLegend.map((item) => (
+                <span key={item.key} className="flex items-center gap-1.5">
+                  <span
+                    className="font-mono text-[10px] font-semibold"
+                    style={{ color: item.color }}
+                  >
+                    {item.text}
+                  </span>
+                  <span className="tabular-nums text-text-tertiary">
+                    {item.detail}
+                  </span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            classicStrategyLegend.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span>고전 이론:</span>
+                {classicStrategyLegend.map((item) => (
                   <span
                     key={`${item.text}-${item.label}`}
                     className="text-text-tertiary"

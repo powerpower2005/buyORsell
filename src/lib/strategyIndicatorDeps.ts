@@ -18,6 +18,7 @@ import type { BbStrategyId } from "./bbStrategyMeta";
 import type { MacdStrategyId } from "./macdStrategyMeta";
 import type { StochStrategyId } from "./stochStrategyMeta";
 import type { VolumeStrategyId } from "./volumeStrategyMeta";
+import type { ClassicStrategyId } from "./classicStrategyMeta";
 
 /** Keep local to avoid import cycles with strategyCatalog ↔ stores. */
 type StrategyFamily =
@@ -28,7 +29,8 @@ type StrategyFamily =
   | "macd"
   | "stoch"
   | "pattern"
-  | "combo";
+  | "combo"
+  | "classic";
 
 function showAux(...ids: AuxIndicatorId[]): void {
   for (const id of ids) setAuxIndicatorVisible(id, true);
@@ -85,6 +87,18 @@ function enableStoch(id: StochStrategyId): void {
   if (id === "stoch_ma20_cross") enableSma(20);
 }
 
+function enableClassic(id: ClassicStrategyId): void {
+  switch (id) {
+    case "ma_golden_dead":
+      enableSma(20);
+      enableSma(50);
+      break;
+    case "fib_wave_pullback":
+    case "gann_zone":
+      break;
+  }
+}
+
 function enableVolume(id: VolumeStrategyId): void {
   enableVolumePanel();
   switch (id) {
@@ -137,6 +151,9 @@ export function enableIndicatorsForStrategy(
       enableCombo(id as ComboStrategyId);
       break;
     case "pattern":
+      break;
+    case "classic":
+      enableClassic(id as ClassicStrategyId);
       break;
   }
 }

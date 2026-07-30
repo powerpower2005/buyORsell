@@ -43,7 +43,7 @@ export function HelpTip({ help, label }: Props) {
         onClick={() => setOpen(false)}
       >
         <Card
-          className="max-h-[min(80vh,520px)] w-full max-w-md overflow-y-auto text-left"
+            className="max-h-[min(85vh,640px)] w-full max-w-md overflow-y-auto text-left"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-start justify-between gap-3">
@@ -121,6 +121,29 @@ export function HelpTip({ help, label }: Props) {
               <p className="mt-1 text-xs leading-relaxed text-text-secondary">
                 {help.bestFor}
               </p>
+            </div>
+          )}
+
+          {(help.pros || help.cons) && (
+            <div className="mt-4 space-y-2.5">
+              {help.pros && (
+                <div className="rounded-md border border-border/80 bg-bg px-3 py-2.5">
+                  <p className="text-[11px] font-semibold text-accent">장점</p>
+                  <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                    {help.pros}
+                  </p>
+                </div>
+              )}
+              {help.cons && (
+                <div className="rounded-md border border-border/80 bg-bg px-3 py-2.5">
+                  <p className="text-[11px] font-semibold text-text-tertiary">
+                    단점
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                    {help.cons}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

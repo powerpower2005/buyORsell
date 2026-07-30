@@ -61,6 +61,7 @@ export function buildStrategyMarkerTooltips(input: {
   stoch?: { hits?: StrategyHitLike[]; visibility?: Record<string, boolean> };
   volume?: { hits?: StrategyHitLike[]; visibility?: Record<string, boolean> };
   combo?: { hits?: StrategyHitLike[]; visibility?: Record<string, boolean> };
+  classic?: { hits?: StrategyHitLike[]; visibility?: Record<string, boolean> };
   ichimoku?: { hits?: StrategyHitLike[]; visibility?: Record<string, boolean> };
   pattern?: { hits?: StrategyHitLike[]; visibility?: Record<string, boolean> };
   confluences?: StrategyConfluence[] | null;
@@ -97,6 +98,13 @@ export function buildStrategyMarkerTooltips(input: {
     "복합",
     input.combo?.hits,
     input.combo?.visibility,
+  );
+  addFamilyHits(
+    map,
+    "classicstrat",
+    "고전",
+    input.classic?.hits,
+    input.classic?.visibility,
   );
   addFamilyHits(
     map,

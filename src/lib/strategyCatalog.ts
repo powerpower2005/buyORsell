@@ -97,9 +97,21 @@ import {
   setComboStrategyVisible,
 } from "./comboStrategyStore";
 import { comboStrategyHelp } from "./comboStrategyHelp";
+import {
+  CLASSIC_STRATEGY_META,
+  CLASSIC_STRATEGY_ORDER,
+  type ClassicStrategyId,
+} from "./classicStrategyMeta";
+import {
+  getClassicStrategyVisibility,
+  setClassicStrategyGroupVisible,
+  setClassicStrategyVisible,
+} from "./classicStrategyStore";
+import { classicStrategyHelp } from "./classicStrategyHelp";
 
 export type StrategyFamilyId =
   | "bb"
+  | "classic"
   | "ichimoku"
   | "volume"
   | "rsi"
@@ -111,6 +123,7 @@ export type StrategyFamilyId =
 /** Sidebar accordion keys for nested groups under 「전체 전략」. */
 export type StrategyCatalogOpenKey =
   | "allStrategiesBb"
+  | "allStrategiesClassic"
   | "allStrategiesIchimoku"
   | "allStrategiesVolume"
   | "allStrategiesRsi"
@@ -121,6 +134,7 @@ export type StrategyCatalogOpenKey =
 
 export const STRATEGY_FAMILY_ORDER: StrategyFamilyId[] = [
   "bb",
+  "classic",
   "ichimoku",
   "volume",
   "rsi",
@@ -142,6 +156,11 @@ export const STRATEGY_FAMILY_META: Record<
     label: "Bollinger",
     labelKo: "볼린저",
     catalogOpenKey: "allStrategiesBb",
+  },
+  classic: {
+    label: "Classical theory",
+    labelKo: "고전 이론",
+    catalogOpenKey: "allStrategiesClassic",
   },
   ichimoku: {
     label: "Ichimoku",
@@ -220,6 +239,11 @@ function entriesFromFamily<Id extends string>(
 export const STRATEGY_CATALOG: StrategyCatalogEntry[] = [
   ...entriesFromFamily("bb", BB_STRATEGY_ORDER, BB_STRATEGY_META),
   ...entriesFromFamily(
+    "classic",
+    CLASSIC_STRATEGY_ORDER,
+    CLASSIC_STRATEGY_META,
+  ),
+  ...entriesFromFamily(
     "ichimoku",
     ICHIMOKU_STRATEGY_ORDER,
     ICHIMOKU_STRATEGY_META,
@@ -277,6 +301,7 @@ export type StrategyVisibilityByFamily = Record<
 export function getCatalogStrategyVisibility(): StrategyVisibilityByFamily {
   return {
     bb: getBbStrategyVisibility(),
+    classic: getClassicStrategyVisibility(),
     ichimoku: getIchimokuStrategyVisibility(),
     volume: getVolumeStrategyVisibility(),
     rsi: getRsiStrategyVisibility(),
@@ -295,6 +320,9 @@ export function setCatalogStrategyVisible(
   switch (family) {
     case "bb":
       setBbStrategyVisible(id as BbStrategyId, visible);
+      break;
+    case "classic":
+      setClassicStrategyVisible(id as ClassicStrategyId, visible);
       break;
     case "ichimoku":
       setIchimokuStrategyVisible(id as IchimokuStrategyId, visible);
@@ -328,6 +356,9 @@ export function setCatalogFamilyVisible(
     case "bb":
       setBbStrategyGroupVisible(visible);
       break;
+    case "classic":
+      setClassicStrategyGroupVisible(visible);
+      break;
     case "ichimoku":
       setIchimokuStrategyGroupVisible(visible);
       break;
@@ -360,6 +391,7 @@ export function setAllCatalogStrategiesVisible(visible: boolean): void {
 
 const STATS_KEY: Record<StrategyFamilyId, keyof SignalStatsBundle> = {
   bb: "bbStrategy",
+  classic: "classicStrategy",
   ichimoku: "ichimokuStrategy",
   volume: "volumeStrategy",
   rsi: "rsiStrategy",
@@ -387,6 +419,8 @@ export function getCatalogStrategyHelp(
   switch (family) {
     case "bb":
       return bbStrategyHelp(id);
+    case "classic":
+      return classicStrategyHelp(id as ClassicStrategyId);
     case "ichimoku":
       return ichimokuStrategyHelp(id as IchimokuStrategyId);
     case "volume":
