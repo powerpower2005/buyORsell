@@ -11,11 +11,14 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { tickerToSlug } from "./fetch-quote.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 
+/** Same as scripts/fetch-quote.mjs — kept local to avoid pulling googleapis. */
+function tickerToSlug(ticker) {
+  return ticker.replace(/:/g, "-");
+}
 const TICKER_RE = /^[A-Z0-9.]+:[A-Z]+$/i;
 
 /** Keep leading dots; uppercase letters in symbol + full exchange. */
