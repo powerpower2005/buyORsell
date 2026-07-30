@@ -502,7 +502,6 @@ function detectGannZone(
 
       if (fan.bias === "bullish") {
         if (!(bar.close > bar.open && bar.close > expected)) continue;
-        const key = `fan-b-${fan.anchorIndex}-${i}`;
         if (used.has(`fan-b-${fan.anchorIndex}`)) break;
         used.add(`fan-b-${fan.anchorIndex}`);
         hits.push(

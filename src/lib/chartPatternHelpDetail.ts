@@ -149,3 +149,4 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
     lower: "하락 깃발: 하단 이탈 시 숏. 조정이 너무 깊거나 거래량이 늘며 조정되면 가짜 깃발 주의.",
     tip: "돌파 봉 아래(롱) 또는 위(숏)를 손절 참고로. 피보 38.2% 깃발 깊이와 겹치면 주목.",
   },
+};
