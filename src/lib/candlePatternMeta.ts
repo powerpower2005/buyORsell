@@ -17,10 +17,14 @@ export const CANDLE_PATTERN_ORDER: CandlePatternId[] = [
   "inverted_hammer",
   "bullish_engulfing",
   "bullish_harami",
+  "morning_star",
+  "three_white_soldiers",
   "hanging_man",
   "shooting_star",
   "bearish_engulfing",
   "bearish_harami",
+  "evening_star",
+  "three_black_crows",
   "doji",
 ];
 
@@ -101,6 +105,42 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     labelKo: "하락 잉태형",
     description: "큰 양봉 안에 작은 음봉이 들어가면 상승 momentum이 약해졌음을 의미합니다.",
     markerText: "RH",
+    typicalDirection: "bearish",
+  },
+  morning_star: {
+    id: "morning_star",
+    label: "Morning Star",
+    labelKo: "샛별형",
+    description:
+      "큰 음봉 → 작은 몸통 → 양봉이 첫 음봉 몸통 중간 이상 회복하면 하락 끝 반등 신호로 봅니다.",
+    markerText: "MS",
+    typicalDirection: "bullish",
+  },
+  evening_star: {
+    id: "evening_star",
+    label: "Evening Star",
+    labelKo: "저녁별형",
+    description:
+      "큰 양봉 → 작은 몸통 → 음봉이 첫 양봉 몸통 중간 이하로 되돌리면 상승 끝 하락 신호로 봅니다.",
+    markerText: "ES",
+    typicalDirection: "bearish",
+  },
+  three_white_soldiers: {
+    id: "three_white_soldiers",
+    label: "Three White Soldiers",
+    labelKo: "적삼병",
+    description:
+      "몸통이 큰 양봉이 연속 3개, 종가가 높아지고 시가가 이전 몸통 안에 있으면 강한 상승 지속·전환으로 봅니다.",
+    markerText: "3W",
+    typicalDirection: "bullish",
+  },
+  three_black_crows: {
+    id: "three_black_crows",
+    label: "Three Black Crows",
+    labelKo: "흑삼병",
+    description:
+      "몸통이 큰 음봉이 연속 3개, 종가가 낮아지고 시가가 이전 몸통 안에 있으면 강한 하락 지속·전환으로 봅니다.",
+    markerText: "3C",
     typicalDirection: "bearish",
   },
 };

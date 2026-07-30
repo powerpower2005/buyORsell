@@ -27,7 +27,7 @@ export const CHART_LAYER_HELP = {
   strategyConfluence: {
     title: "전략 겹침",
     summary:
-      "같은 봉·같은 방향에서 서로 다른 전략 시그널이 2개 이상 겹치면 강조 마커(xN)를 표시합니다.",
+      "같은 봉·같은 방향에서 서로 다른 전략 시그널이 2개 이상 겹치면 차트에 ×N 마커를 표시합니다. 사이드바 최근 시그널 옆에는 겹침×N 배지도 붙습니다.",
     tip: "겹침만으로 진입하지 말고, 개별 전략 내용과 추세를 함께 보세요.",
   },
   ma: {
@@ -260,7 +260,7 @@ export const CHART_LAYER_HELP = {
   candlePatterns: {
     title: "캔들 패턴",
     summary:
-      "망치형, 잉걸핑 등 단일·복합 캔들 형태를 탐지해 마커로 표시합니다. 롱·숏·중립으로 구분해 둡니다.",
+      "망치형·잉걸핑(1~2봉)과 샛별·적삼병 등 3봉 형태를 탐지해 마커로 표시합니다. 롱·숏·중립으로 구분해 둡니다.",
     higherLabel: "돌파 시",
     lowerLabel: "실패 시",
     higher:

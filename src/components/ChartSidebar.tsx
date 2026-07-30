@@ -254,6 +254,7 @@ import {
   setStrategyConfluenceVisible,
 } from "@/lib/strategyConfluenceStore";
 import {
+  formatStrategyConfluenceLabel,
   formatStrategyRecencyLabel,
   isWithinRecentWindow,
   strategyRecencyKey,
@@ -515,20 +516,32 @@ function BiasBadge({ bias }: { bias: PatternBias }) {
 function RecencyBadge({ recency }: { recency: StrategyRecency }) {
   const fresh = recency.barsAgo === 0;
   const near = recency.barsAgo > 0 && recency.barsAgo <= 9;
+  const confluenceLabel = formatStrategyConfluenceLabel(recency);
+  const title = strategyRecencyTitle(recency);
   return (
-    <span
-      className={clsx(
-        "shrink-0 rounded border px-1 py-px text-[10px] font-medium leading-none tabular-nums",
-        fresh
-          ? "border-accent/50 bg-accent/15 text-accent"
-          : near
-            ? "border-border bg-surface-elevated text-text-secondary"
-            : "border-border text-text-tertiary",
+    <>
+      <span
+        className={clsx(
+          "shrink-0 rounded border px-1 py-px text-[10px] font-medium leading-none tabular-nums",
+          fresh
+            ? "border-accent/50 bg-accent/15 text-accent"
+            : near
+              ? "border-border bg-surface-elevated text-text-secondary"
+              : "border-border text-text-tertiary",
+        )}
+        title={title}
+      >
+        {formatStrategyRecencyLabel(recency)}
+      </span>
+      {confluenceLabel && (
+        <span
+          className="shrink-0 rounded border border-amber-400/40 bg-amber-500/15 px-1 py-px text-[10px] font-medium leading-none tabular-nums text-amber-300"
+          title={title}
+        >
+          {confluenceLabel}
+        </span>
       )}
-      title={strategyRecencyTitle(recency)}
-    >
-      {formatStrategyRecencyLabel(recency)}
-    </span>
+    </>
   );
 }
 
@@ -653,6 +666,24 @@ export function ChartSidebar({
   const refreshTick = visibilityTick + configTick;
   const stats = signalStats ?? null;
   const recencyMap = strategyRecency ?? EMPTY_STRATEGY_RECENCY;
+  const recentConfluenceSummary = useMemo(() => {
+    let newest: StrategyRecency | null = null;
+    let withConfluence = 0;
+    for (const r of recencyMap.values()) {
+      if (!r.confluenceCount || r.confluenceCount < 2) continue;
+      withConfluence += 1;
+      if (!newest || r.barIndex > newest.barIndex) newest = r;
+    }
+    if (!withConfluence || !newest) return null;
+    const when =
+      newest.barsAgo === 0
+        ? "오늘"
+        : newest.barsAgo <= 9
+          ? `${newest.barsAgo}봉 전`
+          : newest.date;
+    const dir = newest.direction === "bullish" ? "↑" : "↓";
+    return `최근 겹침 ${withConfluence}개 전략 · ${when} ×${newest.confluenceCount}${dir}`;
+  }, [recencyMap]);
   const tlAlgo = useMemo(() => getTrendlineAlgoVersion(), [refreshTick]);
   const catalogVis = useMemo(
     () => getCatalogStrategyVisibility(),
@@ -1109,7 +1140,10 @@ export function ChartSidebar({
           )}
           <Leaf
             label="전략 겹침 강조"
-            hint="같은 봉·방향에 전략 2개↑이면 ×N 마커"
+            hint={
+              recentConfluenceSummary ??
+              "같은 봉·방향에 전략 2개↑이면 ×N 마커 · 최근 시그널에 겹침 배지"
+            }
             checked={strategyConfluenceOn}
             help={CHART_LAYER_HELP.strategyConfluence}
             onChange={(next) =>

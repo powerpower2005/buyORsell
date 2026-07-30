@@ -6,5 +6,9 @@
   "hammerMaxBodyRangeRatio": 0.35,
   "shootingStarMinUpperShadowToBody": 2,
   "shootingStarMaxLowerShadowToBody": 0.5,
-  "engulfingMinBodyRangeRatio": 0.05
+  "engulfingMinBodyRangeRatio": 0.05,
+  "starMaxMidBodyRangeRatio": 0.35,
+  "starMinOuterBodyRangeRatio": 0.4,
+  "soldiersMinBodyRangeRatio": 0.45,
+  "soldiersMaxOppositeShadowToBody": 0.6
 }

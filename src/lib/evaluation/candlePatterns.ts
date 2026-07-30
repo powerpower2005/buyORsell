@@ -17,7 +17,11 @@ export type CandlePatternId =
   | "bullish_engulfing"
   | "bearish_engulfing"
   | "bullish_harami"
-  | "bearish_harami";
+  | "bearish_harami"
+  | "morning_star"
+  | "evening_star"
+  | "three_white_soldiers"
+  | "three_black_crows";
 
 export interface CandlePatternHit {
   id: CandlePatternId;
@@ -55,6 +59,10 @@ const LABELS: Record<CandlePatternId, string> = {
   bearish_engulfing: patternLabel("bearish_engulfing"),
   bullish_harami: patternLabel("bullish_harami"),
   bearish_harami: patternLabel("bearish_harami"),
+  morning_star: patternLabel("morning_star"),
+  evening_star: patternLabel("evening_star"),
+  three_white_soldiers: patternLabel("three_white_soldiers"),
+  three_black_crows: patternLabel("three_black_crows"),
 };
 
 function metrics(bar: OHLCVBar): BarMetrics {
@@ -83,8 +91,8 @@ function cfg() {
 }
 
 function scanStartIndex(barsLength: number, lookback?: number | null): number {
-  if (lookback == null || lookback <= 0) return 1;
-  return Math.max(1, barsLength - lookback);
+  if (lookback == null || lookback <= 0) return 2;
+  return Math.max(2, barsLength - lookback);
 }
 
 function hit(
@@ -129,6 +137,10 @@ function priorTrend(bars: OHLCVBar[], idx: number, periods = 3): TrendLabel {
   if (up >= periods - 1) return "bullish";
   if (down >= periods - 1) return "bearish";
   return "neutral";
+}
+
+function bodyMid(bar: OHLCVBar): number {
+  return (bar.open + bar.close) / 2;
 }
 
 function detectAtIndex(bars: OHLCVBar[], idx: number): CandlePatternHit[] {
@@ -214,6 +226,82 @@ function detectAtIndex(bars: OHLCVBar[], idx: number): CandlePatternHit[] {
     }
   }
 
+  if (idx >= 2) {
+    const first = bars[idx - 2];
+    const mid = bars[idx - 1];
+    const fm = metrics(first);
+    const mm = metrics(mid);
+
+    if (
+      fm.bearish &&
+      fm.bodyRangeRatio >= c.starMinOuterBodyRangeRatio &&
+      mm.bodyRangeRatio <= c.starMaxMidBodyRangeRatio &&
+      m.bullish &&
+      m.bodyRangeRatio >= c.starMinOuterBodyRangeRatio &&
+      bar.close >= bodyMid(first)
+    ) {
+      found.push(hit("morning_star", bar.date, idx, "bullish"));
+    }
+
+    if (
+      fm.bullish &&
+      fm.bodyRangeRatio >= c.starMinOuterBodyRangeRatio &&
+      mm.bodyRangeRatio <= c.starMaxMidBodyRangeRatio &&
+      m.bearish &&
+      m.bodyRangeRatio >= c.starMinOuterBodyRangeRatio &&
+      bar.close <= bodyMid(first)
+    ) {
+      found.push(hit("evening_star", bar.date, idx, "bearish"));
+    }
+
+    const a = first;
+    const b = mid;
+    const d = bar;
+    const am = fm;
+    const bm = mm;
+    const dm = m;
+
+    if (
+      am.bullish &&
+      bm.bullish &&
+      dm.bullish &&
+      am.bodyRangeRatio >= c.soldiersMinBodyRangeRatio &&
+      bm.bodyRangeRatio >= c.soldiersMinBodyRangeRatio &&
+      dm.bodyRangeRatio >= c.soldiersMinBodyRangeRatio &&
+      b.close > a.close &&
+      d.close > b.close &&
+      b.open >= Math.min(a.open, a.close) &&
+      b.open <= Math.max(a.open, a.close) &&
+      d.open >= Math.min(b.open, b.close) &&
+      d.open <= Math.max(b.open, b.close) &&
+      am.upperShadow <= am.body * c.soldiersMaxOppositeShadowToBody &&
+      bm.upperShadow <= bm.body * c.soldiersMaxOppositeShadowToBody &&
+      dm.upperShadow <= dm.body * c.soldiersMaxOppositeShadowToBody
+    ) {
+      found.push(hit("three_white_soldiers", bar.date, idx, "bullish"));
+    }
+
+    if (
+      am.bearish &&
+      bm.bearish &&
+      dm.bearish &&
+      am.bodyRangeRatio >= c.soldiersMinBodyRangeRatio &&
+      bm.bodyRangeRatio >= c.soldiersMinBodyRangeRatio &&
+      dm.bodyRangeRatio >= c.soldiersMinBodyRangeRatio &&
+      b.close < a.close &&
+      d.close < b.close &&
+      b.open <= Math.max(a.open, a.close) &&
+      b.open >= Math.min(a.open, a.close) &&
+      d.open <= Math.max(b.open, b.close) &&
+      d.open >= Math.min(b.open, b.close) &&
+      am.lowerShadow <= am.body * c.soldiersMaxOppositeShadowToBody &&
+      bm.lowerShadow <= bm.body * c.soldiersMaxOppositeShadowToBody &&
+      dm.lowerShadow <= dm.body * c.soldiersMaxOppositeShadowToBody
+    ) {
+      found.push(hit("three_black_crows", bar.date, idx, "bearish"));
+    }
+  }
+
   return found;
 }
 
@@ -223,7 +311,7 @@ export function detectCandlePatterns(
 ): CandlePatternResult {
   requireNonEmptyArray(bars, "OHLCV bars for candle patterns");
   const lookback = options?.lookbackBars ?? null;
-  requireMinBars(bars.length, 2, "candle pattern detection");
+  requireMinBars(bars.length, 3, "candle pattern detection");
 
   const start = scanStartIndex(bars.length, lookback);
   const recent: CandlePatternHit[] = [];

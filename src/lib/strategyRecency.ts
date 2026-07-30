@@ -1,11 +1,22 @@
+import type { TrendLabel } from "./types";
 import type { QuoteEvaluation } from "./evaluation/evaluateQuote";
-import { collectStrategyHits } from "./evaluation/strategyConfluence";
+import {
+  collectStrategyHits,
+  findStrategyConfluences,
+} from "./evaluation/strategyConfluence";
 
 export interface StrategyRecency {
   date: string;
   barIndex: number;
   /** 0 = latest bar in the evaluation window. */
   barsAgo: number;
+  direction: TrendLabel;
+  /**
+   * When the latest hit shares its bar+direction with ≥1 other strategy,
+   * total agreeing strategies and peer labels (excluding self).
+   */
+  confluenceCount?: number;
+  confluencePeers?: string[];
 }
 
 export function strategyRecencyKey(family: string, id: string): string {
@@ -19,7 +30,8 @@ export function buildStrategyRecencyMap(
   const map = new Map<string, StrategyRecency>();
   if (!evaluation?.bars.length) return map;
   const lastIdx = evaluation.bars.length - 1;
-  for (const h of collectStrategyHits(evaluation)) {
+  const hits = collectStrategyHits(evaluation);
+  for (const h of hits) {
     const key = strategyRecencyKey(h.family, h.id);
     const prev = map.get(key);
     if (!prev || h.barIndex > prev.barIndex) {
@@ -27,9 +39,34 @@ export function buildStrategyRecencyMap(
         date: h.date,
         barIndex: h.barIndex,
         barsAgo: lastIdx - h.barIndex,
+        direction: h.direction,
       });
     }
   }
+
+  const confByBarDir = new Map<
+    string,
+    { count: number; labels: Map<string, string> }
+  >();
+  for (const c of findStrategyConfluences(hits)) {
+    confByBarDir.set(`${c.barIndex}|${c.direction}`, {
+      count: c.hits.length,
+      labels: new Map(
+        c.hits.map((h) => [`${h.family}:${h.id}`, h.label] as const),
+      ),
+    });
+  }
+
+  for (const [key, r] of map) {
+    const conf = confByBarDir.get(`${r.barIndex}|${r.direction}`);
+    if (!conf || conf.count < 2) continue;
+    const peers = [...conf.labels.entries()]
+      .filter(([k]) => k !== key)
+      .map(([, label]) => label);
+    r.confluenceCount = conf.count;
+    r.confluencePeers = peers;
+  }
+
   return map;
 }
 
@@ -53,6 +90,20 @@ export function formatStrategyRecencyLabel(r: StrategyRecency): string {
 }
 
 export function strategyRecencyTitle(r: StrategyRecency): string {
-  if (r.barsAgo === 0) return `최근 시그널 ${r.date} (최신 봉)`;
-  return `최근 시그널 ${r.date} (${r.barsAgo}봉 전)`;
+  const base =
+    r.barsAgo === 0
+      ? `최근 시그널 ${r.date} (최신 봉)`
+      : `최근 시그널 ${r.date} (${r.barsAgo}봉 전)`;
+  if (!r.confluenceCount || r.confluenceCount < 2) return base;
+  const peers = r.confluencePeers?.length
+    ? ` · ${r.confluencePeers.join(", ")}`
+    : "";
+  const dir = r.direction === "bullish" ? "상승" : "하락";
+  return `${base} · 같은 봉 ${dir} 겹침 ×${r.confluenceCount}${peers}`;
+}
+
+/** Compact badge for latest-hit confluence (same bar + direction). */
+export function formatStrategyConfluenceLabel(r: StrategyRecency): string | null {
+  if (!r.confluenceCount || r.confluenceCount < 2) return null;
+  return `겹침×${r.confluenceCount}`;
 }
