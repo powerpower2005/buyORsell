@@ -69,5 +69,11 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "data: delete ${{ github.event.inputs.ticker }} (${{ github.event.inputs.timeframe }})"
-            git push
+            for i in 1 2 3; do
+              git pull --rebase origin "${GITHUB_REF_NAME}" && git push && exit 0
+              echo "Push rejected (attempt $i), retrying..."
+              sleep $((i * 5))
+            done
+            echo "Failed to push after retries"
+            exit 1
           fi
