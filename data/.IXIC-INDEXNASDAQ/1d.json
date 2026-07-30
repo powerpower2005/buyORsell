@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "gf",
   "resolvedSymbol": "INDEXNASDAQ:.IXIC",
-  "fetchedAt": "2026-07-30T02:50:40.477Z",
+  "fetchedAt": "2026-07-30T08:41:26.899Z",
   "lastBarDate": "2026-07-29",
   "barCount": 806,
   "checksum": "c5f016aa",
