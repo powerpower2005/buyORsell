@@ -139,6 +139,79 @@ export function buildOscPaneSpecs(
       continue;
     }
 
+    if (id === "ad") {
+      const cfg = getIndicatorConfig("ad");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.ad;
+      if (!out?.series.ad?.length) continue;
+      panes.push({
+        id,
+        title: meta.labelKo,
+        latest: fmt(out.latest.ad, 0),
+        height: OSC_PANE_HEIGHT,
+      });
+      continue;
+    }
+
+    if (id === "chaikin") {
+      const cfg = getIndicatorConfig("chaikin");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.chaikin;
+      if (!out?.series.chaikin?.length) continue;
+      panes.push({
+        id,
+        title: meta.labelKo,
+        latest: fmt(out.latest.chaikin, 0),
+        height: OSC_PANE_HEIGHT,
+      });
+      continue;
+    }
+
+    if (id === "eom") {
+      const cfg = getIndicatorConfig("eom");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.eom;
+      if (!out?.series.eom?.length) continue;
+      panes.push({
+        id,
+        title: meta.labelKo,
+        latest: fmt(out.latest.eomSmooth ?? out.latest.eom, 4),
+        height: OSC_PANE_HEIGHT,
+      });
+      continue;
+    }
+
+    if (id === "obvMid") {
+      const cfg = getIndicatorConfig("obvMid");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.obvMid;
+      if (!out?.series.obvMid?.length) continue;
+      panes.push({
+        id,
+        title: meta.labelKo,
+        latest: fmt(out.latest.obvMid, 0),
+        height: OSC_PANE_HEIGHT,
+      });
+      continue;
+    }
+
+    if (id === "equivolume") {
+      const cfg = getIndicatorConfig("equivolume");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.equivolume;
+      if (!out?.series.boxRatio?.length) continue;
+      const shape = out.latest.shape;
+      const shapeLabel =
+        shape === 1 ? "키다리" : shape === 3 ? "뚱보" : shape === 2 ? "정사각" : "—";
+      panes.push({
+        id,
+        title: meta.labelKo,
+        latest: `${fmt(out.latest.boxRatio, 2)} · ${shapeLabel}`,
+        height: OSC_PANE_HEIGHT,
+      });
+      continue;
+    }
+
     // Price-scale overlays (main pane), not below-chart oscillators.
     if (
       id === "vwap" ||

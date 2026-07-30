@@ -23,6 +23,14 @@ import { ConfigError } from "../../errors";
 
 import { requireDefined, requireNumber } from "../../require";
 
+import {
+  adPlugin,
+  chaikinPlugin,
+  eomPlugin,
+  equivolumePlugin,
+  obvMidPlugin,
+} from "./volumeFlow";
+
 function requirePeriods(params: Record<string, unknown>, label: string): number[] {
   const periods = params.periods;
   if (!Array.isArray(periods) || periods.length === 0) {
@@ -1083,6 +1091,11 @@ export const allPlugins = [
   mfiPlugin,
   atrPlugin,
   obvPlugin,
+  adPlugin,
+  chaikinPlugin,
+  eomPlugin,
+  obvMidPlugin,
+  equivolumePlugin,
   keltnerPlugin,
   vwapPlugin,
   adxPlugin,
@@ -1091,5 +1104,13 @@ export const allPlugins = [
   supertrendPlugin,
   ichimokuPlugin,
 ];
+
+export {
+  adPlugin,
+  chaikinPlugin,
+  eomPlugin,
+  obvMidPlugin,
+  equivolumePlugin,
+};
 
 export { hasOutput as indicatorHasOutput };

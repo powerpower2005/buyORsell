@@ -599,45 +599,54 @@ function Leaf({
 }) {
   const rateText = formatSignalRate(rateStat);
   const rateTitle = signalRateTitle(rateStat);
+  const hasMeta = Boolean(bias || recency || rateStat != null);
   return (
     <div className="rounded px-1.5 py-1 hover:bg-surface-elevated/60">
-      <div className="flex items-center gap-2">
+      <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+          <div className="flex min-w-0 items-center gap-1.5 text-xs text-text-secondary">
             {color && (
               <span
                 className="inline-block h-0.5 w-3 shrink-0 rounded-sm"
                 style={{ backgroundColor: color }}
               />
             )}
-            <span className="truncate">{label}</span>
-            {bias && <BiasBadge bias={bias} />}
-            {recency && <RecencyBadge recency={recency} />}
-            {rateStat != null && (
-              <span
-                className={clsx(
-                  "shrink-0 tabular-nums text-[10px] font-semibold",
-                  rateClass(rateStat),
-                )}
-                title={rateTitle}
-              >
-                {rateText ?? "—"}
-              </span>
-            )}
+            <span className="min-w-0 flex-1 truncate font-medium" title={label}>
+              {label}
+            </span>
           </div>
+          {hasMeta && (
+            <div className="mt-0.5 flex flex-wrap items-center gap-1">
+              {bias && <BiasBadge bias={bias} />}
+              {recency && <RecencyBadge recency={recency} />}
+              {rateStat != null && (
+                <span
+                  className={clsx(
+                    "shrink-0 tabular-nums text-[10px] font-semibold",
+                    rateClass(rateStat),
+                  )}
+                  title={rateTitle}
+                >
+                  {rateText ?? "—"}
+                </span>
+              )}
+            </div>
+          )}
           {hint && (
             <p className="mt-0.5 text-[10px] leading-snug text-text-tertiary">
               {hint}
             </p>
           )}
         </div>
-        <OnOffSwitch
-          on={checked}
-          onChange={onChange}
-          label={`${label} 표시`}
-        />
-        {help && <HelpTip help={help} />}
-        {onEdit && <EditLink onClick={onEdit} />}
+        <div className="flex shrink-0 items-center gap-1 pt-0.5">
+          <OnOffSwitch
+            on={checked}
+            onChange={onChange}
+            label={`${label} 표시`}
+          />
+          {help && <HelpTip help={help} />}
+          {onEdit && <EditLink onClick={onEdit} />}
+        </div>
       </div>
       {colorValue && onColorChange && (
         <div className="mt-1.5">

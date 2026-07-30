@@ -44,6 +44,11 @@ export type IndicatorConfigSectionId =
   | "mfi"
   | "atr"
   | "obv"
+  | "ad"
+  | "chaikin"
+  | "eom"
+  | "obvMid"
+  | "equivolume"
   | "keltner"
   | "vwap"
   | "adx"
@@ -68,6 +73,11 @@ export const INDICATOR_CONFIG_SECTION_LABEL: Record<
   mfi: "MFI",
   atr: "ATR",
   obv: "OBV",
+  ad: "A/D",
+  chaikin: "Chaikin",
+  eom: "EOM",
+  obvMid: "OBV Mid",
+  equivolume: "EquiVolume",
   keltner: "켈트너",
   vwap: "VWAP",
   adx: "ADX",
@@ -342,6 +352,11 @@ export function IndicatorConfigForm({
   const mfi = find("mfi");
   const atr = find("atr");
   const obv = find("obv");
+  const ad = find("ad");
+  const chaikin = find("chaikin");
+  const eom = find("eom");
+  const obvMid = find("obvMid");
+  const equivolume = find("equivolume");
   const keltner = find("keltner");
   const vwap = find("vwap");
   const adx = find("adx");
@@ -359,6 +374,11 @@ export function IndicatorConfigForm({
     !bb ||
     !atr ||
     !obv ||
+    !ad ||
+    !chaikin ||
+    !eom ||
+    !obvMid ||
+    !equivolume ||
     !keltner ||
     !vwap ||
     !adx ||
@@ -386,7 +406,7 @@ export function IndicatorConfigForm({
 
   const indicatorWarnings = runtimeWarnings.filter(
     (w) =>
-      /SMA|EMA|RSI|MACD|STOCH|BB|MFI|ATR|OBV|KELTNER|켈트너|VWAP|ADX|PSAR|SAR|CCI|슈퍼|SUPER|ICHIMOKU|일목|스토캐|sma|ema|rsi|macd|stoch|bb|mfi|atr|obv|keltner|vwap|adx|psar|cci|supertrend|ichimoku|점수 규칙/i.test(
+      /SMA|EMA|RSI|MACD|STOCH|BB|MFI|ATR|OBV|A\/D|AD|CHAIKIN|EOM|EQUIVOLUME|KELTNER|켈트너|VWAP|ADX|PSAR|SAR|CCI|슈퍼|SUPER|ICHIMOKU|일목|스토캐|sma|ema|rsi|macd|stoch|bb|mfi|atr|obv|ad|chaikin|eom|obvMid|equivolume|keltner|vwap|adx|psar|cci|supertrend|ichimoku|점수 규칙/i.test(
         w,
       ) || w.includes("봉"),
   );
@@ -795,6 +815,136 @@ export function IndicatorConfigForm({
             max={30}
             onChange={(v) => {
               setIndicatorParam("obv", "energyLookback", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
+
+      {show("ad") && (
+        <IndicatorSection
+          title="A/D (매집/분산)"
+          help={INDICATOR_HELP.ad}
+          enabled={ad.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("ad", v);
+            patch();
+          }}
+        >
+          <p className="mb-2 text-xs text-text-tertiary">
+            종가 위치×거래량 누적. 파라미터 없음.
+          </p>
+        </IndicatorSection>
+      )}
+
+      {show("chaikin") && (
+        <IndicatorSection
+          title="Chaikin Oscillator"
+          help={INDICATOR_HELP.chaikin}
+          enabled={chaikin.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("chaikin", v);
+            patch();
+          }}
+        >
+          <NumInput
+            label="Fast EMA"
+            help={PARAM_HELP["chaikin.fast"]}
+            value={requireNumber(chaikin.params.fast ?? 3, "chaikin.fast")}
+            min={2}
+            max={20}
+            onChange={(v) => {
+              setIndicatorParam("chaikin", "fast", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Slow EMA"
+            help={PARAM_HELP["chaikin.slow"]}
+            value={requireNumber(chaikin.params.slow ?? 10, "chaikin.slow")}
+            min={5}
+            max={50}
+            onChange={(v) => {
+              setIndicatorParam("chaikin", "slow", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
+
+      {show("eom") && (
+        <IndicatorSection
+          title="Ease of Movement"
+          help={INDICATOR_HELP.eom}
+          enabled={eom.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("eom", v);
+            patch();
+          }}
+        >
+          <NumInput
+            label="SMA Period"
+            help={PARAM_HELP["eom.period"]}
+            value={requireNumber(eom.params.period ?? 14, "eom.period")}
+            min={2}
+            max={50}
+            onChange={(v) => {
+              setIndicatorParam("eom", "period", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Volume scale"
+            help={PARAM_HELP["eom.scale"]}
+            value={requireNumber(eom.params.scale ?? 10_000, "eom.scale")}
+            min={1}
+            max={1_000_000}
+            step={1000}
+            onChange={(v) => {
+              setIndicatorParam("eom", "scale", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
+
+      {show("obvMid") && (
+        <IndicatorSection
+          title="OBV Midpoint"
+          help={INDICATOR_HELP.obvMid}
+          enabled={obvMid.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("obvMid", v);
+            patch();
+          }}
+        >
+          <p className="mb-2 text-xs text-text-tertiary">
+            (고+저)/2 기준 OBV. 파라미터 없음.
+          </p>
+        </IndicatorSection>
+      )}
+
+      {show("equivolume") && (
+        <IndicatorSection
+          title="EquiVolume"
+          help={INDICATOR_HELP.equivolume}
+          enabled={equivolume.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("equivolume", v);
+            patch();
+          }}
+        >
+          <NumInput
+            label="Lookback"
+            help={PARAM_HELP["equivolume.lookback"]}
+            value={requireNumber(
+              equivolume.params.lookback ?? 20,
+              "equivolume.lookback",
+            )}
+            min={5}
+            max={60}
+            onChange={(v) => {
+              setIndicatorParam("equivolume", "lookback", v);
               patch();
             }}
           />

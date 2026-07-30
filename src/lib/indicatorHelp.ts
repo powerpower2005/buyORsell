@@ -169,6 +169,60 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
       "VWAP자금흐름·OBV다이버전스+ST·OBV+켈트너·패스트 OBV, 켈트너·VWAP·히트맵. 가격↑+거래량 폭발이 차익실현인지 돌파인지 OBV로 구분하세요.",
     tip: "과매수/과매도 기준선이 없습니다. 방향성과 다이버전스만 보세요. 상용 Fast OBV 3D 박스는 별도이며, 앱의 ‘패스트 OBV 추력’이 그 빠른 타점을 근사합니다.",
   },
+  ad: {
+    title: "A/D (Accumulation/Distribution)",
+    summary:
+      "종가가 당일 고·저 어디에 있는지 비율×거래량을 누적한 매집/분산 지표입니다. Marc Chaikin이 OBV를 개량. OBV는 전일 종가 대비로 당일 거래량 전부를 ±하지만, A/D는 ((C−L)−(H−C))/(H−L)×V로 배분합니다.",
+    howToFind:
+      "보조 지표에서 A/D를 켭니다. 우상향=매집, 우하향=분산. 가격과 이격(다이버전스)이 핵심. 종가가 고가=전량 가산, 저가=전량 차감, 중간=(H+L)/2면 그날 0.",
+    higher: "A/D 상승=거래량이 가격 상승과 동반 → 매집. 가격↓+A/D↑면 곧 반등 후보.",
+    lower: "A/D 하락=분산. 가격↑+A/D↓면 곧 조정 후보.",
+    worksWith: "Chaikin 오실레이터, OBV, 상투·바닥 매집/분산 분석.",
+    tip: "모든 거래량 지표의 본질은 ‘대량거래가 상승일인가 하락일인가’. A/D 추세=가격에 선행하는 경향을 이용.",
+  },
+  chaikin: {
+    title: "Chaikin Oscillator",
+    summary:
+      "단기 A/D EMA − 장기 A/D EMA(기본 3−10). 거래량이 가격에 선행한다는 전제로 A/D를 오실레이터화해 신호를 빠르게 냅니다.",
+    howToFind:
+      "보조 지표 Chaikin. 0선 상향/하향 돌파·가격과의 다이버전스. A/D 패널과 함께 보면 맥락이 잡힙니다.",
+    higher: "0선 위·상향 돌파=매수 모멘텀. 상승 다이버전스=롱 후보.",
+    lower: "0선 아래·하향 돌파=매도 모멘텀. 하락 다이버전스=숏/익절 후보.",
+    worksWith: "A/D 다이버전스, EquiVolume/EOM.",
+    tip: "‘전일 종가 비교’는 OBV 설명입니다. Chaikin/A/D는 당일 고저 대비 종가 위치입니다.",
+  },
+  eom: {
+    title: "Ease of Movement (EOM)",
+    summary:
+      "Richard Arms. 중간가 이동 ÷ (거래량/가격폭). 같은 거래량으로 가격이 잘 움직이면 값↑(이동 용이). EquiVolume과 짝으로 권장.",
+    howToFind:
+      "보조 지표 EOM. 실선=원시, 점선=SMA 스무스. 0선 돌파·EquiVolume 키다리/뚱보와 함께.",
+    higher: "양수·0 상향=상승 방향 이동이 쉬움(추세 지속 힌트).",
+    lower: "음수·0 하향=이동 곤란·하락 압력.",
+    worksWith: "EquiVolume 형태, Chaikin.",
+    tip: "주기성은 시계보다 거래량으로 보라 — Arms의 핵심 관점.",
+  },
+  obvMid: {
+    title: "OBV Midpoint",
+    summary:
+      "표준 OBV는 종가 비교. Midpoint는 (고+저)/2 비교로 ±/감산. 종가 왜곡이 큰 날에 대안.",
+    howToFind: "보조 지표 OBV Mid. 읽기법은 OBV와 동일(추세·다이버전스).",
+    higher: "우상향=매수 누적.",
+    lower: "우하향=매도 우위.",
+    worksWith: "표준 OBV와 괴리 시 Mid 쪽이 일중 중심가에 가깝습니다.",
+    tip: "표준 OBV와 거의 같으면 굳이 둘 다 켤 필요 없음.",
+  },
+  equivolume: {
+    title: "EquiVolume",
+    summary:
+      "Arms. 상자 높이=고−저, 넓이≈거래량. 키다리(좁고 김)=이동 용이·추세 지속, 정사각=보합, 뚱보=과다 물량(고점=공급·저점=매집). 캔들 횡축은 시간이지만 비율·봉색으로 형태를 표시합니다.",
+    howToFind:
+      "켜면 봉 테두리: 키다리=청록, 뚱보=주황, 정사각=기본. 아래 패널=상대 상자 비율. EOM과 함께.",
+    higher: "키다리+추세 방향=지속. 저점 뚱보=매집 후보.",
+    lower: "고점 뚱보=하락 경계. 정사각 연속=방향 불명.",
+    worksWith: "EOM, A/D·Chaikin.",
+    tip: "횡축을 거래량으로 재배치한 순수 EquiVolume 차트는 아님(시간축 고정). 형태 분류가 목적.",
+  },
   keltner: {
     title: "켈트너 채널 (Keltner Channel)",
     summary:
@@ -442,6 +496,26 @@ export const PARAM_HELP: Record<string, HelpContent> = {
     summary: "OBV 단기 기울기(에너지 %)를 볼 때 쓰는 봉 수입니다.",
     higher: "에너지가 더 긴 구간의 변화를 반영합니다.",
     lower: "최근 급변에 에너지가 민감해집니다.",
+  },
+  "chaikin.fast": {
+    title: "Fast EMA",
+    summary: "A/D 단기 EMA 기간. 차이킨 기본 3.",
+  },
+  "chaikin.slow": {
+    title: "Slow EMA",
+    summary: "A/D 장기 EMA 기간. 차이킨 기본 10.",
+  },
+  "eom.period": {
+    title: "SMA Period",
+    summary: "EOM 스무스(SMA) 기간. 기본 14.",
+  },
+  "eom.scale": {
+    title: "Volume scale",
+    summary: "거래량 나눗수. 종목 거래량 단위에 맞게(기본 10000).",
+  },
+  "equivolume.lookback": {
+    title: "Lookback",
+    summary: "상자 비율 중앙값 비교 구간. 기본 20.",
   },
   "keltner.emaPeriod": {
     title: "EMA Period",

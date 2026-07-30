@@ -10,7 +10,12 @@ export type VolumeStrategyId =
   | "vwap_switching"
   | "obv_divergence"
   | "obv_keltner"
-  | "obv_fast_thrust";
+  | "obv_fast_thrust"
+  | "ad_divergence"
+  | "chaikin_zero"
+  | "chaikin_divergence"
+  | "equivolume_oversquare"
+  | "eom_zero";
 
 export const VOLUME_STRATEGY_ORDER: VolumeStrategyId[] = [
   "heatmap_volume",
@@ -22,6 +27,11 @@ export const VOLUME_STRATEGY_ORDER: VolumeStrategyId[] = [
   "obv_divergence",
   "obv_keltner",
   "obv_fast_thrust",
+  "ad_divergence",
+  "chaikin_zero",
+  "chaikin_divergence",
+  "equivolume_oversquare",
+  "eom_zero",
 ];
 
 export const VOLUME_STRATEGY_META: Record<
@@ -114,6 +124,51 @@ export const VOLUME_STRATEGY_META: Record<
       "OBV 에너지(단기 기울기)가 강하고 최근 고·저를 돌파할 때 빠른 타점. 상용 Fast OBV 박스의 근사.",
     markerBull: "OF↑",
     markerBear: "OF↓",
+    typicalDirection: "neutral",
+  },
+  ad_divergence: {
+    label: "A/D divergence",
+    labelKo: "A/D 다이버전스",
+    description:
+      "가격 HH+A/D LH(분산→숏/익절), 가격 LL+A/D HL(매집→롱). OBV보다 일중 종가 위치로 세밀.",
+    markerBull: "AD↑",
+    markerBear: "AD↓",
+    typicalDirection: "neutral",
+  },
+  chaikin_zero: {
+    label: "Chaikin zero cross",
+    labelKo: "Chaikin 0선",
+    description:
+      "차이킨 오실레이터가 0선 상향 돌파→매수 모멘텀, 하향 돌파→매도 모멘텀.",
+    markerBull: "CZ↑",
+    markerBear: "CZ↓",
+    typicalDirection: "neutral",
+  },
+  chaikin_divergence: {
+    label: "Chaikin divergence",
+    labelKo: "Chaikin 다이버전스",
+    description:
+      "가격 HH+Chaikin LH(하락 다이버전스), 가격 LL+Chaikin HL(상승 다이버전스).",
+    markerBull: "CD↑",
+    markerBear: "CD↓",
+    typicalDirection: "neutral",
+  },
+  equivolume_oversquare: {
+    label: "EquiVolume oversquare",
+    labelKo: "EquiVolume 뚱보형",
+    description:
+      "스윙 고점 뚱보형=과다 공급·하락 경계, 스윙 저점 뚱보형=매집·상승 후보. EquiVolume+EOM과 함께.",
+    markerBull: "EQ↑",
+    markerBear: "EQ↓",
+    typicalDirection: "neutral",
+  },
+  eom_zero: {
+    label: "EOM zero cross",
+    labelKo: "EOM 0선",
+    description:
+      "Ease of Movement 스무스선이 0 상향→이동 용이(상승 힘), 하향→이동 곤란/하락 힘.",
+    markerBull: "EM↑",
+    markerBear: "EM↓",
     typicalDirection: "neutral",
   },
 };

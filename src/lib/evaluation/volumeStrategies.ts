@@ -453,47 +453,130 @@ function detectObvDivergence(
   obv: Map<string, number>,
   start: number,
 ): VolumeStrategyHit[] {
+  return detectSeriesDivergence(
+    bars,
+    obv,
+    start,
+    "obv_divergence",
+    "가격 LL + OBV HL 상승 다이버전스",
+    "가격 HH + OBV LH 하락 다이버전스",
+  );
+}
+
+function detectSeriesDivergence(
+  bars: OHLCVBar[],
+  series: Map<string, number>,
+  start: number,
+  id: VolumeStrategyId,
+  bullSummary: string,
+  bearSummary: string,
+): VolumeStrategyHit[] {
   const hits: VolumeStrategyHit[] = [];
   const pivotLows: number[] = [];
   const pivotHighs: number[] = [];
   for (let i = Math.max(start, 3); i < bars.length - 2; i++) {
-    if (obv.has(bars[i].date) && localLow(bars, i)) pivotLows.push(i);
-    if (obv.has(bars[i].date) && localHigh(bars, i)) pivotHighs.push(i);
+    if (series.has(bars[i].date) && localLow(bars, i)) pivotLows.push(i);
+    if (series.has(bars[i].date) && localHigh(bars, i)) pivotHighs.push(i);
   }
   for (let p = 1; p < pivotLows.length; p++) {
     const a = pivotLows[p - 1]!;
     const b = pivotLows[p]!;
     if (b - a < 3 || b - a > 40) continue;
-    const oa = obv.get(bars[a].date);
-    const ob = obv.get(bars[b].date);
+    const oa = series.get(bars[a].date);
+    const ob = series.get(bars[b].date);
     if (oa == null || ob == null) continue;
     if (bars[b].low < bars[a].low && ob > oa) {
-      hits.push(
-        hit(
-          "obv_divergence",
-          b,
-          bars,
-          "bullish",
-          "가격 LL + OBV HL 상승 다이버전스",
-        ),
-      );
+      hits.push(hit(id, b, bars, "bullish", bullSummary));
     }
   }
   for (let p = 1; p < pivotHighs.length; p++) {
     const a = pivotHighs[p - 1]!;
     const b = pivotHighs[p]!;
     if (b - a < 3 || b - a > 40) continue;
-    const oa = obv.get(bars[a].date);
-    const ob = obv.get(bars[b].date);
+    const oa = series.get(bars[a].date);
+    const ob = series.get(bars[b].date);
     if (oa == null || ob == null) continue;
     if (bars[b].high > bars[a].high && ob < oa) {
+      hits.push(hit(id, b, bars, "bearish", bearSummary));
+    }
+  }
+  return hits;
+}
+
+function detectChaikinZero(
+  bars: OHLCVBar[],
+  chaikin: Map<string, number>,
+  start: number,
+): VolumeStrategyHit[] {
+  const hits: VolumeStrategyHit[] = [];
+  for (let i = Math.max(start, 1); i < bars.length; i++) {
+    const prev = chaikin.get(bars[i - 1].date);
+    const cur = chaikin.get(bars[i].date);
+    if (prev == null || cur == null) continue;
+    if (prev <= 0 && cur > 0) {
+      hits.push(
+        hit("chaikin_zero", i, bars, "bullish", "Chaikin 0선 상향 돌파"),
+      );
+    }
+    if (prev >= 0 && cur < 0) {
+      hits.push(
+        hit("chaikin_zero", i, bars, "bearish", "Chaikin 0선 하향 돌파"),
+      );
+    }
+  }
+  return hits;
+}
+
+function detectEomZero(
+  bars: OHLCVBar[],
+  eom: Map<string, number>,
+  start: number,
+): VolumeStrategyHit[] {
+  const hits: VolumeStrategyHit[] = [];
+  for (let i = Math.max(start, 1); i < bars.length; i++) {
+    const prev = eom.get(bars[i - 1].date);
+    const cur = eom.get(bars[i].date);
+    if (prev == null || cur == null) continue;
+    if (prev <= 0 && cur > 0) {
+      hits.push(hit("eom_zero", i, bars, "bullish", "EOM 0선 상향 돌파"));
+    }
+    if (prev >= 0 && cur < 0) {
+      hits.push(hit("eom_zero", i, bars, "bearish", "EOM 0선 하향 돌파"));
+    }
+  }
+  return hits;
+}
+
+/** Oversquare (shape=3) at swing high/low → distribution / accumulation. */
+function detectEquivolumeOversquare(
+  bars: OHLCVBar[],
+  shape: Map<string, number>,
+  start: number,
+): VolumeStrategyHit[] {
+  const hits: VolumeStrategyHit[] = [];
+  const OVERSQUARE = 3;
+  for (let i = Math.max(start, 3); i < bars.length - 2; i++) {
+    const s = shape.get(bars[i].date);
+    if (s !== OVERSQUARE) continue;
+    if (localHigh(bars, i)) {
       hits.push(
         hit(
-          "obv_divergence",
-          b,
+          "equivolume_oversquare",
+          i,
           bars,
           "bearish",
-          "가격 HH + OBV LH 하락 다이버전스",
+          "스윙 고점 뚱보형(과다 공급·하락 경계)",
+        ),
+      );
+    }
+    if (localLow(bars, i)) {
+      hits.push(
+        hit(
+          "equivolume_oversquare",
+          i,
+          bars,
+          "bullish",
+          "스윙 저점 뚱보형(매집·상승 후보)",
         ),
       );
     }
@@ -694,6 +777,15 @@ export function detectVolumeStrategies(
   const kcUpper = mapSeries(kc?.series.upper);
   const kcLower = mapSeries(kc?.series.lower);
 
+  const ad = mapSeries(indicators?.indicators.ad?.series.ad);
+  const chaikin = mapSeries(indicators?.indicators.chaikin?.series.chaikin);
+  const eomSmooth = mapSeries(
+    indicators?.indicators.eom?.series.eomSmooth?.length
+      ? indicators.indicators.eom.series.eomSmooth
+      : indicators?.indicators.eom?.series.eom,
+  );
+  const eqShape = mapSeries(indicators?.indicators.equivolume?.series.shape);
+
   const all = [
     ...detectHeatmap(bars, frames, start),
     ...detectVolumeFight(bars, frames, start),
@@ -712,6 +804,35 @@ export function detectVolumeStrategies(
     ...(obv.size && obvSignal.size && obvEnergy.size
       ? [...detectObvFastThrust(bars, obv, obvSignal, obvEnergy, start)]
       : []),
+    ...(ad.size
+      ? [
+          ...detectSeriesDivergence(
+            bars,
+            ad,
+            start,
+            "ad_divergence",
+            "가격 LL + A/D HL 매집 다이버전스",
+            "가격 HH + A/D LH 분산 다이버전스",
+          ),
+        ]
+      : []),
+    ...(chaikin.size
+      ? [
+          ...detectChaikinZero(bars, chaikin, start),
+          ...detectSeriesDivergence(
+            bars,
+            chaikin,
+            start,
+            "chaikin_divergence",
+            "가격 LL + Chaikin HL 상승 다이버전스",
+            "가격 HH + Chaikin LH 하락 다이버전스",
+          ),
+        ]
+      : []),
+    ...(eqShape.size
+      ? [...detectEquivolumeOversquare(bars, eqShape, start)]
+      : []),
+    ...(eomSmooth.size ? [...detectEomZero(bars, eomSmooth, start)] : []),
   ];
 
   const inWindow = all.filter((h) => h.barIndex >= start);

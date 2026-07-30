@@ -600,21 +600,42 @@ export function CandleChart({
     showStrategyConfluence,
   ]);
 
-  const barHighlights = useMemo(
-    () =>
-      patternBarHighlights(
-        patterns,
-        chartPatternVisibility,
-        classicalPatterns,
-        chartClassicalPatternVisibility,
-      ),
-    [
+  const barHighlights = useMemo(() => {
+    const base = patternBarHighlights(
       patterns,
       chartPatternVisibility,
       classicalPatterns,
       chartClassicalPatternVisibility,
-    ],
-  );
+    );
+    if (auxIndicatorVisibility?.equivolume !== true) return base;
+    const shapePts = indicators?.indicators.equivolume?.series.shape;
+    if (!shapePts?.length) return base;
+    const out = new Map(base);
+    for (const p of shapePts) {
+      if (out.has(p.date)) continue; // pattern highlight wins
+      if (p.value === 1) {
+        out.set(p.date, {
+          color: "rgba(34, 211, 238, 0.35)",
+          borderColor: "#22d3ee",
+          wickColor: "#22d3ee",
+        });
+      } else if (p.value === 3) {
+        out.set(p.date, {
+          color: "rgba(251, 146, 60, 0.35)",
+          borderColor: "#fb923c",
+          wickColor: "#fb923c",
+        });
+      }
+    }
+    return out;
+  }, [
+    patterns,
+    chartPatternVisibility,
+    classicalPatterns,
+    chartClassicalPatternVisibility,
+    auxIndicatorVisibility?.equivolume,
+    indicators?.indicators.equivolume?.series.shape,
+  ]);
 
   const srZones = useMemo(
     () =>
@@ -2109,6 +2130,130 @@ export function CandleChart({
           sig.setData(toLineData(out.obv.series.obvSignal));
           oscSeriesRefs.current.set("obvSignal", sig);
         }
+        return;
+      }
+
+      if (pane.id === "ad") {
+        const line = chart.addSeries(
+          LineSeries,
+          {
+            color: "#a78bfa",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        line.setData(toLineData(out.ad?.series.ad));
+        oscSeriesRefs.current.set("ad", line);
+        return;
+      }
+
+      if (pane.id === "chaikin") {
+        const line = chart.addSeries(
+          LineSeries,
+          {
+            color: "#f472b6",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        line.createPriceLine({
+          price: 0,
+          color: "rgba(148, 163, 184, 0.55)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: false,
+          title: "",
+        });
+        line.setData(toLineData(out.chaikin?.series.chaikin));
+        oscSeriesRefs.current.set("chaikin", line);
+        return;
+      }
+
+      if (pane.id === "eom") {
+        const line = chart.addSeries(
+          LineSeries,
+          {
+            color: "#34d399",
+            lineWidth: 1,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        line.createPriceLine({
+          price: 0,
+          color: "rgba(148, 163, 184, 0.55)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: false,
+          title: "",
+        });
+        line.setData(toLineData(out.eom?.series.eom));
+        oscSeriesRefs.current.set("eom", line);
+        if (out.eom?.series.eomSmooth?.length) {
+          const smooth = chart.addSeries(
+            LineSeries,
+            {
+              color: "#fbbf24",
+              lineWidth: 2,
+              lastValueVisible: false,
+              priceLineVisible: false,
+              crosshairMarkerVisible: false,
+            },
+            paneIndex,
+          );
+          smooth.setData(toLineData(out.eom.series.eomSmooth));
+          oscSeriesRefs.current.set("eomSmooth", smooth);
+        }
+        return;
+      }
+
+      if (pane.id === "obvMid") {
+        const line = chart.addSeries(
+          LineSeries,
+          {
+            color: "#67e8f9",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        line.setData(toLineData(out.obvMid?.series.obvMid));
+        oscSeriesRefs.current.set("obvMid", line);
+        return;
+      }
+
+      if (pane.id === "equivolume") {
+        const line = chart.addSeries(
+          LineSeries,
+          {
+            color: "#fb923c",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        line.createPriceLine({
+          price: 1,
+          color: "rgba(148, 163, 184, 0.45)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: false,
+          title: "",
+        });
+        line.setData(toLineData(out.equivolume?.series.boxRatio));
+        oscSeriesRefs.current.set("equivolume", line);
         return;
       }
 

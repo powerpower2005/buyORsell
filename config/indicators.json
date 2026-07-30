@@ -77,6 +77,40 @@
       "timeframes": ["1h", "4h", "1d", "1w"]
     },
     {
+      "id": "ad",
+      "enabled": true,
+      "params": {},
+      "timeframes": ["1h", "4h", "1d", "1w"]
+    },
+    {
+      "id": "chaikin",
+      "enabled": true,
+      "params": { "fast": 3, "slow": 10 },
+      "timeframes": ["1h", "4h", "1d", "1w"]
+    },
+    {
+      "id": "eom",
+      "enabled": true,
+      "params": { "period": 14, "scale": 10000 },
+      "timeframes": ["1h", "4h", "1d", "1w"]
+    },
+    {
+      "id": "obvMid",
+      "enabled": true,
+      "params": {},
+      "timeframes": ["1h", "4h", "1d", "1w"]
+    },
+    {
+      "id": "equivolume",
+      "enabled": true,
+      "params": {
+        "lookback": 20,
+        "narrowMax": 0.7,
+        "oversquareMin": 1.4
+      },
+      "timeframes": ["1h", "4h", "1d", "1w"]
+    },
+    {
       "id": "keltner",
       "enabled": true,
       "params": {

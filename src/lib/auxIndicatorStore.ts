@@ -7,6 +7,11 @@ export type AuxIndicatorId =
   | "mfi"
   | "atr"
   | "obv"
+  | "ad"
+  | "chaikin"
+  | "eom"
+  | "obvMid"
+  | "equivolume"
   | "keltner"
   | "vwap"
   | "adx"
@@ -22,6 +27,11 @@ export const AUX_INDICATOR_ORDER: AuxIndicatorId[] = [
   "mfi",
   "atr",
   "obv",
+  "ad",
+  "chaikin",
+  "eom",
+  "obvMid",
+  "equivolume",
   "keltner",
   "vwap",
   "adx",
@@ -58,6 +68,26 @@ export const AUX_INDICATOR_META: Record<
   obv: {
     labelKo: "OBV",
     description: "누적 균형 거래량(+시그널·에너지) — 별도 섹션.",
+  },
+  ad: {
+    labelKo: "A/D",
+    description: "매집/분산(Accumulation/Distribution) — 별도 섹션.",
+  },
+  chaikin: {
+    labelKo: "Chaikin",
+    description: "차이킨 오실레이터(A/D EMA 단기−장기) — 별도 섹션.",
+  },
+  eom: {
+    labelKo: "EOM",
+    description: "Ease of Movement — EquiVolume 짝 지표, 별도 섹션.",
+  },
+  obvMid: {
+    labelKo: "OBV Mid",
+    description: "중간가(H+L)/2 기준 OBV — 별도 섹션.",
+  },
+  equivolume: {
+    labelKo: "EquiVolume",
+    description: "상자 비율·형태(키다리/정사각/뚱보) — 봉 색 + 비율 패널.",
   },
   keltner: {
     labelKo: "켈트너",
@@ -97,6 +127,11 @@ export const INDICATOR_TO_AUX: Partial<Record<string, AuxIndicatorId>> = {
   mfi: "mfi",
   atr: "atr",
   obv: "obv",
+  ad: "ad",
+  chaikin: "chaikin",
+  eom: "eom",
+  obvMid: "obvMid",
+  equivolume: "equivolume",
   keltner: "keltner",
   vwap: "vwap",
   adx: "adx",

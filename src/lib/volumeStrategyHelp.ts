@@ -137,6 +137,61 @@ export const VOLUME_STRATEGY_HELP: Record<VolumeStrategyId, HelpContent> = {
       "OBV 패널(시그널선·에너지), 켈트너(늦은 확인), 지지·저항. 관망(약한 에너지) 구간은 진입하지 마세요.",
     tip: "TradingView 유료 Fast OBV 박스와 동일하지 않습니다. OBV 모멘텀+돌파로 빠른 타점을 흉내 낸 전략입니다.",
   },
+  ad_divergence: {
+    title: "A/D 다이버전스",
+    summary: VOLUME_STRATEGY_META.ad_divergence.description,
+    howToFind:
+      "A/D는 종가가 당일 고·저 어디에 있는지×거래량을 누적합니다. OBV(전일 종가 비교)보다 일중 매집/분산이 세밀합니다. 가격 스윙과 A/D 스윙 다이버전스를 봅니다.",
+    ...BREAK,
+    higher: "가격 LL + A/D HL → 매집·롱 후보.",
+    lower: "가격 HH + A/D LH → 분산·숏/익절 후보.",
+    worksWith: "Chaikin 오실레이터, OBV 다이버전스, 상투·바닥 구간.",
+    tip: "상투·바닥에서 A/D가 가격보다 먼저 꺾이면 반전 가능성이 큽니다.",
+  },
+  chaikin_zero: {
+    title: "Chaikin 0선",
+    summary: VOLUME_STRATEGY_META.chaikin_zero.description,
+    howToFind:
+      "A/D의 단기 EMA(3)−장기 EMA(10). 0선 상·하향 돌파에 마커. 거래량이 가격에 선행한다는 전제.",
+    ...BREAK,
+    higher: "0선 상향 돌파 → 매수 모멘텀.",
+    lower: "0선 하향 돌파 → 매도 모멘텀.",
+    worksWith: "Chaikin 다이버전스, A/D 추세, 가격 돌파.",
+    tip: "단독 0선보다 다이버전스·가격 확인과 겹치면 신뢰↑.",
+  },
+  chaikin_divergence: {
+    title: "Chaikin 다이버전스",
+    summary: VOLUME_STRATEGY_META.chaikin_divergence.description,
+    howToFind:
+      "가격 스윙 고·저와 Chaikin 스윙을 비교. 오실레이터라 OBV/A/D 선보다 신호가 빠른 편.",
+    ...BREAK,
+    higher: "가격 LL + Chaikin HL → 롱 후보.",
+    lower: "가격 HH + Chaikin LH → 숏/익절 후보.",
+    worksWith: "Chaikin 0선, A/D 다이버전스.",
+    tip: "괴리 후 0선 방향이 맞으면 확인 신호로 봅니다.",
+  },
+  equivolume_oversquare: {
+    title: "EquiVolume 뚱보형",
+    summary: VOLUME_STRATEGY_META.equivolume_oversquare.description,
+    howToFind:
+      "EquiVolume 켜면 봉 테두리가 형태별로 칠해집니다(키다리=청, 뚱보=주황). 스윙 고·저의 뚱보형에 마커. 횡축은 여전히 시간이지만, 상자 비율로 Arms식 형태를 근사합니다.",
+    ...BREAK,
+    higher: "스윙 저점 뚱보형 → 매집·상승 후보.",
+    lower: "스윙 고점 뚱보형 → 과다 공급·하락 경계.",
+    worksWith: "EOM(이동 용이성), A/D·Chaikin.",
+    tip: "진짜 EquiVolume은 거래량으로 횡축 폭을 잡습니다. 여기선 형태 분류+봉 색+비율 패널.",
+  },
+  eom_zero: {
+    title: "EOM 0선",
+    summary: VOLUME_STRATEGY_META.eom_zero.description,
+    howToFind:
+      "Ease of Movement 스무스선이 0을 상·하향 돌파할 때. EquiVolume과 짝으로 쓰면 ‘움직이기 쉬운지’를 숫자로 확인.",
+    ...BREAK,
+    higher: "0 상향 → 상승 방향 이동 용이.",
+    lower: "0 하향 → 하락 방향·이동 곤란.",
+    worksWith: "EquiVolume 뚱보/키다리, Chaikin.",
+    tip: "키다리형 + EOM↑ = 추세 지속 힌트.",
+  },
 };
 
 export function volumeStrategyHelp(id: VolumeStrategyId): HelpContent {

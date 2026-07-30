@@ -143,6 +143,19 @@ function layersForVolume(id: VolumeStrategyId): Set<LayerKey> {
     case "obv_keltner":
       add(out, aux("obv"), aux("keltner"));
       break;
+    case "ad_divergence":
+      add(out, aux("ad"));
+      break;
+    case "chaikin_zero":
+    case "chaikin_divergence":
+      add(out, aux("chaikin"));
+      break;
+    case "equivolume_oversquare":
+      add(out, aux("equivolume"), aux("eom"));
+      break;
+    case "eom_zero":
+      add(out, aux("eom"));
+      break;
   }
   return out;
 }
