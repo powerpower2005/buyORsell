@@ -5,6 +5,8 @@ import {
 import {
   enableIndicatorsForStrategy,
   enableIndicatorsForStrategies,
+  releaseIndicatorsForStrategy,
+  releaseIndicatorsForStrategies,
 } from "./strategyIndicatorDeps";
 
 const STORAGE_KEY = "gf:config:combo-strategies";
@@ -45,6 +47,7 @@ export function setComboStrategyVisible(
   overrides[id] = visible;
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategy("combo", id);
+  else releaseIndicatorsForStrategy("combo", id);
 }
 
 export function setComboStrategyGroupVisible(visible: boolean): void {
@@ -54,6 +57,7 @@ export function setComboStrategyGroupVisible(visible: boolean): void {
   }
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategies("combo", COMBO_STRATEGY_ORDER);
+  else releaseIndicatorsForStrategies("combo", COMBO_STRATEGY_ORDER);
 }
 
 /** Toggle a subset (e.g. strategies listed under one aux indicator). */
@@ -67,4 +71,5 @@ export function setComboStrategyIdsVisible(
   }
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategies("combo", ids);
+  else releaseIndicatorsForStrategies("combo", ids);
 }

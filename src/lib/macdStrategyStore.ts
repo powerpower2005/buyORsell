@@ -5,6 +5,8 @@ import {
 import {
   enableIndicatorsForStrategy,
   enableIndicatorsForStrategies,
+  releaseIndicatorsForStrategy,
+  releaseIndicatorsForStrategies,
 } from "./strategyIndicatorDeps";
 
 const STORAGE_KEY = "gf:config:macd-strategies";
@@ -42,6 +44,7 @@ export function setMacdStrategyVisible(
   overrides[id] = visible;
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategy("macd", id);
+  else releaseIndicatorsForStrategy("macd", id);
 }
 
 export function setMacdStrategyGroupVisible(visible: boolean): void {
@@ -51,4 +54,5 @@ export function setMacdStrategyGroupVisible(visible: boolean): void {
   }
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategies("macd", MACD_STRATEGY_ORDER);
+  else releaseIndicatorsForStrategies("macd", MACD_STRATEGY_ORDER);
 }

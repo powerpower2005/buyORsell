@@ -5,6 +5,8 @@ import {
 import {
   enableIndicatorsForStrategy,
   enableIndicatorsForStrategies,
+  releaseIndicatorsForStrategy,
+  releaseIndicatorsForStrategies,
 } from "./strategyIndicatorDeps";
 
 const STORAGE_KEY = "gf:config:stoch-strategies";
@@ -42,6 +44,7 @@ export function setStochStrategyVisible(
   overrides[id] = visible;
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategy("stoch", id);
+  else releaseIndicatorsForStrategy("stoch", id);
 }
 
 export function setStochStrategyGroupVisible(visible: boolean): void {
@@ -51,4 +54,5 @@ export function setStochStrategyGroupVisible(visible: boolean): void {
   }
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategies("stoch", STOCH_STRATEGY_ORDER);
+  else releaseIndicatorsForStrategies("stoch", STOCH_STRATEGY_ORDER);
 }

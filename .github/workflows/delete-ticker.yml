@@ -1,0 +1,70 @@
+name: Delete Ticker
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: "Ticker to remove (e.g. .IXIC:INDEXNASDAQ or NVDA:NASDAQ)"
+        required: true
+        type: string
+      timeframe:
+        description: "Timeframe to remove (all = every TF for this ticker)"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - 1d
+          - 1w
+      keep_name:
+        description: "Keep display name in data/ticker-names.json"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: delete-ticker
+  cancel-in-progress: false
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Delete ticker data
+        id: delete
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          EXTRA=()
+          if [ "${{ github.event.inputs.keep_name }}" = "true" ]; then
+            EXTRA+=(--keep-name)
+          fi
+          node scripts/delete-ticker.mjs \
+            "${{ github.event.inputs.ticker }}" \
+            --timeframe "${{ github.event.inputs.timeframe }}" \
+            "${EXTRA[@]}" \
+            | tee artifacts/delete-ticker-report.json
+
+      - name: Validate data
+        run: node scripts/validate-data.mjs
+
+      - name: Commit deletion
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "data: delete ${{ github.event.inputs.ticker }} (${{ github.event.inputs.timeframe }})"
+            git push
+          fi

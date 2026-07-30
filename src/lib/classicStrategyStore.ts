@@ -5,6 +5,8 @@ import {
 import {
   enableIndicatorsForStrategy,
   enableIndicatorsForStrategies,
+  releaseIndicatorsForStrategy,
+  releaseIndicatorsForStrategies,
 } from "./strategyIndicatorDeps";
 
 const STORAGE_KEY = "gf:config:classic-strategies";
@@ -45,6 +47,7 @@ export function setClassicStrategyVisible(
   overrides[id] = visible;
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategy("classic", id);
+  else releaseIndicatorsForStrategy("classic", id);
 }
 
 export function setClassicStrategyGroupVisible(visible: boolean): void {
@@ -54,4 +57,5 @@ export function setClassicStrategyGroupVisible(visible: boolean): void {
   }
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategies("classic", CLASSIC_STRATEGY_ORDER);
+  else releaseIndicatorsForStrategies("classic", CLASSIC_STRATEGY_ORDER);
 }

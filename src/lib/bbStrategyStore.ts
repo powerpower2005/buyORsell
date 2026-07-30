@@ -5,6 +5,8 @@ import {
 import {
   enableIndicatorsForStrategy,
   enableIndicatorsForStrategies,
+  releaseIndicatorsForStrategy,
+  releaseIndicatorsForStrategies,
 } from "./strategyIndicatorDeps";
 
 const STORAGE_KEY = "gf:config:bb-strategies-chart";
@@ -42,6 +44,7 @@ export function setBbStrategyVisible(
   overrides[id] = visible;
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategy("bb", id);
+  else releaseIndicatorsForStrategy("bb", id);
 }
 
 export function setBbStrategyGroupVisible(visible: boolean): void {
@@ -51,4 +54,5 @@ export function setBbStrategyGroupVisible(visible: boolean): void {
   }
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategies("bb", BB_STRATEGY_ORDER);
+  else releaseIndicatorsForStrategies("bb", BB_STRATEGY_ORDER);
 }

@@ -2,6 +2,8 @@ import { RSI_STRATEGY_ORDER, type RsiStrategyId } from "./rsiStrategyMeta";
 import {
   enableIndicatorsForStrategy,
   enableIndicatorsForStrategies,
+  releaseIndicatorsForStrategy,
+  releaseIndicatorsForStrategies,
 } from "./strategyIndicatorDeps";
 
 const STORAGE_KEY = "gf:config:rsi-strategies";
@@ -39,6 +41,7 @@ export function setRsiStrategyVisible(
   overrides[id] = visible;
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategy("rsi", id);
+  else releaseIndicatorsForStrategy("rsi", id);
 }
 
 export function setRsiStrategyGroupVisible(visible: boolean): void {
@@ -48,4 +51,5 @@ export function setRsiStrategyGroupVisible(visible: boolean): void {
   }
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategies("rsi", RSI_STRATEGY_ORDER);
+  else releaseIndicatorsForStrategies("rsi", RSI_STRATEGY_ORDER);
 }

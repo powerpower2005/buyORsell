@@ -5,6 +5,8 @@ import {
 import {
   enableIndicatorsForStrategy,
   enableIndicatorsForStrategies,
+  releaseIndicatorsForStrategy,
+  releaseIndicatorsForStrategies,
 } from "./strategyIndicatorDeps";
 
 const STORAGE_KEY = "gf:config:volume-strategies";
@@ -45,6 +47,7 @@ export function setVolumeStrategyVisible(
   overrides[id] = visible;
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategy("volume", id);
+  else releaseIndicatorsForStrategy("volume", id);
 }
 
 export function setVolumeStrategyGroupVisible(visible: boolean): void {
@@ -54,4 +57,5 @@ export function setVolumeStrategyGroupVisible(visible: boolean): void {
   }
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategies("volume", VOLUME_STRATEGY_ORDER);
+  else releaseIndicatorsForStrategies("volume", VOLUME_STRATEGY_ORDER);
 }

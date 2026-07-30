@@ -5,6 +5,8 @@ import {
 import {
   enableIndicatorsForStrategy,
   enableIndicatorsForStrategies,
+  releaseIndicatorsForStrategy,
+  releaseIndicatorsForStrategies,
 } from "./strategyIndicatorDeps";
 
 const STORAGE_KEY = "gf:config:pattern-strategies";
@@ -45,6 +47,7 @@ export function setPatternStrategyVisible(
   overrides[id] = visible;
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategy("pattern", id);
+  else releaseIndicatorsForStrategy("pattern", id);
 }
 
 export function setPatternStrategyGroupVisible(visible: boolean): void {
@@ -55,5 +58,7 @@ export function setPatternStrategyGroupVisible(visible: boolean): void {
   saveOverrides(overrides);
   if (visible) {
     enableIndicatorsForStrategies("pattern", PATTERN_STRATEGY_ORDER);
+  } else {
+    releaseIndicatorsForStrategies("pattern", PATTERN_STRATEGY_ORDER);
   }
 }

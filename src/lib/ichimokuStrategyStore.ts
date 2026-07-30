@@ -5,6 +5,8 @@ import {
 import {
   enableIndicatorsForStrategy,
   enableIndicatorsForStrategies,
+  releaseIndicatorsForStrategy,
+  releaseIndicatorsForStrategies,
 } from "./strategyIndicatorDeps";
 
 const STORAGE_KEY = "gf:config:ichimoku-strategies";
@@ -45,6 +47,7 @@ export function setIchimokuStrategyVisible(
   overrides[id] = visible;
   saveOverrides(overrides);
   if (visible) enableIndicatorsForStrategy("ichimoku", id);
+  else releaseIndicatorsForStrategy("ichimoku", id);
 }
 
 export function setIchimokuStrategyGroupVisible(visible: boolean): void {
@@ -55,5 +58,7 @@ export function setIchimokuStrategyGroupVisible(visible: boolean): void {
   saveOverrides(overrides);
   if (visible) {
     enableIndicatorsForStrategies("ichimoku", ICHIMOKU_STRATEGY_ORDER);
+  } else {
+    releaseIndicatorsForStrategies("ichimoku", ICHIMOKU_STRATEGY_ORDER);
   }
 }
