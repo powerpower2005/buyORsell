@@ -12,6 +12,7 @@ export type ChartPatternId =
   | "falling_wedge"
   | "ascending_triangle"
   | "descending_triangle"
+  | "symmetrical_triangle"
   | "pennant"
   | "flag";
 
@@ -28,6 +29,7 @@ export const CHART_PATTERN_ORDER: ChartPatternId[] = [
   "rising_wedge",
   "descending_triangle",
   "head_and_shoulders",
+  "symmetrical_triangle",
   "pennant",
 ];
 
@@ -121,7 +123,7 @@ export const CHART_PATTERN_META: Record<
     category: "reversal",
     typicalDirection: "bearish",
     description:
-      "수렴 상승 쐐기 반전. 하단 지지 이탈 숏 · 목표가 초기 쐐기 폭. 돌파 거래량 확인.",
+      "우상향 수렴 쐐기. 전형은 하단 이탈 숏이지만 모양만으로 단정 금지 · 경계 종가 돌파 확인 · 목표가 초기 폭. 상단 돌파는 지속.",
     markerBull: "RW↑",
     markerBear: "RW↓",
     color: "#fbbf24",
@@ -132,7 +134,7 @@ export const CHART_PATTERN_META: Record<
     category: "reversal",
     typicalDirection: "bullish",
     description:
-      "수렴 하락 쐐기 반전. 상단 저항 돌파 롱 · 손절 최근 저점 · 목표가 초기 폭.",
+      "우하향 수렴 쐐기. 전형은 상단 돌파 롱이지만 모양만으로 단정 금지 · 경계 종가 돌파 확인 · 목표가 초기 폭. 하단 이탈은 지속.",
     markerBull: "FW↑",
     markerBear: "FW↓",
     color: "#a3e635",
@@ -143,7 +145,7 @@ export const CHART_PATTERN_META: Record<
     category: "continuation",
     typicalDirection: "bullish",
     description:
-      "수평 저항+우상향 지지 지속. 저항 돌파 롱 · 목표가 삼각형 높이. 거래량 동반 확인.",
+      "수평 저항+우상향 지지. 방향 단정 금지 · 저항 종가 돌파 확인 후 롱 · 목표가 높이. 거래량·리테스트 권장.",
     markerBull: "AT↑",
     markerBear: "AT↓",
     color: "#60a5fa",
@@ -154,10 +156,21 @@ export const CHART_PATTERN_META: Record<
     category: "continuation",
     typicalDirection: "bearish",
     description:
-      "수평 지지+우하향 저항. 지지 이탈 숏 · 목표가 삼각형 높이. 이탈 시 거래량 확인.",
+      "수평 지지+우하향 저항. 방향 단정 금지 · 지지 종가 이탈 확인 후 숏 · 목표가 높이. 거래량·리테스트 권장.",
     markerBull: "DT↑",
     markerBear: "DT↓",
     color: "#c084fc",
+  },
+  symmetrical_triangle: {
+    label: "Symmetrical triangle",
+    labelKo: "대칭 삼각 수렴",
+    category: "continuation",
+    typicalDirection: "both",
+    description:
+      "고↓·저↑ 수렴. 방향 예측 금지 · 상·하단 종가 돌파 확인 후 진입 · 목표가 초기 높이. 페이크 돌파 주의.",
+    markerBull: "ST↑",
+    markerBear: "ST↓",
+    color: "#94a3b8",
   },
   pennant: {
     label: "Pennant",

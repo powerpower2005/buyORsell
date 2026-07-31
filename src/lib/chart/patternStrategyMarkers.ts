@@ -54,15 +54,23 @@ export function visiblePatternStrategyLegend(
 ): { text: string; label: string; color: string }[] {
   return PATTERN_STRATEGY_ORDER.filter((id) => visibility[id]).flatMap((id) => {
     const meta = PATTERN_STRATEGY_META[id];
+    const bullLabel =
+      id === "fake_breakout"
+        ? `${meta.labelKo} (상향 재관통)`
+        : `${meta.labelKo} 롱`;
+    const bearLabel =
+      id === "fake_breakout"
+        ? `${meta.labelKo} (하향 재관통)`
+        : `${meta.labelKo} 숏`;
     return [
       {
         text: meta.markerBull,
-        label: `${meta.labelKo} 롱`,
+        label: bullLabel,
         color: patternAccentColor("bullish"),
       },
       {
         text: meta.markerBear,
-        label: `${meta.labelKo} 숏`,
+        label: bearLabel,
         color: patternAccentColor("bearish"),
       },
     ];

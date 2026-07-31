@@ -25,6 +25,7 @@ import {
 } from "@/lib/tradeJournalStore";
 import { confluencesFromEvaluation } from "@/lib/evaluation/strategyConfluence";
 import { isStrategyConfluenceVisible } from "@/lib/strategyConfluenceStore";
+import { isRiskRewardOverlayVisible } from "@/lib/riskRewardStore";
 import { buildStrategyRecencyMap } from "@/lib/strategyRecency";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { PartialDataBanner } from "@/components/PartialDataBanner";
@@ -291,6 +292,10 @@ export function HomePage() {
   );
   const showStrategyConfluence = useMemo(
     () => isStrategyConfluenceVisible(),
+    [chartVisTick],
+  );
+  const showRiskReward = useMemo(
+    () => isRiskRewardOverlayVisible(),
     [chartVisTick],
   );
   const fibLevelVisibility = useMemo(
@@ -608,6 +613,7 @@ export function HomePage() {
                       journalEntries={journalEntries}
                       strategyConfluences={strategyConfluences}
                       showStrategyConfluence={showStrategyConfluence}
+                      showRiskReward={showRiskReward}
                     />
                   </div>
                   <ChartSidebar

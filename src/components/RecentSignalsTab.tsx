@@ -190,7 +190,7 @@ export function RecentSignalsTab({
                       <span className="text-text-tertiary">
                         {formatStrategyRecencyLabel({
                           date: h.date,
-                          barIndex: 0,
+                          barIndex: h.barIndex,
                           barsAgo: h.barsAgo,
                           direction: h.direction,
                         })}
@@ -198,6 +198,9 @@ export function RecentSignalsTab({
                       <span className="tabular-nums text-text-tertiary">
                         {h.date}
                       </span>
+                      {h.rrLabel && (
+                        <Badge variant="muted">{h.rrLabel}</Badge>
+                      )}
                     </li>
                   ))}
                 </ul>

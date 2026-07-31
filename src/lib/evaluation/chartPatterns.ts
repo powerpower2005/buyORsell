@@ -649,71 +649,134 @@ function detectWedges(
     if (!(widthStart > tol && widthEnd > 0 && widthEnd < widthStart * 0.75))
       continue;
 
+    const resistAt = (idx: number) => priceOnFit(highFit, idx);
+    const supportAt = (idx: number) => priceOnFit(lowFit, idx);
+    const scanTo = Math.min(bars.length - 1, endIdx + 20);
+
     if (kind === "rising_wedge") {
+      // Both slopes up, support steeper → converging rising wedge.
       if (!(highFit.slope > 0 && lowFit.slope > 0)) continue;
-      if (!(lowFit.slope > highFit.slope)) continue; // support steeper
-      const levelAt = (idx: number) => priceOnFit(lowFit, idx);
-      const scanTo = Math.min(bars.length - 1, endIdx + 20);
-      const entry = crossedBelow(bars, endIdx + 1, scanTo, levelAt);
-      const peak = Math.max(...winHighs.map((h) => h.price));
-      const target =
-        (entry != null ? levelAt(entry) : levelAt(endIdx)) - widthStart;
+      if (!(lowFit.slope > highFit.slope)) continue;
+
+      // Prefer classic downside break; upside break = continuation / thesis fail.
+      const down = crossedBelow(bars, endIdx + 1, scanTo, supportAt);
+      const up = crossedAbove(bars, endIdx + 1, scanTo, resistAt);
+      let entry: number | null = null;
+      let direction: TrendLabel = "bearish";
+      let breakPx = supportAt(endIdx);
+      let stop: number;
+      let target: number;
+      let summaryForming = "상승 쐐기 형성 중 · 경계 돌파 대기";
+      let summaryDone: string;
+
+      if (down != null && (up == null || down <= up)) {
+        entry = down;
+        direction = "bearish";
+        breakPx = supportAt(down);
+        stop = Math.max(...winHighs.map((h) => h.price));
+        target = breakPx - widthStart;
+        summaryDone = `상승 쐐기 지지 이탈 · 목표 ${target.toFixed(2)}`;
+      } else if (up != null) {
+        entry = up;
+        direction = "bullish";
+        breakPx = resistAt(up);
+        stop = Math.min(...winLows.map((l) => l.price));
+        target = breakPx + widthStart;
+        summaryDone = `상승 쐐기 상단 돌파(지속) · 목표 ${target.toFixed(2)}`;
+      } else {
+        stop = Math.max(...winHighs.map((h) => h.price));
+        target = supportAt(endIdx) - widthStart;
+        summaryDone = summaryForming;
+      }
+
       out.push({
         key: `rising_wedge-${startIdx}-${endIdx}`,
         id: "rising_wedge",
-        direction: "bearish",
+        direction: entry != null ? direction : "bearish",
         status: entry != null ? "confirmed" : "forming",
         startBar: startIdx,
         endBar: entry ?? endIdx,
         pivots: [
           ...winHighs.map((h, n) => pt(h, `h${n + 1}`)),
           ...winLows.map((l, n) => pt(l, `l${n + 1}`)),
+          {
+            barIndex: entry ?? endIdx,
+            date: bars[entry ?? endIdx].date,
+            price: breakPx,
+            role: "neck",
+          },
         ],
         segments: [
           seg(winHighs[0], winHighs.at(-1)!, "resistance"),
           seg(winLows[0], winLows.at(-1)!, "support"),
         ],
         entryBar: entry,
-        stopPrice: peak,
+        stopPrice: stop,
         targetPrice: target,
         score: entry != null ? 72 : 50,
-        summary:
-          entry != null
-            ? `상승 쐐기 지지 이탈 · 목표 ${target.toFixed(2)}`
-            : "상승 쐐기 형성 중",
+        summary: entry != null ? summaryDone : summaryForming,
       });
     } else {
+      // Both slopes down, resistance steeper → converging falling wedge.
       if (!(highFit.slope < 0 && lowFit.slope < 0)) continue;
       if (!(Math.abs(highFit.slope) > Math.abs(lowFit.slope))) continue;
-      const levelAt = (idx: number) => priceOnFit(highFit, idx);
-      const scanTo = Math.min(bars.length - 1, endIdx + 20);
-      const entry = crossedAbove(bars, endIdx + 1, scanTo, levelAt);
-      const trough = Math.min(...winLows.map((l) => l.price));
-      const target =
-        (entry != null ? levelAt(entry) : levelAt(endIdx)) + widthStart;
+
+      const up = crossedAbove(bars, endIdx + 1, scanTo, resistAt);
+      const down = crossedBelow(bars, endIdx + 1, scanTo, supportAt);
+      let entry: number | null = null;
+      let direction: TrendLabel = "bullish";
+      let breakPx = resistAt(endIdx);
+      let stop: number;
+      let target: number;
+      let summaryForming = "하강 쐐기 형성 중 · 경계 돌파 대기";
+      let summaryDone: string;
+
+      if (up != null && (down == null || up <= down)) {
+        entry = up;
+        direction = "bullish";
+        breakPx = resistAt(up);
+        stop = Math.min(...winLows.map((l) => l.price));
+        target = breakPx + widthStart;
+        summaryDone = `하강 쐐기 저항 돌파 · 목표 ${target.toFixed(2)}`;
+      } else if (down != null) {
+        entry = down;
+        direction = "bearish";
+        breakPx = supportAt(down);
+        stop = Math.max(...winHighs.map((h) => h.price));
+        target = breakPx - widthStart;
+        summaryDone = `하강 쐐기 하단 이탈(지속) · 목표 ${target.toFixed(2)}`;
+      } else {
+        stop = Math.min(...winLows.map((l) => l.price));
+        target = resistAt(endIdx) + widthStart;
+        summaryDone = summaryForming;
+      }
+
       out.push({
         key: `falling_wedge-${startIdx}-${endIdx}`,
         id: "falling_wedge",
-        direction: "bullish",
+        direction: entry != null ? direction : "bullish",
         status: entry != null ? "confirmed" : "forming",
         startBar: startIdx,
         endBar: entry ?? endIdx,
         pivots: [
           ...winHighs.map((h, n) => pt(h, `h${n + 1}`)),
           ...winLows.map((l, n) => pt(l, `l${n + 1}`)),
+          {
+            barIndex: entry ?? endIdx,
+            date: bars[entry ?? endIdx].date,
+            price: breakPx,
+            role: "neck",
+          },
         ],
         segments: [
           seg(winHighs[0], winHighs.at(-1)!, "resistance"),
           seg(winLows[0], winLows.at(-1)!, "support"),
         ],
         entryBar: entry,
-        stopPrice: trough,
+        stopPrice: stop,
         targetPrice: target,
         score: entry != null ? 72 : 50,
-        summary:
-          entry != null
-            ? `하강 쐐기 저항 돌파 · 목표 ${target.toFixed(2)}`
-            : "하강 쐐기 형성 중",
+        summary: entry != null ? summaryDone : summaryForming,
       });
     }
   }
@@ -825,6 +888,102 @@ function detectTriangles(
             : "하락 삼각형 형성 중",
       });
     }
+  }
+  return out;
+}
+
+/**
+ * Symmetrical triangle: descending highs + ascending lows, converging.
+ * Direction is unknown until close breakout of either boundary.
+ */
+function detectSymmetricalTriangle(
+  bars: OHLCVBar[],
+  lows: Pivot[],
+  highs: Pivot[],
+  atr: Array<number | null>,
+): ChartPatternInstance[] {
+  const out: ChartPatternInstance[] = [];
+  for (let end = 3; end <= highs.length; end++) {
+    const winHighs = highs.slice(Math.max(0, end - 4), end);
+    if (winHighs.length < 3) continue;
+    const start = winHighs[0].idx;
+    const last = winHighs.at(-1)!.idx;
+    const winLows = lows.filter((l) => l.idx >= start && l.idx <= last + 3);
+    if (winLows.length < 2) continue;
+    const tol = atrAt(atr, last, bars[last].close * 0.01) * 0.55;
+    const highFit = fitSlope(
+      winHighs.map((p) => ({ idx: p.idx, price: p.price })),
+    );
+    const lowPts = winLows.slice(-3);
+    const lowFit = fitSlope(lowPts.map((p) => ({ idx: p.idx, price: p.price })));
+    if (!highFit || !lowFit) continue;
+    if (last - start < 12 || last - start > 70) continue;
+
+    const flatHigh =
+      Math.abs(highFit.slope) * (last - start) <= tol * 0.9 &&
+      nearEqual(winHighs[0].price, winHighs.at(-1)!.price, tol * 1.1);
+    const flatLow =
+      Math.abs(lowFit.slope) * (last - start) <= tol * 0.9 &&
+      nearEqual(winLows[0].price, winLows.at(-1)!.price, tol * 1.1);
+    // Both boundaries must slope toward each other (not ascending/descending triangle).
+    if (flatHigh || flatLow) continue;
+    if (!(highFit.slope < 0 && lowFit.slope > 0)) continue;
+
+    const w0 =
+      priceOnFit(highFit, winHighs[0].idx) - priceOnFit(lowFit, lowPts[0].idx);
+    const w1 = priceOnFit(highFit, last) - priceOnFit(lowFit, last);
+    if (!(w0 > tol * 1.4 && w1 < w0 * 0.78 && w1 > tol * 0.35)) continue;
+
+    const height = w0;
+    const scanTo = Math.min(bars.length - 1, last + 20);
+    const resistAt = (idx: number) => priceOnFit(highFit, idx);
+    const supportAt = (idx: number) => priceOnFit(lowFit, idx);
+    const up = crossedAbove(bars, last + 1, scanTo, resistAt);
+    const down = crossedBelow(bars, last + 1, scanTo, supportAt);
+
+    let entry: number | null = null;
+    let direction: TrendLabel = "neutral";
+    let target: number | null = null;
+    let stop: number | null = null;
+    if (up != null && (down == null || up <= down)) {
+      entry = up;
+      direction = "bullish";
+      target = bars[up].close + height;
+      stop = supportAt(up);
+    } else if (down != null) {
+      entry = down;
+      direction = "bearish";
+      target = bars[down].close - height;
+      stop = resistAt(down);
+    }
+
+    const endBar = entry ?? last;
+    out.push({
+      key: `sym_tri-${start}-${last}`,
+      id: "symmetrical_triangle",
+      direction,
+      status: entry != null ? "confirmed" : "forming",
+      startBar: start,
+      endBar,
+      pivots: [
+        ...winHighs.map((h, n) => pt(h, `h${n + 1}`)),
+        ...lowPts.map((l, n) => pt(l, `l${n + 1}`)),
+      ],
+      segments: [
+        seg(winHighs[0], winHighs.at(-1)!, "resistance"),
+        seg(lowPts[0], lowPts.at(-1)!, "support"),
+      ],
+      entryBar: entry,
+      stopPrice: stop,
+      targetPrice: target,
+      score: entry != null ? 74 : 52,
+      summary:
+        entry != null
+          ? direction === "bullish"
+            ? `대칭 삼각 상단 돌파 · 목표 ${target!.toFixed(2)}`
+            : `대칭 삼각 하단 이탈 · 목표 ${target!.toFixed(2)}`
+          : "대칭 삼각 수렴 형성 중 · 돌파 대기",
+    });
   }
   return out;
 }
@@ -1144,6 +1303,7 @@ export function detectChartPatterns(
     ...detectWedges(bars, lows, highs, atr, "falling_wedge"),
     ...detectTriangles(bars, lows, highs, atr, "ascending_triangle"),
     ...detectTriangles(bars, lows, highs, atr, "descending_triangle"),
+    ...detectSymmetricalTriangle(bars, lows, highs, atr),
     ...detectPennant(bars, lows, highs, atr),
     ...detectFlag(bars, lows, highs, atr),
   ].filter((inst) => inst.endBar >= start);

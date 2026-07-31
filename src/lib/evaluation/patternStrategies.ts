@@ -8,6 +8,7 @@ import {
   scoreSignalHits,
   type SignalStatsMap,
 } from "./signalFollowThrough";
+import { levelsFromPattern } from "./riskReward";
 
 export type { PatternStrategyId };
 
@@ -20,6 +21,13 @@ export interface PatternStrategyHit {
   summary: string;
   patternId: string;
   instanceKey: string;
+  /** Signal close (entry reference for RR v1). */
+  entryPrice?: number;
+  stopPrice?: number | null;
+  targetPrice?: number | null;
+  /** Reward ÷ risk (e.g. 2 → 1:2). */
+  rewardRisk?: number | null;
+  rrMethod?: "pattern" | "atr_2r";
 }
 
 export interface PatternStrategyResult {
@@ -34,6 +42,7 @@ export interface PatternStrategyResult {
 
 const MAX_HITS = 40;
 const RETEST_WINDOW = 12;
+const FAKE_WINDOW = 15;
 const VOL_LOOKBACK = 20;
 const VOL_MULT = 1.35;
 const RETEST_ATR_FRAC = 0.35;
@@ -81,16 +90,40 @@ function makeHit(
   summary: string,
   patternId: string,
   instanceKey: string,
+  stopPrice: number | null,
+  targetPrice: number | null,
 ): PatternStrategyHit {
-  return {
+  const entryPrice = bars[barIndex]!.close;
+  const base: PatternStrategyHit = {
     id,
     label: PATTERN_STRATEGY_META[id].labelKo,
-    date: bars[barIndex].date,
+    date: bars[barIndex]!.date,
     barIndex,
     direction,
     summary,
     patternId,
     instanceKey,
+    entryPrice,
+    stopPrice,
+    targetPrice,
+    rewardRisk: null,
+    rrMethod: "pattern",
+  };
+  if (id === "fake_breakout") return base;
+  if (direction !== "bullish" && direction !== "bearish") return base;
+  const levels = levelsFromPattern(
+    entryPrice,
+    direction,
+    stopPrice,
+    targetPrice,
+  );
+  if (!levels) return base;
+  return {
+    ...base,
+    stopPrice: levels.stopPrice,
+    targetPrice: levels.targetPrice,
+    rewardRisk: levels.rewardRisk,
+    rrMethod: levels.method,
   };
 }
 
@@ -113,6 +146,8 @@ export function detectPatternStrategies(
     if (entry < 0 || entry >= bars.length) continue;
     const dir = inst.direction;
     if (dir !== "bullish" && dir !== "bearish") continue;
+    const stop = inst.stopPrice;
+    const target = inst.targetPrice;
 
     hits.push(
       makeHit(
@@ -123,12 +158,15 @@ export function detectPatternStrategies(
         `${inst.summary} · 돌파 진입`,
         inst.id,
         inst.key,
+        stop,
+        target,
       ),
     );
 
     const avgVol = avgVolume(bars, entry, VOL_LOOKBACK);
     const entryVol = bars[entry].volume ?? 0;
-    if (avgVol > 0 && entryVol >= avgVol * VOL_MULT) {
+    const volumeOk = avgVol > 0 && entryVol >= avgVol * VOL_MULT;
+    if (volumeOk) {
       hits.push(
         makeHit(
           "volume_breakout",
@@ -138,6 +176,8 @@ export function detectPatternStrategies(
           `거래량 ${(entryVol / avgVol).toFixed(1)}× 평균 · ${inst.id}`,
           inst.id,
           inst.key,
+          stop,
+          target,
         ),
       );
     }
@@ -149,8 +189,9 @@ export function detectPatternStrategies(
       Math.abs((inst.targetPrice ?? level) - level) * 0.02;
     const tol = Math.max(band, Math.abs(level) * 0.002) * RETEST_ATR_FRAC * 10;
 
-    const scanTo = Math.min(bars.length - 1, entry + RETEST_WINDOW);
-    for (let i = entry + 1; i <= scanTo; i++) {
+    const retestTo = Math.min(bars.length - 1, entry + RETEST_WINDOW);
+    let retestBar: number | null = null;
+    for (let i = entry + 1; i <= retestTo; i++) {
       const bar = bars[i];
       const touched =
         dir === "bullish"
@@ -164,6 +205,7 @@ export function detectPatternStrategies(
           : bar.close < bar.open && bar.close <= level;
       if (!confirm) continue;
 
+      retestBar = i;
       hits.push(
         makeHit(
           "retest_entry",
@@ -173,6 +215,48 @@ export function detectPatternStrategies(
           `리테스트 확인 · ${inst.id} · 레벨 ${level.toFixed(2)}`,
           inst.id,
           inst.key,
+          stop,
+          target,
+        ),
+      );
+      break;
+    }
+
+    if (volumeOk && retestBar != null) {
+      hits.push(
+        makeHit(
+          "triple_confirm",
+          retestBar,
+          bars,
+          dir,
+          `삼중 확인(종가·거래량·리테스트) · ${inst.id} · 레벨 ${level.toFixed(2)}`,
+          inst.id,
+          inst.key,
+          stop,
+          target,
+        ),
+      );
+    }
+
+    const fakeTo = Math.min(bars.length - 1, entry + FAKE_WINDOW);
+    for (let i = entry + 1; i <= fakeTo; i++) {
+      const close = bars[i].close;
+      const failed =
+        dir === "bullish" ? close < level - tol : close > level + tol;
+      if (!failed) continue;
+
+      const failDir: TrendLabel = dir === "bullish" ? "bearish" : "bullish";
+      hits.push(
+        makeHit(
+          "fake_breakout",
+          i,
+          bars,
+          failDir,
+          `페이크 돌파 · ${inst.id} · 레벨 ${level.toFixed(2)} 재관통`,
+          inst.id,
+          inst.key,
+          stop,
+          target,
         ),
       );
       break;
@@ -180,7 +264,16 @@ export function detectPatternStrategies(
   }
 
   hits.sort((a, b) => a.barIndex - b.barIndex);
-  const stats = scoreSignalHits(bars, hits);
+  const stats = scoreSignalHits(
+    bars,
+    hits.map((h) => ({
+      id: h.id,
+      barIndex: h.barIndex,
+      direction: h.direction,
+      stopPrice: h.stopPrice,
+      targetPrice: h.targetPrice,
+    })),
+  );
   const recent = hits.slice(-MAX_HITS);
   const lastIdx = bars.length - 1;
 

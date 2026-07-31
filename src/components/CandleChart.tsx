@@ -52,6 +52,12 @@ import {
   patternStrategiesToChartMarkers,
   visiblePatternStrategyLegend,
 } from "@/lib/chart/patternStrategyMarkers";
+import { collectVisibleRiskRewardPlans } from "@/lib/chart/collectRiskRewardPlans";
+import { drawRiskRewardPlans } from "@/lib/chart/riskRewardOverlay";
+import {
+  formatRewardRisk,
+  methodLabelKo,
+} from "@/lib/evaluation/riskReward";
 import { patternAccentColor } from "@/lib/candlePatternMeta";
 import type { PatternStrategyResult } from "@/lib/evaluation/patternStrategies";
 import type { PatternStrategyId } from "@/lib/patternStrategyMeta";
@@ -278,6 +284,8 @@ interface Props {
   journalEntries?: TradeJournalEntry[];
   strategyConfluences?: StrategyConfluence[];
   showStrategyConfluence?: boolean;
+  /** Draw entry/stop/target RR boxes for visible strategy hits (v1). */
+  showRiskReward?: boolean;
 }
 
 function useViewportChartHeight(fixed?: number) {
@@ -350,6 +358,7 @@ export function CandleChart({
   journalEntries,
   strategyConfluences,
   showStrategyConfluence = true,
+  showRiskReward = true,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -781,10 +790,92 @@ export function CandleChart({
       .map((hit) => ({
         key: `${hit.id}-${hit.instanceKey}-${hit.barIndex}`,
         text: hit.label,
-        detail: `${hit.date} · ${hit.summary}`,
+        detail: [
+          hit.date,
+          hit.rewardRisk != null ? formatRewardRisk(hit.rewardRisk) : null,
+          hit.summary,
+        ]
+          .filter(Boolean)
+          .join(" · "),
         color: patternAccentColor(hit.direction),
       }));
   }, [patternStrategies, chartPatternStrategyVisibility]);
+
+  const riskRewardPlans = useMemo(() => {
+    if (!showRiskReward || !bars.length) return [];
+    return collectVisibleRiskRewardPlans({
+      bars,
+      patternStrategies,
+      patternVisibility: chartPatternStrategyVisibility,
+      bags: [
+        {
+          family: "bb",
+          bag: bbStrategies,
+          visibility: chartBbStrategyVisibility,
+        },
+        {
+          family: "ichimoku",
+          bag: ichimokuStrategies,
+          visibility: chartIchimokuStrategyVisibility,
+        },
+        {
+          family: "rsi",
+          bag: rsiStrategies,
+          visibility: chartRsiStrategyVisibility,
+        },
+        {
+          family: "volume",
+          bag: volumeStrategies,
+          visibility: chartVolumeStrategyVisibility,
+        },
+        {
+          family: "combo",
+          bag: comboStrategies,
+          visibility: chartComboStrategyVisibility,
+        },
+        {
+          family: "macd",
+          bag: macdStrategies,
+          visibility: chartMacdStrategyVisibility,
+        },
+        {
+          family: "classic",
+          bag: classicStrategies,
+          visibility: chartClassicStrategyVisibility,
+        },
+        {
+          family: "stoch",
+          bag: stochStrategies,
+          visibility: chartStochStrategyVisibility,
+        },
+      ],
+    });
+  }, [
+    showRiskReward,
+    bars,
+    patternStrategies,
+    chartPatternStrategyVisibility,
+    bbStrategies,
+    chartBbStrategyVisibility,
+    ichimokuStrategies,
+    chartIchimokuStrategyVisibility,
+    rsiStrategies,
+    chartRsiStrategyVisibility,
+    volumeStrategies,
+    chartVolumeStrategyVisibility,
+    comboStrategies,
+    chartComboStrategyVisibility,
+    macdStrategies,
+    chartMacdStrategyVisibility,
+    classicStrategies,
+    chartClassicStrategyVisibility,
+    stochStrategies,
+    chartStochStrategyVisibility,
+  ]);
+
+  const riskRewardPlansRef = useRef(riskRewardPlans);
+  riskRewardPlansRef.current = riskRewardPlans;
+
   const visibleClassicalInstances = useMemo(
     () =>
       visibleClassicalPatternInstances(
@@ -1288,6 +1379,15 @@ export function CandleChart({
         ctx.stroke();
       }
     }
+
+    // ── Risk/reward v1 (entry / stop / target) ────────────────────────────────
+    drawRiskRewardPlans(
+      ctx,
+      chart,
+      series,
+      barsRef.current,
+      riskRewardPlansRef.current,
+    );
 
     ctx.restore();
   };
@@ -2935,6 +3035,7 @@ export function CandleChart({
     indicators,
     elliottWaves,
     chartElliottWaveVisibility,
+    riskRewardPlans,
   ]);
 
   // ─── Fib draw mode lifecycle ───────────────────────────────────────────────
@@ -3673,6 +3774,30 @@ export function CandleChart({
                 ))}
               </div>
             )}
+
+          {showRiskReward && riskRewardPlans.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+              <span>손익비 v1 ({riskRewardPlans.length}):</span>
+              {riskRewardPlans.map((p) => (
+                <span
+                  key={p.key}
+                  className="tabular-nums text-text-tertiary"
+                >
+                  <span
+                    className={
+                      p.direction === "bullish"
+                        ? "text-positive"
+                        : "text-negative"
+                    }
+                  >
+                    {formatRewardRisk(p.rewardRisk)}
+                  </span>{" "}
+                  {p.label} · {methodLabelKo(p.method)} · 손절{" "}
+                  {p.stopPrice.toFixed(2)} · 목표 {p.targetPrice.toFixed(2)}
+                </span>
+              ))}
+            </div>
+          )}
 
           {showFibLegend && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">

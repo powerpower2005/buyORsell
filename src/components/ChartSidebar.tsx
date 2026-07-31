@@ -275,6 +275,10 @@ import {
   setStrategyConfluenceVisible,
 } from "@/lib/strategyConfluenceStore";
 import {
+  isRiskRewardOverlayVisible,
+  setRiskRewardOverlayVisible,
+} from "@/lib/riskRewardStore";
+import {
   formatStrategyConfluenceLabel,
   formatStrategyRecencyLabel,
   isWithinRecentWindow,
@@ -825,6 +829,10 @@ export function ChartSidebar({
   const fibDraw = useMemo(() => isFibDrawMode(), [refreshTick]);
   const fibRet = useMemo(() => getFibRetracement(), [refreshTick]);
   const fibPending = useMemo(() => getFibPendingLow(), [refreshTick]);
+  const riskRewardOn = useMemo(
+    () => isRiskRewardOverlayVisible(),
+    [refreshTick],
+  );
   const strategyConfluenceOn = useMemo(
     () => isStrategyConfluenceVisible(),
     [refreshTick],
@@ -1194,6 +1202,15 @@ export function ChartSidebar({
             help={CHART_LAYER_HELP.strategyConfluence}
             onChange={(next) =>
               bump(() => setStrategyConfluenceVisible(next))
+            }
+          />
+          <Leaf
+            label="손익비 v1"
+            hint="패턴=측정 목표가 · 지표=ATR×1.5 손절 + 2R 목표 · 최근 최대 4개"
+            checked={riskRewardOn}
+            help={CHART_LAYER_HELP.riskReward}
+            onChange={(next) =>
+              bump(() => setRiskRewardOverlayVisible(next))
             }
           />
         </Group>
