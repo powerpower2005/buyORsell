@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import clsx from "clsx";
 import { loadIndex, loadQuote } from "@/lib/dataLoader";
 import { WatchlistSidebar } from "@/components/WatchlistSidebar";
 import { TradeJournalPanel } from "@/components/TradeJournalPanel";
 import { StrategyBuilder } from "@/components/StrategyBuilder";
+import { RecentSignalsTab } from "@/components/RecentSignalsTab";
 import { listJournalEntries } from "@/lib/tradeJournalStore";
 import { confluencesFromEvaluation } from "@/lib/evaluation/strategyConfluence";
 import { isStrategyConfluenceVisible } from "@/lib/strategyConfluenceStore";
@@ -80,6 +82,8 @@ import type {
 
 const VALID_TIMEFRAMES: Timeframe[] = ["15m", "1h", "4h", "1d", "1w"];
 
+type BrowseTab = "tickers" | "signals";
+
 function parseTf(value: string | null): Timeframe {
   if (value && VALID_TIMEFRAMES.includes(value as Timeframe)) {
     return value as Timeframe;
@@ -87,11 +91,16 @@ function parseTf(value: string | null): Timeframe {
   return "1d";
 }
 
+function parseTab(value: string | null): BrowseTab {
+  return value === "signals" ? "signals" : "tickers";
+}
+
 export function BrowsePage() {
   const [params, setParams] = useSearchParams();
   const [index, setIndex] = useState<IndexFile | null>(null);
   const [indexError, setIndexError] = useState<string | null>(null);
   const [timeframe, setTimeframe] = useState<Timeframe>(() => parseTf(params.get("tf")));
+  const tab = parseTab(params.get("tab"));
   const [selected, setSelected] = useState<IndexEntry | null>(null);
   const [quote, setQuote] = useState<QuoteFile | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -361,6 +370,15 @@ export function BrowsePage() {
     const next = new URLSearchParams(params);
     next.set("ticker", entry.ticker);
     next.set("tf", entry.timeframe);
+    next.delete("tab");
+    setParams(next, { replace: true });
+  };
+
+  const onTabChange = (nextTab: BrowseTab) => {
+    const next = new URLSearchParams(params);
+    next.set("tf", timeframe);
+    if (nextTab === "signals") next.set("tab", "signals");
+    else next.delete("tab");
     setParams(next, { replace: true });
   };
 
@@ -368,6 +386,11 @@ export function BrowsePage() {
     setTimeframe(tf);
     const next = new URLSearchParams(params);
     next.set("tf", tf);
+    if (tab === "signals") {
+      next.set("tab", "signals");
+      setParams(next, { replace: true });
+      return;
+    }
     const first = index?.entries.find((e) => e.timeframe === tf);
     if (first) {
       next.set("ticker", first.ticker);
@@ -395,11 +418,42 @@ export function BrowsePage() {
 
       {indexError && <ErrorBanner title="목록 로드 실패" message={indexError} />}
 
+      <div className="flex flex-wrap gap-2">
+        {(
+          [
+            ["tickers", "종목"],
+            ["signals", "최근 시그널"],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onTabChange(id)}
+            className={clsx(
+              "rounded-md px-3 py-1.5 text-sm",
+              tab === id
+                ? "bg-accent text-white"
+                : "bg-surface-elevated text-text-secondary hover:text-text-primary",
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       <Card className="space-y-4">
         <SectionTitle>타임프레임</SectionTitle>
         <TimeframeTabs value={timeframe} onChange={onTimeframeChange} />
       </Card>
 
+      {tab === "signals" ? (
+        <RecentSignalsTab
+          entries={entries}
+          timeframe={timeframe}
+          loadingIndex={!index && !indexError}
+        />
+      ) : (
+        <>
       <WatchlistSidebar
         tickers={entries.map((e) => e.ticker)}
         active={selected?.ticker ?? ""}
@@ -613,6 +667,8 @@ export function BrowsePage() {
           </>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 }
