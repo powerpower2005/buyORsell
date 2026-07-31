@@ -15,10 +15,8 @@ import { errorMessage } from "@/lib/errors";
 import type { IndexEntry, Timeframe } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
 import { Card, SectionTitle } from "@/components/ui/Card";
-import { ErrorBanner } from "@/components/ErrorBanner";
 
-interface TickerSignals {
-  ticker: string;
+interface CachedSignals {
   hits: RecentStrategyHit[];
   error?: string;
 }
@@ -37,9 +35,9 @@ export function RecentSignalsTab({
   tickerHref?: (ticker: string, timeframe: Timeframe) => string;
   onTickerSelect?: (ticker: string) => void;
 }) {
-  const [rows, setRows] = useState<TickerSignals[]>([]);
-  const [scanning, setScanning] = useState(false);
-  const [scanError, setScanError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [cache, setCache] = useState<Record<string, CachedSignals>>({});
+  const [loadingTicker, setLoadingTicker] = useState<string | null>(null);
 
   const entryKey = useMemo(
     () => entries.map((e) => `${e.ticker}:${e.timeframe}`).join("|"),
@@ -47,94 +45,73 @@ export function RecentSignalsTab({
   );
 
   useEffect(() => {
-    if (!entries.length) {
-      setRows([]);
-      setScanError(null);
-      setScanning(false);
+    setSelected(null);
+    setCache({});
+    setLoadingTicker(null);
+  }, [entryKey]);
+
+  const loadSignals = async (ticker: string) => {
+    if (cache[ticker] || loadingTicker === ticker) return;
+    const entry = entries.find((e) => e.ticker === ticker);
+    if (!entry) return;
+
+    setLoadingTicker(ticker);
+    try {
+      const quote = await loadQuote(entry.ticker, entry.timeframe as Timeframe);
+      const evaluation = evaluateQuote(
+        quote.ohlcv,
+        entry.timeframe as Timeframe,
+        getEffectiveIndicatorsConfig(),
+        { trendlineAlgo: getTrendlineAlgoVersion() },
+      );
+      if (evaluation.fatalError) {
+        setCache((prev) => ({
+          ...prev,
+          [ticker]: { hits: [], error: evaluation.fatalError },
+        }));
+        return;
+      }
+      setCache((prev) => ({
+        ...prev,
+        [ticker]: {
+          hits: recentHitsFromEvaluation(
+            evaluation,
+            RECENT_SIGNAL_WINDOW_BARS,
+          ),
+        },
+      }));
+    } catch (e) {
+      setCache((prev) => ({
+        ...prev,
+        [ticker]: { hits: [], error: errorMessage(e) },
+      }));
+    } finally {
+      setLoadingTicker((cur) => (cur === ticker ? null : cur));
+    }
+  };
+
+  const toggleTicker = (ticker: string) => {
+    if (selected === ticker) {
+      setSelected(null);
       return;
     }
-
-    let cancelled = false;
-    void (async () => {
-      setScanning(true);
-      setScanError(null);
-      const indicatorConfig = getEffectiveIndicatorsConfig();
-      const trendlineAlgo = getTrendlineAlgoVersion();
-      const next: TickerSignals[] = [];
-
-      try {
-        for (const entry of entries) {
-          if (cancelled) return;
-          try {
-            const quote = await loadQuote(
-              entry.ticker,
-              entry.timeframe as Timeframe,
-            );
-            const evaluation = evaluateQuote(
-              quote.ohlcv,
-              entry.timeframe as Timeframe,
-              indicatorConfig,
-              { trendlineAlgo },
-            );
-            if (evaluation.fatalError) {
-              next.push({
-                ticker: entry.ticker,
-                hits: [],
-                error: evaluation.fatalError,
-              });
-              continue;
-            }
-            const hits = recentHitsFromEvaluation(
-              evaluation,
-              RECENT_SIGNAL_WINDOW_BARS,
-            );
-            if (hits.length) next.push({ ticker: entry.ticker, hits });
-          } catch (e) {
-            next.push({
-              ticker: entry.ticker,
-              hits: [],
-              error: errorMessage(e),
-            });
-          }
-        }
-        if (!cancelled) setRows(next);
-      } catch (e) {
-        if (!cancelled) {
-          setRows([]);
-          setScanError(errorMessage(e));
-        }
-      } finally {
-        if (!cancelled) setScanning(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [entryKey, entries]);
-
-  const withHits = rows.filter((r) => r.hits.length > 0);
-  const withErrors = rows.filter((r) => r.error);
+    setSelected(ticker);
+    void loadSignals(ticker);
+  };
 
   return (
     <div className="space-y-4">
       <Card className="space-y-2">
         <SectionTitle>최근 {RECENT_SIGNAL_WINDOW_BARS}봉 시그널</SectionTitle>
         <p className="text-sm text-text-secondary">
-          보유 데이터({timeframe})에서 매수(상승)·매도(하락) 전략 히트가 최근{" "}
-          {RECENT_SIGNAL_WINDOW_BARS}봉 안에 난 종목만 모읍니다.
+          종목을 누르면 저장된 OHLCV로 최근 {RECENT_SIGNAL_WINDOW_BARS}봉
+          매수·매도 시그널을 계산합니다. 실시간 시세가 아닙니다.
         </p>
       </Card>
 
-      {scanError && (
-        <ErrorBanner title="시그널 스캔 실패" message={scanError} />
-      )}
-
-      {loadingIndex || scanning ? (
+      {loadingIndex ? (
         <Card>
-          <p className="text-sm text-text-secondary">
-            {loadingIndex ? "목록 로딩 중…" : "종목별 시그널 스캔 중…"}
-          </p>
+          <p className="text-sm text-text-secondary">목록 로딩 중…</p>
         </Card>
       ) : !entries.length ? (
         <Card>
@@ -146,82 +123,102 @@ export function RecentSignalsTab({
             에서 수집을 요청하세요.
           </p>
         </Card>
-      ) : !withHits.length ? (
-        <Card>
-          <p className="text-sm text-text-secondary">
-            최근 {RECENT_SIGNAL_WINDOW_BARS}봉 안에 매수·매도 시그널이 있는 종목이
-            없습니다.
-          </p>
-          {withErrors.length > 0 && (
-            <ul className="mt-3 space-y-1 text-sm text-negative">
-              {withErrors.map((r) => (
-                <li key={r.ticker}>
-                  {formatTickerLabel(r.ticker)}: {r.error}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
       ) : (
-        <ul className="space-y-3">
-          {withHits.map((row) => (
-            <li key={row.ticker}>
-              <Card className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  {onTickerSelect ? (
+        <ul className="space-y-2">
+          {entries.map((entry) => {
+            const open = selected === entry.ticker;
+            const row = cache[entry.ticker];
+            const loading = loadingTicker === entry.ticker;
+            return (
+              <li key={entry.ticker}>
+                <Card className="space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <button
                       type="button"
-                      onClick={() => onTickerSelect(row.ticker)}
+                      onClick={() => toggleTicker(entry.ticker)}
                       className="text-left text-base font-semibold text-text-primary hover:text-accent"
                     >
-                      {formatTickerLabel(row.ticker)}
+                      {open ? "▾ " : "▸ "}
+                      {formatTickerLabel(entry.ticker)}
                     </button>
-                  ) : (
-                    <Link
-                      to={tickerHref(row.ticker, timeframe)}
-                      className="text-base font-semibold text-text-primary no-underline hover:text-accent"
-                    >
-                      {formatTickerLabel(row.ticker)}
-                    </Link>
-                  )}
-                  <span className="text-xs text-text-tertiary">
-                    {row.hits.length}개 · {timeframe}
-                  </span>
-                </div>
-                <ul className="space-y-2">
-                  {row.hits.map((h) => (
-                    <li
-                      key={`${h.family}:${h.id}`}
-                      className="flex flex-wrap items-center gap-2 text-sm"
-                    >
-                      <Badge
-                        variant={
-                          h.direction === "bullish" ? "positive" : "negative"
-                        }
-                      >
-                        {h.direction === "bullish" ? "매수" : "매도"}
-                      </Badge>
-                      <span className="font-medium">{h.label}</span>
-                      <span className="text-text-tertiary">
-                        {formatStrategyRecencyLabel({
-                          date: h.date,
-                          barIndex: h.barIndex,
-                          barsAgo: h.barsAgo,
-                          direction: h.direction,
-                        })}
-                      </span>
-                      <span className="tabular-nums text-text-tertiary">
-                        {h.date}
-                      </span>
-                      {h.rrLabel && (
-                        <Badge variant="muted">{h.rrLabel}</Badge>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-text-tertiary">{timeframe}</span>
+                      {onTickerSelect ? (
+                        <button
+                          type="button"
+                          onClick={() => onTickerSelect(entry.ticker)}
+                          className="text-accent hover:underline"
+                        >
+                          분석
+                        </button>
+                      ) : (
+                        <Link
+                          to={tickerHref(entry.ticker, timeframe)}
+                          className="text-accent no-underline hover:underline"
+                        >
+                          분석
+                        </Link>
                       )}
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-            </li>
-          ))}
+                    </div>
+                  </div>
+
+                  {open && (
+                    <>
+                      {loading && (
+                        <p className="text-sm text-text-secondary">
+                          시그널 계산 중…
+                        </p>
+                      )}
+                      {!loading && row?.error && (
+                        <p className="text-sm text-negative">{row.error}</p>
+                      )}
+                      {!loading && row && !row.error && !row.hits.length && (
+                        <p className="text-sm text-text-secondary">
+                          최근 {RECENT_SIGNAL_WINDOW_BARS}봉 안에 매수·매도
+                          시그널 없음
+                        </p>
+                      )}
+                      {!loading && row && row.hits.length > 0 && (
+                        <ul className="space-y-2">
+                          {row.hits.map((h) => (
+                            <li
+                              key={`${h.family}:${h.id}`}
+                              className="flex flex-wrap items-center gap-2 text-sm"
+                            >
+                              <Badge
+                                variant={
+                                  h.direction === "bullish"
+                                    ? "positive"
+                                    : "negative"
+                                }
+                              >
+                                {h.direction === "bullish" ? "매수" : "매도"}
+                              </Badge>
+                              <span className="font-medium">{h.label}</span>
+                              <span className="text-text-tertiary">
+                                {formatStrategyRecencyLabel({
+                                  date: h.date,
+                                  barIndex: h.barIndex,
+                                  barsAgo: h.barsAgo,
+                                  direction: h.direction,
+                                })}
+                              </span>
+                              <span className="tabular-nums text-text-tertiary">
+                                {h.date}
+                              </span>
+                              {h.rrLabel && (
+                                <Badge variant="muted">{h.rrLabel}</Badge>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  )}
+                </Card>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
