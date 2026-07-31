@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-30T19:44:55.474Z",
+  "updatedAt": "2026-07-31T01:00:09.804Z",
   "entries": [
     {
       "ticker": "KOSPI:KRX",
@@ -176,6 +176,22 @@
       "path": "data/QQQ-NASDAQ/1w.json",
       "fetchedAt": "2026-07-30T19:44:55.465Z",
       "lastBarDate": "2026-07-29",
+      "barCount": 189
+    },
+    {
+      "ticker": "VRT:NYSE",
+      "timeframe": "1d",
+      "path": "data/VRT-NYSE/1d.json",
+      "fetchedAt": "2026-07-31T00:54:06.113Z",
+      "lastBarDate": "2026-07-30",
+      "barCount": 904
+    },
+    {
+      "ticker": "VRT:NYSE",
+      "timeframe": "1w",
+      "path": "data/VRT-NYSE/1w.json",
+      "fetchedAt": "2026-07-31T00:54:06.113Z",
+      "lastBarDate": "2026-07-30",
       "barCount": 189
     }
   ]
