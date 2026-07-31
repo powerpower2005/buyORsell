@@ -6,7 +6,7 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:SOXX",
-  "fetchedAt": "2026-07-31T08:59:25.119Z",
+  "fetchedAt": "2026-07-31T16:52:16.587Z",
   "lastBarDate": "2026-07-30",
   "barCount": 190,
   "checksum": "7ef10030",
