@@ -252,7 +252,7 @@ export function detectPatternStrategies(
           i,
           bars,
           failDir,
-          `페이크 돌파 · ${inst.id} · 레벨 ${level.toFixed(2)} 재관통`,
+          `가짜 돌파 · ${inst.id} · 레벨 ${level.toFixed(2)} 재관통`,
           inst.id,
           inst.key,
           stop,

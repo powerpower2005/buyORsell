@@ -980,9 +980,9 @@ function detectSymmetricalTriangle(
       summary:
         entry != null
           ? direction === "bullish"
-            ? `대칭 삼각 상단 돌파 · 목표 ${target!.toFixed(2)}`
-            : `대칭 삼각 하단 이탈 · 목표 ${target!.toFixed(2)}`
-          : "대칭 삼각 수렴 형성 중 · 돌파 대기",
+            ? `대칭 삼각형 상단 돌파 · 목표 ${target!.toFixed(2)}`
+            : `대칭 삼각형 하단 이탈 · 목표 ${target!.toFixed(2)}`
+          : "대칭 삼각형 형성 중 · 돌파 대기",
     });
   }
   return out;

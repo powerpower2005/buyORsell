@@ -77,11 +77,11 @@ export const CHART_PATTERN_META: Record<
   },
   cup_and_handle: {
     label: "Cup and handle",
-    labelKo: "컵 앤 핸들",
+    labelKo: "컵앤핸들",
     category: "continuation",
     typicalDirection: "bullish",
     description:
-      "U자 컵+얕은 핸들 지속. 핸들 상단 돌파 롱 · 손절 핸들 저점 · 목표 컵 깊이. 핸들은 컵의 1/3 이내.",
+      "U자 컵+얕은 손잡이 지속. 손잡이 상단 돌파 롱 · 손절 손잡이 저점 · 목표 컵 깊이. 손잡이는 컵의 1/3 이내.",
     markerBull: "CH↑",
     markerBear: "CH↓",
     color: "#2dd4bf",
@@ -92,7 +92,7 @@ export const CHART_PATTERN_META: Record<
     category: "reversal",
     typicalDirection: "both",
     description:
-      "HS 목선 하향 숏 / iHS 목선 상향 롱. 목표 머리–목선 높이. 리테스트 진입 권장.",
+      "헤드앤숄더 목선 하향 숏 / 역헤드앤숄더 목선 상향 롱. 목표 머리–목선 높이. 리테스트 진입 권장.",
     markerBull: "iHS↑",
     markerBear: "HS↓",
     color: "#f472b6",
@@ -163,11 +163,11 @@ export const CHART_PATTERN_META: Record<
   },
   symmetrical_triangle: {
     label: "Symmetrical triangle",
-    labelKo: "대칭 삼각 수렴",
+    labelKo: "대칭 삼각형",
     category: "continuation",
     typicalDirection: "both",
     description:
-      "고↓·저↑ 수렴. 방향 예측 금지 · 상·하단 종가 돌파 확인 후 진입 · 목표가 초기 높이. 페이크 돌파 주의.",
+      "고↓·저↑ 수렴. 방향 예측 금지 · 상·하단 종가 돌파 확인 후 진입 · 목표가 초기 높이. 가짜 돌파 주의.",
     markerBull: "ST↑",
     markerBear: "ST↓",
     color: "#94a3b8",
@@ -185,7 +185,7 @@ export const CHART_PATTERN_META: Record<
   },
   flag: {
     label: "Flag",
-    labelKo: "깃발형",
+    labelKo: "깃발",
     category: "continuation",
     typicalDirection: "both",
     description:
