@@ -63,7 +63,7 @@ export function AnalysisStatusCard({
           <div className="mt-4 rounded-md border border-border/60 bg-bg px-3 py-2.5 text-sm text-text-secondary">
             <p>
               <span className="font-medium text-text-primary">자동 갱신</span>
-              {" · "}평일 6시간마다 · 다음:{" "}
+              {" · "}평일 하루 3회 · 다음:{" "}
               <span className="text-text-primary">{schedule.nextRun}</span>
             </p>
           </div>

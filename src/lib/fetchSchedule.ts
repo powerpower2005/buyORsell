@@ -1,5 +1,5 @@
-/** Matches fetch-quote.yml: every 6 hours Mon–Fri UTC (00, 06, 12, 18). */
-export const FETCH_CRON_UTC_HOURS = [0, 6, 12, 18] as const;
+/** Matches fetch-quote.yml: thrice Mon–Fri UTC (00, 08, 15) = 09:00 / 17:00 / 00:00 KST. */
+export const FETCH_CRON_UTC_HOURS = [0, 8, 15] as const;
 
 function isUtcWeekday(date: Date): boolean {
   const dow = date.getUTCDay(); // 0=Sun … 6=Sat
