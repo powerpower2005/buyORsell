@@ -16,6 +16,7 @@ import { ExportPanel } from "@/components/ExportPanel";
 import { IndicatorConfigModal } from "@/components/IndicatorConfigModal";
 import type { IndicatorConfigSectionId } from "@/components/IndicatorConfigForm";
 import { WatchlistSidebar } from "@/components/WatchlistSidebar";
+import { RecentSignalsTab } from "@/components/RecentSignalsTab";
 import { MTFAlignmentCard } from "@/components/MTFAlignmentCard";
 import { StrategyBuilder } from "@/components/StrategyBuilder";
 import { TradeJournalPanel } from "@/components/TradeJournalPanel";
@@ -94,6 +95,7 @@ import { Card, SectionTitle } from "@/components/ui/Card";
 const VALID_TIMEFRAMES: Timeframe[] = ["15m", "1h", "4h", "1d", "1w"];
 type ActionMode = "fetch" | "analyze";
 type Screen = "setup" | "results";
+type HomeTab = "tickers" | "signals";
 
 function parseTimeframeParam(value: string | null): Timeframe | null {
   if (!value) return null;
@@ -102,12 +104,19 @@ function parseTimeframeParam(value: string | null): Timeframe | null {
     : null;
 }
 
+function parseTab(value: string | null): HomeTab {
+  return value === "signals" ? "signals" : "tickers";
+}
+
 export function HomePage() {
   const [params, setParams] = useSearchParams();
   const initialTicker = params.get("ticker") ?? "";
   const initialTf = parseTimeframeParam(params.get("tf"));
+  const tab = parseTab(params.get("tab"));
 
-  const [screen, setScreen] = useState<Screen>(initialTicker ? "results" : "setup");
+  const [screen, setScreen] = useState<Screen>(
+    initialTicker && tab !== "signals" ? "results" : "setup",
+  );
   const [input, setInput] = useState(initialTicker);
   const [ticker, setTicker] = useState(initialTicker);
   const [timeframe, setTimeframe] = useState<Timeframe>(initialTf ?? "1d");
@@ -131,6 +140,14 @@ export function HomePage() {
     [catalog, timeframe],
   );
 
+  const catalogEntries = useMemo(
+    () =>
+      (catalog?.entries ?? [])
+        .filter((e) => e.timeframe === timeframe)
+        .sort((a, b) => b.fetchedAt.localeCompare(a.fetchedAt)),
+    [catalog, timeframe],
+  );
+
   const inputParsed = useMemo(() => parseTickerInput(input), [input]);
 
   const refreshCatalog = useCallback(async (remote = false) => {
@@ -147,15 +164,25 @@ export function HomePage() {
   }, []);
 
   const syncUrl = useCallback(
-    (t: string, tf: Timeframe) => {
+    (t: string, tf: Timeframe, nextTab: HomeTab = "tickers") => {
       const next = new URLSearchParams(params);
       if (t) next.set("ticker", t);
       else next.delete("ticker");
       next.set("tf", tf);
+      if (nextTab === "signals") next.set("tab", "signals");
+      else next.delete("tab");
       setParams(next, { replace: true });
     },
     [params, setParams],
   );
+
+  const onTabChange = (nextTab: HomeTab) => {
+    if (nextTab === "signals") {
+      syncUrl(ticker, timeframe, "signals");
+      return;
+    }
+    syncUrl(ticker, timeframe, "tickers");
+  };
 
   const loadData = useCallback(async (t: string, tf: Timeframe) => {
     setLoading(true);
@@ -393,6 +420,59 @@ export function HomePage() {
       <TickerTutorial />
       <h1 className="text-left text-2xl font-bold">종목 분석</h1>
 
+      <div className="flex flex-wrap gap-2">
+        {(
+          [
+            ["tickers", "종목"],
+            ["signals", "최근 시그널"],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onTabChange(id)}
+            className={clsx(
+              "rounded-md px-3 py-1.5 text-sm",
+              tab === id
+                ? "bg-accent text-white"
+                : "bg-surface-elevated text-text-secondary hover:text-text-primary",
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "signals" ? (
+        <>
+          <Card className="space-y-4">
+            <SectionTitle>타임프레임</SectionTitle>
+            <TimeframeTabs
+              value={timeframe}
+              onChange={(tf) => {
+                setTimeframe(tf);
+                syncUrl(ticker, tf, "signals");
+              }}
+            />
+          </Card>
+          {catalogError && (
+            <ErrorBanner title="종목 목록 로드 실패" message={catalogError} />
+          )}
+          <RecentSignalsTab
+            entries={catalogEntries}
+            timeframe={timeframe}
+            loadingIndex={catalogLoading}
+            onTickerSelect={(t) => {
+              setInput(t);
+              setTicker(t);
+              setScreen("results");
+              setActionMode("analyze");
+              syncUrl(t, timeframe, "tickers");
+            }}
+          />
+        </>
+      ) : (
+        <>
       <WatchlistSidebar
         tickers={catalogTickers}
         active={ticker}
@@ -688,6 +768,8 @@ export function HomePage() {
             </>
           )}
         </div>
+      )}
+        </>
       )}
     </div>
   );

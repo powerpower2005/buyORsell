@@ -27,10 +27,15 @@ export function RecentSignalsTab({
   entries,
   timeframe,
   loadingIndex,
+  tickerHref = (ticker, tf) =>
+    `/browse?ticker=${encodeURIComponent(ticker)}&tf=${tf}`,
+  onTickerSelect,
 }: {
   entries: IndexEntry[];
   timeframe: Timeframe;
   loadingIndex: boolean;
+  tickerHref?: (ticker: string, timeframe: Timeframe) => string;
+  onTickerSelect?: (ticker: string) => void;
 }) {
   const [rows, setRows] = useState<TickerSignals[]>([]);
   const [scanning, setScanning] = useState(false);
@@ -163,12 +168,22 @@ export function RecentSignalsTab({
             <li key={row.ticker}>
               <Card className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <Link
-                    to={`/browse?ticker=${encodeURIComponent(row.ticker)}&tf=${timeframe}`}
-                    className="text-base font-semibold text-text-primary no-underline hover:text-accent"
-                  >
-                    {formatTickerLabel(row.ticker)}
-                  </Link>
+                  {onTickerSelect ? (
+                    <button
+                      type="button"
+                      onClick={() => onTickerSelect(row.ticker)}
+                      className="text-left text-base font-semibold text-text-primary hover:text-accent"
+                    >
+                      {formatTickerLabel(row.ticker)}
+                    </button>
+                  ) : (
+                    <Link
+                      to={tickerHref(row.ticker, timeframe)}
+                      className="text-base font-semibold text-text-primary no-underline hover:text-accent"
+                    >
+                      {formatTickerLabel(row.ticker)}
+                    </Link>
+                  )}
                   <span className="text-xs text-text-tertiary">
                     {row.hits.length}개 · {timeframe}
                   </span>
