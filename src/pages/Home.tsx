@@ -9,17 +9,11 @@ import {
   type AnalysisStatus,
 } from "@/components/AnalysisStatusCard";
 import { CandleChart } from "@/components/CandleChart";
-import { VolumePanel } from "@/components/VolumePanel";
-import { ScoreCard } from "@/components/ScoreCard";
-import { IndicatorPanel } from "@/components/IndicatorPanel";
-import { ExportPanel } from "@/components/ExportPanel";
+import { AnalysisDetailSections } from "@/components/AnalysisDetailSections";
 import { IndicatorConfigModal } from "@/components/IndicatorConfigModal";
 import type { IndicatorConfigSectionId } from "@/components/IndicatorConfigForm";
 import { WatchlistSidebar } from "@/components/WatchlistSidebar";
 import { RecentSignalsTab } from "@/components/RecentSignalsTab";
-import { MTFAlignmentCard } from "@/components/MTFAlignmentCard";
-import { StrategyBuilder } from "@/components/StrategyBuilder";
-import { TradeJournalPanel } from "@/components/TradeJournalPanel";
 import { TickerTutorial } from "@/components/TickerTutorial";
 import {
   listJournalEntries,
@@ -37,6 +31,7 @@ import {
   loadStatus,
   loadIndex,
   tickersForTimeframe,
+  timeframesForTicker,
 } from "@/lib/dataLoader";
 import { validateFreshness as checkFresh } from "@/lib/validation";
 import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
@@ -44,9 +39,6 @@ import {
   getEffectiveIndicatorsConfig,
   getIndicatorConfig,
 } from "@/lib/configStore";
-import { CandlePatternPanel } from "@/components/CandlePatternPanel";
-import { SwingStructurePanel } from "@/components/SwingStructurePanel";
-import { SupportResistancePanel } from "@/components/SupportResistancePanel";
 import { ChartSidebar } from "@/components/ChartSidebar";
 import { formatTickerLabel } from "@/lib/tickerNames";
 import { getChartPatternVisibility } from "@/lib/candlePatternStore";
@@ -146,6 +138,11 @@ export function HomePage() {
         .filter((e) => e.timeframe === timeframe)
         .sort((a, b) => b.fetchedAt.localeCompare(a.fetchedAt)),
     [catalog, timeframe],
+  );
+
+  const availableTimeframes = useMemo(
+    () => (catalog && ticker ? timeframesForTicker(catalog, ticker) : []),
+    [catalog, ticker],
   );
 
   const inputParsed = useMemo(() => parseTickerInput(input), [input]);
@@ -582,11 +579,21 @@ export function HomePage() {
       {screen === "results" && ticker && (
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="text-left">
+            <div className="space-y-2 text-left">
               <p className="text-xs text-text-tertiary">분석 중</p>
               <p className="text-lg font-semibold">
-                {formatTickerLabel(ticker)} · {timeframe}
+                {formatTickerLabel(ticker)}
               </p>
+              {availableTimeframes.length > 0 && (
+                <TimeframeTabs
+                  value={timeframe}
+                  available={availableTimeframes}
+                  onChange={(tf) => {
+                    setTimeframe(tf);
+                    syncUrl(ticker, tf);
+                  }}
+                />
+              )}
             </div>
             <Button variant="ghost" onClick={backToSetup}>
               ← 돌아가기
@@ -720,53 +727,20 @@ export function HomePage() {
                   }}
                   runtimeWarnings={evaluation?.warnings ?? []}
                 />
-                <div className="grid gap-6 xl:grid-cols-2">
-                  <VolumePanel
-                    snapshot={evaluation!.volume}
-                    timeframe={timeframe}
-                  />
-                  {evaluation!.score && (
-                    <ScoreCard score={evaluation!.score} timeframe={timeframe} />
-                  )}
-                  <IndicatorPanel results={evaluation!.indicators} />
-                  {evaluation!.structure && (
-                    <SwingStructurePanel structure={evaluation!.structure} />
-                  )}
-                  {evaluation!.supportResistance && (
-                    <SupportResistancePanel
-                      sr={evaluation!.supportResistance}
-                    />
-                  )}
-                  {evaluation!.patterns && (
-                    <CandlePatternPanel
-                      patterns={evaluation!.patterns}
-                      onVisibilityChange={() =>
-                        setChartVisTick((n) => n + 1)
-                      }
-                    />
-                  )}
-                  <TradeJournalPanel
-                    ticker={ticker}
-                    timeframe={timeframe}
-                    bars={evaluation!.bars}
-                    refreshTick={journalTick}
-                    onChange={() => {
-                      setJournalTick((n) => n + 1);
-                      setChartVisTick((n) => n + 1);
-                    }}
-                  />
-                </div>
-                <MTFAlignmentCard alignment={evaluation!.mtf} />
-                <StrategyBuilder
-                  bars={evaluation!.bars}
+                <AnalysisDetailSections
                   evaluation={evaluation!}
-                  onResult={setBacktest}
-                />
-                <ExportPanel
-                  quote={quote!}
-                  indicators={evaluation!.indicators}
-                  score={evaluation!.score ?? undefined}
-                  patterns={evaluation!.patterns ?? undefined}
+                  ticker={ticker}
+                  timeframe={timeframe}
+                  journalTick={journalTick}
+                  onJournalChange={() => {
+                    setJournalTick((n) => n + 1);
+                    setChartVisTick((n) => n + 1);
+                  }}
+                  onPatternVisibilityChange={() =>
+                    setChartVisTick((n) => n + 1)
+                  }
+                  onBacktestResult={setBacktest}
+                  exportQuote={quote}
                   backtest={backtest}
                 />
               </div>

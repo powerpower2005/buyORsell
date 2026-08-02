@@ -1,10 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import clsx from "clsx";
-import { loadIndex, loadQuote } from "@/lib/dataLoader";
+import { loadIndex, loadQuote, timeframesForTicker } from "@/lib/dataLoader";
 import { WatchlistSidebar } from "@/components/WatchlistSidebar";
-import { TradeJournalPanel } from "@/components/TradeJournalPanel";
-import { StrategyBuilder } from "@/components/StrategyBuilder";
 import { RecentSignalsTab } from "@/components/RecentSignalsTab";
 import { listJournalEntries } from "@/lib/tradeJournalStore";
 import { confluencesFromEvaluation } from "@/lib/evaluation/strategyConfluence";
@@ -17,9 +12,6 @@ import {
   getEffectiveIndicatorsConfig,
   getIndicatorConfig,
 } from "@/lib/configStore";
-import { CandlePatternPanel } from "@/components/CandlePatternPanel";
-import { SwingStructurePanel } from "@/components/SwingStructurePanel";
-import { SupportResistancePanel } from "@/components/SupportResistancePanel";
 import { ChartSidebar } from "@/components/ChartSidebar";
 import { IndicatorConfigModal } from "@/components/IndicatorConfigModal";
 import type { IndicatorConfigSectionId } from "@/components/IndicatorConfigForm";
@@ -62,10 +54,7 @@ import {
   type AnalysisStatus,
 } from "@/components/AnalysisStatusCard";
 import { CandleChart } from "@/components/CandleChart";
-import { VolumePanel } from "@/components/VolumePanel";
-import { ScoreCard } from "@/components/ScoreCard";
-import { IndicatorPanel } from "@/components/IndicatorPanel";
-import { MTFAlignmentCard } from "@/components/MTFAlignmentCard";
+import { AnalysisDetailSections } from "@/components/AnalysisDetailSections";
 import { TimeframeTabs } from "@/components/TimeframeTabs";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { PartialDataBanner } from "@/components/PartialDataBanner";
@@ -80,6 +69,9 @@ import type {
   QuoteFile,
   Timeframe,
 } from "@/lib/types";
+import clsx from "clsx";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
 const VALID_TIMEFRAMES: Timeframe[] = ["1d", "1w", "1mo"];
 
@@ -120,6 +112,12 @@ export function BrowsePage() {
         .filter((e) => e.timeframe === timeframe)
         .sort((a, b) => b.fetchedAt.localeCompare(a.fetchedAt)),
     [index, timeframe],
+  );
+
+  const selectedAvailableTfs = useMemo(
+    () =>
+      index && selected ? timeframesForTicker(index, selected.ticker) : [],
+    [index, selected],
   );
 
   useEffect(() => {
@@ -396,7 +394,13 @@ export function BrowsePage() {
       setParams(next, { replace: true });
       return;
     }
-    const first = index?.entries.find((e) => e.timeframe === tf);
+    const sameTicker = selected
+      ? index?.entries.find(
+          (e) => e.ticker === selected.ticker && e.timeframe === tf,
+        )
+      : undefined;
+    const first =
+      sameTicker ?? index?.entries.find((e) => e.timeframe === tf);
     if (first) {
       next.set("ticker", first.ticker);
       setSelected(first);
@@ -492,13 +496,25 @@ export function BrowsePage() {
               <h2 className="text-lg font-semibold">
                 {formatTickerLabel(selected.ticker)}
               </h2>
-              <span className="text-sm text-text-tertiary">{selected.timeframe}</span>
               {freshness && (
                 <Badge variant={freshness.status === "fresh" ? "fresh" : "stale"}>
                   {freshness.status}
                 </Badge>
               )}
             </div>
+            {selectedAvailableTfs.length > 0 && (
+              <TimeframeTabs
+                value={selected.timeframe as Timeframe}
+                available={selectedAvailableTfs}
+                onChange={(tf) => {
+                  const entry = index?.entries.find(
+                    (e) =>
+                      e.ticker === selected.ticker && e.timeframe === tf,
+                  );
+                  if (entry) selectEntry(entry);
+                }}
+              />
+            )}
 
             {resultStatus !== "ready" ? (
               <AnalysisStatusCard
@@ -628,50 +644,19 @@ export function BrowsePage() {
                   }}
                   runtimeWarnings={evaluation?.warnings ?? []}
                 />
-                <div className="grid gap-6 xl:grid-cols-2">
-                  <VolumePanel
-                    snapshot={evaluation!.volume}
-                    timeframe={selected.timeframe as Timeframe}
-                  />
-                  {evaluation!.score && (
-                    <ScoreCard
-                      score={evaluation!.score}
-                      timeframe={selected.timeframe as Timeframe}
-                    />
-                  )}
-                  <IndicatorPanel results={evaluation!.indicators} />
-                  {evaluation!.structure && (
-                    <SwingStructurePanel structure={evaluation!.structure} />
-                  )}
-                  {evaluation!.supportResistance && (
-                    <SupportResistancePanel
-                      sr={evaluation!.supportResistance}
-                    />
-                  )}
-                  {evaluation!.patterns && (
-                    <CandlePatternPanel
-                      patterns={evaluation!.patterns}
-                      onVisibilityChange={() =>
-                        setChartVisTick((n) => n + 1)
-                      }
-                    />
-                  )}
-                  <TradeJournalPanel
-                    ticker={selected.ticker}
-                    timeframe={selected.timeframe}
-                    bars={evaluation!.bars}
-                    refreshTick={journalTick}
-                    onChange={() => {
-                      setJournalTick((n) => n + 1);
-                      setChartVisTick((n) => n + 1);
-                    }}
-                  />
-                </div>
-                <MTFAlignmentCard alignment={evaluation!.mtf} />
-                <StrategyBuilder
-                  bars={evaluation!.bars}
+                <AnalysisDetailSections
                   evaluation={evaluation!}
-                  onResult={setBacktest}
+                  ticker={selected.ticker}
+                  timeframe={selected.timeframe as Timeframe}
+                  journalTick={journalTick}
+                  onJournalChange={() => {
+                    setJournalTick((n) => n + 1);
+                    setChartVisTick((n) => n + 1);
+                  }}
+                  onPatternVisibilityChange={() =>
+                    setChartVisTick((n) => n + 1)
+                  }
+                  onBacktestResult={setBacktest}
                 />
               </div>
             )}

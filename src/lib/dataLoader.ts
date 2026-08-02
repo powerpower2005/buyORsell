@@ -139,3 +139,18 @@ export function tickersForTimeframe(
   }
   return out;
 }
+
+const TF_ORDER: Timeframe[] = ["1d", "1w", "1mo"];
+
+/** Timeframes present in index.json for a ticker (stable 1d → 1w → 1mo order). */
+export function timeframesForTicker(
+  index: IndexFile,
+  ticker: string,
+): Timeframe[] {
+  const present = new Set(
+    index.entries
+      .filter((e) => e.ticker === ticker)
+      .map((e) => e.timeframe as Timeframe),
+  );
+  return TF_ORDER.filter((tf) => present.has(tf));
+}
