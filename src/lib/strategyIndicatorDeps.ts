@@ -3,13 +3,21 @@
  * When turned off, hide those layers only if no other enabled playbook still needs them.
  */
 
-import { setAuxIndicatorVisible, type AuxIndicatorId } from "./auxIndicatorStore";
+import {
+  getAuxIndicatorVisibility,
+  setAuxIndicatorVisible,
+  type AuxIndicatorId,
+} from "./auxIndicatorStore";
 import {
   COMBO_STRATEGY_META,
   COMBO_STRATEGY_ORDER,
   type ComboStrategyId,
 } from "./comboStrategyMeta";
 import {
+  getBbOverlayVisibility,
+  getIchimokuOverlayVisibility,
+  isIndicatorOverlayVisible,
+  isVolumeOverlayVisible,
   setBbOverlayGroupVisible,
   setIchimokuOverlayGroupVisible,
   setIndicatorOverlayVisible,
@@ -38,9 +46,16 @@ import { getPatternStrategyVisibility } from "./patternStrategyStore";
 import { getComboStrategyVisibility } from "./comboStrategyStore";
 import { getClassicStrategyVisibility } from "./classicStrategyStore";
 import { setTrendlineChartVisible } from "./trendlineStore";
+import {
+  getSrChartVisibility,
+  setSrChartVisible,
+  type SrChartToggleId,
+} from "./srZoneStore";
+import { BB_BAND_ORDER } from "./bbOverlay";
+import { ICHIMOKU_PART_ORDER } from "./ichimokuOverlay";
 
 /** Keep local to avoid import cycles with strategyCatalog ↔ stores. */
-type StrategyFamily =
+export type StrategyFamily =
   | "bb"
   | "ichimoku"
   | "volume"
@@ -51,10 +66,11 @@ type StrategyFamily =
   | "combo"
   | "classic";
 
-type LayerKey =
+export type LayerKey =
   | `aux:${AuxIndicatorId}`
   | `sma:${number}`
   | `ema:${number}`
+  | `sr:${SrChartToggleId}`
   | "bb"
   | "ichimoku"
   | "volume";
@@ -69,6 +85,10 @@ function sma(period: number): LayerKey {
 
 function ema(period: number): LayerKey {
   return `ema:${period}`;
+}
+
+function sr(id: SrChartToggleId): LayerKey {
+  return `sr:${id}`;
 }
 
 function add(out: Set<LayerKey>, ...keys: LayerKey[]): void {
@@ -169,7 +189,14 @@ function layersForVolume(id: VolumeStrategyId): Set<LayerKey> {
   return out;
 }
 
-function layersForStrategy(family: StrategyFamily, id: string): Set<LayerKey> {
+function layersForPattern(): Set<LayerKey> {
+  return new Set<LayerKey>(["volume", sr("support"), sr("resistance")]);
+}
+
+export function layersForStrategy(
+  family: StrategyFamily,
+  id: string,
+): Set<LayerKey> {
   switch (family) {
     case "rsi":
       return new Set<LayerKey>([aux("rsi")]);
@@ -186,10 +213,39 @@ function layersForStrategy(family: StrategyFamily, id: string): Set<LayerKey> {
     case "combo":
       return layersForCombo(id as ComboStrategyId);
     case "pattern":
-      return new Set();
+      return layersForPattern();
     case "classic":
       return layersForClassic(id as ClassicStrategyId);
   }
+}
+
+export function isLayerVisible(key: LayerKey): boolean {
+  if (key === "bb") {
+    const vis = getBbOverlayVisibility();
+    return BB_BAND_ORDER.some((band) => vis[band]);
+  }
+  if (key === "ichimoku") {
+    const vis = getIchimokuOverlayVisibility();
+    return ICHIMOKU_PART_ORDER.some((part) => vis[part]);
+  }
+  if (key === "volume") return isVolumeOverlayVisible();
+  if (key.startsWith("aux:")) {
+    return getAuxIndicatorVisibility()[key.slice(4) as AuxIndicatorId] ?? false;
+  }
+  if (key.startsWith("sr:")) {
+    return getSrChartVisibility()[key.slice(3) as SrChartToggleId] ?? false;
+  }
+  if (key.startsWith("sma:")) {
+    return isIndicatorOverlayVisible("sma", Number(key.slice(4)));
+  }
+  if (key.startsWith("ema:")) {
+    return isIndicatorOverlayVisible("ema", Number(key.slice(4)));
+  }
+  return false;
+}
+
+export function setLayerVisible(key: LayerKey, visible: boolean): void {
+  applyLayer(key, visible);
 }
 
 function applyLayer(key: LayerKey, visible: boolean): void {
@@ -207,6 +263,10 @@ function applyLayer(key: LayerKey, visible: boolean): void {
   }
   if (key.startsWith("aux:")) {
     setAuxIndicatorVisible(key.slice(4) as AuxIndicatorId, visible);
+    return;
+  }
+  if (key.startsWith("sr:")) {
+    setSrChartVisible(key.slice(3) as SrChartToggleId, visible);
     return;
   }
   if (key.startsWith("sma:")) {

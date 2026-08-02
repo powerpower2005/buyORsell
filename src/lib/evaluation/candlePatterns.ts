@@ -10,6 +10,7 @@ import {
 
 export type CandlePatternId =
   | "doji"
+  | "spinning_top"
   | "hammer"
   | "inverted_hammer"
   | "shooting_star"
@@ -18,10 +19,18 @@ export type CandlePatternId =
   | "bearish_engulfing"
   | "bullish_harami"
   | "bearish_harami"
+  | "piercing"
+  | "dark_cloud_cover"
+  | "tweezers_bottom"
+  | "tweezers_top"
+  | "bullish_marubozu"
+  | "bearish_marubozu"
   | "morning_star"
   | "evening_star"
   | "three_white_soldiers"
-  | "three_black_crows";
+  | "three_black_crows"
+  | "rising_three_methods"
+  | "falling_three_methods";
 
 export interface CandlePatternHit {
   id: CandlePatternId;
@@ -51,6 +60,7 @@ interface BarMetrics {
 
 const LABELS: Record<CandlePatternId, string> = {
   doji: patternLabel("doji"),
+  spinning_top: patternLabel("spinning_top"),
   hammer: patternLabel("hammer"),
   inverted_hammer: patternLabel("inverted_hammer"),
   shooting_star: patternLabel("shooting_star"),
@@ -59,10 +69,18 @@ const LABELS: Record<CandlePatternId, string> = {
   bearish_engulfing: patternLabel("bearish_engulfing"),
   bullish_harami: patternLabel("bullish_harami"),
   bearish_harami: patternLabel("bearish_harami"),
+  piercing: patternLabel("piercing"),
+  dark_cloud_cover: patternLabel("dark_cloud_cover"),
+  tweezers_bottom: patternLabel("tweezers_bottom"),
+  tweezers_top: patternLabel("tweezers_top"),
+  bullish_marubozu: patternLabel("bullish_marubozu"),
+  bearish_marubozu: patternLabel("bearish_marubozu"),
   morning_star: patternLabel("morning_star"),
   evening_star: patternLabel("evening_star"),
   three_white_soldiers: patternLabel("three_white_soldiers"),
   three_black_crows: patternLabel("three_black_crows"),
+  rising_three_methods: patternLabel("rising_three_methods"),
+  falling_three_methods: patternLabel("falling_three_methods"),
 };
 
 function metrics(bar: OHLCVBar): BarMetrics {
@@ -108,6 +126,16 @@ function isDoji(m: BarMetrics, c: typeof patternConfig): boolean {
   return m.bodyRangeRatio <= c.dojiMaxBodyRangeRatio;
 }
 
+function isSpinningTop(m: BarMetrics, c: typeof patternConfig): boolean {
+  if (m.body === 0) return false;
+  if (m.bodyRangeRatio <= c.dojiMaxBodyRangeRatio) return false;
+  return (
+    m.bodyRangeRatio <= c.spinningTopMaxBodyRangeRatio &&
+    m.upperShadow >= m.body * c.spinningTopMinShadowToBody &&
+    m.lowerShadow >= m.body * c.spinningTopMinShadowToBody
+  );
+}
+
 function isHammerShape(m: BarMetrics, c: typeof patternConfig): boolean {
   if (m.body === 0) return false;
   return (
@@ -124,6 +152,21 @@ function isInvertedHammerShape(m: BarMetrics, c: typeof patternConfig): boolean 
     m.upperShadow >= m.body * c.shootingStarMinUpperShadowToBody &&
     m.lowerShadow <= m.body * c.shootingStarMaxLowerShadowToBody
   );
+}
+
+function isMarubozu(m: BarMetrics, c: typeof patternConfig): boolean {
+  if (m.body === 0) return false;
+  return (
+    m.bodyRangeRatio >= c.marubozuMinBodyRangeRatio &&
+    m.upperShadow <= m.body * c.marubozuMaxShadowToBody &&
+    m.lowerShadow <= m.body * c.marubozuMaxShadowToBody
+  );
+}
+
+function nearlyEqual(a: number, b: number, rel: number): boolean {
+  const mid = (Math.abs(a) + Math.abs(b)) / 2;
+  if (mid === 0) return a === b;
+  return Math.abs(a - b) / mid <= rel;
 }
 
 function priorTrend(bars: OHLCVBar[], idx: number, periods = 3): TrendLabel {
@@ -143,6 +186,62 @@ function bodyMid(bar: OHLCVBar): number {
   return (bar.open + bar.close) / 2;
 }
 
+function bodyBottom(bar: OHLCVBar): number {
+  return Math.min(bar.open, bar.close);
+}
+
+function bodyTop(bar: OHLCVBar): number {
+  return Math.max(bar.open, bar.close);
+}
+
+function tryThreeMethods(
+  bars: OHLCVBar[],
+  idx: number,
+  direction: "bullish" | "bearish",
+  c: typeof patternConfig,
+): boolean {
+  const maxN = c.threeMethodsMaxCounterBars;
+  const minN = c.threeMethodsMinCounterBars;
+  for (let n = maxN; n >= minN; n--) {
+    const firstIdx = idx - n - 1;
+    if (firstIdx < 0) continue;
+    const first = bars[firstIdx];
+    const last = bars[idx];
+    const fm = metrics(first);
+    const lm = metrics(last);
+
+    if (direction === "bullish") {
+      if (!fm.bullish || !lm.bullish) continue;
+      if (last.close <= first.close) continue;
+    } else {
+      if (!fm.bearish || !lm.bearish) continue;
+      if (last.close >= first.close) continue;
+    }
+
+    if (fm.bodyRangeRatio < c.threeMethodsMinOuterBodyRangeRatio) continue;
+    if (lm.bodyRangeRatio < c.threeMethodsMinOuterBodyRangeRatio) continue;
+
+    let countersOk = true;
+    for (let j = 1; j <= n; j++) {
+      const mid = bars[firstIdx + j];
+      const mm = metrics(mid);
+      if (mm.bodyRangeRatio > c.threeMethodsMaxCounterBodyRangeRatio) {
+        countersOk = false;
+        break;
+      }
+      const top = bodyTop(mid);
+      const bot = bodyBottom(mid);
+      // Lenient: counter bodies stay inside the first bar's high–low range.
+      if (top > first.high || bot < first.low) {
+        countersOk = false;
+        break;
+      }
+    }
+    if (countersOk) return true;
+  }
+  return false;
+}
+
 function detectAtIndex(bars: OHLCVBar[], idx: number): CandlePatternHit[] {
   const c = cfg();
   const bar = bars[idx];
@@ -152,6 +251,8 @@ function detectAtIndex(bars: OHLCVBar[], idx: number): CandlePatternHit[] {
 
   if (isDoji(m, c)) {
     found.push(hit("doji", bar.date, idx, "neutral"));
+  } else if (isSpinningTop(m, c)) {
+    found.push(hit("spinning_top", bar.date, idx, "neutral"));
   }
 
   if (isHammerShape(m, c)) {
@@ -171,6 +272,14 @@ function detectAtIndex(bars: OHLCVBar[], idx: number): CandlePatternHit[] {
       found.push(hit("shooting_star", bar.date, idx, "bearish"));
     } else {
       found.push(hit("shooting_star", bar.date, idx, "bearish"));
+    }
+  }
+
+  if (isMarubozu(m, c)) {
+    if (m.bullish) {
+      found.push(hit("bullish_marubozu", bar.date, idx, "bullish"));
+    } else if (m.bearish) {
+      found.push(hit("bearish_marubozu", bar.date, idx, "bearish"));
     }
   }
 
@@ -200,10 +309,11 @@ function detectAtIndex(bars: OHLCVBar[], idx: number): CandlePatternHit[] {
       found.push(hit("bearish_engulfing", bar.date, idx, "bearish"));
     }
 
-    const prevTop = Math.max(prev.open, prev.close);
-    const prevBottom = Math.min(prev.open, prev.close);
-    const curTop = Math.max(bar.open, bar.close);
-    const curBottom = Math.min(bar.open, bar.close);
+    const prevTop = bodyTop(prev);
+    const prevBottom = bodyBottom(prev);
+    const curTop = bodyTop(bar);
+    const curBottom = bodyBottom(bar);
+    const prevBody = Math.abs(prev.close - prev.open);
 
     if (
       pm.bearish &&
@@ -223,6 +333,37 @@ function detectAtIndex(bars: OHLCVBar[], idx: number): CandlePatternHit[] {
       m.body < pm.body
     ) {
       found.push(hit("bearish_harami", bar.date, idx, "bearish"));
+    }
+
+    // Piercing: bullish recovery into prior bearish body (not full engulf).
+    if (
+      pm.bearish &&
+      m.bullish &&
+      prevBody > 0 &&
+      bar.open <= prev.close &&
+      bar.close >= prevBottom + prevBody * c.piercingMinCloseIntoPrevBody &&
+      bar.close < prev.open
+    ) {
+      found.push(hit("piercing", bar.date, idx, "bullish"));
+    }
+
+    // Dark cloud: bearish push into prior bullish body (not full engulf).
+    if (
+      pm.bullish &&
+      m.bearish &&
+      prevBody > 0 &&
+      bar.open >= prev.close &&
+      bar.close <= prevTop - prevBody * c.piercingMinCloseIntoPrevBody &&
+      bar.close > prev.open
+    ) {
+      found.push(hit("dark_cloud_cover", bar.date, idx, "bearish"));
+    }
+
+    if (nearlyEqual(bar.low, prev.low, c.tweezersMaxRelativeDiff)) {
+      found.push(hit("tweezers_bottom", bar.date, idx, "bullish"));
+    }
+    if (nearlyEqual(bar.high, prev.high, c.tweezersMaxRelativeDiff)) {
+      found.push(hit("tweezers_top", bar.date, idx, "bearish"));
     }
   }
 
@@ -300,6 +441,13 @@ function detectAtIndex(bars: OHLCVBar[], idx: number): CandlePatternHit[] {
     ) {
       found.push(hit("three_black_crows", bar.date, idx, "bearish"));
     }
+  }
+
+  if (tryThreeMethods(bars, idx, "bullish", c)) {
+    found.push(hit("rising_three_methods", bar.date, idx, "bullish"));
+  }
+  if (tryThreeMethods(bars, idx, "bearish", c)) {
+    found.push(hit("falling_three_methods", bar.date, idx, "bearish"));
   }
 
   return found;

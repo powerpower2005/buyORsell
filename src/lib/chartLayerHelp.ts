@@ -10,6 +10,7 @@ import {
   type ChartPatternId,
 } from "./chartPatternMeta";
 import { CHART_PATTERN_HELP } from "./chartPatternHelpDetail";
+import { confirmWorksWithText } from "./candlePatternConfirm";
 import type { CandlePatternId } from "./evaluation/candlePatterns";
 import type { FibExtraId, FibLevelRatio } from "./fibonacciStore";
 import type { HelpContent } from "./indicatorHelp";
@@ -26,7 +27,7 @@ export const CHART_LAYER_HELP = {
       "분석 대상(주식·지수·선물·환율)을 바꿔도 가격·거래량만으로 같은 틀을 쓸 수 있어 적용이 빠르고 유연합니다. 기본적 분석처럼 종목마다 별도 재무·산업 지식이 필수는 아닙니다. 해석이 사람마다 달라 모두가 같은 행동을 하지 않으므로, 같은 지표라도 시장이 한쪽으로만 쏠리기 어렵습니다. 수요·공급뿐 아니라 공포·욕망 등 심리가 이미 가격에 녹아 있다고 보고, 차트에서 그 흔적을 추적할 수 있습니다.",
     cons:
       "해석이 주관적이라 같은 RSI·패턴을 보고도 매수/매도가 갈립니다. 차트·지표는 완성·확인 후에야 신호가 나는 후행성이 강하고(특히 이동평균), 과거엔 맞아 보여도 실전에서는 늦은 진입·청산이 흔합니다. 추세의 ‘지속 기간·목표’를 알려 주지 않으며, 패턴·지표만으로 만능이 아닙니다. 경험이 쌓일수록 ‘내가 맞고 시장이 틀리다’는 고집에 빠지기 쉬우니, 틀리면 인정하고 유연하게 쓰는 훈련이 필요합니다.",
-    tip: "옆 %는 이 종목 전 구간 추적 성공률입니다(목표·손절 ±1.5%, 표본 3건↑). 지표만 다시 꺼도 전략 마커는 유지됩니다. 다우·갠·엘리어트·이평은 추세·되돌림·구조를 공유하므로, 파동·이론만 의존하지 말고 확인·손절 규칙을 우선하세요.",
+    tip: "각 전략 아래 ‘같이 켤 지표’로 신뢰도 레이어를 켜세요(모두 켜기 가능). 옆 %는 이 종목 전 구간 추적 성공률입니다(목표·손절 ±1.5%, 표본 3건↑). 지표만 다시 꺼도 전략 마커는 유지됩니다.",
   },
   strategyConfluence: {
     title: "전략 겹침",
@@ -354,14 +355,16 @@ export const CHART_LAYER_HELP = {
   candlePatterns: {
     title: "캔들 패턴",
     summary:
-      "망치형·잉걸핑(1~2봉)과 샛별·적삼병 등 3봉 형태를 탐지해 마커로 표시합니다. 롱·숏·중립으로 구분해 둡니다.",
+      "형태만 느슨히 탐지합니다(망치·장악·피어싱·마루보즈·삼법형·도지 등). 신뢰도는 탐지 조건이 아니라, 같이 켠 거래량·지지저항·RSI·VWAP·ADX로 올립니다.",
     higherLabel: "돌파 시",
     lowerLabel: "실패 시",
     higher:
       "다음 봉이 패턴 방향으로 확인되면(종가·고저 돌파) 신호 신뢰도가 올라가는 편입니다.",
     lower:
       "패턴 고·저점이 깨지면 신호가 무효화될 수 있습니다. 단독 진입보다 맥락과 함께 보세요.",
-    tip: "옆 %는 이 종목에서 패턴 이후 ±1.5% 목표·손절 기준 성공률입니다(표본 3건↑). 추세·지지와 맞을 때 더 의미 있습니다.",
+    worksWith:
+      "패턴마다 ‘같이 보면 좋은 것’ 칩이 다릅니다. 반전은 거래량·지지/저항·RSI·VWAP, 지속(마루보즈·삼법·적삼병)은 거래량·ADX·MACD·SMA20을 먼저 켜세요.",
+    tip: "옆 %는 이 종목에서 패턴 이후 ±1.5% 목표·손절 기준 성공률입니다(표본 3건↑). 탐지가 나와도 바로 진입하지 말고, 추천 레이어를 켠 뒤 맥락을 확인하세요.",
   },
   bbUpper: {
     title: "볼린저 상단 밴드",
@@ -640,7 +643,8 @@ export function candlePatternHelp(id: CandlePatternId): HelpContent {
     ...PATTERN_OUTCOME_LABELS,
     higher,
     lower,
-    tip: "단일 캔들 신호는 추세·지지저항과 맞을 때 더 신뢰도가 올라가는 편입니다.",
+    worksWith: confirmWorksWithText(id),
+    tip: "탐지는 형태만 느슨히 잡습니다. 아래 ‘같이 보면 좋은 것’을 켠 뒤 위치·수급·모멘텀이 맞는지 확인하세요.",
   };
 }
 

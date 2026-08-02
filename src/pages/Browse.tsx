@@ -649,7 +649,12 @@ export function BrowsePage() {
                     />
                   )}
                   {evaluation!.patterns && (
-                    <CandlePatternPanel patterns={evaluation!.patterns} />
+                    <CandlePatternPanel
+                      patterns={evaluation!.patterns}
+                      onVisibilityChange={() =>
+                        setChartVisTick((n) => n + 1)
+                      }
+                    />
                   )}
                   <TradeJournalPanel
                     ticker={selected.ticker}

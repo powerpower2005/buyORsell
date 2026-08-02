@@ -295,6 +295,16 @@ import {
   setStrategyRecentBars,
   setStrategyRecentOnly,
 } from "@/lib/strategyRecencyFilterStore";
+import {
+  companionsForStrategy,
+  type StrategyCompanion,
+} from "@/lib/strategyConfirmLayers";
+import {
+  isLayerVisible,
+  setLayerVisible,
+  type LayerKey,
+  type StrategyFamily,
+} from "@/lib/strategyIndicatorDeps";
 
 const EMPTY_TRENDLINES: Trendline[] = [];
 const EMPTY_STRATEGY_RECENCY = new Map<string, StrategyRecency>();
@@ -328,18 +338,22 @@ function ComboStrategyLeaves({
   stats,
   recencyMap,
   bump,
+  refreshTick,
 }: {
   ids: ComboStrategyId[];
   visibility: Record<ComboStrategyId, boolean>;
   stats?: SignalStatsBundle | null;
   recencyMap?: ReadonlyMap<string, StrategyRecency> | null;
   bump: (fn: () => void) => void;
+  refreshTick: number;
 }) {
   return (
     <>
       {ids.map((id) => (
-        <Leaf
+        <StrategyLeaf
           key={`combo-${id}`}
+          family="combo"
+          id={id}
           label={COMBO_STRATEGY_META[id].labelKo}
           checked={visibility[id]}
           rateStat={
@@ -352,6 +366,8 @@ function ComboStrategyLeaves({
           recency={recencyMap?.get(strategyRecencyKey("combo", id))}
           help={comboStrategyHelp(id)}
           onChange={(next) => bump(() => setComboStrategyVisible(id, next))}
+          bump={bump}
+          refreshTick={refreshTick}
         />
       ))}
     </>
@@ -584,6 +600,10 @@ function Leaf({
   colorOptions,
   onEdit,
   help,
+  companions,
+  companionVisible,
+  onCompanionChange,
+  onEnableAllCompanions,
 }: {
   label: string;
   checked: boolean;
@@ -600,10 +620,15 @@ function Leaf({
   colorOptions?: readonly string[];
   onEdit?: () => void;
   help?: HelpContent;
+  companions?: StrategyCompanion[];
+  companionVisible?: (key: LayerKey) => boolean;
+  onCompanionChange?: (key: LayerKey, next: boolean) => void;
+  onEnableAllCompanions?: () => void;
 }) {
   const rateText = formatSignalRate(rateStat);
   const rateTitle = signalRateTitle(rateStat);
   const hasMeta = Boolean(bias || recency || rateStat != null);
+  const hasCompanions = Boolean(companions?.length);
   return (
     <div className="rounded px-1.5 py-1 hover:bg-surface-elevated/60">
       <div className="flex items-start gap-2">
@@ -662,7 +687,95 @@ function Leaf({
           />
         </div>
       )}
+      {hasCompanions && companions && onCompanionChange && companionVisible && (
+        <div className="mt-1.5 space-y-1 border-l border-border/80 pl-2">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[10px] font-medium text-text-tertiary">
+              같이 켤 지표
+            </p>
+            {onEnableAllCompanions && (
+              <button
+                type="button"
+                className="rounded px-1 py-0.5 text-[10px] font-medium text-accent hover:bg-accent/10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEnableAllCompanions();
+                }}
+              >
+                모두 켜기
+              </button>
+            )}
+          </div>
+          {companions.map((c) => (
+            <div
+              key={c.key}
+              className="flex items-start gap-2 rounded px-0.5 py-0.5"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-medium text-text-secondary">
+                  {c.label}
+                </p>
+                <p className="text-[10px] leading-snug text-text-tertiary">
+                  {c.why}
+                </p>
+              </div>
+              <OnOffSwitch
+                on={companionVisible(c.key)}
+                onChange={(next) => onCompanionChange(c.key, next)}
+                label={`${c.label} 표시`}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
+  );
+}
+
+function StrategyLeaf({
+  family,
+  id,
+  label,
+  checked,
+  onChange,
+  help,
+  rateStat,
+  recency,
+  bump,
+  refreshTick,
+}: {
+  family: StrategyFamily;
+  id: string;
+  label: string;
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  help?: HelpContent;
+  rateStat?: SignalStat;
+  recency?: StrategyRecency;
+  bump: (fn: () => void) => void;
+  refreshTick: number;
+}) {
+  const companions = companionsForStrategy(family, id);
+  void refreshTick;
+  return (
+    <Leaf
+      label={label}
+      checked={checked}
+      onChange={onChange}
+      help={help}
+      rateStat={rateStat}
+      recency={recency}
+      companions={companions}
+      companionVisible={isLayerVisible}
+      onCompanionChange={(key, next) =>
+        bump(() => setLayerVisible(key, next))
+      }
+      onEnableAllCompanions={() =>
+        bump(() => {
+          for (const c of companions) setLayerVisible(c.key, true);
+        })
+      }
+    />
   );
 }
 
@@ -1158,8 +1271,10 @@ export function ChartSidebar({
                 }
               >
                 {entries.map((entry) => (
-                  <Leaf
+                  <StrategyLeaf
                     key={`${entry.family}:${entry.id}`}
+                    family={entry.family}
+                    id={entry.id}
                     label={entry.labelKo}
                     checked={catalogVis[entry.family][entry.id] ?? false}
                     rateStat={getCatalogStrategyStat(
@@ -1180,6 +1295,8 @@ export function ChartSidebar({
                         ),
                       )
                     }
+                    bump={bump}
+                    refreshTick={refreshTick}
                   />
                 ))}
               </Group>
@@ -1363,8 +1480,10 @@ export function ChartSidebar({
               }
             >
               {BB_STRATEGY_ORDER.map((id: BbStrategyId) => (
-                <Leaf
+                <StrategyLeaf
                   key={id}
+                  family="bb"
+                  id={id}
                   label={BB_STRATEGY_META[id].labelKo}
                   checked={bbStratVis[id]}
                   rateStat={
@@ -1379,6 +1498,8 @@ export function ChartSidebar({
                   onChange={(next) =>
                     bump(() => setBbStrategyVisible(id, next))
                   }
+                  bump={bump}
+                  refreshTick={refreshTick}
                 />
               ))}
               <ComboStrategyLeaves
@@ -1387,6 +1508,7 @@ export function ChartSidebar({
                 stats={stats}
                 recencyMap={recencyMap}
                 bump={bump}
+                refreshTick={refreshTick}
               />
             </Group>
         </Group>
@@ -1454,8 +1576,10 @@ export function ChartSidebar({
             }
           >
             {ICHIMOKU_STRATEGY_ORDER.map((id: IchimokuStrategyId) => (
-              <Leaf
+              <StrategyLeaf
                 key={id}
+                family="ichimoku"
+                id={id}
                 label={ICHIMOKU_STRATEGY_META[id].labelKo}
                 checked={ichiStratVis[id]}
                 rateStat={
@@ -1470,6 +1594,8 @@ export function ChartSidebar({
                 onChange={(next) =>
                   bump(() => setIchimokuStrategyVisible(id, next))
                 }
+                bump={bump}
+                refreshTick={refreshTick}
               />
             ))}
           </Group>
@@ -1512,8 +1638,10 @@ export function ChartSidebar({
             }
           >
             {VOLUME_STRATEGY_ORDER.map((id: VolumeStrategyId) => (
-              <Leaf
+              <StrategyLeaf
                 key={id}
+                family="volume"
+                id={id}
                 label={VOLUME_STRATEGY_META[id].labelKo}
                 checked={volumeStratVis[id]}
                 rateStat={
@@ -1528,6 +1656,8 @@ export function ChartSidebar({
                 onChange={(next) =>
                   bump(() => setVolumeStrategyVisible(id, next))
                 }
+                bump={bump}
+                refreshTick={refreshTick}
               />
             ))}
             <ComboStrategyLeaves
@@ -1536,6 +1666,7 @@ export function ChartSidebar({
               stats={stats}
               recencyMap={recencyMap}
               bump={bump}
+              refreshTick={refreshTick}
             />
           </Group>
         </Group>
@@ -1861,8 +1992,10 @@ export function ChartSidebar({
           }
         >
           {CLASSIC_STRATEGY_ORDER.map((id: ClassicStrategyId) => (
-            <Leaf
+            <StrategyLeaf
               key={id}
+              family="classic"
+              id={id}
               label={CLASSIC_STRATEGY_META[id].labelKo}
               checked={classicStratVis[id]}
               rateStat={
@@ -1877,6 +2010,8 @@ export function ChartSidebar({
               onChange={(next) =>
                 bump(() => setClassicStrategyVisible(id, next))
               }
+              bump={bump}
+              refreshTick={refreshTick}
             />
           ))}
         </Group>
@@ -1920,8 +2055,10 @@ export function ChartSidebar({
             }
           >
             {RSI_STRATEGY_ORDER.map((id: RsiStrategyId) => (
-              <Leaf
+              <StrategyLeaf
                 key={id}
+                family="rsi"
+                id={id}
                 label={RSI_STRATEGY_META[id].labelKo}
                 checked={rsiStratVis[id]}
                 rateStat={
@@ -1936,6 +2073,8 @@ export function ChartSidebar({
                 onChange={(next) =>
                   bump(() => setRsiStrategyVisible(id, next))
                 }
+                bump={bump}
+                refreshTick={refreshTick}
               />
             ))}
           </Group>
@@ -1982,8 +2121,10 @@ export function ChartSidebar({
             }
           >
             {MACD_STRATEGY_ORDER.map((id: MacdStrategyId) => (
-              <Leaf
+              <StrategyLeaf
                 key={id}
+                family="macd"
+                id={id}
                 label={MACD_STRATEGY_META[id].labelKo}
                 checked={macdStratVis[id]}
                 rateStat={
@@ -1998,6 +2139,8 @@ export function ChartSidebar({
                 onChange={(next) =>
                   bump(() => setMacdStrategyVisible(id, next))
                 }
+                bump={bump}
+                refreshTick={refreshTick}
               />
             ))}
           </Group>
@@ -2044,8 +2187,10 @@ export function ChartSidebar({
             }
           >
             {STOCH_STRATEGY_ORDER.map((id: StochStrategyId) => (
-              <Leaf
+              <StrategyLeaf
                 key={id}
+                family="stoch"
+                id={id}
                 label={STOCH_STRATEGY_META[id].labelKo}
                 checked={stochStratVis[id]}
                 rateStat={
@@ -2060,6 +2205,8 @@ export function ChartSidebar({
                 onChange={(next) =>
                   bump(() => setStochStrategyVisible(id, next))
                 }
+                bump={bump}
+                refreshTick={refreshTick}
               />
             ))}
           </Group>
@@ -2178,6 +2325,7 @@ export function ChartSidebar({
                     stats={stats}
                     recencyMap={recencyMap}
                     bump={bump}
+                    refreshTick={refreshTick}
                   />
                 </Group>
               </Group>
@@ -2278,8 +2426,10 @@ export function ChartSidebar({
             }
           >
             {PATTERN_STRATEGY_ORDER.map((id: PatternStrategyId) => (
-              <Leaf
+              <StrategyLeaf
                 key={id}
+                family="pattern"
+                id={id}
                 label={PATTERN_STRATEGY_META[id].labelKo}
                 checked={patternStratVis[id]}
                 rateStat={
@@ -2294,6 +2444,8 @@ export function ChartSidebar({
                 onChange={(next) =>
                   bump(() => setPatternStrategyVisible(id, next))
                 }
+                bump={bump}
+                refreshTick={refreshTick}
               />
             ))}
           </Group>

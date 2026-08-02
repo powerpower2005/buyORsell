@@ -6,6 +6,12 @@ import {
   CANDLE_PATTERN_META,
   CANDLE_PATTERN_ORDER,
 } from "@/lib/candlePatternMeta";
+import {
+  confirmLayersFor,
+  enableAllCandleConfirmLayers,
+  enableCandleConfirmLayer,
+  type CandleConfirmLayer,
+} from "@/lib/candlePatternConfirm";
 import { PATTERN_BIAS_META } from "@/lib/patternBias";
 import {
   isCandlePatternHelpCollapsed,
@@ -24,11 +30,47 @@ function dirLabelKo(d: string): string {
   return "중립";
 }
 
-interface Props {
-  patterns: CandlePatternResult;
+function ConfirmChips({
+  layers,
+  onEnableOne,
+  onEnableAll,
+}: {
+  layers: CandleConfirmLayer[];
+  onEnableOne: (layer: CandleConfirmLayer) => void;
+  onEnableAll: () => void;
+}) {
+  return (
+    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+      <span className="text-[10px] text-text-tertiary">신뢰도↑</span>
+      {layers.map((layer) => (
+        <button
+          key={`${layer.kind}-${layer.label}`}
+          type="button"
+          className="rounded-md border border-border px-1.5 py-0.5 text-[10px] font-medium text-text-secondary hover:border-accent/50 hover:text-text-primary"
+          title={`${layer.label} 켜기`}
+          onClick={() => onEnableOne(layer)}
+        >
+          {layer.label}
+        </button>
+      ))}
+      <button
+        type="button"
+        className="rounded-md border border-accent/40 bg-accent/5 px-1.5 py-0.5 text-[10px] font-medium text-accent hover:bg-accent/10"
+        title="추천 레이어 모두 켜기"
+        onClick={onEnableAll}
+      >
+        모두 켜기
+      </button>
+    </div>
+  );
 }
 
-export function CandlePatternPanel({ patterns }: Props) {
+interface Props {
+  patterns: CandlePatternResult;
+  onVisibilityChange?: () => void;
+}
+
+export function CandlePatternPanel({ patterns, onVisibilityChange }: Props) {
   const { onLatestBar, recent, latestBarDate, lookbackBars } = patterns;
   const [helpCollapsed, setHelpCollapsed] = useState(() =>
     isCandlePatternHelpCollapsed(),
@@ -39,13 +81,15 @@ export function CandlePatternPanel({ patterns }: Props) {
     setHelpCollapsed(next);
   };
 
+  const bump = () => onVisibilityChange?.();
+
   return (
     <Card>
       <SectionTitle>캔들 패턴</SectionTitle>
       <p className="mb-3 text-xs text-text-tertiary">
         전체 {lookbackBars}봉 검사 · 마지막 봉 {latestBarDate}
         {recent.length > 0 && ` · ${recent.length}건 감지`}
-        {" · 차트 표시는 사이드바"}
+        {" · 형태만 느슨히 탐지 · 신뢰도는 지표로 확인"}
       </p>
 
       <div className="mb-4 text-left">
@@ -87,13 +131,26 @@ export function CandlePatternPanel({ patterns }: Props) {
       <div className="mb-4 text-left">
         <p className="text-xs font-medium text-text-secondary">최근 봉 패턴</p>
         {onLatestBar.length ? (
-          <div className="mt-2 flex flex-wrap gap-2">
+          <ul className="mt-2 space-y-3">
             {onLatestBar.map((p) => (
-              <Badge key={`${p.id}-${p.date}`} variant={dirVariant(p.direction)}>
-                {CANDLE_PATTERN_META[p.id].labelKo} · {dirLabelKo(p.direction)}
-              </Badge>
+              <li key={`${p.id}-${p.date}`}>
+                <Badge variant={dirVariant(p.direction)}>
+                  {CANDLE_PATTERN_META[p.id].labelKo} · {dirLabelKo(p.direction)}
+                </Badge>
+                <ConfirmChips
+                  layers={confirmLayersFor(p.id)}
+                  onEnableOne={(layer) => {
+                    enableCandleConfirmLayer(layer);
+                    bump();
+                  }}
+                  onEnableAll={() => {
+                    enableAllCandleConfirmLayers(p.id);
+                    bump();
+                  }}
+                />
+              </li>
             ))}
-          </div>
+          </ul>
         ) : (
           <p className="mt-1 text-sm text-text-tertiary">감지된 패턴 없음</p>
         )}

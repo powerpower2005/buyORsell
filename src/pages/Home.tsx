@@ -738,7 +738,12 @@ export function HomePage() {
                     />
                   )}
                   {evaluation!.patterns && (
-                    <CandlePatternPanel patterns={evaluation!.patterns} />
+                    <CandlePatternPanel
+                      patterns={evaluation!.patterns}
+                      onVisibilityChange={() =>
+                        setChartVisTick((n) => n + 1)
+                      }
+                    />
                   )}
                   <TradeJournalPanel
                     ticker={ticker}

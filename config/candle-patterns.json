@@ -10,5 +10,15 @@
   "starMaxMidBodyRangeRatio": 0.35,
   "starMinOuterBodyRangeRatio": 0.4,
   "soldiersMinBodyRangeRatio": 0.45,
-  "soldiersMaxOppositeShadowToBody": 0.6
+  "soldiersMaxOppositeShadowToBody": 0.6,
+  "piercingMinCloseIntoPrevBody": 0.4,
+  "marubozuMinBodyRangeRatio": 0.7,
+  "marubozuMaxShadowToBody": 0.2,
+  "tweezersMaxRelativeDiff": 0.0025,
+  "threeMethodsMinOuterBodyRangeRatio": 0.35,
+  "threeMethodsMaxCounterBodyRangeRatio": 0.5,
+  "threeMethodsMinCounterBars": 2,
+  "threeMethodsMaxCounterBars": 3,
+  "spinningTopMaxBodyRangeRatio": 0.35,
+  "spinningTopMinShadowToBody": 1
 }
