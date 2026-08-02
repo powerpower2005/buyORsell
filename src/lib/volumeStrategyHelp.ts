@@ -37,7 +37,7 @@ export const VOLUME_STRATEGY_HELP: Record<VolumeStrategyId, HelpContent> = {
       "거래량에 방향(매수/매도 우위)을 붙여 다우 확인을 구체화합니다. 필터로 쓰면 잘못된 진입을 줄입니다.",
     cons:
       "양·음봉=매수·매도라는 가정이 거칠고, 해석·구간 합산이 주관적입니다. 단독 방향 신호로 쓰면 위험합니다.",
-    tip: "잘못된 진입을 걸러내는 필터에 가깝습니다. 스캘핑·단타·스윙 모두에 같은 원칙을 씁니다.",
+    tip: "잘못된 진입을 걸러내는 필터에 가깝습니다. 일·주·월 스윙에 같은 원칙을 씁니다.",
   },
   vsa: {
     title: "VSA (Volume Spread Analysis)",
@@ -69,7 +69,7 @@ export const VOLUME_STRATEGY_HELP: Record<VolumeStrategyId, HelpContent> = {
       "VWAP 저항 이탈 → 숏. 손절은 VWAP 위, 목표는 손익비 1:2.",
     worksWith:
       "VWAP 밴드·스위칭, 캔들 패턴(망치/음봉), 지지·저항. 유동성 풍부한 종목에 유리합니다.",
-    tip: "원래 5분봉 눌림목 아이디어를 일봉·보유 창 VWAP에 맞게 적용한 마커입니다. VWAP 초기 구간(데이터 앞부분)은 노이즈가 큽니다.",
+    tip: "일·주·월봉 누적 VWAP 눌림목용 마커입니다. 데이터 앞부분(VWAP 초기 구간)은 노이즈가 큽니다.",
   },
   vwap_band_reversal: {
     title: "VWAP 밴드 반전",
@@ -98,6 +98,52 @@ export const VOLUME_STRATEGY_HELP: Record<VolumeStrategyId, HelpContent> = {
     worksWith:
       "VWAP 중심선·밴드, 과거 고·저점 저항/지지. 어긋남이 해소되면(가격이 VWAP 방향에 합류) 신호 효력이 약해집니다.",
     tip: "가격과 VWAP가 같이 움직일 때는 쓰지 마세요. ‘반대로 움직일 때’만의 기회입니다.",
+  },
+  vwap_ema_squeeze: {
+    title: "VWAP·EMA 스키즈",
+    summary: VOLUME_STRATEGY_META.vwap_ema_squeeze.description,
+    howToFind:
+      "VWAP와 EMA12 이격(%)이 좁아진(스키즈) 뒤, EMA가 VWAP를 상향 돌파(골든)·하향 돌파(데드)하는 봉을 봅니다. 롱은 VWAP 우상향 + 종가≥VWAP, 숏은 우하향 + 종가≤VWAP. 이미 이격이 크게 벌어진 구간 진입은 제외합니다.",
+    ...BREAK,
+    higher:
+      "스키즈 → 골든 크로스 → 롱. 두 선이 다시 벌어지면 익절 후보.",
+    lower:
+      "스키즈 → 데드 크로스 → 숏. 벌어진 뒤 재접근은 청산·반전 경계.",
+    worksWith: "VWAP 눌림목·포에버 VWAP, ADX(추세 확인), EMA12 오버레이.",
+    tip: "스키즈는 ‘폭발 직전’, 이미 벌어진 구간은 ‘늦은 진입’으로 봅니다.",
+  },
+  vwap_trendline: {
+    title: "VWAP·추세선 컨플루언스",
+    summary: VOLUME_STRATEGY_META.vwap_trendline.description,
+    howToFind:
+      "사이드바에서 VWAP과 추세선을 켜세요. 가격이 VWAP 근처이면서 상승 추세선과도 겹치고 양봉·망치로 반등하면 롱. VWAP+하락 추세선 저항에서 음봉·유성형이면 숏.",
+    ...BREAK,
+    higher: "이중 지지 반등 → 롱. 손절은 직전 저점, VWAP 종가 이탈 2봉이면 익절 후보.",
+    lower: "이중 저항 이탈 → 숏. 손절은 직전 고점, 종가 상향 돌파 2봉이면 익절 후보.",
+    worksWith: "추세선 V1/V2, VWAP 눌림목, 스윙 HH/HL.",
+    tip: "한 선만 닿고 다른 선과 멀면 컨플루언스가 아닙니다.",
+  },
+  forever_vwap_flip: {
+    title: "포에버 VWAP 전환",
+    summary: VOLUME_STRATEGY_META.forever_vwap_flip.description,
+    howToFind:
+      "보조 지표에서 포에버 VWAP을 켜세요. 상승=주황·하락=보라, 기울기 전환 시 다이아몬드(사각형 마커). 전환 봉에 장대 양/음봉이 나오면 그 종가에 롱/숏 마커가 찍힙니다.",
+    ...BREAK,
+    higher: "주황 다이아몬드 + 장대 양봉 → 롱. 손절은 다이아몬드 바로 아래.",
+    lower: "보라 다이아몬드 + 장대 음봉 → 숏·롱 청산. 손절은 다이아몬드 바로 위.",
+    worksWith: "포에버 VWAP 앵커드 라인, VWAP·EMA 스키즈, 스윙 구조.",
+    tip: "일시적으로 선을 뚫어도 반대 색 다이아몬드가 없으면 추세 유지로 봅니다.",
+  },
+  failed_breakout_short: {
+    title: "실패 돌파 숏",
+    summary: VOLUME_STRATEGY_META.failed_breakout_short.description,
+    howToFind:
+      "저항 재시험 양봉이 이전 고점을 못 넘고 VWAP도 돌파하지 못한 뒤, 윗꼬리 매도 캔들이 여러 개 나오고 하락장형(또는 하락 장악형)이 나오면, 직전 양봉 저점을 깨는 봉에서 숏 마커가 생깁니다.",
+    ...BREAK,
+    higher: "이 전략은 숏 전용입니다. 반대로 저점 실패·VWAP 지지 실패는 롱 후보로 보지 않습니다.",
+    lower: "실패 돌파 조건 충족 + 저점 이탈 → 숏. 손절은 진입 직전 고점 바로 위.",
+    worksWith: "캔들 패턴(하락장악형), VWAP, 지지·저항, 상위 타임프레임 저점 목표가.",
+    tip: "세 근거(고점미갱신·VWAP미돌파·매도세/장악형)가 겹칠 때만 씁니다.",
   },
   obv_divergence: {
     title: "OBV 다이버전스",

@@ -215,6 +215,7 @@ export function buildOscPaneSpecs(
     // Price-scale overlays (main pane), not below-chart oscillators.
     if (
       id === "vwap" ||
+      id === "forever_vwap" ||
       id === "psar" ||
       id === "supertrend" ||
       id === "keltner"

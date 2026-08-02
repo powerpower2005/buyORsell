@@ -37,7 +37,7 @@ export function tradingDayLag(lastBarDate: string, now = new Date()): number {
   return countTradingDaysBetween(lastBarDate, expected);
 }
 
-const TRADING_DAY_TIMEFRAMES = new Set<Timeframe>(["1d", "1w"]);
+const TRADING_DAY_TIMEFRAMES = new Set<Timeframe>(["1d", "1w", "1mo"]);
 
 export function usesTradingDayFreshness(timeframe: Timeframe): boolean {
   const tfPolicy = (

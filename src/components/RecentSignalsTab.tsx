@@ -65,9 +65,10 @@ export function RecentSignalsTab({
         { trendlineAlgo: getTrendlineAlgoVersion() },
       );
       if (evaluation.fatalError) {
+        const fatal = evaluation.fatalError;
         setCache((prev) => ({
           ...prev,
-          [ticker]: { hits: [], error: evaluation.fatalError },
+          [ticker]: { hits: [], error: fatal },
         }));
         return;
       }

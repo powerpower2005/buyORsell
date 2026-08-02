@@ -65,7 +65,12 @@ export function validateFreshness(
 
 
 
-  if (quote.barCount < policy.freshness.minBarCount) {
+  const tfFreshness = (
+    policy.freshnessByTimeframe as Record<string, { minBarCount?: number }>
+  )?.[timeframe];
+  const minBars = tfFreshness?.minBarCount ?? policy.freshness.minBarCount;
+
+  if (quote.barCount < minBars) {
 
     return { status: "stale", reason: "minBarCount" };
 

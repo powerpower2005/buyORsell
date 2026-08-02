@@ -51,6 +51,7 @@ export type IndicatorConfigSectionId =
   | "equivolume"
   | "keltner"
   | "vwap"
+  | "forever_vwap"
   | "adx"
   | "psar"
   | "cci"
@@ -80,6 +81,7 @@ export const INDICATOR_CONFIG_SECTION_LABEL: Record<
   equivolume: "EquiVolume",
   keltner: "켈트너",
   vwap: "VWAP",
+  forever_vwap: "포에버 VWAP",
   adx: "ADX",
   psar: "Parabolic SAR",
   cci: "CCI",
@@ -359,6 +361,7 @@ export function IndicatorConfigForm({
   const equivolume = find("equivolume");
   const keltner = find("keltner");
   const vwap = find("vwap");
+  const foreverVwap = find("forever_vwap");
   const adx = find("adx");
   const psar = find("psar");
   const cci = find("cci");
@@ -381,6 +384,7 @@ export function IndicatorConfigForm({
     !equivolume ||
     !keltner ||
     !vwap ||
+    !foreverVwap ||
     !adx ||
     !psar ||
     !cci ||
@@ -406,7 +410,7 @@ export function IndicatorConfigForm({
 
   const indicatorWarnings = runtimeWarnings.filter(
     (w) =>
-      /SMA|EMA|RSI|MACD|STOCH|BB|MFI|ATR|OBV|A\/D|AD|CHAIKIN|EOM|EQUIVOLUME|KELTNER|켈트너|VWAP|ADX|PSAR|SAR|CCI|슈퍼|SUPER|ICHIMOKU|일목|스토캐|sma|ema|rsi|macd|stoch|bb|mfi|atr|obv|ad|chaikin|eom|obvMid|equivolume|keltner|vwap|adx|psar|cci|supertrend|ichimoku|점수 규칙/i.test(
+      /SMA|EMA|RSI|MACD|STOCH|BB|MFI|ATR|OBV|A\/D|AD|CHAIKIN|EOM|EQUIVOLUME|KELTNER|켈트너|VWAP|포에버|ADX|PSAR|SAR|CCI|슈퍼|SUPER|ICHIMOKU|일목|스토캐|sma|ema|rsi|macd|stoch|bb|mfi|atr|obv|ad|chaikin|eom|obvMid|equivolume|keltner|vwap|forever_vwap|adx|psar|cci|supertrend|ichimoku|점수 규칙/i.test(
         w,
       ) || w.includes("봉"),
   );
@@ -1042,6 +1046,38 @@ export function IndicatorConfigForm({
             step={0.5}
             onChange={(v) => {
               setIndicatorParam("vwap", "stdDev2", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
+
+      {show("forever_vwap") && (
+        <IndicatorSection
+          title="포에버 VWAP"
+          help={INDICATOR_HELP.forever_vwap}
+          enabled={foreverVwap.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("forever_vwap", v);
+            patch();
+          }}
+        >
+          <p className="mb-2 text-xs text-text-tertiary">
+            세션 리셋 없는 누적 VWAP(상승=주황·하락=보라). 기울기 전환 다이아몬드와
+            앵커드 라인을 함께 표시합니다.
+          </p>
+          <NumInput
+            label="Slope lookback"
+            help={PARAM_HELP["forever_vwap.slopeLookback"]}
+            value={requireNumber(
+              foreverVwap.params.slopeLookback ?? 3,
+              "forever_vwap.slopeLookback",
+            )}
+            min={1}
+            max={20}
+            step={1}
+            onChange={(v) => {
+              setIndicatorParam("forever_vwap", "slopeLookback", v);
               patch();
             }}
           />

@@ -5,41 +5,91 @@
       "id": "sma",
       "enabled": true,
       "params": {
-        "periods": [20, 50, 200],
-        "colors": { "20": "#3b82f6", "50": "#f59e0b", "200": "#a855f7" }
+        "periods": [
+          20,
+          50,
+          200
+        ],
+        "colors": {
+          "20": "#3b82f6",
+          "50": "#f59e0b",
+          "200": "#a855f7"
+        }
       },
-      "timeframes": ["15m", "1h", "4h", "1d", "1w"],
-      "outputs": ["line"]
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ],
+      "outputs": [
+        "line"
+      ]
     },
     {
       "id": "ema",
       "enabled": true,
       "params": {
-        "periods": [12, 26, 60],
-        "colors": { "12": "#06b6d4", "26": "#ec4899", "60": "#f97316" }
+        "periods": [
+          12,
+          26,
+          60
+        ],
+        "colors": {
+          "12": "#06b6d4",
+          "26": "#ec4899",
+          "60": "#f97316"
+        }
       },
-      "timeframes": ["1d", "1w"],
-      "outputs": ["line"]
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ],
+      "outputs": [
+        "line"
+      ]
     },
     {
       "id": "rsi",
       "enabled": true,
-      "params": { "period": 14 },
-      "timeframes": ["1d", "1w"],
+      "params": {
+        "period": 14
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ],
       "overbought": 70,
       "oversold": 30
     },
     {
       "id": "macd",
       "enabled": true,
-      "params": { "fast": 12, "slow": 26, "signal": 9 },
-      "timeframes": ["1d", "1w"]
+      "params": {
+        "fast": 12,
+        "slow": 26,
+        "signal": 9
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ]
     },
     {
       "id": "stoch",
       "enabled": true,
-      "params": { "period": 14, "slowing": 1, "signalPeriod": 3 },
-      "timeframes": ["1h", "4h", "1d", "1w"],
+      "params": {
+        "period": 14,
+        "slowing": 1,
+        "signalPeriod": 3
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ],
       "overbought": 80,
       "oversold": 20
     },
@@ -55,50 +105,97 @@
           "lower": "#818cf8"
         }
       },
-      "timeframes": ["1h", "4h", "1d", "1w"],
-      "outputs": ["line"]
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ],
+      "outputs": [
+        "line"
+      ]
     },
     {
       "id": "mfi",
       "enabled": true,
-      "params": { "period": 14 },
-      "timeframes": ["1h", "4h", "1d", "1w"]
+      "params": {
+        "period": 14
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ]
     },
     {
       "id": "atr",
       "enabled": true,
-      "params": { "period": 14 },
-      "timeframes": ["1h", "4h", "1d", "1w"]
+      "params": {
+        "period": 14
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ]
     },
     {
       "id": "obv",
       "enabled": true,
-      "params": { "signalPeriod": 10, "energyLookback": 8 },
-      "timeframes": ["1h", "4h", "1d", "1w"]
+      "params": {
+        "signalPeriod": 10,
+        "energyLookback": 8
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ]
     },
     {
       "id": "ad",
       "enabled": true,
       "params": {},
-      "timeframes": ["1h", "4h", "1d", "1w"]
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ]
     },
     {
       "id": "chaikin",
       "enabled": true,
-      "params": { "fast": 3, "slow": 10 },
-      "timeframes": ["1h", "4h", "1d", "1w"]
+      "params": {
+        "fast": 3,
+        "slow": 10
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ]
     },
     {
       "id": "eom",
       "enabled": true,
-      "params": { "period": 14, "scale": 10000 },
-      "timeframes": ["1h", "4h", "1d", "1w"]
+      "params": {
+        "period": 14,
+        "scale": 10000
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ]
     },
     {
       "id": "obvMid",
       "enabled": true,
       "params": {},
-      "timeframes": ["1h", "4h", "1d", "1w"]
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ]
     },
     {
       "id": "equivolume",
@@ -108,7 +205,11 @@
         "narrowMax": 0.7,
         "oversquareMin": 1.4
       },
-      "timeframes": ["1h", "4h", "1d", "1w"]
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ]
     },
     {
       "id": "keltner",
@@ -123,8 +224,14 @@
           "lower": "#67e8f9"
         }
       },
-      "timeframes": ["1h", "4h", "1d", "1w"],
-      "outputs": ["line"]
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ],
+      "outputs": [
+        "line"
+      ]
     },
     {
       "id": "vwap",
@@ -138,36 +245,92 @@
           "band2": "#fb923c"
         }
       },
-      "timeframes": ["1h", "4h", "1d", "1w"],
-      "outputs": ["line"]
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ],
+      "outputs": [
+        "line"
+      ]
+    },
+    {
+      "id": "forever_vwap",
+      "enabled": true,
+      "params": {
+        "slopeLookback": 3,
+        "colors": {
+          "up": "#f97316",
+          "down": "#a855f7",
+          "anchored": "#94a3b8"
+        }
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ],
+      "outputs": [
+        "line"
+      ]
     },
     {
       "id": "adx",
       "enabled": true,
-      "params": { "period": 14 },
-      "timeframes": ["1h", "4h", "1d", "1w"]
+      "params": {
+        "period": 14
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ]
     },
     {
       "id": "psar",
       "enabled": true,
-      "params": { "step": 0.02, "max": 0.2 },
-      "timeframes": ["1h", "4h", "1d", "1w"],
-      "outputs": ["line"]
+      "params": {
+        "step": 0.02,
+        "max": 0.2
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ],
+      "outputs": [
+        "line"
+      ]
     },
     {
       "id": "cci",
       "enabled": true,
-      "params": { "period": 20 },
-      "timeframes": ["1h", "4h", "1d", "1w"],
+      "params": {
+        "period": 20
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ],
       "overbought": 100,
       "oversold": -100
     },
     {
       "id": "supertrend",
       "enabled": true,
-      "params": { "atrPeriod": 10, "multiplier": 3 },
-      "timeframes": ["1h", "4h", "1d", "1w"],
-      "outputs": ["line"]
+      "params": {
+        "atrPeriod": 10,
+        "multiplier": 3
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ],
+      "outputs": [
+        "line"
+      ]
     },
     {
       "id": "ichimoku",
@@ -185,8 +348,14 @@
           "spanB": "#f97316"
         }
       },
-      "timeframes": ["1h", "4h", "1d", "1w"],
-      "outputs": ["line"]
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ],
+      "outputs": [
+        "line"
+      ]
     }
   ],
   "signals": [
@@ -195,7 +364,9 @@
       "type": "crossover",
       "fast": "sma:20",
       "slow": "sma:50",
-      "timeframes": ["1d"]
+      "timeframes": [
+        "1d"
+      ]
     },
     {
       "id": "rsi_oversold",
@@ -203,7 +374,9 @@
       "indicator": "rsi",
       "op": "lt",
       "value": 30,
-      "timeframes": ["1d"]
+      "timeframes": [
+        "1d"
+      ]
     },
     {
       "id": "rsi_overbought",
@@ -211,7 +384,9 @@
       "indicator": "rsi",
       "op": "gt",
       "value": 70,
-      "timeframes": ["1d"]
+      "timeframes": [
+        "1d"
+      ]
     }
   ]
 }

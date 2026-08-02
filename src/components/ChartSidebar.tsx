@@ -2093,6 +2093,7 @@ export function ChartSidebar({
                     id === "obv" ||
                     id === "keltner" ||
                     id === "vwap" ||
+                    id === "forever_vwap" ||
                     id === "adx" ||
                     id === "psar" ||
                     id === "cci" ||

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Rebuild 1w.json for every ticker that already has 1d.json (no network).
+ * Rebuild derived aggregates (1w / 1mo) for every ticker that has 1d.json (no network).
  *
  * Usage: node scripts/aggregate-weekly-from-daily.mjs [TICKER]
  */

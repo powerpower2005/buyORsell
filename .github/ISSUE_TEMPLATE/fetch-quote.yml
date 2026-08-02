@@ -15,7 +15,7 @@ body:
     id: timeframe
     attributes:
       label: Timeframe
-      description: "1d (primary). 1w is derived from 1d after fetch. 1h/4h/15m not ready yet."
+      description: "1d only (primary). 1w/1mo are derived from 1d after fetch — do not request minute/hour bars."
       placeholder: "1d"
     validations:
       required: true

@@ -52,9 +52,9 @@ export const COMBO_STRATEGY_HELP: Record<ComboStrategyId, HelpContent> = {
     higher: "VWAP 지지 + MFI>50↑ + OBV 신고 → 롱.",
     lower: "VWAP 저항 + MFI<50↓ + OBV 신저 → 숏.",
     worksWith:
-      "VWAP 밴드·눌림목 전략, 거래량 히트맵, 장중 고·저. 유동성이 얇은 종목은 VWAP 노이즈가 큽니다.",
+      "VWAP 밴드·눌림목 전략, 거래량 히트맵, 스윙 고·저. 유동성이 얇은 종목은 VWAP 노이즈가 큽니다.",
     bestFor:
-      "코인·선물·대형주 장중/스윙. 기관·스마트머니 흐름을 따라가는 용도. 장 초반 VWAP이 불안정할 때는 신호를 가볍게 보세요.",
+      "대형주·지수 일·주·월 스윙. 기관·스마트머니 흐름을 따라가는 용도. VWAP 초기 구간은 신호를 가볍게 보세요.",
     pros:
       "가격만의 지지가 아니라 자금(MFI·OBV)으로 다우식 거래량 확인을 강화합니다.",
     cons:
@@ -90,7 +90,7 @@ export const COMBO_STRATEGY_HELP: Record<ComboStrategyId, HelpContent> = {
     worksWith:
       "슈퍼트렌드(같은 방향이면 신뢰↑), ATR(포지션·스탑), 이평. 횡보에서 SAR은 잦은 플립이 나므로 ADX 필터가 핵심입니다.",
     bestFor:
-      "추세 전환을 빨리 잡고 트레일링으로 수익을 끌고 가는 스윙·단타. 차트에서 SAR 점만으로도 방향을 읽기 쉬운 종목에 좋습니다.",
+      "추세 전환을 빨리 잡고 트레일링으로 수익을 끌고 가는 일·주 스윙. 차트에서 SAR 점만으로도 방향을 읽기 쉬운 종목에 좋습니다.",
     pros:
       "전환 시점과 트레일 손절이 선명합니다. 다우 추세 추종을 시각적으로 단순화합니다.",
     cons:

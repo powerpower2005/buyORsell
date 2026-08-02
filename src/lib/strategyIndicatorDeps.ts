@@ -37,6 +37,7 @@ import { getStochStrategyVisibility } from "./stochStrategyStore";
 import { getPatternStrategyVisibility } from "./patternStrategyStore";
 import { getComboStrategyVisibility } from "./comboStrategyStore";
 import { getClassicStrategyVisibility } from "./classicStrategyStore";
+import { setTrendlineChartVisible } from "./trendlineStore";
 
 /** Keep local to avoid import cycles with strategyCatalog ↔ stores. */
 type StrategyFamily =
@@ -134,7 +135,15 @@ function layersForVolume(id: VolumeStrategyId): Set<LayerKey> {
     case "vwap_pullback":
     case "vwap_band_reversal":
     case "vwap_switching":
+    case "vwap_trendline":
+    case "failed_breakout_short":
       add(out, aux("vwap"));
+      break;
+    case "vwap_ema_squeeze":
+      add(out, aux("vwap"), ema(12));
+      break;
+    case "forever_vwap_flip":
+      add(out, aux("forever_vwap"));
       break;
     case "obv_divergence":
     case "obv_fast_thrust":
@@ -240,6 +249,10 @@ export function enableIndicatorsForStrategy(
   id: string,
 ): void {
   for (const key of layersForStrategy(family, id)) applyLayer(key, true);
+  if (family === "volume" && id === "vwap_trendline") {
+    setTrendlineChartVisible("ascending", true);
+    setTrendlineChartVisible("descending", true);
+  }
 }
 
 export function enableIndicatorsForStrategies(

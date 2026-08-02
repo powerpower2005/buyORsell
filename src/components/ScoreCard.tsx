@@ -60,11 +60,13 @@ interface Props {
 
 export function ScoreCard({ score, timeframe }: Props) {
   const presetHint =
-    timeframe === "1w"
-      ? "주봉 프리셋(1w_swing)"
-      : timeframe === "1d"
-        ? "일봉 프리셋(1d_default)"
-        : null;
+    timeframe === "1mo"
+      ? "월봉 프리셋(1mo_position)"
+      : timeframe === "1w"
+        ? "주봉 프리셋(1w_swing)"
+        : timeframe === "1d"
+          ? "일봉 프리셋(1d_default)"
+          : null;
 
   return (
     <Card>

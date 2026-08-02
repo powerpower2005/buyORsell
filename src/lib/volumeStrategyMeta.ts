@@ -8,6 +8,10 @@ export type VolumeStrategyId =
   | "vwap_pullback"
   | "vwap_band_reversal"
   | "vwap_switching"
+  | "vwap_ema_squeeze"
+  | "vwap_trendline"
+  | "forever_vwap_flip"
+  | "failed_breakout_short"
   | "obv_divergence"
   | "obv_keltner"
   | "obv_fast_thrust"
@@ -24,6 +28,10 @@ export const VOLUME_STRATEGY_ORDER: VolumeStrategyId[] = [
   "vwap_pullback",
   "vwap_band_reversal",
   "vwap_switching",
+  "vwap_ema_squeeze",
+  "vwap_trendline",
+  "forever_vwap_flip",
+  "failed_breakout_short",
   "obv_divergence",
   "obv_keltner",
   "obv_fast_thrust",
@@ -98,6 +106,42 @@ export const VOLUME_STRATEGY_META: Record<
     markerBull: "SW↑",
     markerBear: "SW↓",
     typicalDirection: "neutral",
+  },
+  vwap_ema_squeeze: {
+    label: "VWAP–EMA squeeze",
+    labelKo: "VWAP·EMA 스키즈",
+    description:
+      "VWAP와 EMA12 이격이 좁아진 뒤 골든/데드 크로스 + VWAP 기울기·가격 위치가 맞을 때 진입. 벌어진 뒤 진입은 피함.",
+    markerBull: "SQ↑",
+    markerBear: "SQ↓",
+    typicalDirection: "neutral",
+  },
+  vwap_trendline: {
+    label: "VWAP ∩ trendline",
+    labelKo: "VWAP·추세선",
+    description:
+      "VWAP 지지와 상승 추세선이 겹치면 롱, VWAP 저항과 하락 추세선이 겹치면 숏.",
+    markerBull: "VT↑",
+    markerBear: "VT↓",
+    typicalDirection: "neutral",
+  },
+  forever_vwap_flip: {
+    label: "Forever VWAP flip",
+    labelKo: "포에버 VWAP 전환",
+    description:
+      "포에버 VWAP 기울기 전환(주황/보라 다이아몬드) + 장대 캔들 종가에서 추세 방향으로 진입.",
+    markerBull: "◆↑",
+    markerBear: "◆↓",
+    typicalDirection: "neutral",
+  },
+  failed_breakout_short: {
+    label: "Failed breakout short",
+    labelKo: "실패 돌파 숏",
+    description:
+      "고점 미갱신·VWAP 미돌파·윗꼬리 매도세·하락장형 후 직전 양봉 저점 이탈 시 숏.",
+    markerBull: "FB↑",
+    markerBear: "FB↓",
+    typicalDirection: "bearish",
   },
   obv_divergence: {
     label: "OBV divergence",

@@ -90,6 +90,7 @@ import {
   volumeStrategiesToChartMarkers,
   visibleVolumeStrategyLegend,
 } from "@/lib/chart/volumeStrategyMarkers";
+import { foreverVwapToChartMarkers } from "@/lib/chart/foreverVwapMarkers";
 import type { ComboStrategyResult } from "@/lib/evaluation/comboStrategies";
 import type { ComboStrategyId } from "@/lib/comboStrategyMeta";
 import {
@@ -528,6 +529,10 @@ export function CandleChart({
       volumeStrategies,
       volumeVisMap,
     );
+    const foreverVwapMs = foreverVwapToChartMarkers(
+      indicators,
+      auxIndicatorVisibility?.forever_vwap === true,
+    );
     const comboStratMs = comboStrategiesToChartMarkers(comboStrategies, comboVis);
     const macdStratMs = macdStrategiesToChartMarkers(macdStrategies, macdVis);
     const classicStratMs = classicStrategiesToChartMarkers(
@@ -567,6 +572,7 @@ export function CandleChart({
       ...patternStratMs,
       ...rsiStratMs,
       ...volumeStratMs,
+      ...foreverVwapMs,
       ...comboStratMs,
       ...macdStratMs,
       ...classicStratMs,
@@ -594,6 +600,8 @@ export function CandleChart({
     chartRsiStrategyVisibility,
     volumeStrategies,
     chartVolumeStrategyVisibility,
+    indicators,
+    auxIndicatorVisibility?.forever_vwap,
     comboStrategies,
     chartComboStrategyVisibility,
     macdStrategies,
@@ -1812,6 +1820,34 @@ export function CandleChart({
       }
     }
 
+    const foreverCfg = getIndicatorConfig("forever_vwap");
+    const foreverOut = indicators.indicators.forever_vwap;
+    const foreverVis = auxIndicatorVisibility?.forever_vwap === true;
+    if (foreverCfg?.enabled && foreverOut) {
+      const colors = parsePeriodColors(foreverCfg.params.colors);
+      const up = colors.up ?? "#f97316";
+      const down = colors.down ?? "#a855f7";
+      const anchoredColor = colors.anchored ?? "#94a3b8";
+      const trend = foreverOut.latest.trend;
+      const centerColor =
+        trend == null || trend === 0 ? up : trend > 0 ? up : down;
+      if (foreverOut.series.vwap?.length) {
+        upsertLine("forever_vwap", foreverOut.series.vwap, {
+          color: centerColor,
+          lineWidth: 2,
+          visible: foreverVis,
+        });
+      }
+      if (foreverOut.series.anchored?.length) {
+        upsertLine("forever_vwap:anchored", foreverOut.series.anchored, {
+          color: anchoredColor,
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          visible: foreverVis,
+        });
+      }
+    }
+
     const psarCfg = getIndicatorConfig("psar");
     const psarOut = indicators.indicators.psar;
     const psarPoints = psarOut?.series.psar;
@@ -2681,6 +2717,28 @@ export function CandleChart({
       items.push({
         label: "VWAP bands",
         color: "#f97316",
+      });
+    }
+
+    if (
+      auxIndicatorVisibility?.forever_vwap === true &&
+      getIndicatorConfig("forever_vwap")?.enabled &&
+      indicators.indicators.forever_vwap?.series.vwap?.length
+    ) {
+      const trend = indicators.indicators.forever_vwap.latest.trend;
+      const color =
+        trend == null || trend === 0
+          ? "#f97316"
+          : trend > 0
+            ? "#f97316"
+            : "#a855f7";
+      items.push({
+        label: `포에버 VWAP · ${fmtLegend(indicators.indicators.forever_vwap.latest.vwap)}`,
+        color,
+      });
+      items.push({
+        label: "앵커드 VWAP",
+        color: "#94a3b8",
       });
     }
 

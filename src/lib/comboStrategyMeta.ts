@@ -61,7 +61,7 @@ export const COMBO_STRATEGY_META: Record<
     label: "VWAP + MFI + OBV",
     labelKo: "VWAP자금흐름",
     description:
-      "VWAP 지지/저항 + MFI 방향 + OBV 신고·신저로 기관식 자금 흐름을 따라감. 장중·유동성 큰 종목에 유리.",
+      "VWAP 지지/저항 + MFI 방향 + OBV 신고·신저로 기관식 자금 흐름을 따라감. 일·주·월·유동성 큰 종목에 유리.",
     markerBull: "WF↑",
     markerBear: "WF↓",
     typicalDirection: "neutral",
@@ -109,6 +109,7 @@ export const AUX_WITH_COMBO_STRATEGIES = [
   "obv",
   "keltner",
   "vwap",
+  "forever_vwap",
   "adx",
   "psar",
   "cci",

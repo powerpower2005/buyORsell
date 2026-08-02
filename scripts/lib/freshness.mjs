@@ -1,4 +1,4 @@
-/** @typedef {"1d"|"1w"|"15m"|"1h"|"4h"} Timeframe */
+/** @typedef {"1d"|"1w"|"1mo"} Timeframe */
 
 /** Most recent US equity session date expected to have a daily bar. */
 export function expectedLastTradingDay(now = new Date()) {
@@ -31,7 +31,7 @@ export function tradingDayLag(lastBarDate, now = new Date()) {
   return countTradingDaysBetween(lastBarDate, expected);
 }
 
-const TRADING_DAY_TIMEFRAMES = new Set(["1d", "1w"]);
+const TRADING_DAY_TIMEFRAMES = new Set(["1d", "1w", "1mo"]);
 
 /**
  * @param {Timeframe} timeframe

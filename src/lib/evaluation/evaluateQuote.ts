@@ -357,11 +357,11 @@ export function evaluateQuote(
   let volumeStrategies: VolumeStrategyResult | null = null;
   if (!fatalError) {
     try {
-      volumeStrategies = detectVolumeStrategies(
-        prepared,
-        indicators,
-        fullLookback,
-      );
+      volumeStrategies = detectVolumeStrategies(prepared, indicators, {
+        ...fullLookback,
+        trendlines,
+        patterns,
+      });
     } catch (err) {
       const fatal = absorbError(err, warnings);
       if (fatal) fatalError = fatal;

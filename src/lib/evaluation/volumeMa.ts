@@ -4,6 +4,7 @@ import { requireNonEmptyArray } from "../require";
 export const VOLUME_MA_PERIODS = [3, 7, 15, 30] as const;
 export const VOLUME_MA_PERIODS_DAILY = [...VOLUME_MA_PERIODS, 90] as const;
 export const VOLUME_MA_PERIODS_WEEKLY = [3, 7, 15] as const;
+export const VOLUME_MA_PERIODS_MONTHLY = [3, 6, 12] as const;
 
 export interface VolumeMaPoint {
   date: string;
@@ -24,22 +25,23 @@ export interface VolumeMaSnapshot {
 }
 
 const TF_UNIT: Record<Timeframe, string> = {
-  "15m": "봉",
-  "1h": "시간",
-  "4h": "봉",
   "1d": "일",
   "1w": "주",
+  "1mo": "월",
 };
 
 export const VOLUME_MA_COLORS: Record<number, string> = {
   3: "#3182f6",
+  6: "#34d399",
   7: "#fbbf24",
+  12: "#60a5fa",
   15: "#c084fc",
   30: "#8b95a1",
   90: "#64748b",
 };
 
 export function getVolumeMaPeriods(timeframe: Timeframe): readonly number[] {
+  if (timeframe === "1mo") return VOLUME_MA_PERIODS_MONTHLY;
   if (timeframe === "1w") return VOLUME_MA_PERIODS_WEEKLY;
   if (timeframe === "1d") return VOLUME_MA_PERIODS_DAILY;
   return VOLUME_MA_PERIODS;

@@ -10,7 +10,8 @@ import {
 } from "./lib/bar-cadence.mjs";
 import {
   aggregateWeekly,
-  buildWeeklyQuote,
+  aggregateMonthly,
+  buildAggregatedQuote,
 } from "./lib/aggregate-ohlcv.mjs";
 import { financeSymbolCandidates } from "./lib/finance-symbol.mjs";
 
@@ -100,7 +101,9 @@ export function validateFreshness(quoteFile, policy, timeframe = quoteFile.timef
     throw new Error("data-policy.json: freshness.maxTradingDayLag is required");
   }
 
-  if (quoteFile.barCount < policy.freshness.minBarCount) {
+  const tfFreshness = policy.freshnessByTimeframe?.[timeframe];
+  const minBars = tfFreshness?.minBarCount ?? policy.freshness.minBarCount;
+  if (quoteFile.barCount < minBars) {
     return { status: "stale", reason: "minBarCount" };
   }
 
@@ -299,16 +302,23 @@ export function persistAggregatesFromDaily(dailyQuote) {
   for (const [tf, cfg] of Object.entries(timeframes)) {
     if (!cfg?.enabled) continue;
     if (cfg.aggregateFrom !== "1d") continue;
-    if (cfg.aggregateRule !== "ohlcv_weekly") continue;
 
-    let weeklyBars = aggregateWeekly(dailyQuote.ohlcv);
-    weeklyBars = sanitizeBars(weeklyBars, tf);
-    if (!weeklyBars.length) {
+    let bars;
+    if (cfg.aggregateRule === "ohlcv_weekly") {
+      bars = aggregateWeekly(dailyQuote.ohlcv);
+    } else if (cfg.aggregateRule === "ohlcv_monthly") {
+      bars = aggregateMonthly(dailyQuote.ohlcv);
+    } else {
+      continue;
+    }
+
+    bars = sanitizeBars(bars, tf);
+    if (!bars.length) {
       console.warn(`[aggregate] ${dailyQuote.ticker} ${tf}: no bars after sanitize`);
       continue;
     }
 
-    const quote = buildWeeklyQuote(dailyQuote, weeklyBars, cfg);
+    const quote = buildAggregatedQuote(dailyQuote, bars, tf, cfg);
     const rel = quotePath(dailyQuote.ticker, tf);
     persistQuote({
       ticker: dailyQuote.ticker,
@@ -336,7 +346,7 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
   const policy = loadJson("config/data-policy.json");
   const tfConfig = timeframeConfig(timeframe);
 
-  // Aggregated TFs (1w): refresh source (1d) then derive — no Google fetch.
+  // Aggregated TFs (1w/1mo): refresh source (1d) then derive — no Google fetch.
   if (tfConfig.aggregateFrom && !tfConfig.googleWindow) {
     const sourceTf = tfConfig.aggregateFrom;
     const sourceResult = await runFetchPipeline({

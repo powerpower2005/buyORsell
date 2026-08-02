@@ -16,6 +16,7 @@ on:
           - all
           - 1d
           - 1w
+          - 1mo
       keep_name:
         description: "Keep display name in data/ticker-names.json"
         required: false

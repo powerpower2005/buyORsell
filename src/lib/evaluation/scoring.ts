@@ -484,6 +484,8 @@ export function presetForTimeframe(tf: string): string {
 
   if (tf === "1w" && presets["1w_swing"]) return "1w_swing";
 
+  if (tf === "1mo" && presets["1mo_position"]) return "1mo_position";
+
   throw new ConfigError(`No scoring preset for timeframe: ${tf}`);
 
 }

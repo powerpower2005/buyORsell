@@ -1,4 +1,4 @@
-export type Timeframe = "15m" | "1h" | "4h" | "1d" | "1w";
+export type Timeframe = "1d" | "1w" | "1mo";
 
 export interface OHLCVBar {
   date: string;
@@ -19,8 +19,9 @@ export interface QuoteFile {
   lastBarDate: string;
   barCount: number;
   checksum?: string;
-  source?: "gf" | "google_sheets_googfinance";
+  source?: "gf" | "google_sheets_googfinance" | "aggregate:1d";
   resolvedSymbol?: string;
+  aggregatedFrom?: "1d";
   ohlcv: OHLCVBar[];
 }
 

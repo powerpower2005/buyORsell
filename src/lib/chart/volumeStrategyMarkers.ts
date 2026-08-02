@@ -17,21 +17,28 @@ function hitToMarker(hit: VolumeStrategyHit): SeriesMarker<Time> {
       : hit.direction === "bearish"
         ? "aboveBar"
         : "inBar";
-  const shape =
-    hit.direction === "bullish"
+  const forever = hit.id === "forever_vwap_flip";
+  const shape = forever
+    ? "square"
+    : hit.direction === "bullish"
       ? "arrowUp"
       : hit.direction === "bearish"
         ? "arrowDown"
         : "circle";
+  const color = forever
+    ? hit.direction === "bullish"
+      ? "#f97316"
+      : "#a855f7"
+    : directionColor(hit.direction);
 
   return {
     time: hit.date as Time,
     position,
     shape,
-    color: directionColor(hit.direction),
+    color,
     text: "",
     id: `volstrat-${hit.id}-${hit.barIndex}`,
-    size: 1,
+    size: forever ? 1.25 : 1,
   };
 }
 

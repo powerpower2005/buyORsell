@@ -25,7 +25,7 @@ export function GuidePage() {
           <li>
             GitHub에서 <strong>Fetch Quote Data</strong> Issue를 연다.
           </li>
-          <li>티커·타임프레임(보통 1d)을 입력하고 제출한다.</li>
+          <li>티커·타임프레임은 <strong>1d</strong>만 요청한다. 주봉·월봉은 일봉에서 자동 생성된다.</li>
           <li>Actions가 OHLCV를 가져와 <code>data/</code>에 commit한다.</li>
           <li>1~3분 후 앱을 새로고침한다. stale 데이터는 평일 하루 3회(00시·오전 9시·오후 5시, KST) cron으로 자동 갱신된다.</li>
         </ol>

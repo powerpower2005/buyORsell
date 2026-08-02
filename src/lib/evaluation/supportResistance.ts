@@ -97,10 +97,8 @@ const TOUCH_BUSY_MAX = 7;
 
 /** Hard % cap by timeframe so a "zone" stays a tight band. */
 export function defaultMaxZonePct(timeframe?: Timeframe): number {
+  if (timeframe === "1mo") return 0.05;
   if (timeframe === "1w") return 0.035;
-  if (timeframe === "4h" || timeframe === "1h" || timeframe === "15m") {
-    return 0.015;
-  }
   return DEFAULT_MAX_ZONE_PCT; // 1d → ±2%
 }
 

@@ -714,6 +714,112 @@ export const vwapPlugin: IndicatorPlugin = {
   },
 };
 
+/**
+ * Forever VWAP: window-cumulative VWAP (no session reset) + trend coloring
+ * and flip markers. Anchored series restarts at each trend flip.
+ */
+export const foreverVwapPlugin: IndicatorPlugin = {
+  id: "forever_vwap",
+  minBars: () => 2,
+  compute(bars, params) {
+    if (bars.length < 2) {
+      return {
+        series: {} as Record<string, SeriesPoint[]>,
+        latest: {
+          vwap: null,
+          anchored: null,
+          trend: null,
+          flip: null,
+          slope: null,
+        },
+        skipped: ["forever_vwap requires at least 2 bars"],
+      };
+    }
+    const slopeN = Math.max(
+      1,
+      Math.floor(requireNumber(params.slopeLookback ?? 3, "forever_vwap.slopeLookback")),
+    );
+    const d = dates(bars);
+    const vwapVals: number[] = [];
+    const anchoredVals: number[] = [];
+    const trendVals: Array<number | undefined> = [];
+    const flipVals: Array<number | undefined> = [];
+    const slopeVals: Array<number | undefined> = [];
+
+    let cumPV = 0;
+    let cumV = 0;
+    let ancPV = 0;
+    let ancV = 0;
+    let prevTrend = 0;
+
+    for (let i = 0; i < bars.length; i++) {
+      const b = bars[i]!;
+      const vol = Math.max(0, b.volume) || 1;
+      const src = (b.high + b.low + b.close) / 3;
+      cumPV += src * vol;
+      cumV += vol;
+      const vwap = cumPV / cumV;
+      vwapVals.push(vwap);
+
+      let slope: number | undefined;
+      if (i >= slopeN) {
+        const a = vwapVals[i - slopeN]!;
+        slope = vwap === a ? 0 : vwap > a ? 1 : -1;
+      } else if (i > 0) {
+        const a = vwapVals[i - 1]!;
+        slope = vwap === a ? 0 : vwap > a ? 1 : -1;
+      } else {
+        slope = undefined;
+      }
+      slopeVals.push(slope);
+
+      const trend = slope == null || slope === 0 ? prevTrend || 0 : slope;
+      // Keep prior non-zero trend through flat slope bars.
+      const resolvedTrend = trend === 0 && prevTrend !== 0 ? prevTrend : trend;
+      trendVals.push(resolvedTrend === 0 ? undefined : resolvedTrend);
+
+      let flip: number | undefined;
+      if (
+        i > 0 &&
+        prevTrend !== 0 &&
+        resolvedTrend !== 0 &&
+        resolvedTrend !== prevTrend
+      ) {
+        flip = resolvedTrend; // +1 bullish flip, -1 bearish flip
+        ancPV = 0;
+        ancV = 0;
+      } else {
+        flip = undefined;
+      }
+      flipVals.push(flip);
+
+      ancPV += src * vol;
+      ancV += vol;
+      anchoredVals.push(ancV > 0 ? ancPV / ancV : vwap);
+
+      if (resolvedTrend !== 0) prevTrend = resolvedTrend;
+    }
+
+    const last = bars.length - 1;
+    return {
+      series: {
+        vwap: alignSeries(d, vwapVals),
+        anchored: alignSeries(d, anchoredVals),
+        trend: alignSeries(d, trendVals),
+        flip: alignSeries(d, flipVals),
+        slope: alignSeries(d, slopeVals),
+      },
+      latest: {
+        vwap: optionalLatest(vwapVals[last]),
+        anchored: optionalLatest(anchoredVals[last]),
+        trend: optionalLatest(trendVals[last] ?? null),
+        flip: optionalLatest(flipVals[last] ?? null),
+        slope: optionalLatest(slopeVals[last] ?? null),
+      },
+    };
+  },
+};
+
 export const adxPlugin: IndicatorPlugin = {
   id: "adx",
   minBars: (p) => requireNumber(p.period, "adx.period") * 2,
@@ -1098,6 +1204,7 @@ export const allPlugins = [
   equivolumePlugin,
   keltnerPlugin,
   vwapPlugin,
+  foreverVwapPlugin,
   adxPlugin,
   psarPlugin,
   cciPlugin,

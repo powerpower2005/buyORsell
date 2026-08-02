@@ -72,6 +72,35 @@
         { "grade": "D", "min": 35 },
         { "grade": "F", "min": 0 }
       ]
+    },
+    "1mo_position": {
+      "timeframe": "1mo",
+      "categories": [
+        {
+          "name": "trend",
+          "weight": 0.45,
+          "rules": [
+            { "type": "compare", "left": "close", "op": "gt", "right": "sma:20", "score": 100 }
+          ]
+        },
+        {
+          "name": "momentum",
+          "weight": 0.3,
+          "rules": [{ "type": "rsi_mid", "indicator": "rsi", "low": 35, "high": 65, "score": 100 }]
+        },
+        {
+          "name": "range",
+          "weight": 0.25,
+          "rules": [{ "type": "price_in_range", "lookback": 36, "score": 100 }]
+        }
+      ],
+      "grades": [
+        { "grade": "A", "min": 80 },
+        { "grade": "B", "min": 65 },
+        { "grade": "C", "min": 50 },
+        { "grade": "D", "min": 35 },
+        { "grade": "F", "min": 0 }
+      ]
     }
   }
 }

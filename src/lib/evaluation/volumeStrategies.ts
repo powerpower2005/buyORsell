@@ -5,10 +5,15 @@ import {
   VOLUME_STRATEGY_META,
   type VolumeStrategyId,
 } from "../volumeStrategyMeta";
+import type { CandlePatternResult } from "./candlePatterns";
 import {
   scoreSignalHits,
   type SignalStatsMap,
 } from "./signalFollowThrough";
+import {
+  trendlinePriceAt,
+  type TrendlineResult,
+} from "./trendlines";
 
 export type { VolumeStrategyId };
 
@@ -742,10 +747,264 @@ function detectVwapSwitching(
   return hits;
 }
 
+const SQUEEZE_GAP = 0.004;
+const WIDE_GAP = 0.012;
+
+function gapPct(a: number, b: number): number {
+  if (a === 0) return Number.POSITIVE_INFINITY;
+  return Math.abs(a - b) / Math.abs(a);
+}
+
+function detectVwapEmaSqueeze(
+  bars: OHLCVBar[],
+  vwap: Map<string, number>,
+  ema: Map<string, number>,
+  start: number,
+): VolumeStrategyHit[] {
+  const hits: VolumeStrategyHit[] = [];
+  const slopeN = 3;
+  for (let i = Math.max(start, slopeN + 1); i < bars.length; i++) {
+    const v0 = vwap.get(bars[i - 1]!.date);
+    const v1 = vwap.get(bars[i]!.date);
+    const e0 = ema.get(bars[i - 1]!.date);
+    const e1 = ema.get(bars[i]!.date);
+    const vPrevSlope = vwap.get(bars[i - slopeN]!.date);
+    if (v0 == null || v1 == null || e0 == null || e1 == null || vPrevSlope == null) {
+      continue;
+    }
+    const gap = gapPct(v1, e1);
+    const gap0 = gapPct(v0, e0);
+    // Recently squeezed (now or prior bar), avoid already-wide spreads.
+    const squeezed = gap <= SQUEEZE_GAP || gap0 <= SQUEEZE_GAP;
+    if (!squeezed || gap >= WIDE_GAP) continue;
+
+    const crossUp = e0 <= v0 && e1 > v1;
+    const crossDown = e0 >= v0 && e1 < v1;
+    const vwapUp = v1 > vPrevSlope;
+    const vwapDown = v1 < vPrevSlope;
+    const bar = bars[i]!;
+
+    if (crossUp && vwapUp && bar.close >= v1) {
+      hits.push(
+        hit(
+          "vwap_ema_squeeze",
+          i,
+          bars,
+          "bullish",
+          `스키즈 후 EMA↑VWAP 골든 (이격 ${(gap * 100).toFixed(2)}%)`,
+        ),
+      );
+    }
+    if (crossDown && vwapDown && bar.close <= v1) {
+      hits.push(
+        hit(
+          "vwap_ema_squeeze",
+          i,
+          bars,
+          "bearish",
+          `스키즈 후 EMA↓VWAP 데드 (이격 ${(gap * 100).toFixed(2)}%)`,
+        ),
+      );
+    }
+  }
+  return hits;
+}
+
+function detectVwapTrendline(
+  bars: OHLCVBar[],
+  vwap: Map<string, number>,
+  trendlines: TrendlineResult | null | undefined,
+  start: number,
+): VolumeStrategyHit[] {
+  if (!trendlines) return [];
+  const hits: VolumeStrategyHit[] = [];
+  const asc = [...trendlines.ascending].sort((a, b) => b.score - a.score);
+  const desc = [...trendlines.descending].sort((a, b) => b.score - a.score);
+
+  for (let i = Math.max(start, 2); i < bars.length; i++) {
+    const v = vwap.get(bars[i]!.date);
+    if (v == null || v === 0) continue;
+    const bar = bars[i]!;
+    const vTol = Math.abs(v) * 0.006;
+    const nearVwap = bar.low <= v + vTol && bar.high >= v - vTol;
+    if (!nearVwap) continue;
+
+    for (const line of asc) {
+      if (i < line.x2) continue;
+      if (line.broken && line.breakBarIndex != null && line.breakBarIndex <= i) {
+        continue;
+      }
+      const tl = trendlinePriceAt(line, i);
+      if (tl <= 0) continue;
+      const tlTol = Math.abs(tl) * 0.008;
+      const nearTl = bar.low <= tl + tlTol && bar.high >= tl - tlTol;
+      if (!nearTl) continue;
+      if (bar.close >= v && (bar.close > bar.open || isHammerLike(bar))) {
+        hits.push(
+          hit(
+            "vwap_trendline",
+            i,
+            bars,
+            "bullish",
+            `VWAP∩상승추세선 지지 (${v.toFixed(2)} / ${tl.toFixed(2)})`,
+          ),
+        );
+        break;
+      }
+    }
+
+    for (const line of desc) {
+      if (i < line.x2) continue;
+      if (line.broken && line.breakBarIndex != null && line.breakBarIndex <= i) {
+        continue;
+      }
+      const tl = trendlinePriceAt(line, i);
+      if (tl <= 0) continue;
+      const tlTol = Math.abs(tl) * 0.008;
+      const nearTl = bar.low <= tl + tlTol && bar.high >= tl - tlTol;
+      if (!nearTl) continue;
+      if (bar.close <= v && (bar.close < bar.open || isShootingStarLike(bar))) {
+        hits.push(
+          hit(
+            "vwap_trendline",
+            i,
+            bars,
+            "bearish",
+            `VWAP∩하락추세선 저항 (${v.toFixed(2)} / ${tl.toFixed(2)})`,
+          ),
+        );
+        break;
+      }
+    }
+  }
+  return hits;
+}
+
+function isStrongBody(bar: OHLCVBar, minBodyRatio = 0.55): boolean {
+  const range = bar.high - bar.low;
+  if (range <= 0) return false;
+  return Math.abs(bar.close - bar.open) / range >= minBodyRatio;
+}
+
+function detectForeverVwapFlip(
+  bars: OHLCVBar[],
+  flip: Map<string, number>,
+  vwap: Map<string, number>,
+  start: number,
+): VolumeStrategyHit[] {
+  const hits: VolumeStrategyHit[] = [];
+  for (let i = Math.max(start, 1); i < bars.length; i++) {
+    const f = flip.get(bars[i]!.date);
+    if (f == null || f === 0) continue;
+    const bar = bars[i]!;
+    const v = vwap.get(bar.date);
+    if (!isStrongBody(bar)) continue;
+
+    if (f > 0 && bar.close > bar.open && (v == null || bar.close >= v)) {
+      hits.push(
+        hit(
+          "forever_vwap_flip",
+          i,
+          bars,
+          "bullish",
+          `주황 다이아몬드 + 장대 양봉 종가 진입`,
+        ),
+      );
+    }
+    if (f < 0 && bar.close < bar.open && (v == null || bar.close <= v)) {
+      hits.push(
+        hit(
+          "forever_vwap_flip",
+          i,
+          bars,
+          "bearish",
+          `보라 다이아몬드 + 장대 음봉 종가 진입/스위칭`,
+        ),
+      );
+    }
+  }
+  return hits;
+}
+
+function hasUpperWickPressure(bars: OHLCVBar[], from: number, to: number): boolean {
+  let n = 0;
+  for (let i = from; i <= to; i++) {
+    if (i < 0 || i >= bars.length) continue;
+    const b = bars[i]!;
+    const range = b.high - b.low;
+    if (range <= 0) continue;
+    const upper = b.high - Math.max(b.open, b.close);
+    if (upper >= range * 0.35 || isShootingStarLike(b)) n += 1;
+  }
+  return n >= 2;
+}
+
+function isBearishEngulfingLocal(prev: OHLCVBar, cur: OHLCVBar): boolean {
+  return (
+    prev.close > prev.open &&
+    cur.close < cur.open &&
+    cur.open >= prev.close &&
+    cur.close <= prev.open
+  );
+}
+
+function detectFailedBreakoutShort(
+  bars: OHLCVBar[],
+  vwap: Map<string, number>,
+  patterns: CandlePatternResult | null | undefined,
+  start: number,
+): VolumeStrategyHit[] {
+  const hits: VolumeStrategyHit[] = [];
+  const engulfDates = new Set(
+    [...(patterns?.recent ?? []), ...(patterns?.onLatestBar ?? [])]
+      .filter((p) => p.id === "bearish_engulfing")
+      .map((p) => p.date),
+  );
+
+  for (let i = Math.max(start, 6); i < bars.length; i++) {
+    const attempt = bars[i - 2]!;
+    const engulf = bars[i - 1]!;
+    const trigger = bars[i]!;
+    if (attempt.close <= attempt.open) continue;
+
+    const engulfOk =
+      engulfDates.has(engulf.date) || isBearishEngulfingLocal(attempt, engulf);
+    if (!engulfOk) continue;
+
+    let priorHigh = -Infinity;
+    for (let k = i - 10; k <= i - 3; k++) {
+      if (k >= 0) priorHigh = Math.max(priorHigh, bars[k]!.high);
+    }
+    if (!Number.isFinite(priorHigh)) continue;
+    if (attempt.high > priorHigh) continue; // made new high — not a failed breakout
+
+    const vAttempt = vwap.get(attempt.date);
+    if (vAttempt != null && attempt.high >= vAttempt) continue; // cleared VWAP
+
+    if (!hasUpperWickPressure(bars, i - 5, i - 2)) continue;
+    if (trigger.low > attempt.low && trigger.close >= attempt.low) continue;
+
+    hits.push(
+      hit(
+        "failed_breakout_short",
+        i,
+        bars,
+        "bearish",
+        `실패돌파: 고점미갱신·VWAP미돌파·하락장형 후 저점 이탈`,
+      ),
+    );
+  }
+  return hits;
+}
+
 export function detectVolumeStrategies(
   bars: OHLCVBar[],
   indicators?: IndicatorResults,
-  options?: { lookbackBars?: number },
+  options?: {
+    lookbackBars?: number;
+    trendlines?: TrendlineResult | null;
+    patterns?: CandlePatternResult | null;
+  },
 ): VolumeStrategyResult | null {
   if (bars.length < Math.max(EMA_PERIOD, VOL_MA_PERIOD, FIGHT_WINDOW) + 2) {
     return null;
@@ -768,6 +1027,10 @@ export function detectVolumeStrategies(
       ? vwapOut.series.lower2
       : vwapOut?.series.lower1,
   );
+  const ema12 = mapSeries(indicators?.indicators.ema?.series["ema:12"]);
+  const foreverOut = indicators?.indicators.forever_vwap;
+  const foreverVwap = mapSeries(foreverOut?.series.vwap);
+  const foreverFlip = mapSeries(foreverOut?.series.flip);
 
   const obvOut = indicators?.indicators.obv;
   const obv = mapSeries(obvOut?.series.obv);
@@ -795,7 +1058,20 @@ export function detectVolumeStrategies(
           ...detectVwapPullback(bars, vwap, start),
           ...detectVwapBandReversal(bars, upper, lower, start),
           ...detectVwapSwitching(bars, vwap, start),
+          ...(ema12.size
+            ? detectVwapEmaSqueeze(bars, vwap, ema12, start)
+            : []),
+          ...detectVwapTrendline(bars, vwap, options?.trendlines, start),
+          ...detectFailedBreakoutShort(bars, vwap, options?.patterns, start),
         ]
+      : []),
+    ...(foreverFlip.size
+      ? detectForeverVwapFlip(
+          bars,
+          foreverFlip,
+          foreverVwap.size ? foreverVwap : vwap,
+          start,
+        )
       : []),
     ...(obv.size ? [...detectObvDivergence(bars, obv, start)] : []),
     ...(obv.size && kcUpper.size

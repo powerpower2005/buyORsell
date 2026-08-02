@@ -92,7 +92,7 @@ import type {
 import { Button } from "@/components/ui/Button";
 import { Card, SectionTitle } from "@/components/ui/Card";
 
-const VALID_TIMEFRAMES: Timeframe[] = ["15m", "1h", "4h", "1d", "1w"];
+const VALID_TIMEFRAMES: Timeframe[] = ["1d", "1w", "1mo"];
 type ActionMode = "fetch" | "analyze";
 type Screen = "setup" | "results";
 type HomeTab = "tickers" | "signals";

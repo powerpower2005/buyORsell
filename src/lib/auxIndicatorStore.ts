@@ -14,6 +14,7 @@ export type AuxIndicatorId =
   | "equivolume"
   | "keltner"
   | "vwap"
+  | "forever_vwap"
   | "adx"
   | "psar"
   | "cci"
@@ -34,6 +35,7 @@ export const AUX_INDICATOR_ORDER: AuxIndicatorId[] = [
   "equivolume",
   "keltner",
   "vwap",
+  "forever_vwap",
   "adx",
   "psar",
   "cci",
@@ -97,6 +99,11 @@ export const AUX_INDICATOR_META: Record<
     labelKo: "VWAP",
     description: "거래량 가중 평균가 + 표준편차 밴드 — 가격 차트 오버레이.",
   },
+  forever_vwap: {
+    labelKo: "포에버 VWAP",
+    description:
+      "세션 리셋 없는 누적 VWAP(상승=주황·하락=보라) + 기울기 전환 다이아몬드·앵커드 라인.",
+  },
   adx: {
     labelKo: "ADX",
     description: "추세 강도(+DI/−DI) — 같은 차트 안 별도 섹션.",
@@ -134,6 +141,7 @@ export const INDICATOR_TO_AUX: Partial<Record<string, AuxIndicatorId>> = {
   equivolume: "equivolume",
   keltner: "keltner",
   vwap: "vwap",
+  forever_vwap: "forever_vwap",
   adx: "adx",
   psar: "psar",
   cci: "cci",

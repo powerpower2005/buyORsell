@@ -1,29 +1,5 @@
 {
   "timeframes": {
-    "15m": {
-      "label": "15분",
-      "intervalSeconds": 900,
-      "googleWindow": "1D",
-      "googleChartMode": 1,
-      "enabled": false,
-      "maxBars": 500
-    },
-    "1h": {
-      "label": "1시간",
-      "intervalSeconds": 3600,
-      "googleWindow": "5D",
-      "googleChartMode": 4,
-      "enabled": false,
-      "maxBars": 200
-    },
-    "4h": {
-      "label": "4시간",
-      "intervalSeconds": 14400,
-      "aggregateFrom": "1h",
-      "aggregateRule": "ohlcv_bucket",
-      "enabled": false,
-      "maxBars": 200
-    },
     "1d": {
       "label": "일봉",
       "intervalSeconds": 86400,
@@ -42,6 +18,14 @@
       "aggregateRule": "ohlcv_weekly",
       "enabled": true,
       "maxBars": 200
+    },
+    "1mo": {
+      "label": "월봉",
+      "intervalSeconds": 2592000,
+      "aggregateFrom": "1d",
+      "aggregateRule": "ohlcv_monthly",
+      "enabled": true,
+      "maxBars": 120
     }
   }
 }

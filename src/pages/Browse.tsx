@@ -81,7 +81,7 @@ import type {
   Timeframe,
 } from "@/lib/types";
 
-const VALID_TIMEFRAMES: Timeframe[] = ["15m", "1h", "4h", "1d", "1w"];
+const VALID_TIMEFRAMES: Timeframe[] = ["1d", "1w", "1mo"];
 
 type BrowseTab = "tickers" | "signals";
 
