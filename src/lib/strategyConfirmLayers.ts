@@ -18,8 +18,6 @@ export interface StrategyCompanion {
 }
 
 const VOL: LayerKey = "volume";
-const BB: LayerKey = "bb";
-const ICHI: LayerKey = "ichimoku";
 const RSI: LayerKey = "aux:rsi";
 const MACD: LayerKey = "aux:macd";
 const STOCH: LayerKey = "aux:stoch";

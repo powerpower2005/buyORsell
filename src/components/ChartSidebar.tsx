@@ -319,6 +319,10 @@ const AUX_COMBO_OPEN_KEYS: Record<
   obv: { root: "auxObv", strategies: "auxObvStrategies" },
   keltner: { root: "auxKeltner", strategies: "auxKeltnerStrategies" },
   vwap: { root: "auxVwap", strategies: "auxVwapStrategies" },
+  forever_vwap: {
+    root: "auxForeverVwap",
+    strategies: "auxForeverVwapStrategies",
+  },
   adx: { root: "auxAdx", strategies: "auxAdxStrategies" },
   psar: { root: "auxPsar", strategies: "auxPsarStrategies" },
   cci: { root: "auxCci", strategies: "auxCciStrategies" },

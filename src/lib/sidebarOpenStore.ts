@@ -53,6 +53,8 @@ export const SIDEBAR_OPEN_KEYS = [
   "auxKeltnerStrategies",
   "auxVwap",
   "auxVwapStrategies",
+  "auxForeverVwap",
+  "auxForeverVwapStrategies",
   "auxAdx",
   "auxAdxStrategies",
   "auxPsar",
