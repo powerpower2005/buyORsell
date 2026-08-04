@@ -1,0 +1,31 @@
+---
+description: Where trading strategy docs and indicator labels live (local docs/)
+alwaysApply: true
+---
+
+# Strategy & indicator docs
+
+Local docs under `docs/` (**gitignored**).
+
+## Agent entry
+
+1. `docs/indicators/INDEX.md` — **labeled technical indicators** (`rsi`, `bb`, `vwap`, …)
+2. `docs/strategies/INDEX.md` — every strategy id → **indicator labels** → doc → detector
+3. `docs/strategies/{family}/{id}.md` — detailed entry rules + indicator table
+
+If missing:
+
+```bash
+node scripts/gen-strategy-docs.mjs
+```
+
+## Code source of truth
+
+| What | Where |
+|------|--------|
+| Catalog | `src/lib/strategyCatalog.ts` |
+| Detectors | `src/lib/evaluation/*Strategies.ts` |
+| Meta | `src/lib/*StrategyMeta.ts` |
+| Indicators | `src/lib/evaluation/indicators/` |
+| Layer deps | `src/lib/strategyIndicatorDeps.ts` |
+| Orchestration | `src/lib/evaluation/evaluateQuote.ts` |
