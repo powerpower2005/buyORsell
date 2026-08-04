@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-04T10:57:36.637Z",
+  "updatedAt": "2026-08-04T11:46:18.819Z",
   "entries": [
     {
       "ticker": "000660:KRX",
@@ -219,30 +219,6 @@
       "barCount": 45
     },
     {
-      "ticker": "SOXX:NASDAQ",
-      "timeframe": "1d",
-      "path": "data/SOXX-NASDAQ/1d.json",
-      "fetchedAt": "2026-08-04T10:55:15.729Z",
-      "lastBarDate": "2026-08-03",
-      "barCount": 912
-    },
-    {
-      "ticker": "SOXX:NASDAQ",
-      "timeframe": "1w",
-      "path": "data/SOXX-NASDAQ/1w.json",
-      "fetchedAt": "2026-08-04T10:55:15.729Z",
-      "lastBarDate": "2026-08-03",
-      "barCount": 191
-    },
-    {
-      "ticker": "SOXX:NASDAQ",
-      "timeframe": "1mo",
-      "path": "data/SOXX-NASDAQ/1mo.json",
-      "fetchedAt": "2026-08-04T10:55:15.729Z",
-      "lastBarDate": "2026-08-03",
-      "barCount": 45
-    },
-    {
       "ticker": "TSLA:NASDAQ",
       "timeframe": "1d",
       "path": "data/TSLA-NASDAQ/1d.json",
@@ -311,6 +287,30 @@
       "timeframe": "1mo",
       "path": "data/GLW-NYSE/1mo.json",
       "fetchedAt": "2026-08-04T10:57:36.626Z",
+      "lastBarDate": "2026-08-03",
+      "barCount": 45
+    },
+    {
+      "ticker": "SOXX:NASDAQ",
+      "timeframe": "1d",
+      "path": "data/SOXX-NASDAQ/1d.json",
+      "fetchedAt": "2026-08-04T11:46:18.805Z",
+      "lastBarDate": "2026-08-03",
+      "barCount": 927
+    },
+    {
+      "ticker": "SOXX:NASDAQ",
+      "timeframe": "1w",
+      "path": "data/SOXX-NASDAQ/1w.json",
+      "fetchedAt": "2026-08-04T11:46:18.805Z",
+      "lastBarDate": "2026-08-03",
+      "barCount": 191
+    },
+    {
+      "ticker": "SOXX:NASDAQ",
+      "timeframe": "1mo",
+      "path": "data/SOXX-NASDAQ/1mo.json",
+      "fetchedAt": "2026-08-04T11:46:18.805Z",
       "lastBarDate": "2026-08-03",
       "barCount": 45
     }
