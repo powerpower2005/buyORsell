@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-04T03:38:08.840Z",
+  "updatedAt": "2026-08-04T10:22:32.369Z",
   "entries": [
     {
       "ticker": "000660:KRX",
@@ -287,6 +287,30 @@
       "timeframe": "1mo",
       "path": "data/VRT-NYSE/1mo.json",
       "fetchedAt": "2026-08-04T03:38:08.828Z",
+      "lastBarDate": "2026-08-03",
+      "barCount": 45
+    },
+    {
+      "ticker": "GLW:NYSE",
+      "timeframe": "1d",
+      "path": "data/GLW-NYSE/1d.json",
+      "fetchedAt": "2026-08-04T10:16:35.730Z",
+      "lastBarDate": "2026-08-03",
+      "barCount": 902
+    },
+    {
+      "ticker": "GLW:NYSE",
+      "timeframe": "1w",
+      "path": "data/GLW-NYSE/1w.json",
+      "fetchedAt": "2026-08-04T10:16:35.730Z",
+      "lastBarDate": "2026-08-03",
+      "barCount": 189
+    },
+    {
+      "ticker": "GLW:NYSE",
+      "timeframe": "1mo",
+      "path": "data/GLW-NYSE/1mo.json",
+      "fetchedAt": "2026-08-04T10:16:35.730Z",
       "lastBarDate": "2026-08-03",
       "barCount": 45
     }
