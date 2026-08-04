@@ -237,26 +237,13 @@ jobs:
       - name: Commit data
         if: steps.parse.outputs.skip == 'false' || github.event_name == 'schedule'
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            MSG="data: scheduled stale refresh"
           else
-            if [ "${{ github.event_name }}" = "schedule" ]; then
-              git commit -m "data: scheduled stale refresh"
-            else
-              git commit -m "data: update ${{ steps.parse.outputs.ticker }} ${{ steps.parse.outputs.timeframe }}"
-            fi
-            # Concurrent fetches may land first; rebase onto remote and retry.
-            for i in 1 2 3; do
-              git pull --rebase origin "${GITHUB_REF_NAME}" && git push && exit 0
-              echo "Push rejected (attempt $i), retrying..."
-              sleep $((i * 5))
-            done
-            echo "Failed to push after retries"
-            exit 1
+            MSG="data: update ${{ steps.parse.outputs.ticker }} ${{ steps.parse.outputs.timeframe }}"
           fi
+          # Sync onto origin before commit; merge shared catalog JSON on retry.
+          bash scripts/git-commit-push-data.sh "$MSG" data/
 
       - name: Comment on issue
         if: github.event_name == 'issues' && steps.parse.outputs.skip == 'false'
