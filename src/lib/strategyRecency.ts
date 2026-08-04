@@ -11,6 +11,8 @@ export interface StrategyRecency {
   /** 0 = latest bar in the evaluation window. */
   barsAgo: number;
   direction: TrendLabel;
+  /** Close of the signal bar (when known). */
+  close?: number | null;
   /**
    * When the latest hit shares its bar+direction with ≥1 other strategy,
    * total agreeing strategies and peer labels (excluding self).
@@ -40,6 +42,7 @@ export function buildStrategyRecencyMap(
         barIndex: h.barIndex,
         barsAgo: lastIdx - h.barIndex,
         direction: h.direction,
+        close: evaluation.bars[h.barIndex]?.close ?? null,
       });
     }
   }
@@ -79,21 +82,81 @@ export function isWithinRecentWindow(
   return recency.barsAgo < windowBars;
 }
 
+/** Inclusive min bar index for “last N bars” (N = windowBars). */
+export function recentWindowMinBarIndex(
+  barCount: number,
+  windowBars: number,
+): number {
+  if (barCount <= 0 || windowBars <= 0) return barCount;
+  return Math.max(0, barCount - windowBars);
+}
+
+export function isBarInRecentWindow(
+  barIndex: number,
+  barCount: number,
+  windowBars: number,
+): boolean {
+  return barIndex >= recentWindowMinBarIndex(barCount, windowBars);
+}
+
+/** Filter hit bags / lists to the recent window; no-op when disabled. */
+export function filterHitsByRecentWindow<T extends { barIndex: number }>(
+  hits: T[] | undefined | null,
+  enabled: boolean,
+  barCount: number,
+  windowBars: number,
+): T[] {
+  if (!hits?.length) return [];
+  if (!enabled) return hits;
+  const min = recentWindowMinBarIndex(barCount, windowBars);
+  return hits.filter((h) => h.barIndex >= min);
+}
+
+/** Clone a `{ recent }` bag with optional recent-window filter. */
+export function withRecentWindowHits<
+  T extends { recent: Array<{ barIndex: number }> },
+>(bag: T | undefined | null, enabled: boolean, barCount: number, windowBars: number): T | undefined {
+  if (!bag) return undefined;
+  if (!enabled) return bag;
+  return {
+    ...bag,
+    recent: filterHitsByRecentWindow(bag.recent, true, barCount, windowBars),
+  };
+}
+
 /**
  * Sidebar badge: latest bar → 오늘, near hits → N봉 전, older → MM-DD.
+ * Appends signal-bar close when available.
  */
+export function formatSignalClose(close: number | null | undefined): string | null {
+  if (close == null || !Number.isFinite(close)) return null;
+  return close.toLocaleString(undefined, {
+    maximumFractionDigits: close >= 100 ? 2 : 4,
+    minimumFractionDigits: 0,
+  });
+}
+
 export function formatStrategyRecencyLabel(r: StrategyRecency): string {
-  if (r.barsAgo === 0) return "오늘";
-  if (r.barsAgo <= 9) return `${r.barsAgo}봉 전`;
-  const m = r.date.match(/(\d{2})-(\d{2})$/);
-  return m ? `${m[1]}-${m[2]}` : r.date;
+  const when =
+    r.barsAgo === 0
+      ? "오늘"
+      : r.barsAgo <= 9
+        ? `${r.barsAgo}봉 전`
+        : (() => {
+            const m = r.date.match(/(\d{2})-(\d{2})$/);
+            return m ? `${m[1]}-${m[2]}` : r.date;
+          })();
+  const px = formatSignalClose(r.close);
+  return px ? `${when} · ${px}` : when;
 }
 
 export function strategyRecencyTitle(r: StrategyRecency): string {
+  const px = formatSignalClose(r.close);
+  const closeBit = px ? ` · 종가 ${px}` : "";
   const base =
     r.barsAgo === 0
-      ? `최근 시그널 ${r.date} (최신 봉)`
-      : `최근 시그널 ${r.date} (${r.barsAgo}봉 전)`;
+      ? `최근 시그널 ${r.date}${closeBit} (최신 봉)`
+      : `최근 시그널 ${r.date}${closeBit} (${r.barsAgo}봉 전)`;
   if (!r.confluenceCount || r.confluenceCount < 2) return base;
   const peers = r.confluencePeers?.length
     ? ` · ${r.confluencePeers.join(", ")}`

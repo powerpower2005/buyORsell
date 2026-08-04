@@ -36,6 +36,10 @@ import {
 } from "@/lib/chart/patternMarkers";
 import { patternBarHighlights } from "@/lib/chart/patternBarHighlights";
 import {
+  recentWindowMinBarIndex,
+  withRecentWindowHits,
+} from "@/lib/strategyRecency";
+import {
   structureToChartMarkers,
   visibleStructureLegend,
 } from "@/lib/chart/structureMarkers";
@@ -287,6 +291,11 @@ interface Props {
   showStrategyConfluence?: boolean;
   /** Draw entry/stop/target RR boxes for visible strategy hits (v1). */
   showRiskReward?: boolean;
+  /**
+   * When enabled, only show strategy / candle / chart-pattern markers
+   * (and related highlights) inside the last N bars. Persisted in sidebar.
+   */
+  recentSignalWindow?: { enabled: boolean; bars: number } | null;
 }
 
 function useViewportChartHeight(fixed?: number) {
@@ -360,6 +369,7 @@ export function CandleChart({
   strategyConfluences,
   showStrategyConfluence = true,
   showRiskReward = true,
+  recentSignalWindow = null,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -482,7 +492,76 @@ export function CandleChart({
     };
   }, [hoverOhlcv, bars]);
 
+  const recentMinBarIndex = useMemo(() => {
+    if (!recentSignalWindow?.enabled || !bars.length) return null;
+    return recentWindowMinBarIndex(bars.length, recentSignalWindow.bars);
+  }, [recentSignalWindow?.enabled, recentSignalWindow?.bars, bars.length]);
+
   const chartMarkers = useMemo(() => {
+    const winOn = recentMinBarIndex != null;
+    const barCount = bars.length;
+    const winBars = recentSignalWindow?.bars ?? 0;
+    const candleBag = withRecentWindowHits(
+      patterns,
+      winOn,
+      barCount,
+      winBars,
+    );
+    const classicalBag = withRecentWindowHits(
+      classicalPatterns,
+      winOn,
+      barCount,
+      winBars,
+    );
+    const bbBag = withRecentWindowHits(bbStrategies, winOn, barCount, winBars);
+    const patternStratBag = withRecentWindowHits(
+      patternStrategies,
+      winOn,
+      barCount,
+      winBars,
+    );
+    const rsiBag = withRecentWindowHits(rsiStrategies, winOn, barCount, winBars);
+    const volumeBag = withRecentWindowHits(
+      volumeStrategies,
+      winOn,
+      barCount,
+      winBars,
+    );
+    const comboBag = withRecentWindowHits(
+      comboStrategies,
+      winOn,
+      barCount,
+      winBars,
+    );
+    const macdBag = withRecentWindowHits(
+      macdStrategies,
+      winOn,
+      barCount,
+      winBars,
+    );
+    const classicBag = withRecentWindowHits(
+      classicStrategies,
+      winOn,
+      barCount,
+      winBars,
+    );
+    const stochBag = withRecentWindowHits(
+      stochStrategies,
+      winOn,
+      barCount,
+      winBars,
+    );
+    const ichiBag = withRecentWindowHits(
+      ichimokuStrategies,
+      winOn,
+      barCount,
+      winBars,
+    );
+    const confFiltered =
+      winOn && strategyConfluences?.length
+        ? strategyConfluences.filter((c) => c.barIndex >= recentMinBarIndex!)
+        : strategyConfluences;
+
     const bbVis =
       chartBbStrategyVisibility ?? ({} as Record<BbStrategyId, boolean>);
     const rsiVis =
@@ -507,61 +586,66 @@ export function CandleChart({
       ({} as Record<PatternStrategyId, boolean>);
 
     const patternMs = patternsToChartMarkers(
-      patterns,
+      candleBag,
       chartPatternVisibility ?? ({} as Record<CandlePatternId, boolean>),
     );
     const structureMs = structureToChartMarkers(
       structure,
       chartStructureVisibility ?? ({} as Record<SwingChartToggleId, boolean>),
     );
-    const bbStratMs = bbStrategiesToChartMarkers(bbStrategies, bbVis);
+    const bbStratMs = bbStrategiesToChartMarkers(bbBag, bbVis);
     const classicalMs = classicalPatternsToChartMarkers(
-      classicalPatterns,
+      classicalBag,
       chartClassicalPatternVisibility ??
         ({} as Record<ChartPatternId, boolean>),
+      recentMinBarIndex,
     );
     const patternStratMs = patternStrategiesToChartMarkers(
-      patternStrategies,
+      patternStratBag,
       patternVisMap,
     );
-    const rsiStratMs = rsiStrategiesToChartMarkers(rsiStrategies, rsiVis);
+    const rsiStratMs = rsiStrategiesToChartMarkers(rsiBag, rsiVis);
     const volumeStratMs = volumeStrategiesToChartMarkers(
-      volumeStrategies,
+      volumeBag,
       volumeVisMap,
     );
     const foreverVwapMs = foreverVwapToChartMarkers(
       indicators,
       auxIndicatorVisibility?.forever_vwap === true,
     );
-    const comboStratMs = comboStrategiesToChartMarkers(comboStrategies, comboVis);
-    const macdStratMs = macdStrategiesToChartMarkers(macdStrategies, macdVis);
+    const comboStratMs = comboStrategiesToChartMarkers(comboBag, comboVis);
+    const macdStratMs = macdStrategiesToChartMarkers(macdBag, macdVis);
     const classicStratMs = classicStrategiesToChartMarkers(
-      classicStrategies,
+      classicBag,
       classicVis,
     );
-    const stochStratMs = stochStrategiesToChartMarkers(stochStrategies, stochVis);
-    const ichiStratMs = ichimokuStrategiesToChartMarkers(
-      ichimokuStrategies,
-      ichiVis,
-    );
+    const stochStratMs = stochStrategiesToChartMarkers(stochBag, stochVis);
+    const ichiStratMs = ichimokuStrategiesToChartMarkers(ichiBag, ichiVis);
     const journalMs = tradeJournalToChartMarkers(journalEntries);
     const confluenceMs = strategyConfluencesToChartMarkers(
-      strategyConfluences,
+      confFiltered,
       showStrategyConfluence,
     );
 
+    const closeByBar = new Map<number, number>();
+    for (let i = 0; i < bars.length; i++) {
+      const c = bars[i]?.close;
+      if (c != null && Number.isFinite(c)) closeByBar.set(i, c);
+    }
+
     markerTooltipsRef.current = buildStrategyMarkerTooltips({
-      bb: { hits: bbStrategies?.recent, visibility: bbVis },
-      rsi: { hits: rsiStrategies?.recent, visibility: rsiVis },
-      macd: { hits: macdStrategies?.recent, visibility: macdVis },
-      classic: { hits: classicStrategies?.recent, visibility: classicVis },
-      stoch: { hits: stochStrategies?.recent, visibility: stochVis },
-      volume: { hits: volumeStrategies?.recent, visibility: volumeVisMap },
-      combo: { hits: comboStrategies?.recent, visibility: comboVis },
-      ichimoku: { hits: ichimokuStrategies?.recent, visibility: ichiVis },
-      pattern: { hits: patternStrategies?.recent, visibility: patternVisMap },
-      confluences: strategyConfluences,
+      bb: { hits: bbBag?.recent, visibility: bbVis },
+      rsi: { hits: rsiBag?.recent, visibility: rsiVis },
+      macd: { hits: macdBag?.recent, visibility: macdVis },
+      classic: { hits: classicBag?.recent, visibility: classicVis },
+      stoch: { hits: stochBag?.recent, visibility: stochVis },
+      volume: { hits: volumeBag?.recent, visibility: volumeVisMap },
+      combo: { hits: comboBag?.recent, visibility: comboVis },
+      ichimoku: { hits: ichiBag?.recent, visibility: ichiVis },
+      pattern: { hits: patternStratBag?.recent, visibility: patternVisMap },
+      confluences: confFiltered,
       showConfluence: showStrategyConfluence,
+      closeByBar,
     });
 
     return [
@@ -615,6 +699,9 @@ export function CandleChart({
     journalEntries,
     strategyConfluences,
     showStrategyConfluence,
+    recentMinBarIndex,
+    recentSignalWindow?.bars,
+    bars.length,
   ]);
 
   const barHighlights = useMemo(() => {
@@ -623,6 +710,7 @@ export function CandleChart({
       chartPatternVisibility,
       classicalPatterns,
       chartClassicalPatternVisibility,
+      recentMinBarIndex,
     );
     if (auxIndicatorVisibility?.equivolume !== true) return base;
     const shapePts = indicators?.indicators.equivolume?.series.shape;
@@ -652,6 +740,7 @@ export function CandleChart({
     chartClassicalPatternVisibility,
     auxIndicatorVisibility?.equivolume,
     indicators?.indicators.equivolume?.series.shape,
+    recentMinBarIndex,
   ]);
 
   const srZones = useMemo(
@@ -792,7 +881,7 @@ export function CandleChart({
     if (!patternStrategies?.recent.length || !chartPatternStrategyVisibility)
       return [];
     return patternStrategies.recent
-      .filter((hit) => chartPatternStrategyVisibility[hit.id])
+      .filter((hit) => chartPatternStrategyVisibility[hit.id] && (recentMinBarIndex == null || hit.barIndex >= recentMinBarIndex))
       .slice(-8)
       .reverse()
       .map((hit) => ({
@@ -807,7 +896,7 @@ export function CandleChart({
           .join(" · "),
         color: patternAccentColor(hit.direction),
       }));
-  }, [patternStrategies, chartPatternStrategyVisibility]);
+  }, [patternStrategies, chartPatternStrategyVisibility, recentMinBarIndex, bars]);
 
   const riskRewardPlans = useMemo(() => {
     if (!showRiskReward || !bars.length) return [];
@@ -815,6 +904,7 @@ export function CandleChart({
       bars,
       patternStrategies,
       patternVisibility: chartPatternStrategyVisibility,
+      minBarIndex: recentMinBarIndex,
       bags: [
         {
           family: "bb",
@@ -879,6 +969,7 @@ export function CandleChart({
     chartClassicStrategyVisibility,
     stochStrategies,
     chartStochStrategyVisibility,
+    recentMinBarIndex,
   ]);
 
   const riskRewardPlansRef = useRef(riskRewardPlans);
@@ -890,8 +981,9 @@ export function CandleChart({
         classicalPatterns,
         chartClassicalPatternVisibility ??
           ({} as Record<ChartPatternId, boolean>),
+        recentMinBarIndex,
       ),
-    [classicalPatterns, chartClassicalPatternVisibility],
+    [classicalPatterns, chartClassicalPatternVisibility, recentMinBarIndex, bars],
   );
   const classicalInstancesRef = useRef(visibleClassicalInstances);
   classicalInstancesRef.current = visibleClassicalInstances;
@@ -2773,7 +2865,11 @@ export function CandleChart({
   const patternHitLegend = useMemo(() => {
     if (!patterns?.recent.length || !chartPatternVisibility) return [];
     return patterns.recent
-      .filter((hit) => chartPatternVisibility[hit.id])
+      .filter(
+        (hit) =>
+          chartPatternVisibility[hit.id] &&
+          (recentMinBarIndex == null || hit.barIndex >= recentMinBarIndex),
+      )
       .slice(-8)
       .reverse()
       .map((hit) => ({
@@ -2782,18 +2878,22 @@ export function CandleChart({
         detail: hit.date,
         color: patternAccentColor(hit.direction),
       }));
-  }, [patterns, chartPatternVisibility]);
+  }, [patterns, chartPatternVisibility, recentMinBarIndex]);
 
   const bbStrategyHitLegend = useMemo(() => {
     if (!bbStrategies?.recent.length || !chartBbStrategyVisibility) return [];
     return bbStrategies.recent
-      .filter((hit) => chartBbStrategyVisibility[hit.id])
+      .filter((hit) => chartBbStrategyVisibility[hit.id] && (recentMinBarIndex == null || hit.barIndex >= recentMinBarIndex))
       .slice(-8)
       .reverse()
       .map((hit) => ({
         key: `${hit.id}-${hit.barIndex}`,
         text: hit.label,
-        detail: `${hit.date} · ${hit.summary}`,
+        detail: (() => {
+          const c = bars[hit.barIndex]?.close;
+          const px = c != null && Number.isFinite(c) ? ` · ${fmtPrice(c)}` : "";
+          return `${hit.date}${px} · ${hit.summary}`;
+        })(),
         color:
           hit.direction === "bullish"
             ? "#00c471"
@@ -2801,18 +2901,22 @@ export function CandleChart({
               ? "#f04452"
               : "#8b95a1",
       }));
-  }, [bbStrategies, chartBbStrategyVisibility]);
+  }, [bbStrategies, chartBbStrategyVisibility, recentMinBarIndex, bars]);
 
   const rsiStrategyHitLegend = useMemo(() => {
     if (!rsiStrategies?.recent.length || !chartRsiStrategyVisibility) return [];
     return rsiStrategies.recent
-      .filter((hit) => chartRsiStrategyVisibility[hit.id])
+      .filter((hit) => chartRsiStrategyVisibility[hit.id] && (recentMinBarIndex == null || hit.barIndex >= recentMinBarIndex))
       .slice(-8)
       .reverse()
       .map((hit) => ({
         key: `${hit.id}-${hit.barIndex}`,
         text: hit.label,
-        detail: `${hit.date} · ${hit.summary}`,
+        detail: (() => {
+          const c = bars[hit.barIndex]?.close;
+          const px = c != null && Number.isFinite(c) ? ` · ${fmtPrice(c)}` : "";
+          return `${hit.date}${px} · ${hit.summary}`;
+        })(),
         color:
           hit.direction === "bullish"
             ? "#00c471"
@@ -2820,19 +2924,23 @@ export function CandleChart({
               ? "#f04452"
               : "#8b95a1",
       }));
-  }, [rsiStrategies, chartRsiStrategyVisibility]);
+  }, [rsiStrategies, chartRsiStrategyVisibility, recentMinBarIndex, bars]);
 
   const volumeStrategyHitLegend = useMemo(() => {
     if (!volumeStrategies?.recent.length || !chartVolumeStrategyVisibility)
       return [];
     return volumeStrategies.recent
-      .filter((hit) => chartVolumeStrategyVisibility[hit.id])
+      .filter((hit) => chartVolumeStrategyVisibility[hit.id] && (recentMinBarIndex == null || hit.barIndex >= recentMinBarIndex))
       .slice(-8)
       .reverse()
       .map((hit) => ({
         key: `${hit.id}-${hit.barIndex}`,
         text: hit.label,
-        detail: `${hit.date} · ${hit.summary}`,
+        detail: (() => {
+          const c = bars[hit.barIndex]?.close;
+          const px = c != null && Number.isFinite(c) ? ` · ${fmtPrice(c)}` : "";
+          return `${hit.date}${px} · ${hit.summary}`;
+        })(),
         color:
           hit.direction === "bullish"
             ? "#00c471"
@@ -2840,19 +2948,23 @@ export function CandleChart({
               ? "#f04452"
               : "#8b95a1",
       }));
-  }, [volumeStrategies, chartVolumeStrategyVisibility]);
+  }, [volumeStrategies, chartVolumeStrategyVisibility, recentMinBarIndex, bars]);
 
   const comboStrategyHitLegend = useMemo(() => {
     if (!comboStrategies?.recent.length || !chartComboStrategyVisibility)
       return [];
     return comboStrategies.recent
-      .filter((hit) => chartComboStrategyVisibility[hit.id])
+      .filter((hit) => chartComboStrategyVisibility[hit.id] && (recentMinBarIndex == null || hit.barIndex >= recentMinBarIndex))
       .slice(-8)
       .reverse()
       .map((hit) => ({
         key: `${hit.id}-${hit.barIndex}`,
         text: hit.label,
-        detail: `${hit.date} · ${hit.summary}`,
+        detail: (() => {
+          const c = bars[hit.barIndex]?.close;
+          const px = c != null && Number.isFinite(c) ? ` · ${fmtPrice(c)}` : "";
+          return `${hit.date}${px} · ${hit.summary}`;
+        })(),
         color:
           hit.direction === "bullish"
             ? "#00c471"
@@ -2860,19 +2972,23 @@ export function CandleChart({
               ? "#f04452"
               : "#8b95a1",
       }));
-  }, [comboStrategies, chartComboStrategyVisibility]);
+  }, [comboStrategies, chartComboStrategyVisibility, recentMinBarIndex, bars]);
 
   const macdStrategyHitLegend = useMemo(() => {
     if (!macdStrategies?.recent.length || !chartMacdStrategyVisibility)
       return [];
     return macdStrategies.recent
-      .filter((hit) => chartMacdStrategyVisibility[hit.id])
+      .filter((hit) => chartMacdStrategyVisibility[hit.id] && (recentMinBarIndex == null || hit.barIndex >= recentMinBarIndex))
       .slice(-8)
       .reverse()
       .map((hit) => ({
         key: `${hit.id}-${hit.barIndex}`,
         text: hit.label,
-        detail: `${hit.date} · ${hit.summary}`,
+        detail: (() => {
+          const c = bars[hit.barIndex]?.close;
+          const px = c != null && Number.isFinite(c) ? ` · ${fmtPrice(c)}` : "";
+          return `${hit.date}${px} · ${hit.summary}`;
+        })(),
         color:
           hit.direction === "bullish"
             ? "#00c471"
@@ -2880,19 +2996,23 @@ export function CandleChart({
               ? "#f04452"
               : "#8b95a1",
       }));
-  }, [macdStrategies, chartMacdStrategyVisibility]);
+  }, [macdStrategies, chartMacdStrategyVisibility, recentMinBarIndex, bars]);
 
   const classicStrategyHitLegend = useMemo(() => {
     if (!classicStrategies?.recent.length || !chartClassicStrategyVisibility)
       return [];
     return classicStrategies.recent
-      .filter((hit) => chartClassicStrategyVisibility[hit.id])
+      .filter((hit) => chartClassicStrategyVisibility[hit.id] && (recentMinBarIndex == null || hit.barIndex >= recentMinBarIndex))
       .slice(-8)
       .reverse()
       .map((hit) => ({
         key: `${hit.id}-${hit.barIndex}`,
         text: hit.label,
-        detail: `${hit.date} · ${hit.summary}`,
+        detail: (() => {
+          const c = bars[hit.barIndex]?.close;
+          const px = c != null && Number.isFinite(c) ? ` · ${fmtPrice(c)}` : "";
+          return `${hit.date}${px} · ${hit.summary}`;
+        })(),
         color:
           hit.direction === "bullish"
             ? "#00c471"
@@ -2900,19 +3020,23 @@ export function CandleChart({
               ? "#f04452"
               : "#8b95a1",
       }));
-  }, [classicStrategies, chartClassicStrategyVisibility]);
+  }, [classicStrategies, chartClassicStrategyVisibility, recentMinBarIndex, bars]);
 
   const stochStrategyHitLegend = useMemo(() => {
     if (!stochStrategies?.recent.length || !chartStochStrategyVisibility)
       return [];
     return stochStrategies.recent
-      .filter((hit) => chartStochStrategyVisibility[hit.id])
+      .filter((hit) => chartStochStrategyVisibility[hit.id] && (recentMinBarIndex == null || hit.barIndex >= recentMinBarIndex))
       .slice(-8)
       .reverse()
       .map((hit) => ({
         key: `${hit.id}-${hit.barIndex}`,
         text: hit.label,
-        detail: `${hit.date} · ${hit.summary}`,
+        detail: (() => {
+          const c = bars[hit.barIndex]?.close;
+          const px = c != null && Number.isFinite(c) ? ` · ${fmtPrice(c)}` : "";
+          return `${hit.date}${px} · ${hit.summary}`;
+        })(),
         color:
           hit.direction === "bullish"
             ? "#00c471"
@@ -2920,19 +3044,23 @@ export function CandleChart({
               ? "#f04452"
               : "#8b95a1",
       }));
-  }, [stochStrategies, chartStochStrategyVisibility]);
+  }, [stochStrategies, chartStochStrategyVisibility, recentMinBarIndex, bars]);
 
   const ichimokuStrategyHitLegend = useMemo(() => {
     if (!ichimokuStrategies?.recent.length || !chartIchimokuStrategyVisibility)
       return [];
     return ichimokuStrategies.recent
-      .filter((hit) => chartIchimokuStrategyVisibility[hit.id])
+      .filter((hit) => chartIchimokuStrategyVisibility[hit.id] && (recentMinBarIndex == null || hit.barIndex >= recentMinBarIndex))
       .slice(-8)
       .reverse()
       .map((hit) => ({
         key: `${hit.id}-${hit.barIndex}`,
         text: hit.label,
-        detail: `${hit.date} · ${hit.summary}`,
+        detail: (() => {
+          const c = bars[hit.barIndex]?.close;
+          const px = c != null && Number.isFinite(c) ? ` · ${fmtPrice(c)}` : "";
+          return `${hit.date}${px} · ${hit.summary}`;
+        })(),
         color:
           hit.direction === "bullish"
             ? "#00c471"
@@ -2940,22 +3068,26 @@ export function CandleChart({
               ? "#f04452"
               : "#8b95a1",
       }));
-  }, [ichimokuStrategies, chartIchimokuStrategyVisibility]);
+  }, [ichimokuStrategies, chartIchimokuStrategyVisibility, recentMinBarIndex, bars]);
 
   const classicalHitLegend = useMemo(() => {
     if (!classicalPatterns?.recent.length || !chartClassicalPatternVisibility)
       return [];
     return classicalPatterns.recent
-      .filter((hit) => chartClassicalPatternVisibility[hit.id])
+      .filter((hit) => chartClassicalPatternVisibility[hit.id] && (recentMinBarIndex == null || hit.barIndex >= recentMinBarIndex))
       .slice(-8)
       .reverse()
       .map((hit) => ({
         key: hit.instanceKey,
         text: hit.label,
-        detail: `${hit.date} · ${hit.summary}`,
+        detail: (() => {
+          const c = bars[hit.barIndex]?.close;
+          const px = c != null && Number.isFinite(c) ? ` · ${fmtPrice(c)}` : "";
+          return `${hit.date}${px} · ${hit.summary}`;
+        })(),
         color: CHART_PATTERN_META[hit.id].color,
       }));
-  }, [classicalPatterns, chartClassicalPatternVisibility]);
+  }, [classicalPatterns, chartClassicalPatternVisibility, recentMinBarIndex, bars]);
 
   const structureHitLegend = useMemo(() => {
     if (!structure || !chartStructureVisibility) return [];

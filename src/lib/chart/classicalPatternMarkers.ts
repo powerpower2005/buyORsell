@@ -40,10 +40,15 @@ function hitToMarker(hit: ChartPatternHit): SeriesMarker<Time> {
 export function classicalPatternsToChartMarkers(
   patterns: ChartPatternResult | undefined,
   visibility: Record<ChartPatternId, boolean>,
+  minBarIndex?: number | null,
 ): SeriesMarker<Time>[] {
   if (!patterns?.recent.length) return [];
   return [...patterns.recent]
-    .filter((hit) => visibility[hit.id])
+    .filter(
+      (hit) =>
+        visibility[hit.id] &&
+        (minBarIndex == null || hit.barIndex >= minBarIndex),
+    )
     .sort((a, b) => {
       const byDate = a.date.localeCompare(b.date);
       return byDate !== 0 ? byDate : a.barIndex - b.barIndex;
@@ -67,7 +72,14 @@ export function visibleClassicalPatternLegend(
 export function visibleClassicalPatternInstances(
   patterns: ChartPatternResult | undefined,
   visibility: Record<ChartPatternId, boolean>,
+  minBarIndex?: number | null,
 ): ChartPatternInstance[] {
   if (!patterns?.instances.length) return [];
-  return patterns.instances.filter((inst) => visibility[inst.id]);
+  return patterns.instances.filter((inst) => {
+    if (!visibility[inst.id]) return false;
+    if (minBarIndex == null) return true;
+    const anchor =
+      inst.entryBar != null ? inst.entryBar : inst.endBar;
+    return anchor >= minBarIndex;
+  });
 }

@@ -279,6 +279,7 @@ import {
   setRiskRewardOverlayVisible,
 } from "@/lib/riskRewardStore";
 import {
+  formatSignalClose,
   formatStrategyConfluenceLabel,
   formatStrategyRecencyLabel,
   isWithinRecentWindow,
@@ -394,6 +395,8 @@ interface Props {
   signalStats?: SignalStatsBundle | null;
   /** Latest signal date per strategy (`family:id`). */
   strategyRecency?: ReadonlyMap<string, StrategyRecency> | null;
+  candlePatternRecency?: ReadonlyMap<string, StrategyRecency> | null;
+  chartPatternRecency?: ReadonlyMap<string, StrategyRecency> | null;
   className?: string;
 }
 
@@ -803,6 +806,8 @@ export function ChartSidebar({
   trendlines,
   signalStats,
   strategyRecency,
+  candlePatternRecency,
+  chartPatternRecency,
   className,
 }: Props) {
   const [open, setOpen] = useState<SidebarOpenState>(() => getSidebarOpenState());
@@ -817,6 +822,8 @@ export function ChartSidebar({
   const refreshTick = visibilityTick + configTick;
   const stats = signalStats ?? null;
   const recencyMap = strategyRecency ?? EMPTY_STRATEGY_RECENCY;
+  const candleRecencyMap = candlePatternRecency ?? EMPTY_STRATEGY_RECENCY;
+  const classicalRecencyMap = chartPatternRecency ?? EMPTY_STRATEGY_RECENCY;
   const recentConfluenceSummary = useMemo(() => {
     let newest: StrategyRecency | null = null;
     let withConfluence = 0;
@@ -832,8 +839,9 @@ export function ChartSidebar({
         : newest.barsAgo <= 9
           ? `${newest.barsAgo}봉 전`
           : newest.date;
+    const px = formatSignalClose(newest.close);
     const dir = newest.direction === "bullish" ? "↑" : "↓";
-    return `최근 겹침 ${withConfluence}개 전략 · ${when} ×${newest.confluenceCount}${dir}`;
+    return `최근 겹침 ${withConfluence}개 전략 · ${when}${px ? ` · ${px}` : ""} ×${newest.confluenceCount}${dir}`;
   }, [recencyMap]);
   const tlAlgo = useMemo(() => getTrendlineAlgoVersion(), [refreshTick]);
   const catalogVis = useMemo(
@@ -862,12 +870,14 @@ export function ChartSidebar({
   const setRecentOnlyPersisted = (next: boolean) => {
     setStrategyRecentOnly(next);
     setRecentOnlyState(next);
+    onVisibilityChange();
   };
 
   const setRecentBarsPersisted = (raw: number) => {
     const next = clampRecentBars(raw);
     setStrategyRecentBars(next);
     setRecentBarsState(next);
+    onVisibilityChange();
   };
 
   const smaCfg = useMemo(() => getIndicatorConfig("sma"), [refreshTick]);
@@ -1179,6 +1189,54 @@ export function ChartSidebar({
             접기
           </button>
         </div>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <label
+            className="inline-flex cursor-pointer items-center gap-1 text-[10px] text-text-secondary"
+            title="체크하면 전략·차트 패턴·캔들 패턴 마커를 최근 N봉만 표시합니다. 해제하기 전까지 유지됩니다."
+          >
+            <input
+              type="checkbox"
+              checked={recentOnly}
+              onChange={(e) => {
+                const next = e.target.checked;
+                setRecentOnlyPersisted(next);
+                if (!next) return;
+                const patch: Partial<SidebarOpenState> = {
+                  allStrategies: true,
+                };
+                for (const family of STRATEGY_FAMILY_ORDER) {
+                  patch[STRATEGY_FAMILY_META[family].catalogOpenKey] = false;
+                }
+                setOpen(patchSidebarOpenState(patch));
+              }}
+              className="accent-accent"
+            />
+            최근만
+          </label>
+          <label className="inline-flex items-center gap-1 text-[10px] text-text-tertiary">
+            <span>N봉</span>
+            <input
+              type="number"
+              min={MIN_RECENT_BARS}
+              max={MAX_RECENT_BARS}
+              value={recentBars}
+              onChange={(e) => {
+                const n = Number(e.target.value);
+                if (!Number.isFinite(n)) return;
+                setRecentBarsPersisted(n);
+              }}
+              onBlur={() => setRecentBarsPersisted(recentBars)}
+              aria-label="최근 시그널 봉 수"
+              title={`최근 ${MIN_RECENT_BARS}~${MAX_RECENT_BARS}봉 · 해제 전까지 유지`}
+              className="w-12 rounded border border-border bg-bg px-1 py-0.5 text-[11px] tabular-nums text-text-primary focus:border-accent/50 focus:outline-none"
+            />
+          </label>
+          {recentOnly ? (
+            <span className="text-[10px] text-accent">
+              전략·패턴 · {recentBars}봉
+            </span>
+          ) : null}
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -1208,47 +1266,6 @@ export function ChartSidebar({
               aria-label="전략 검색"
               className="w-full rounded-md border border-border bg-bg px-2 py-1.5 text-[11px] text-text-primary placeholder:text-text-tertiary focus:border-accent/50 focus:outline-none"
             />
-            <div className="flex flex-wrap items-center gap-1.5">
-              <label className="inline-flex cursor-pointer items-center gap-1 text-[10px] text-text-secondary">
-                <input
-                  type="checkbox"
-                  checked={recentOnly}
-                  onChange={(e) => {
-                    const next = e.target.checked;
-                    setRecentOnlyPersisted(next);
-                    if (!next) return;
-                    const patch: Partial<SidebarOpenState> = {
-                      allStrategies: true,
-                    };
-                    for (const family of STRATEGY_FAMILY_ORDER) {
-                      patch[STRATEGY_FAMILY_META[family].catalogOpenKey] =
-                        false;
-                    }
-                    setOpen(patchSidebarOpenState(patch));
-                  }}
-                  className="accent-accent"
-                />
-                최근만
-              </label>
-              <label className="inline-flex items-center gap-1 text-[10px] text-text-tertiary">
-                <span>N봉</span>
-                <input
-                  type="number"
-                  min={MIN_RECENT_BARS}
-                  max={MAX_RECENT_BARS}
-                  value={recentBars}
-                  onChange={(e) => {
-                    const n = Number(e.target.value);
-                    if (!Number.isFinite(n)) return;
-                    setRecentBarsPersisted(n);
-                  }}
-                  onBlur={() => setRecentBarsPersisted(recentBars)}
-                  aria-label="최근 시그널 봉 수"
-                  title={`최근 ${MIN_RECENT_BARS}~${MAX_RECENT_BARS}봉`}
-                  className="w-12 rounded border border-border bg-bg px-1 py-0.5 text-[11px] tabular-nums text-text-primary focus:border-accent/50 focus:outline-none"
-                />
-              </label>
-            </div>
             {catalogFiltering && (
               <p className="text-[10px] text-text-tertiary">
                 {filteredCatalog.length}개 일치
@@ -2364,7 +2381,14 @@ export function ChartSidebar({
             }
           >
             {CHART_PATTERN_BIAS_ORDER.map((bias) => {
-              const ids = chartPatternsByBias(bias);
+              const ids = chartPatternsByBias(bias).filter((id) =>
+                !recentOnly
+                  ? true
+                  : isWithinRecentWindow(
+                      classicalRecencyMap.get(id),
+                      recentBars,
+                    ),
+              );
               if (!ids.length) return null;
               const openKey =
                 bias === "bullish"
@@ -2380,7 +2404,7 @@ export function ChartSidebar({
                   nested
                   key={bias}
                   title={PATTERN_BIAS_META[bias].labelKo}
-                  open={open[openKey]}
+                  open={open[openKey] || recentOnly}
                   onToggleOpen={() => toggleOpen(openKey)}
                   checked={state.checked}
                   indeterminate={state.indeterminate}
@@ -2406,6 +2430,7 @@ export function ChartSidebar({
                           ratePct: null,
                         }
                       }
+                      recency={classicalRecencyMap.get(id)}
                       help={classicalPatternHelp(id)}
                       onChange={(next) =>
                         bump(() => setClassicalChartPatternVisible(id, next))
@@ -2429,7 +2454,14 @@ export function ChartSidebar({
               bump(() => setPatternStrategyGroupVisible(next))
             }
           >
-            {PATTERN_STRATEGY_ORDER.map((id: PatternStrategyId) => (
+            {PATTERN_STRATEGY_ORDER.filter((id) =>
+              !recentOnly
+                ? true
+                : isWithinRecentWindow(
+                    recencyMap.get(strategyRecencyKey("pattern", id)),
+                    recentBars,
+                  ),
+            ).map((id: PatternStrategyId) => (
               <StrategyLeaf
                 key={id}
                 family="pattern"
@@ -2471,7 +2503,11 @@ export function ChartSidebar({
           }
         >
           {CANDLE_PATTERN_BIAS_ORDER.map((bias) => {
-            const ids = candlePatternsByBias(bias);
+            const ids = candlePatternsByBias(bias).filter((id) =>
+              !recentOnly
+                ? true
+                : isWithinRecentWindow(candleRecencyMap.get(id), recentBars),
+            );
             if (!ids.length) return null;
             const openKey =
               bias === "bullish"
@@ -2485,7 +2521,7 @@ export function ChartSidebar({
                 nested
                 key={bias}
                 title={PATTERN_BIAS_META[bias].labelKo}
-                open={open[openKey]}
+                open={open[openKey] || recentOnly}
                 onToggleOpen={() => toggleOpen(openKey)}
                 checked={state.checked}
                 indeterminate={state.indeterminate}
@@ -2510,6 +2546,7 @@ export function ChartSidebar({
                         ratePct: null,
                       }
                     }
+                    recency={candleRecencyMap.get(id)}
                     help={candlePatternHelp(id)}
                     onChange={(next) =>
                       bump(() => setChartPatternVisible(id, next))

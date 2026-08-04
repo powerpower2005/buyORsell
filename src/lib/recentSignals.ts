@@ -19,6 +19,8 @@ export interface RecentStrategyHit {
   date: string;
   barIndex: number;
   barsAgo: number;
+  /** Close of the signal bar. */
+  close: number | null;
   direction: Exclude<TrendLabel, "neutral">;
   rewardRisk?: number | null;
   rrMethod?: "pattern" | "atr_2r";
@@ -104,6 +106,7 @@ export function recentHitsFromEvaluation(
       date: h.date,
       barIndex: h.barIndex,
       barsAgo,
+      close: evaluation.bars[h.barIndex]?.close ?? null,
       direction: h.direction,
       rewardRisk,
       rrMethod,

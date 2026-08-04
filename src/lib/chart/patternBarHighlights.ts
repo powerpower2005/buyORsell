@@ -23,18 +23,22 @@ function accentForDirection(direction: TrendLabel): PatternBarHighlight {
 /**
  * Per-date candle colors for bars that have a visible pattern hit.
  * Later hits overwrite earlier ones on the same date.
+ * Optional `minBarIndex` limits highlights to the recent-N window.
  */
 export function patternBarHighlights(
   candlePatterns: CandlePatternResult | undefined,
   candleVisibility: Record<CandlePatternId, boolean> | undefined,
   classicalPatterns: ChartPatternResult | undefined,
   classicalVisibility: Record<ChartPatternId, boolean> | undefined,
+  minBarIndex?: number | null,
 ): Map<string, PatternBarHighlight> {
   const out = new Map<string, PatternBarHighlight>();
+  const inWindow = (barIndex: number) =>
+    minBarIndex == null || barIndex >= minBarIndex;
 
   if (classicalPatterns?.recent.length && classicalVisibility) {
     for (const hit of classicalPatterns.recent) {
-      if (!classicalVisibility[hit.id]) continue;
+      if (!classicalVisibility[hit.id] || !inWindow(hit.barIndex)) continue;
       const accent = CHART_PATTERN_META[hit.id].color;
       out.set(hit.date, {
         color: accent,
@@ -46,7 +50,7 @@ export function patternBarHighlights(
 
   if (candlePatterns?.recent.length && candleVisibility) {
     for (const hit of candlePatterns.recent) {
-      if (!candleVisibility[hit.id]) continue;
+      if (!candleVisibility[hit.id] || !inWindow(hit.barIndex)) continue;
       out.set(hit.date, accentForDirection(hit.direction));
     }
   }

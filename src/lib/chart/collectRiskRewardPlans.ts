@@ -32,16 +32,26 @@ export function collectVisibleRiskRewardPlans(args: {
     bag: HitBag;
     visibility?: Record<string, boolean> | null;
   }>;
+  /** When set, only hits with barIndex >= minBarIndex are included. */
+  minBarIndex?: number | null;
 }): RiskRewardPlan[] {
-  const { bars, patternStrategies, patternVisibility, bags = [] } = args;
+  const {
+    bars,
+    patternStrategies,
+    patternVisibility,
+    bags = [],
+    minBarIndex = null,
+  } = args;
   if (!bars.length) return [];
 
   const atr = computeAtrSeries(bars, 14);
   const plans: RiskRewardPlan[] = [];
+  const inWindow = (barIndex: number) =>
+    minBarIndex == null || barIndex >= minBarIndex;
 
   if (patternStrategies?.recent.length && patternVisibility) {
     for (const hit of patternStrategies.recent) {
-      if (!patternVisibility[hit.id]) continue;
+      if (!patternVisibility[hit.id] || !inWindow(hit.barIndex)) continue;
       const plan = planFromPatternHit(bars, hit);
       if (plan) plans.push(plan);
     }
@@ -50,7 +60,7 @@ export function collectVisibleRiskRewardPlans(args: {
   for (const { family, bag, visibility } of bags) {
     if (!bag?.recent?.length || !visibility) continue;
     for (const hit of bag.recent) {
-      if (!visibility[hit.id]) continue;
+      if (!visibility[hit.id] || !inWindow(hit.barIndex)) continue;
       const plan = planFromGenericHit(bars, hit, family, atr);
       if (plan) plans.push(plan);
     }

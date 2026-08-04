@@ -6,6 +6,14 @@ import { confluencesFromEvaluation } from "@/lib/evaluation/strategyConfluence";
 import { isStrategyConfluenceVisible } from "@/lib/strategyConfluenceStore";
 import { isRiskRewardOverlayVisible } from "@/lib/riskRewardStore";
 import { buildStrategyRecencyMap } from "@/lib/strategyRecency";
+import {
+  getStrategyRecentBars,
+  getStrategyRecentOnly,
+} from "@/lib/strategyRecencyFilterStore";
+import {
+  buildCandlePatternRecencyMap,
+  buildChartPatternRecencyMap,
+} from "@/lib/patternRecency";
 import { validateFreshness } from "@/lib/validation";
 import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
 import {
@@ -327,6 +335,21 @@ export function BrowsePage() {
     () => buildStrategyRecencyMap(evaluation),
     [evaluation],
   );
+  const candlePatternRecency = useMemo(
+    () => buildCandlePatternRecencyMap(evaluation),
+    [evaluation],
+  );
+  const chartPatternRecency = useMemo(
+    () => buildChartPatternRecencyMap(evaluation),
+    [evaluation],
+  );
+  const recentSignalWindow = useMemo(
+    () => ({
+      enabled: getStrategyRecentOnly(),
+      bars: getStrategyRecentBars(),
+    }),
+    [chartVisTick],
+  );
 
   const trendlineIdsKey = evaluation?.trendlines
     ? [
@@ -618,6 +641,7 @@ export function BrowsePage() {
                       strategyConfluences={strategyConfluences}
                       showStrategyConfluence={showStrategyConfluence}
                       showRiskReward={showRiskReward}
+                      recentSignalWindow={recentSignalWindow}
                     />
                   </div>
                   <ChartSidebar
@@ -632,6 +656,8 @@ export function BrowsePage() {
                     trendlines={evaluation!.trendlines}
                     signalStats={evaluation!.signalStats}
                     strategyRecency={strategyRecency}
+                    candlePatternRecency={candlePatternRecency}
+                    chartPatternRecency={chartPatternRecency}
                   />
                 </div>
                 <IndicatorConfigModal

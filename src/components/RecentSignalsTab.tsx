@@ -202,6 +202,7 @@ export function RecentSignalsTab({
                                   barIndex: h.barIndex,
                                   barsAgo: h.barsAgo,
                                   direction: h.direction,
+                                  close: h.close,
                                 })}
                               </span>
                               <span className="tabular-nums text-text-tertiary">
