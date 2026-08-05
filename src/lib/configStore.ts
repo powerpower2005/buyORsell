@@ -89,7 +89,7 @@ function periodColorsOf(item: IndicatorConfigItem): Record<string, string> {
 export function setIndicatorParam(
   id: string,
   paramKey: string,
-  value: number | number[],
+  value: number | number[] | string,
 ): void {
   updateIndicatorItem(id, (item) => ({
     ...item,
