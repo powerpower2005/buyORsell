@@ -8,6 +8,7 @@ export type IchimokuStrategyId =
   | "ichi_price_kumo_break"
   | "ichi_trend_turn"
   | "ichi_breakout"
+  | "ichi_kumo_retest"
   | "ichi_kumo_sr";
 
 export const ICHIMOKU_STRATEGY_ORDER: IchimokuStrategyId[] = [
@@ -17,6 +18,7 @@ export const ICHIMOKU_STRATEGY_ORDER: IchimokuStrategyId[] = [
   "ichi_price_kumo_break",
   "ichi_trend_turn",
   "ichi_breakout",
+  "ichi_kumo_retest",
   "ichi_kumo_sr",
 ];
 
@@ -85,11 +87,20 @@ export const ICHIMOKU_STRATEGY_META: Record<
     markerBear: "BO↓",
     typicalDirection: "neutral",
   },
+  ichi_kumo_retest: {
+    label: "Kumo breakout retest",
+    labelKo: "구름 돌파 후 리테스트",
+    description:
+      "구름 돌파 뒤 되돌림이 구름에 닿고 다시 이탈(재탈환)하면 진입. 꼬리·거래량은 companion.",
+    markerBull: "RT↑",
+    markerBear: "RT↓",
+    typicalDirection: "neutral",
+  },
   ichi_kumo_sr: {
     label: "Kumo support/resistance",
     labelKo: "구름 지지·저항",
     description:
-      "양운 지지·음운 저항 터치 후 전환선 돌파/이탈 시 진입.",
+      "양운 하단·음운 상단 터치 후 전환선 돌파/이탈. 수평 구름·캔들은 companion.",
     markerBull: "SR↑",
     markerBear: "SR↓",
     typicalDirection: "neutral",

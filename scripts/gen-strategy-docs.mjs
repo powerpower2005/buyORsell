@@ -118,7 +118,7 @@ const INDICATORS = {
     nameKo: "일목균형표",
     nameEn: "Ichimoku Cloud",
     category: "trend",
-    what: "전환·기준·선행1/2·후행스팬 + 구름.",
+    what: "전환(9)·기준(26)·선행1/2·후행스팬 + 구름(양운/음운). 가격이 구름 위/아래·두께로 추세·지지/저항. 표준 9/26/52·이동26.",
     params: "9 / 26 / 52 · displacement 26",
     series: "tenkan, kijun, spanA, spanB, chikou",
     file: "src/lib/evaluation/indicators/index.ts",
@@ -469,7 +469,31 @@ const families = [
     help: "src/lib/chartLayerHelp.ts (bbStrategyHelp)",
     hasStopTarget: false,
     overview:
-      "볼린저 밴드(및 %B·MFI·RSI)로 지지/돌파/스퀴즈/추세/다이버전스 히트를 낸다. 히트에 stop/target 없음.",
+      "볼린저 밴드(및 %B·MFI·RSI)로 지지/돌파/스퀴즈/추세/다이버전스 히트를 낸다. 히트에 stop/target 없음.\n\n**설계:** 전략 엔트리는 최소 조건만 유지한다. 신뢰도는 사이드바 **같이 켤 지표**(캔들·WB·이격도·S/R·이평 등)로 올린다 — detector 하드 게이트가 아니다.",
+    companions: [
+      {
+        id: "band_sr",
+        layers: "망치/유성 · WB(44) · SMA20 · RSI · 지지·저항 · 거래량",
+      },
+      {
+        id: "band_breakout",
+        layers: "거래량 · 장대양/음 · WB · ADX",
+      },
+      {
+        id: "squeeze",
+        layers: "거래량 · 장대양/음 · WB · ADX (헤드페이크 주의)",
+      },
+      {
+        id: "divergence",
+        layers: "이격도(≠RSI 다이버전스) · 망치/유성 · S/R",
+      },
+      { id: "trend_follow", layers: "거래량 · WB · SMA20" },
+    ],
+    readmeExtra: `## Notes
+
+- 전통 반전·스퀴즈를 단독으로 쓰면 강한 추세·이벤트·S/R 무시로 손실나기 쉽다 → companion으로 교차 확인.
+- \`divergence\`는 **RSI** 다이버전스. 이격도 다이버전스는 \`disparity\` 패널로 별도 확인.
+- WB/원비 **전용 전략 id는 아직 없음**. WB는 오버레이·companion으로 먼저 제공.`,
     strategies: [
       {
         id: "band_sr",
@@ -594,7 +618,56 @@ const families = [
     store: "src/lib/ichimokuStrategyStore.ts",
     help: "src/lib/ichimokuStrategyHelp.ts",
     hasStopTarget: false,
-    overview: "일목 구성요소 교차·구름·합류. 전부 `ichimoku` 지표. stop/target 없음.",
+    overview:
+      "일목 구성요소 교차·구름·합류. 전부 `ichimoku` 지표. stop/target 없음.\n\n**설계:** 전략 엔트리는 최소 조건만 유지한다. 기준선 방향·구름 두께·꼬리 캔들·수평 SpanB·거래량 등은 사이드바 **같이 켤 지표**(companion)로 올린다 — detector 하드 게이트가 아니다.",
+    companions: [
+      {
+        id: "ichi_tk_cross",
+        layers: "ADX(기준선 하락·횡보 시 호전 보류) · MACD · 거래량 · S/R",
+      },
+      {
+        id: "ichi_chikou_cross",
+        layers: "거래량 · ADX(이격 과다→되돌림) · MACD",
+      },
+      {
+        id: "ichi_kumo_twist",
+        layers: "거래량 · ADX · MACD · 가격 vs 구름 위치",
+      },
+      {
+        id: "ichi_price_kumo_break",
+        layers: "거래량 · 장대양/음 · ADX(얇은 구름 가짜 돌파)",
+      },
+      { id: "ichi_trend_turn", layers: "거래량 · ADX" },
+      { id: "ichi_breakout", layers: "거래량 · ADX · S/R(박스)" },
+      {
+        id: "ichi_kumo_retest",
+        layers: "망치/유성(거부 꼬리) · 거래량 · ADX · S/R",
+      },
+      {
+        id: "ichi_kumo_sr",
+        layers: "망치/유성 · 거래량 · S/R · SpanB 수평·두께(일목 차트)",
+      },
+    ],
+    readmeExtra: `## 구성 요소 (앱 색)
+
+| 선 | 계산(표준) | 역할 |
+|----|------------|------|
+| 전환선 (빨강) | (9고+9저)/2 | 단기 추세·교차 신호 |
+| 기준선 (파랑) | (26고+26저)/2 | 중기 추세·필터(companion으로 방향 확인) |
+| 선행스팬 A | (전환+기준)/2 → 26봉 선행 | 구름 한쪽 |
+| 선행스팬 B | (52고+52저)/2 → 26봉 선행 | 구름 다른쪽·장기 |
+| 후행스팬 (보라) | 종가 → 26봉 후행 | 과거 가격과 교차로 추세 확인 |
+| 구름(Kumo) | SpanA↔SpanB 사이 | 양운(A≥B)·음운(A<B). 두께↑ → 지지/저항 신뢰↑ |
+
+**구름 해석:** 가격이 구름 위=상승 우위, 아래=하락 우위, 안·근접=모멘텀 약화. 돌파=추세 전환 후보.
+
+**한계:** 지수·대형주에 잘 맞는 편. 선이 많아 차트 가독성이 떨어질 수 있음 → 구성 요소를 골라 켜세요.
+
+## Notes
+
+- \`ichi_breakout\` = 후행+장대봉 **즉시** 돌파. \`ichi_kumo_retest\` = 돌파 후 **되돌림·재탈환**. 합치지 말 것.
+- 기준선 방향·구름 위/아래는 엔트리 하드 필터가 아님 — companion·차트 감각으로 확인.
+- 교재식 «구름+추세선 프라이스액션»은 별도 전략 id 없음 → S/R·추세선 companion으로 교차 확인.`,
     strategies: [
       {
         id: "ichi_tk_cross",
@@ -604,7 +677,8 @@ const families = [
         bullish: "tenkan이 kijun을 상향 돌파 (호전).",
         bearish: "tenkan이 kijun을 하향 돌파 (역전).",
         stopTarget: "히트에 없음.",
-        notes: "",
+        notes:
+          "기준선 하락·횡보 중 호전은 companion(ADX·구름 위치)로 보류. 엔트리에 kijun 기울기 필터 없음.",
         params: "표준 9/26",
       },
       {
@@ -615,7 +689,8 @@ const families = [
         bullish: "close가 (i−displacement)봉 high를 상향 돌파.",
         bearish: "close가 (i−displacement)봉 low를 하향 이탈.",
         stopTarget: "히트에 없음.",
-        notes: "플롯된 chikou가 아니라 가격 vs 과거 H/L로 구현.",
+        notes:
+          "플롯된 chikou가 아니라 가격 vs 과거 H/L로 구현. 이격 과다 시 단기 되돌림은 companion 감각.",
         params: "displacement 기본 26",
       },
       {
@@ -626,7 +701,7 @@ const families = [
         bullish: "spanA가 spanB를 상향 (양운 전환).",
         bearish: "spanA가 spanB를 하향 (음운 전환).",
         stopTarget: "히트에 없음.",
-        notes: "해당 날짜의 displaced span 값 사용.",
+        notes: "해당 날짜의 displaced span 값 사용. 두께·가격 위치는 companion.",
         params: "—",
       },
       {
@@ -637,7 +712,8 @@ const families = [
         bullish: "close가 cloudTop=max(A,B) 상향 돌파.",
         bearish: "close가 cloudBot=min(A,B) 하향 이탈.",
         stopTarget: "히트에 없음.",
-        notes: "구름이 두꺼울수록 신뢰↑ (서술, 코드 필터 아님).",
+        notes:
+          "구름 두께·거래량·장대봉은 companion. 되돌림 타점은 `ichi_kumo_retest`.",
         params: "—",
       },
       {
@@ -649,7 +725,7 @@ const families = [
           "TURN_WINDOW=5 안에 모두: (1) close>kijun 돌파 (2) TK 호전 (3) chikou 호전 (4) kumo twist 양운.",
         bearish: "동일 창에 4신호 모두 약세.",
         stopTarget: "히트에 없음.",
-        notes: "창 안에 있으면 여러 봉에서 반복 가능.",
+        notes: "창 안에 있으면 여러 봉에서 반복 가능. 거래량·ADX는 companion.",
         params: "TURN_WINDOW 5",
       },
       {
@@ -661,21 +737,36 @@ const families = [
           "최근 6봉 chikou 호전 + |close−open|/range ≥ 0.55 양봉 + close가 cloudTop 돌파.",
         bearish: "chikou 역전 + 장대 음봉 + cloudBot 이탈.",
         stopTarget: "히트에 없음. 메타 손익비 2:1은 미연결.",
-        notes: "",
+        notes: "즉시 돌파형. 되돌림 진입은 `ichi_kumo_retest`.",
         params: "chikou 창 6 · body/range ≥0.55",
+      },
+      {
+        id: "ichi_kumo_retest",
+        label: "구름 돌파 후 리테스트",
+        summary: "구름 돌파 후 되돌림·재탈환.",
+        indicators: ["ichimoku"],
+        bullish:
+          "최근 12봉 내 cloudTop 상향 돌파 후, low가 구름 상단 터치(두께 8% 패드) + close>cloudTop 재탈환.",
+        bearish:
+          "최근 12봉 내 cloudBot 하향 이탈 후, high가 구름 하단 터치 + close<cloudBot 재이탈.",
+        stopTarget: "히트에 없음. 손절 구름 반대편·익절 2:1은 참고(미연결).",
+        notes:
+          "꼬리(망치/유성)·거래량은 companion. `ichi_breakout`(즉시 장대)과 분리.",
+        params: "돌파 lookback 12 · 터치 패드 8%",
       },
       {
         id: "ichi_kumo_sr",
         label: "구름 지지·저항",
-        summary: "평평한 구름 터치 + 전환선 확인.",
+        summary: "구름 터치 + 전환선 확인.",
         indicators: ["ichimoku"],
         bullish:
-          "양운 + spanB 5봉 평탄(±0.15%) + low가 cloudBot 터치(두께 8% 패드) + 양봉 + close가 tenkan 상향.",
+          "양운 + low가 cloudBot 터치(두께 8% 패드) + close가 tenkan 상향.",
         bearish:
-          "음운 + spanB 평탄 + high가 cloudTop 터치 + 음봉 + close가 tenkan 하향.",
+          "음운 + high가 cloudTop 터치 + close가 tenkan 하향.",
         stopTarget: "히트에 없음.",
-        notes: "",
-        params: "flat 5봉 0.15% · 터치 패드 8%",
+        notes:
+          "SpanB 수평·양/음봉·두께는 companion(하드 게이트 아님).",
+        params: "터치 패드 8%",
       },
     ],
   },
@@ -1399,6 +1490,12 @@ function familyReadme(family) {
         `| \`${s.id}\` | ${s.label} | ${badge(s.indicators)} | [doc](./${s.id}.md) |`,
     )
     .join("\n");
+  const companions = family.companions
+    ? `\n## Confirm layers (신뢰도)\n\n| strategy | 같이 보면 좋은 것 |\n|----------|-------------------|\n${family.companions
+        .map((c) => `| \`${c.id}\` | ${c.layers} |`)
+        .join("\n")}\n`
+    : "";
+  const extra = family.readmeExtra ? `\n${family.readmeExtra}\n` : "";
   return `# ${family.label} (\`${family.id}\`)
 
 > [strategies INDEX](../INDEX.md) · [indicators](../../indicators/INDEX.md)
@@ -1413,6 +1510,7 @@ ${family.overview}
 | Meta | \`${family.meta}\` |
 | Store | \`${family.store}\` |
 | Help | \`${family.help}\` |
+| Companions | \`src/lib/strategyConfirmLayers.ts\` |
 
 **stop/target on hits:** ${family.hasStopTarget ? "yes (pattern)" : "no"}
 
@@ -1421,7 +1519,7 @@ ${family.overview}
 | id | label | indicators | doc |
 |----|-------|------------|-----|
 ${rows}
-`;
+${companions}${extra}`;
 }
 
 function strategiesIndex() {

@@ -194,14 +194,86 @@ function extraConfirmLayers(
       if (id === "stoch_ma20_cross") return [companion(VOL)];
       return [companion(VOL), companion(SUP), companion(RES)];
     case "ichimoku":
-      if (
-        id === "ichi_price_kumo_break" ||
-        id === "ichi_breakout" ||
-        id === "ichi_trend_turn"
-      ) {
-        return [companion(VOL, "구름 돌파·전환 구간의 거래량")];
+      if (id === "ichi_tk_cross") {
+        return [
+          companion(VOL, "교차 봉 참여 강도"),
+          companion(
+            ADX,
+            "추세 강도 — 기준선 하락·횡보 중 호전은 보류 감각",
+          ),
+          companion(MACD, "모멘텀이 교차 방향과 같은지"),
+          companion(SUP, "호전 후 지지가 잡히는지"),
+          companion(RES, "역전 후 저항이 잡히는지"),
+        ];
       }
-      if (id === "ichi_kumo_sr") return [companion(VOL)];
+      if (id === "ichi_chikou_cross") {
+        return [
+          companion(VOL, "후행 돌파·이탈 봉 참여 강도"),
+          companion(ADX, "추세 지속 여부(이격 과다시 되돌림 주의)"),
+          companion(MACD, "후행 신호와 모멘텀 방향이 같은지"),
+        ];
+      }
+      if (id === "ichi_kumo_twist") {
+        return [
+          companion(VOL, "구름 색 전환 구간의 참여"),
+          companion(ADX, "전환 후 추세가 붙는지"),
+          companion(MACD, "양운/음운 전환과 모멘텀 일치"),
+        ];
+      }
+      if (id === "ichi_price_kumo_break") {
+        return [
+          companion(VOL, "구름 돌파·이탈 봉 거래량으로 가짜 돌파 걸러내기"),
+          companion(BULL_MARU, "상단 돌파가 강한 양봉인지"),
+          companion(BEAR_MARU, "하단 이탈이 강한 음봉인지"),
+          companion(ADX, "돌파 후 추세 강도"),
+        ];
+      }
+      if (id === "ichi_trend_turn") {
+        return [
+          companion(VOL, "4신호 합류 구간의 거래량"),
+          companion(ADX, "합류 후 추세가 실제로 붙는지"),
+        ];
+      }
+      if (id === "ichi_breakout") {
+        return [
+          companion(VOL, "장대봉 구름 돌파의 참여 강도"),
+          companion(ADX, "즉시 돌파 후 추세 지속"),
+          companion(SUP, "돌파 전 박스·지지와 겹침"),
+          companion(RES, "돌파 전 박스·저항과 겹침"),
+        ];
+      }
+      if (id === "ichi_kumo_retest") {
+        return [
+          companion(
+            HAMMER,
+            "상향 돌파 후 되돌림에서 아랫꼬리(거부)면 신뢰↑",
+          ),
+          companion(
+            SHOOTING,
+            "하향 돌파 후 되돌림에서 윗꼬리(거부)면 신뢰↑",
+          ),
+          companion(VOL, "리테스트·재탈환 봉 거래량"),
+          companion(ADX, "새 추세가 유지되는지"),
+          companion(SUP, "구름 가장자리와 지지 겹침"),
+          companion(RES, "구름 가장자리와 저항 겹침"),
+        ];
+      }
+      if (id === "ichi_kumo_sr") {
+        return [
+          companion(
+            HAMMER,
+            "양운 지지 터치 후 망치형이면 반전 신뢰↑ (엔트리 조건 아님)",
+          ),
+          companion(
+            SHOOTING,
+            "음운 저항 터치 후 유성형이면 반전 신뢰↑",
+          ),
+          companion(VOL, "터치·전환선 돌파 봉 거래량"),
+          companion(SUP, "구름 하단이 지지선·매물대와 겹치는지"),
+          companion(RES, "구름 상단이 저항선·매물대와 겹치는지"),
+          companion(ADX, "SpanB 수평·두꺼운 구름일수록 지지/저항 신뢰↑"),
+        ];
+      }
       return [companion(VOL)];
     case "classic":
       if (id === "ma_golden_dead") {

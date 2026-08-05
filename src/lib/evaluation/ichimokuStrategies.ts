@@ -32,6 +32,7 @@ export interface IchimokuStrategyResult {
 const DEFAULT_LOOKBACK = 120;
 const MAX_HITS_PER_STRATEGY = 10;
 const TURN_WINDOW = 5;
+const RETEST_BREAK_LOOKBACK = 12;
 
 interface Frame {
   tenkan: number | null;
@@ -66,17 +67,6 @@ function hit(
     direction,
     summary,
   };
-}
-
-function spanBFlat(frames: Array<Frame | null>, i: number, n = 5): boolean {
-  const cur = frames[i]?.spanB;
-  if (cur == null) return false;
-  for (let k = i - n + 1; k < i; k++) {
-    if (k < 0) return false;
-    const v = frames[k]?.spanB;
-    if (v == null || Math.abs(v - cur) > cur * 0.0015) return false;
-  }
-  return true;
 }
 
 function detectTkCross(
@@ -387,6 +377,85 @@ function detectBreakout(
   return hits;
 }
 
+function recentCloudBreak(
+  bars: OHLCVBar[],
+  frames: Array<Frame | null>,
+  i: number,
+  dir: "up" | "down",
+  lookback: number,
+): boolean {
+  for (let k = i - 1; k >= Math.max(1, i - lookback); k--) {
+    const cur = frames[k];
+    const prev = frames[k - 1];
+    if (!cur || !prev || cur.cloudTop == null || cur.cloudBot == null) continue;
+    if (prev.cloudTop == null || prev.cloudBot == null) continue;
+    if (
+      dir === "up" &&
+      bars[k - 1]!.close <= prev.cloudTop &&
+      bars[k]!.close > cur.cloudTop
+    ) {
+      return true;
+    }
+    if (
+      dir === "down" &&
+      bars[k - 1]!.close >= prev.cloudBot &&
+      bars[k]!.close < cur.cloudBot
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Breakout then pullback-reclaim of the cloud edge (wick confirm = companion). */
+function detectKumoRetest(
+  bars: OHLCVBar[],
+  frames: Array<Frame | null>,
+  start: number,
+): IchimokuStrategyHit[] {
+  const hits: IchimokuStrategyHit[] = [];
+  for (let i = Math.max(start, RETEST_BREAK_LOOKBACK); i < bars.length; i++) {
+    const cur = frames[i];
+    if (!cur || cur.cloudTop == null || cur.cloudBot == null) continue;
+    const bar = bars[i]!;
+    const touchPad =
+      cur.thickness != null && cur.thickness > 0
+        ? cur.thickness * 0.08
+        : bar.close * 0.002;
+
+    if (
+      recentCloudBreak(bars, frames, i, "up", RETEST_BREAK_LOOKBACK) &&
+      bar.low <= cur.cloudTop + touchPad &&
+      bar.close > cur.cloudTop
+    ) {
+      hits.push(
+        hit(
+          "ichi_kumo_retest",
+          i,
+          bars,
+          "bullish",
+          "구름 상향 돌파 후 되돌림·재탈환",
+        ),
+      );
+    } else if (
+      recentCloudBreak(bars, frames, i, "down", RETEST_BREAK_LOOKBACK) &&
+      bar.high >= cur.cloudBot - touchPad &&
+      bar.close < cur.cloudBot
+    ) {
+      hits.push(
+        hit(
+          "ichi_kumo_retest",
+          i,
+          bars,
+          "bearish",
+          "구름 하향 돌파 후 되돌림·재이탈",
+        ),
+      );
+    }
+  }
+  return hits;
+}
+
 function detectKumoSr(
   bars: OHLCVBar[],
   frames: Array<Frame | null>,
@@ -406,12 +475,10 @@ function detectKumoSr(
         ? cur.thickness * 0.08
         : bar.close * 0.002;
 
-    // Bullish: green cloud support + tenkan cross up
+    // Minimal: cloud edge touch + tenkan cross (flat SpanB / candle = companion)
     if (
       cur.bullCloud &&
-      spanBFlat(frames, i) &&
       bar.low <= cur.cloudBot + touchPad &&
-      bar.close > bar.open &&
       bars[i - 1]!.close <= prev.tenkan &&
       bar.close > cur.tenkan
     ) {
@@ -426,12 +493,9 @@ function detectKumoSr(
       );
     }
 
-    // Bearish: red cloud resistance + tenkan cross down
     if (
       !cur.bullCloud &&
-      spanBFlat(frames, i) &&
       bar.high >= cur.cloudTop - touchPad &&
-      bar.close < bar.open &&
       bars[i - 1]!.close >= prev.tenkan &&
       bar.close < cur.tenkan
     ) {
@@ -515,6 +579,7 @@ export function detectIchimokuStrategies(
     ...detectPriceKumoBreak(bars, frames, start),
     ...detectTrendTurn(bars, frames, displacement, start),
     ...detectBreakout(bars, frames, displacement, start),
+    ...detectKumoRetest(bars, frames, start),
     ...detectKumoSr(bars, frames, start),
   ];
 
