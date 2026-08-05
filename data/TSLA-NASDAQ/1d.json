@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "gf",
   "resolvedSymbol": "NASDAQ:TSLA",
-  "fetchedAt": "2026-08-05T05:05:31.177Z",
+  "fetchedAt": "2026-08-05T11:22:52.194Z",
   "lastBarDate": "2026-08-04",
   "barCount": 913,
-  "checksum": "9b0cd376",
+  "checksum": "2a9083a6",
   "ohlcv": [
     {
       "date": "2022-12-12",
@@ -7313,7 +7313,7 @@
       "high": 329.57,
       "low": 320.79,
       "close": 327.35,
-      "volume": 32291238
+      "volume": 33318303
     }
   ]
 }
