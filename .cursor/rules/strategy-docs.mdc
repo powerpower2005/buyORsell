@@ -5,19 +5,34 @@ alwaysApply: true
 
 # Strategy & indicator docs
 
-Local docs under `docs/` (**gitignored**).
+Local docs under `docs/` (**gitignored**). Also see repo root `AGENTS.md`.
 
 ## Agent entry
 
 1. `docs/indicators/INDEX.md` — **labeled technical indicators** (`rsi`, `bb`, `vwap`, …)
 2. `docs/strategies/INDEX.md` — every strategy id → **indicator labels** → doc → detector
 3. `docs/strategies/{family}/{id}.md` — detailed entry rules + indicator table
+4. **Changelogs (required on every edit):**
+   - `docs/indicators/CHANGELOG.md` — which indicator labels changed
+   - `docs/strategies/CHANGELOG.md` — which strategy ids changed
 
 If missing:
 
 ```bash
 node scripts/gen-strategy-docs.mjs
 ```
+
+(`CHANGELOG.md` files are created once and **never overwritten** by the generator.)
+
+## Changelog rule
+
+When you change indicator or strategy code/meta/docs in the same task:
+
+1. Prepend a `## YYYY-MM-DD` section (or add bullets under today's section).
+2. Name every touched **indicator label** and/or **strategy id**.
+3. One line per id: what changed.
+
+Skip only pure refactors with zero behavior/doc/label impact.
 
 ## Code source of truth
 

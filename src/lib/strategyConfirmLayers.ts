@@ -4,8 +4,11 @@
  */
 
 import { AUX_INDICATOR_META, type AuxIndicatorId } from "./auxIndicatorStore";
+import { CANDLE_PATTERN_META } from "./candlePatternMeta";
+import type { CandlePatternId } from "./evaluation/candlePatterns";
 import { SR_CHART_TOGGLE_META, type SrChartToggleId } from "./srZoneStore";
 import {
+  candle,
   layersForStrategy,
   type LayerKey,
   type StrategyFamily,
@@ -26,6 +29,13 @@ const VWAP: LayerKey = "aux:vwap";
 const SUP: LayerKey = "sr:support";
 const RES: LayerKey = "sr:resistance";
 const SMA20: LayerKey = "sma:20";
+const BB_WIDE: LayerKey = "aux:bbWide";
+const DISPARITY: LayerKey = "aux:disparity";
+const HAMMER = candle("hammer");
+const SHOOTING = candle("shooting_star");
+const HANGING = candle("hanging_man");
+const BULL_MARU = candle("bullish_marubozu");
+const BEAR_MARU = candle("bearish_marubozu");
 
 const DEFAULT_WHY: Partial<Record<LayerKey, string>> = {
   volume: "신호 봉 참여 강도·허위 돌파 필터",
@@ -49,12 +59,19 @@ const DEFAULT_WHY: Partial<Record<LayerKey, string>> = {
   "aux:cci": "과열·돌파 모멘텀",
   "aux:supertrend": "추세 전환 확인",
   "aux:bbPercentB": "밴드 내 상대 위치(%B)",
+  [BB_WIDE]: "44기간(시가) 넓은 밴드 — 이중 터치·원비 확인",
+  [DISPARITY]: "이평 대비 이격도(%) — 과열·다이버전스 확인",
   [SUP]: "반등·지지 위치 확인",
   [RES]: "저항·이탈 위치 확인",
   [SMA20]: "단기 추세·눌림 기준선",
   "sma:50": "중기 추세·골든/데드 상대선",
   "ema:12": "단기 반응 추세선",
   "ema:60": "중기 추세 필터",
+  [HAMMER]: "하단 반전 후보(긴 아랫꼬리)",
+  [SHOOTING]: "상단 반전 후보(긴 윗꼬리)",
+  [HANGING]: "상승 후 피로·반전 경고",
+  [BULL_MARU]: "강한 상승 돌파 봉",
+  [BEAR_MARU]: "강한 하락 돌파 봉",
 };
 
 function layerLabel(key: LayerKey): string {
@@ -71,6 +88,10 @@ function layerLabel(key: LayerKey): string {
   }
   if (key.startsWith("sma:")) return `SMA${key.slice(4)}`;
   if (key.startsWith("ema:")) return `EMA${key.slice(4)}`;
+  if (key.startsWith("candle:")) {
+    const id = key.slice(7) as CandlePatternId;
+    return CANDLE_PATTERN_META[id]?.labelKo ?? id;
+  }
   return key;
 }
 
@@ -97,15 +118,61 @@ function extraConfirmLayers(
     case "bb":
       if (id === "band_sr") {
         return [
+          companion(
+            HAMMER,
+            "하단 터치 후 망치형이면 반전 신뢰↑ (진입 조건은 아님)",
+          ),
+          companion(
+            SHOOTING,
+            "상단 터치 후 유성형이면 반전 신뢰↑ (진입 조건은 아님)",
+          ),
+          companion(BB_WIDE, "22·44 이중 밴드 동시 터치인지 확인"),
+          companion(SMA20, "추세 방향 필터(원비: 우상향 하단·우하향 상단)"),
           companion(RSI, "밴드 터치가 과매수·과매도인지 확인"),
+          companion(SUP, "하단 터치가 지지선·매물대와 겹치는지"),
+          companion(RES, "상단 터치가 저항선·매물대와 겹치는지"),
           companion(VOL, "터치·반등 봉 거래량"),
         ];
       }
-      if (id === "band_breakout" || id === "squeeze") {
-        return [companion(VOL, "돌파 봉 거래량으로 가짜 돌파 걸러내기")];
+      if (id === "band_breakout") {
+        return [
+          companion(VOL, "돌파 봉 거래량으로 가짜 돌파 걸러내기"),
+          companion(BULL_MARU, "상단 돌파 시 강한 양봉인지"),
+          companion(BEAR_MARU, "하단 돌파 시 강한 음봉인지"),
+          companion(BB_WIDE, "넓은 밴드까지 밀어붙였는지(돌파 강도)"),
+          companion(ADX, "추세 강도 — 약하면 돌파 신뢰↓"),
+        ];
+      }
+      if (id === "squeeze") {
+        return [
+          companion(VOL, "돌파 봉 거래량으로 가짜 돌파 걸러내기"),
+          companion(
+            BULL_MARU,
+            "해제 후 상단 돌파가 강한 양봉인지(헤드페이크 주의)",
+          ),
+          companion(BEAR_MARU, "해제 후 하단 이탈이 강한 음봉인지"),
+          companion(BB_WIDE, "스퀴즈 해제 후 넓은 밴드 확장 여부"),
+          companion(ADX, "돌파 후 추세가 붙는지"),
+        ];
       }
       if (id === "divergence") {
-        return [companion(SUP), companion(RES)];
+        return [
+          companion(
+            DISPARITY,
+            "이격도 다이버전스와 병행 확인(본 전략은 RSI 다이버전스)",
+          ),
+          companion(HAMMER, "강세 다이버전스 후 반전 봉 확인"),
+          companion(SHOOTING, "약세 다이버전스 후 반전 봉 확인"),
+          companion(SUP),
+          companion(RES),
+        ];
+      }
+      if (id === "trend_follow") {
+        return [
+          companion(VOL, "과열 구간 참여 강도"),
+          companion(BB_WIDE, "넓은 밴드 밖이면 추세 가속 후보"),
+          companion(SMA20, "추세 방향과 %B·MFI 과열이 같은지"),
+        ];
       }
       return [companion(VOL)];
     case "rsi":

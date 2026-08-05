@@ -17,7 +17,7 @@ import type { SeriesPoint } from "../../types";
 
 import type { IndicatorPlugin } from "../types";
 
-import { alignSeries, closes, dates } from "../types";
+import { alignSeries, closes, dates, opens } from "../types";
 
 import { ConfigError } from "../../errors";
 
@@ -296,6 +296,101 @@ export const bbPlugin: IndicatorPlugin = {
         bbLower: optionalLatest(last.lower),
         bbPercentB: optionalLatest(pbVals.at(-1)),
         bbBandwidth: optionalLatest(bwVals.at(-1)),
+      },
+    };
+  },
+};
+
+/**
+ * Wide / secondary Bollinger (WB): longer period, optional open-based source.
+ * Used with the main close-based BB for double-band (WB) confirmation.
+ */
+export const bbWidePlugin: IndicatorPlugin = {
+  id: "bbWide",
+  minBars: (p) => requireNumber(p.period ?? 44, "bbWide.period"),
+  compute(bars, params) {
+    const period = requireNumber(params.period ?? 44, "bbWide.period");
+    if (bars.length < period) {
+      return {
+        series: {} as Record<string, SeriesPoint[]>,
+        latest: { upper: null, middle: null, lower: null },
+        skipped: [`bbWide requires ${period} bars, got ${bars.length}`],
+      };
+    }
+    const stdDev = requireNumber(params.stdDev ?? 2, "bbWide.stdDev");
+    const source =
+      typeof params.priceSource === "string" && params.priceSource === "close"
+        ? "close"
+        : "open";
+    const values = source === "close" ? closes(bars) : opens(bars);
+    const d = dates(bars);
+    const vals = BollingerBands.calculate({ period, stdDev, values });
+    const pad = values.length - vals.length;
+    const sliceD = d.slice(pad);
+    const last = requireDefined(vals.at(-1), "bbWide last value");
+    return {
+      series: {
+        upper: alignSeries(
+          sliceD,
+          vals.map((v) => v.upper),
+        ),
+        middle: alignSeries(
+          sliceD,
+          vals.map((v) => v.middle),
+        ),
+        lower: alignSeries(
+          sliceD,
+          vals.map((v) => v.lower),
+        ),
+      },
+      latest: {
+        upper: optionalLatest(last.upper),
+        middle: optionalLatest(last.middle),
+        lower: optionalLatest(last.lower),
+      },
+    };
+  },
+};
+
+/** Price vs SMA disparity %: (close / sma - 1) * 100. */
+export const disparityPlugin: IndicatorPlugin = {
+  id: "disparity",
+  minBars: (p) => requireNumber(p.period ?? 20, "disparity.period"),
+  compute(bars, params) {
+    const period = requireNumber(params.period ?? 20, "disparity.period");
+    if (bars.length < period) {
+      return {
+        series: {} as Record<string, SeriesPoint[]>,
+        latest: { disparity: null, sma: null },
+        skipped: [`disparity requires ${period} bars, got ${bars.length}`],
+      };
+    }
+    const c = closes(bars);
+    const d = dates(bars);
+    const sma = SMA.calculate({ period, values: c });
+    const pad = c.length - sma.length;
+    const disparity: Array<number | undefined> = Array(bars.length).fill(
+      undefined,
+    );
+    const smaAligned: Array<number | undefined> = Array(bars.length).fill(
+      undefined,
+    );
+    for (let i = 0; i < sma.length; i++) {
+      const m = sma[i];
+      if (m == null || !(m > 0)) continue;
+      const idx = pad + i;
+      smaAligned[idx] = m;
+      disparity[idx] = (c[idx]! / m - 1) * 100;
+    }
+    const last = bars.length - 1;
+    return {
+      series: {
+        disparity: alignSeries(d, disparity),
+        sma: alignSeries(d, smaAligned),
+      },
+      latest: {
+        disparity: optionalLatest(disparity[last]),
+        sma: optionalLatest(smaAligned[last]),
       },
     };
   },
@@ -1194,6 +1289,8 @@ export const allPlugins = [
   macdPlugin,
   stochPlugin,
   bbPlugin,
+  bbWidePlugin,
+  disparityPlugin,
   mfiPlugin,
   atrPlugin,
   obvPlugin,

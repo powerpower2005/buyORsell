@@ -115,6 +115,40 @@
       ]
     },
     {
+      "id": "bbWide",
+      "enabled": true,
+      "params": {
+        "period": 44,
+        "stdDev": 2,
+        "priceSource": "open",
+        "colors": {
+          "upper": "#ef4444",
+          "middle": "#f87171",
+          "lower": "#dc2626"
+        }
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ],
+      "outputs": [
+        "line"
+      ]
+    },
+    {
+      "id": "disparity",
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "timeframes": [
+        "1d",
+        "1w",
+        "1mo"
+      ]
+    },
+    {
       "id": "mfi",
       "enabled": true,
       "params": {

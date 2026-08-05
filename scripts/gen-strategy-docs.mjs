@@ -1,7 +1,9 @@
 /**
  * Generate local docs/ (gitignored):
  * - docs/indicators/INDEX.md  — labeled indicator catalog
+ * - docs/indicators/CHANGELOG.md — indicator change log (created once; never overwritten)
  * - docs/strategies/INDEX.md  — strategy index + indicator labels
+ * - docs/strategies/CHANGELOG.md — strategy change log (created once; never overwritten)
  * - docs/strategies/{family}/{id}.md — detailed per-strategy docs
  *
  * Run: node scripts/gen-strategy-docs.mjs
@@ -174,6 +176,28 @@ const INDICATORS = {
     what: "SMA ± 표준편차 밴드. %B·밴드폭 포함.",
     params: "period 20 · stdDev 2",
     series: "bbUpper, bbMiddle, bbLower, bbPercentB, bbBandwidth",
+    file: "src/lib/evaluation/indicators/index.ts",
+    kind: "plugin",
+  },
+  bbWide: {
+    id: "bbWide",
+    nameKo: "WB 밴드(넓은 볼린저)",
+    nameEn: "Wide Bollinger (WB)",
+    category: "volatility",
+    what: "긴 기간 BB(기본 44·시가). 기본 BB와 이중 터치·원비 확인.",
+    params: "period 44 · stdDev 2 · priceSource open",
+    series: "upper, middle, lower",
+    file: "src/lib/evaluation/indicators/index.ts",
+    kind: "plugin",
+  },
+  disparity: {
+    id: "disparity",
+    nameKo: "이격도",
+    nameEn: "Disparity (price vs SMA %)",
+    category: "momentum",
+    what: "(종가/SMA − 1)×100. 과열·이격 다이버전스.",
+    params: "period 20",
+    series: "disparity, sma",
     file: "src/lib/evaluation/indicators/index.ts",
     kind: "plugin",
   },
@@ -1249,7 +1273,7 @@ function writeIndicatorsCatalog() {
 
   let body = `# 기술지표 카탈로그 (labeled)
 
-Local-only (\`docs/\` gitignored). Agent entry: [docs/README.md](../README.md) · strategies: [strategies/INDEX.md](../strategies/INDEX.md)
+Local-only (\`docs/\` gitignored). Agent entry: [docs/README.md](../README.md) · strategies: [strategies/INDEX.md](../strategies/INDEX.md) · **changelog:** [CHANGELOG.md](./CHANGELOG.md)
 
 전략 문서에서 지표는 **라벨 id**로 표기합니다. 예: \`rsi\`, \`bb\`, \`vwap\`.
 
@@ -1420,7 +1444,7 @@ function strategiesIndex() {
   return `# Strategy index (agent)
 
 Local-only. Labels/rules text source of truth: \`*StrategyMeta.ts\`.  
-**Indicators catalog:** [../indicators/INDEX.md](../indicators/INDEX.md)
+**Indicators catalog:** [../indicators/INDEX.md](../indicators/INDEX.md) · **changelog:** [CHANGELOG.md](./CHANGELOG.md)
 
 ## Quick start
 
@@ -1428,6 +1452,7 @@ Local-only. Labels/rules text source of truth: \`*StrategyMeta.ts\`.
 2. Open doc for full entry rules + code map.
 3. Indicator definitions: \`docs/indicators/INDEX.md\`.
 4. Edit: detector + meta; refresh docs via \`node scripts/gen-strategy-docs.mjs\`.
+5. **Always** append what changed to [CHANGELOG.md](./CHANGELOG.md) (and indicator changelog if labels/impl changed).
 
 ## Families (${families.length} · ${total} strategies)
 
@@ -1471,6 +1496,18 @@ function readme() {
 1. **[indicators/INDEX.md](./indicators/INDEX.md)** — 기술지표 라벨 카탈로그
 2. **[strategies/INDEX.md](./strategies/INDEX.md)** — 전략 id → 지표 라벨 → 문서 → 코드
 3. \`strategies/{family}/{id}.md\` — 전략별 상세 (진입 규칙 + 지표 라벨)
+4. **Changelogs (필수):** [indicators/CHANGELOG.md](./indicators/CHANGELOG.md) · [strategies/CHANGELOG.md](./strategies/CHANGELOG.md)
+
+## Changelog (required)
+
+지표/전략 코드·메타·라벨을 바꾸면 **같은 작업에서** changelog에 남긴다. \`gen-strategy-docs.mjs\`는 CHANGELOG를 덮어쓰지 않는다.
+
+| 변경 대상 | 파일 | 기록 단위 |
+|-----------|------|-----------|
+| Indicator impl / label / params | \`indicators/CHANGELOG.md\` | 라벨 id (\`rsi\`, \`bb\`, …) |
+| Strategy detector / meta / rules | \`strategies/CHANGELOG.md\` | 전략 id (\`band_breakout\`, …) |
+
+형식: 날짜 섹션 최상단 prepend, 불릿에 **어떤 id**가 **어떻게** 바뀌었는지.
 
 ## Regenerate
 
@@ -1490,6 +1527,57 @@ node scripts/gen-strategy-docs.mjs
 `;
 }
 
+const INDICATORS_CHANGELOG_BOOTSTRAP = `# Indicators changelog
+
+Local-only (\`docs/\` gitignored). Newest first.
+
+**Agents must append** whenever indicator code, catalog labels, params, or series change.
+Do not regenerate this file — \`gen-strategy-docs.mjs\` only creates it if missing.
+
+## Format
+
+\`\`\`
+## YYYY-MM-DD
+
+- **\`label\`**: what changed (and why if useful)
+\`\`\`
+
+## 2026-08-06
+
+- _(bootstrap)_ Changelog started.
+`;
+
+const STRATEGIES_CHANGELOG_BOOTSTRAP = `# Strategies changelog
+
+Local-only (\`docs/\` gitignored). Newest first.
+
+**Agents must append** whenever strategy detectors, meta, entry rules, or indicator deps change.
+Do not regenerate this file — \`gen-strategy-docs.mjs\` only creates it if missing.
+
+## Format
+
+\`\`\`
+## YYYY-MM-DD
+
+- **\`strategy_id\`** (\`family\`): what changed (and why if useful)
+\`\`\`
+
+## 2026-08-06
+
+- _(bootstrap)_ Changelog started.
+`;
+
+function ensureChangelogs() {
+  const indLog = path.join(indRoot, "CHANGELOG.md");
+  const stratLog = path.join(stratRoot, "CHANGELOG.md");
+  if (!fs.existsSync(indLog)) {
+    fs.writeFileSync(indLog, INDICATORS_CHANGELOG_BOOTSTRAP, "utf8");
+  }
+  if (!fs.existsSync(stratLog)) {
+    fs.writeFileSync(stratLog, STRATEGIES_CHANGELOG_BOOTSTRAP, "utf8");
+  }
+}
+
 function updateCursorRule() {
   const rulePath = path.join(root, ".cursor", "rules", "strategy-docs.mdc");
   if (!fs.existsSync(path.dirname(rulePath))) return;
@@ -1500,19 +1588,34 @@ alwaysApply: true
 
 # Strategy & indicator docs
 
-Local docs under \`docs/\` (**gitignored**).
+Local docs under \`docs/\` (**gitignored**). Also see repo root \`AGENTS.md\`.
 
 ## Agent entry
 
 1. \`docs/indicators/INDEX.md\` — **labeled technical indicators** (\`rsi\`, \`bb\`, \`vwap\`, …)
 2. \`docs/strategies/INDEX.md\` — every strategy id → **indicator labels** → doc → detector
 3. \`docs/strategies/{family}/{id}.md\` — detailed entry rules + indicator table
+4. **Changelogs (required on every edit):**
+   - \`docs/indicators/CHANGELOG.md\` — which indicator labels changed
+   - \`docs/strategies/CHANGELOG.md\` — which strategy ids changed
 
 If missing:
 
 \`\`\`bash
 node scripts/gen-strategy-docs.mjs
 \`\`\`
+
+(\`CHANGELOG.md\` files are created once and **never overwritten** by the generator.)
+
+## Changelog rule
+
+When you change indicator or strategy code/meta/docs in the same task:
+
+1. Prepend a \`## YYYY-MM-DD\` section (or add bullets under today's section).
+2. Name every touched **indicator label** and/or **strategy id**.
+3. One line per id: what changed.
+
+Skip only pure refactors with zero behavior/doc/label impact.
 
 ## Code source of truth
 
@@ -1530,7 +1633,9 @@ node scripts/gen-strategy-docs.mjs
 
 // --- main ---
 ensureDir(docsRoot);
+ensureDir(indRoot);
 ensureDir(stratRoot);
+ensureChangelogs();
 writeIndicatorsCatalog();
 fs.writeFileSync(path.join(docsRoot, "README.md"), readme(), "utf8");
 fs.writeFileSync(path.join(stratRoot, "INDEX.md"), strategiesIndex(), "utf8");
@@ -1549,5 +1654,5 @@ updateCursorRule();
 const count = families.reduce((n, f) => n + f.strategies.length, 0);
 const indCount = Object.keys(INDICATORS).length;
 console.log(
-  `Wrote indicators catalog (${indCount} labels), ${families.length} families, ${count} strategy docs.`,
+  `Wrote indicators catalog (${indCount} labels), ${families.length} families, ${count} strategy docs (changelogs preserved).`,
 );

@@ -211,7 +211,7 @@ export const CHART_LAYER_HELP = {
       "가격과 Y축이 다른 오실레이터·변동성 지표를 차트 아래 별도 섹션에 그립니다.",
     worksWith:
       "가격 차트의 이평·지지저항·추세선과 같이 보세요. 오실레이터만으로 방향을 정하기보다 ‘추세 필터 + 타점’으로 쓰는 편이 낫습니다.",
-    tip: "RSI·MACD·스토캐·MFI·ATR·OBV·ADX·CCI·%B는 아래 패널, VWAP·켈트너·PSAR·슈퍼트렌드는 가격 차트 오버레이로 봅니다.",
+    tip: "RSI·MACD·스토캐·MFI·ATR·OBV·ADX·CCI·%B·이격도는 아래 패널, VWAP·켈트너·WB(44)·PSAR·슈퍼트렌드는 가격 차트 오버레이로 봅니다.",
   },
   bbPercentB: {
     title: "%B (볼린저 %B)",

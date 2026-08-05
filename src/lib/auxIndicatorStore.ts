@@ -19,7 +19,9 @@ export type AuxIndicatorId =
   | "psar"
   | "cci"
   | "supertrend"
-  | "bbPercentB";
+  | "bbPercentB"
+  | "bbWide"
+  | "disparity";
 
 export const AUX_INDICATOR_ORDER: AuxIndicatorId[] = [
   "rsi",
@@ -41,6 +43,8 @@ export const AUX_INDICATOR_ORDER: AuxIndicatorId[] = [
   "cci",
   "supertrend",
   "bbPercentB",
+  "bbWide",
+  "disparity",
 ];
 
 export const AUX_INDICATOR_META: Record<
@@ -124,6 +128,16 @@ export const AUX_INDICATOR_META: Record<
     labelKo: "%B",
     description: "볼린저 %B — 같은 차트 안 별도 섹션.",
   },
+  bbWide: {
+    labelKo: "WB(44)",
+    description:
+      "넓은 볼린저(기본 44·시가) — 가격 차트 오버레이. 기본 BB와 이중 터치·원비 확인용.",
+  },
+  disparity: {
+    labelKo: "이격도",
+    description:
+      "종가÷이평 이격도(%) — 별도 섹션. 과열·과매도·이격 다이버전스 확인.",
+  },
 };
 
 /** Oscillator / aux indicator config ids that map 1:1 to aux toggles. */
@@ -146,6 +160,8 @@ export const INDICATOR_TO_AUX: Partial<Record<string, AuxIndicatorId>> = {
   psar: "psar",
   cci: "cci",
   supertrend: "supertrend",
+  bbWide: "bbWide",
+  disparity: "disparity",
 };
 
 const STORAGE_KEY = "gf:config:aux-indicators-legend";

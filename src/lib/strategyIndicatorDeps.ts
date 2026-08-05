@@ -51,6 +51,11 @@ import {
   setSrChartVisible,
   type SrChartToggleId,
 } from "./srZoneStore";
+import type { CandlePatternId } from "./evaluation/candlePatterns";
+import {
+  getChartPatternVisibility,
+  setChartPatternVisible,
+} from "./candlePatternStore";
 import { BB_BAND_ORDER } from "./bbOverlay";
 import { ICHIMOKU_PART_ORDER } from "./ichimokuOverlay";
 
@@ -71,6 +76,7 @@ export type LayerKey =
   | `sma:${number}`
   | `ema:${number}`
   | `sr:${SrChartToggleId}`
+  | `candle:${CandlePatternId}`
   | "bb"
   | "ichimoku"
   | "volume";
@@ -89,6 +95,10 @@ function ema(period: number): LayerKey {
 
 function sr(id: SrChartToggleId): LayerKey {
   return `sr:${id}`;
+}
+
+export function candle(id: CandlePatternId): LayerKey {
+  return `candle:${id}`;
 }
 
 function add(out: Set<LayerKey>, ...keys: LayerKey[]): void {
@@ -241,6 +251,11 @@ export function isLayerVisible(key: LayerKey): boolean {
   if (key.startsWith("ema:")) {
     return isIndicatorOverlayVisible("ema", Number(key.slice(4)));
   }
+  if (key.startsWith("candle:")) {
+    return (
+      getChartPatternVisibility()[key.slice(7) as CandlePatternId] ?? false
+    );
+  }
   return false;
 }
 
@@ -275,6 +290,10 @@ function applyLayer(key: LayerKey, visible: boolean): void {
   }
   if (key.startsWith("ema:")) {
     setIndicatorOverlayVisible("ema", Number(key.slice(4)), visible);
+    return;
+  }
+  if (key.startsWith("candle:")) {
+    setChartPatternVisible(key.slice(7) as CandlePatternId, visible);
   }
 }
 

@@ -50,6 +50,10 @@ export function closes(bars: OHLCVBar[]): number[] {
   return bars.map((b) => b.close);
 }
 
+export function opens(bars: OHLCVBar[]): number[] {
+  return bars.map((b) => b.open);
+}
+
 export function dates(bars: OHLCVBar[]): string[] {
   return bars.map((b) => b.date);
 }

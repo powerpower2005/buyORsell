@@ -2260,6 +2260,8 @@ export function ChartSidebar({
                     id === "atr" ||
                     id === "obv" ||
                     id === "keltner" ||
+                    id === "bbWide" ||
+                    id === "disparity" ||
                     id === "vwap" ||
                     id === "forever_vwap" ||
                     id === "adx" ||

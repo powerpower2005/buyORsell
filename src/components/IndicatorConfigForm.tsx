@@ -50,6 +50,8 @@ export type IndicatorConfigSectionId =
   | "obvMid"
   | "equivolume"
   | "keltner"
+  | "bbWide"
+  | "disparity"
   | "vwap"
   | "forever_vwap"
   | "adx"
@@ -80,6 +82,8 @@ export const INDICATOR_CONFIG_SECTION_LABEL: Record<
   obvMid: "OBV Mid",
   equivolume: "EquiVolume",
   keltner: "켈트너",
+  bbWide: "WB(44)",
+  disparity: "이격도",
   vwap: "VWAP",
   forever_vwap: "포에버 VWAP",
   adx: "ADX",
@@ -360,6 +364,8 @@ export function IndicatorConfigForm({
   const obvMid = find("obvMid");
   const equivolume = find("equivolume");
   const keltner = find("keltner");
+  const bbWide = find("bbWide");
+  const disparity = find("disparity");
   const vwap = find("vwap");
   const foreverVwap = find("forever_vwap");
   const adx = find("adx");
@@ -383,6 +389,8 @@ export function IndicatorConfigForm({
     !obvMid ||
     !equivolume ||
     !keltner ||
+    !bbWide ||
+    !disparity ||
     !vwap ||
     !foreverVwap ||
     !adx ||
@@ -410,7 +418,7 @@ export function IndicatorConfigForm({
 
   const indicatorWarnings = runtimeWarnings.filter(
     (w) =>
-      /SMA|EMA|RSI|MACD|STOCH|BB|MFI|ATR|OBV|A\/D|AD|CHAIKIN|EOM|EQUIVOLUME|KELTNER|켈트너|VWAP|포에버|ADX|PSAR|SAR|CCI|슈퍼|SUPER|ICHIMOKU|일목|스토캐|sma|ema|rsi|macd|stoch|bb|mfi|atr|obv|ad|chaikin|eom|obvMid|equivolume|keltner|vwap|forever_vwap|adx|psar|cci|supertrend|ichimoku|점수 규칙/i.test(
+      /SMA|EMA|RSI|MACD|STOCH|BB|MFI|ATR|OBV|A\/D|AD|CHAIKIN|EOM|EQUIVOLUME|KELTNER|켈트너|WB|이격|VWAP|포에버|ADX|PSAR|SAR|CCI|슈퍼|SUPER|ICHIMOKU|일목|스토캐|sma|ema|rsi|macd|stoch|bb|bbWide|disparity|mfi|atr|obv|ad|chaikin|eom|obvMid|equivolume|keltner|vwap|forever_vwap|adx|psar|cci|supertrend|ichimoku|점수 규칙/i.test(
         w,
       ) || w.includes("봉"),
   );
@@ -1005,6 +1013,90 @@ export function IndicatorConfigForm({
             step={0.5}
             onChange={(v) => {
               setIndicatorParam("keltner", "multiplier", v);
+              patch();
+            }}
+          />
+        </IndicatorSection>
+      )}
+
+      {show("bbWide") && (
+        <IndicatorSection
+          title="WB 밴드 (넓은 볼린저)"
+          help={INDICATOR_HELP.bbWide}
+          enabled={bbWide.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("bbWide", v);
+            patch();
+          }}
+        >
+          <p className="mb-2 text-xs text-text-tertiary">
+            기본 BB(종가)와 함께 켜서 이중 터치·원비 확인. 기본 44기간·시가.
+          </p>
+          <NumInput
+            label="Period"
+            help={PARAM_HELP["bbWide.period"]}
+            value={requireNumber(bbWide.params.period ?? 44, "bbWide.period")}
+            min={10}
+            max={120}
+            onChange={(v) => {
+              setIndicatorParam("bbWide", "period", v);
+              patch();
+            }}
+          />
+          <NumInput
+            label="Std Dev"
+            help={PARAM_HELP["bbWide.stdDev"]}
+            value={requireNumber(bbWide.params.stdDev ?? 2, "bbWide.stdDev")}
+            min={0.5}
+            max={5}
+            step={0.5}
+            onChange={(v) => {
+              setIndicatorParam("bbWide", "stdDev", v);
+              patch();
+            }}
+          />
+          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+            <span className="font-medium">Price source</span>
+            <select
+              className="rounded border border-border bg-surface px-2 py-1.5 text-sm text-text-primary"
+              value={
+                typeof bbWide.params.priceSource === "string"
+                  ? bbWide.params.priceSource
+                  : "open"
+              }
+              onChange={(e) => {
+                setIndicatorParam("bbWide", "priceSource", e.target.value);
+                patch();
+              }}
+            >
+              <option value="open">Open (시가)</option>
+              <option value="close">Close (종가)</option>
+            </select>
+          </label>
+        </IndicatorSection>
+      )}
+
+      {show("disparity") && (
+        <IndicatorSection
+          title="이격도"
+          help={INDICATOR_HELP.disparity}
+          enabled={disparity.enabled}
+          onEnabledChange={(v) => {
+            setIndicatorEnabled("disparity", v);
+            patch();
+          }}
+        >
+          <NumInput
+            label="SMA Period"
+            help={PARAM_HELP["disparity.period"]}
+            value={requireNumber(
+              disparity.params.period ?? 20,
+              "disparity.period",
+            )}
+            min={5}
+            max={120}
+            onChange={(v) => {
+              setIndicatorParam("disparity", "period", v);
               patch();
             }}
           />

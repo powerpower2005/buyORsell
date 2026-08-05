@@ -218,7 +218,8 @@ export function buildOscPaneSpecs(
       id === "forever_vwap" ||
       id === "psar" ||
       id === "supertrend" ||
-      id === "keltner"
+      id === "keltner" ||
+      id === "bbWide"
     ) {
       continue;
     }
@@ -262,6 +263,21 @@ export function buildOscPaneSpecs(
         id,
         title: meta.labelKo,
         latest: fmt(out.latest.bbPercentB, 3),
+        height: OSC_PANE_HEIGHT,
+      });
+      continue;
+    }
+
+    if (id === "disparity") {
+      const cfg = getIndicatorConfig("disparity");
+      if (!cfg?.enabled) continue;
+      const out = indicators.indicators.disparity;
+      if (!out?.series.disparity?.length) continue;
+      const period = (cfg.params.period as number | undefined) ?? 20;
+      panes.push({
+        id,
+        title: `${meta.labelKo}(${period})`,
+        latest: `${fmt(out.latest.disparity)}%`,
         height: OSC_PANE_HEIGHT,
       });
     }

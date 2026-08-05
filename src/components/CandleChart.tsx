@@ -1856,6 +1856,35 @@ export function CandleChart({
       }
     }
 
+    const bbWideCfg = getIndicatorConfig("bbWide");
+    const bbWideOut = indicators.indicators.bbWide;
+    const bbWideVis = auxIndicatorVisibility?.bbWide === true;
+    if (bbWideCfg?.enabled && bbWideOut) {
+      const colors = parsePeriodColors(bbWideCfg.params.colors);
+      if (bbWideOut.series.middle?.length) {
+        upsertLine("bbWide:middle", bbWideOut.series.middle, {
+          color: colors.middle ?? "#f87171",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          visible: bbWideVis,
+        });
+      }
+      if (bbWideOut.series.upper?.length) {
+        upsertLine("bbWide:upper", bbWideOut.series.upper, {
+          color: colors.upper ?? "#ef4444",
+          lineWidth: 1,
+          visible: bbWideVis,
+        });
+      }
+      if (bbWideOut.series.lower?.length) {
+        upsertLine("bbWide:lower", bbWideOut.series.lower, {
+          color: colors.lower ?? "#dc2626",
+          lineWidth: 1,
+          visible: bbWideVis,
+        });
+      }
+    }
+
     const vwapCfg = getIndicatorConfig("vwap");
     const vwapOut = indicators.indicators.vwap;
     const vwapVis = auxIndicatorVisibility?.vwap === true;
@@ -2612,6 +2641,31 @@ export function CandleChart({
         });
         line.setData(toLineData(out.bb?.series.bbPercentB));
         oscSeriesRefs.current.set("bbPercentB", line);
+        return;
+      }
+
+      if (pane.id === "disparity") {
+        const line = chart.addSeries(
+          LineSeries,
+          {
+            color: "#f472b6",
+            lineWidth: 2,
+            lastValueVisible: false,
+            priceLineVisible: false,
+            crosshairMarkerVisible: false,
+          },
+          paneIndex,
+        );
+        line.createPriceLine({
+          price: 0,
+          color: "rgba(148, 163, 184, 0.55)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "",
+        });
+        line.setData(toLineData(out.disparity?.series.disparity));
+        oscSeriesRefs.current.set("disparity", line);
       }
     });
 
@@ -2787,6 +2841,17 @@ export function CandleChart({
       items.push({
         label: `Keltner · ${fmtLegend(indicators.indicators.keltner.latest.mid)}`,
         color: "#06b6d4",
+      });
+    }
+
+    if (
+      auxIndicatorVisibility?.bbWide === true &&
+      getIndicatorConfig("bbWide")?.enabled &&
+      indicators.indicators.bbWide?.series.middle?.length
+    ) {
+      items.push({
+        label: `WB(44) · ${fmtLegend(indicators.indicators.bbWide.latest.middle)}`,
+        color: "#ef4444",
       });
     }
 
