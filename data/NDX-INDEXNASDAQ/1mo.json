@@ -6,10 +6,10 @@
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
   "resolvedSymbol": "INDEXNASDAQ:NDX",
-  "fetchedAt": "2026-08-04T10:52:54.743Z",
-  "lastBarDate": "2026-08-03",
+  "fetchedAt": "2026-08-05T05:03:10.249Z",
+  "lastBarDate": "2026-08-04",
   "barCount": 45,
-  "checksum": "83600a61",
+  "checksum": "5d32afdf",
   "ohlcv": [
     {
       "date": "2022-12-30",
@@ -364,11 +364,11 @@
       "volume": 0
     },
     {
-      "date": "2026-08-03",
+      "date": "2026-08-04",
       "open": 28278.59,
-      "high": 28842.36,
+      "high": 29831.4,
       "low": 28196.88,
-      "close": 28776.8,
+      "close": 29733.16,
       "volume": 0
     }
   ],
