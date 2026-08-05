@@ -31,7 +31,7 @@ export const RSI_STRATEGY_META: Record<
     label: "Classic RSI OB/OS",
     labelKo: "고전 RSI 과매수·과매도",
     description:
-      "고정 70/30 돌파·이탈. 널리 알려져 추세장에서 실패가 잦음. 박스권 참고용.",
+      "고정 70/30 돌파·이탈. 추세장 실패 잦음 — SMA200·ADX는 companion.",
     markerBull: "R30↑",
     markerBear: "R70↓",
     typicalDirection: "neutral",
@@ -58,7 +58,7 @@ export const RSI_STRATEGY_META: Record<
     label: "RSI divergence",
     labelKo: "RSI 다이버전스",
     description:
-      "가격 LL+RSI HL(상승) 또는 가격 HH+RSI LH(하락). 모멘텀 약화·반전 후보.",
+      "가격 LL+RSI HL(상승)·HH+RSI LH(하락). S/R·캔들 확인은 companion.",
     markerBull: "RD↑",
     markerBear: "RD↓",
     typicalDirection: "neutral",
@@ -67,7 +67,7 @@ export const RSI_STRATEGY_META: Record<
     label: "Double RSI cross",
     labelKo: "이중 RSI 교차",
     description:
-      "단기 RSI(7)와 장기 RSI(21) 교차. 추세장에 유리, 횡보에선 승률 낮음.",
+      "단기 RSI(7)×장기 RSI(21). 추세장 유리 — SMA200·ADX companion.",
     markerBull: "DX↑",
     markerBear: "DX↓",
     typicalDirection: "neutral",

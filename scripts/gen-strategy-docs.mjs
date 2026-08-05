@@ -74,7 +74,7 @@ const INDICATORS = {
     nameKo: "MACD",
     nameEn: "MACD",
     category: "trend",
-    what: "빠른 EMA − 느린 EMA, 시그널선·히스토그램.",
+    what: "MACD=EMA12−EMA26, Signal=EMA9(MACD), Hist=MACD−Signal, 0선. 단독보다 SMA200·S/R과 조합.",
     params: "fast 12 · slow 26 · signal 9",
     series: "macd, macdSignal, macdHist",
     file: "src/lib/evaluation/indicators/index.ts",
@@ -129,7 +129,7 @@ const INDICATORS = {
     nameKo: "RSI · 슈퍼 RSI",
     nameEn: "RSI (+ Super RSI bands)",
     category: "momentum",
-    what: "Wilder RSI 0–100. 가중 RSI + RSI 밴드(슈퍼 RSI) 포함.",
+    what: "Wilder RSI 0–100. 고정 70/30은 추세장 한계. 다이버전스+S/R·캔들 확인이 핵심. 슈퍼 RSI=가중+유동 밴드.",
     params: "period 14 · OB 70 · OS 30 · Super: SMA4 + BB(20,1.5)",
     series: "rsi, rsiWeighted, rsiMid, rsiUpper, rsiLower",
     file: "src/lib/evaluation/indicators/index.ts",
@@ -316,7 +316,7 @@ const INDICATORS = {
     nameKo: "거래량",
     nameEn: "Raw Volume",
     category: "structure",
-    what: "봉 거래량. 평균 대비 히트/VSA 필터.",
+    what: "봉 거래량=관심도. 평균(volMA) 대비가 핵심: 위=힘·진짜 돌파, 아래=약·가짜. 가격×거래량 동반/괴리로 강화·약화.",
     params: "—",
     series: "bars[].volume",
     file: "OHLCV bars",
@@ -327,7 +327,7 @@ const INDICATORS = {
     nameKo: "거래량 이동평균",
     nameEn: "Volume MA",
     category: "structure",
-    what: "거래량 SMA. 전략에선 주로 period 20.",
+    what: "거래량 SMA(전략 기본 20). 현재 vol이 이 선 위/아래인지가 히트맵·VSA·companion 확인의 기준.",
     params: "strategy inline: 20",
     series: "volMA",
     file: "src/lib/evaluation/volumeMa.ts (+ inline in volumeStrategies)",
@@ -780,7 +780,50 @@ const families = [
     help: "src/lib/volumeStrategyHelp.ts",
     hasStopTarget: false,
     overview:
-      "거래량·VWAP·OBV/A-D/Chaikin/EOM 등. 히트에 stop/target 없음. EMA60/PSAR/volMA는 디텍터에서 인라인 계산하기도 함.",
+      "거래량·VWAP·OBV/A-D/Chaikin/EOM 등. 히트에 stop/target 없음. EMA60/PSAR/volMA는 디텍터에서 인라인 계산하기도 함.\n\n**설계:** 거래량은 가격의 **2차 확인**. 평균(volMA) 대비·가격×거래량 관계는 Notes·companion으로 올린다. 새 «가격·거래량 동반» id는 만들지 않음 — `heatmap`/`vsa`가 이미 평균↑+추세를 담음.",
+    companions: [
+      {
+        id: "heatmap_volume",
+        layers: "S/R · ADX · SMA20 (vol vs MA는 엔트리에 포함)",
+      },
+      {
+        id: "vsa",
+        layers: "S/R · ADX · SMA20 (평균↑·강한 vol 필수)",
+      },
+      {
+        id: "volume_fight",
+        layers: "ADX · S/R · SMA20 (가격↑+fight 약화=약세 후보)",
+      },
+      {
+        id: "failed_breakout_short",
+        layers: "S/R · 유성 · 저거래 돌파=가짜 감각",
+      },
+      {
+        id: "vwap_* / forever",
+        layers: "S/R · 거래량(평균↑) · ADX",
+      },
+      {
+        id: "obv_* / *divergence",
+        layers: "S/R · 원시 거래량 · ADX (가격↑+vol↓ 계열)",
+      },
+    ],
+    readmeExtra: `## 개념 (가격 × 거래량)
+
+| 가격 | 거래량(평균 대비) | 해석 |
+|------|-------------------|------|
+| ↑ | ↑ (평균 위) | 상승 추세 **강화** |
+| ↓ | ↑ | 하락 추세 **강화** |
+| ↑ | ↓ (평균 아래) | 상승 **약화**·반전 후보 |
+| ↓ | ↓ | 하락 **약화**·반전 후보 |
+
+- **돌파:** 평균↑ → Right Breakout 후보 / 평균↓ → Fake Breakout 주의 (\`failed_breakout_short\`·companion).
+- **확인용:** 다른 패밀리 돌파·패턴도 거래량 companion을 켜세요.
+- **한계:** 지수 현물 차트는 거래량이 비어 있을 수 있음 → 선물·구성종목. 거래량만으로 매수/매도 방향은 안 나뉨(OBV·봉색).
+
+## Notes
+
+- 교재 핵심은 새 id가 아니라 \`heatmap_volume\`/\`vsa\`(평균 대비)+README 표.
+- \`obv_divergence\` ≈ 가격↑+수급↓ 약화의 규칙화.`,
     strategies: [
       {
         id: "heatmap_volume",
@@ -791,7 +834,8 @@ const families = [
           "PSAR 매수 플립(close가 PSAR 상향) + close > EMA60 + heat medium+(vol/SMA20 ≥ 0.5).",
         bearish: "PSAR 매도 플립 + close < EMA60 + medium+ heat.",
         stopTarget: "히트에 없음.",
-        notes: "heat: ≥3 extra_high, ≥1.5 high, ≥0.5 medium. EMA60·PSAR·SMA20 인라인.",
+        notes:
+          "heat: ≥3 extra_high, ≥1.5 high, ≥0.5 medium. 평균 대비=교재 핵심. S/R·ADX companion.",
         params: "EMA60 · PSAR 0.02/0.2 · volMA20",
       },
       {
@@ -803,7 +847,7 @@ const families = [
           "PSAR buy + above EMA60 + fight score > 0.05 (14봉 signed vol sum/abs).",
         bearish: "PSAR sell + below EMA60 + fight < −0.05.",
         stopTarget: "히트에 없음.",
-        notes: "",
+        notes: "가격↑+fight 약화=상승 약화 후보(companion 감각).",
         params: "fight lookback 14 · 임계 ±0.05",
       },
       {
@@ -814,7 +858,7 @@ const families = [
         bullish: "vol > volMA20 AND heat high/extra_high AND PSAR buy + above EMA60.",
         bearish: "동일 vol 필터 + PSAR sell + below EMA60.",
         stopTarget: "히트에 없음.",
-        notes: "heatmap보다 거래량 조건 강함.",
+        notes: "heatmap보다 거래량 조건 강함. 평균↑=Right Breakout 감각.",
         params: "vol > MA20 · heat ≥1.5",
       },
       {
@@ -895,7 +939,7 @@ const families = [
         bearish:
           "i−2 양봉 시도가 8봉 신고가·VWAP 돌파 실패 + 직전 4봉 중 ≥2 윗꼬리 압력 + i−1 하락장악(패턴 또는 로컬) + i가 시도 저점 이탈.",
         stopTarget: "히트에 없음.",
-        notes: "typicalDirection=bearish. 롱 없음.",
+        notes: "typicalDirection=bearish. 롱 없음. 저거래량 돌파=가짜와 잘 맞음(companion).",
         params: "lookback 8 · wick ≥2/4",
       },
       {
@@ -906,7 +950,7 @@ const families = [
         bullish: "피벗 L/R=2, 간격 3–40: 가격 LL + OBV HL → 2번째 피벗.",
         bearish: "가격 HH + OBV LH.",
         stopTarget: "히트에 없음.",
-        notes: "",
+        notes: "가격↑+거래량↓ 약화와 같은 계열. 원시 vol·S/R companion.",
         params: "피벗 2 · 3–40",
       },
       {
@@ -997,7 +1041,46 @@ const families = [
     store: "src/lib/rsiStrategyStore.ts",
     help: "src/lib/rsiStrategyHelp.ts",
     hasStopTarget: false,
-    overview: "RSI / 슈퍼 RSI / 이중 RSI. stop/target 없음.",
+    overview:
+      "RSI / 슈퍼 RSI / 이중 RSI. stop/target 없음.\n\n**설계:** 전략 엔트리는 최소 조건만. 고전 70/30 한계·다이버전스 확인(S/R·캔들·추세선)·SMA200은 **같이 켤 지표**와 Notes로 올린다. 멀티 TF·상관관계는 설명만.",
+    companions: [
+      {
+        id: "rsi_classic_obos",
+        layers: "SMA200 · ADX(추세장 역행 주의) · S/R · 거래량",
+      },
+      {
+        id: "super_rsi_obos",
+        layers: "S/R · ADX · 거래량",
+      },
+      {
+        id: "super_rsi_squeeze_mid",
+        layers: "거래량 · ADX · WB(가격 스퀴즈 교차)",
+      },
+      {
+        id: "rsi_divergence",
+        layers: "S/R(핵심 레벨) · 망치/유성 · ADX · 거래량 · SMA200",
+      },
+      {
+        id: "double_rsi_cross",
+        layers: "SMA200 · ADX · 거래량",
+      },
+    ],
+    readmeExtra: `## 개념
+
+| 항목 | 내용 |
+|------|------|
+| 고전 70/30 | 과매수·과매도 참고. **강한 추세에선 오래 머무름** → 단독 매매 위험 (\`rsi_classic_obos\`) |
+| 다이버전스(표준) | **상승**=가격 LL + RSI HL → 롱. **하락**=가격 HH + RSI LH → 숏 (\`rsi_divergence\`) |
+| 확인 | 다이버전스 후 S/R·반응 캔들·추세선 돌파 — companion (하드 게이트 아님) |
+| 와이드/타이트 | 스윙 폭 감각. 별도 전략 id 없음 |
+
+**한계:** 단일 타임프레임. 멀티 TF·Leg-to-Head·지수↔종목 상관은 수동.
+
+## Notes
+
+- 일부 교재가 다이버전스 이름을 반대로 씀 — 앱·문서는 표준만 사용.
+- 교재 유형1(핵심 레벨+다이버전스) → \`rsi_divergence\` + S/R companion.
+- 유형2·3(하위 TF)·상관관계는 새 id 없음.`,
     strategies: [
       {
         id: "rsi_classic_obos",
@@ -1007,7 +1090,8 @@ const families = [
         bullish: "RSI가 oversold(기본 30)를 상향 돌파.",
         bearish: "RSI가 overbought(기본 70)를 하향 이탈.",
         stopTarget: "히트에 없음.",
-        notes: "추세장 실패 잦음. config OB/OS 사용.",
+        notes:
+          "추세장 실패 잦음. SMA200·ADX·S/R은 companion. config OB/OS 사용.",
         params: "OB/OS from config (70/30)",
       },
       {
@@ -1018,7 +1102,7 @@ const families = [
         bullish: "rsiWeighted가 rsiLower를 상향 돌파.",
         bearish: "rsiWeighted가 rsiUpper를 하향 이탈.",
         stopTarget: "히트에 없음.",
-        notes: "슈퍼 RSI = 가중 RSI + BB on RSI.",
+        notes: "슈퍼 RSI = 가중 RSI + BB on RSI. S/R·ADX companion.",
         params: "rsiWeighted / Upper / Lower",
       },
       {
@@ -1030,7 +1114,7 @@ const families = [
           "직전 ≥3봉 bandwidth percentile ≤0.25 + 확장(rankNow>rankPrev & rankPrev≤0.3) + weighted가 mid 상향.",
         bearish: "동일 스퀴즈/확장 + weighted mid 하향.",
         stopTarget: "히트에 없음.",
-        notes: "bandwidth = rsiUpper−rsiLower.",
+        notes: "bandwidth = rsiUpper−rsiLower. 거래량·ADX·WB companion.",
         params: "percentile ≤0.25 · ≥3봉",
       },
       {
@@ -1041,7 +1125,8 @@ const families = [
         bullish: "피벗 3–40: 가격 LL + RSI > 이전 RSI+1 → 2번째 저점.",
         bearish: "가격 HH + RSI < 이전−1.",
         stopTarget: "히트에 없음.",
-        notes: "",
+        notes:
+          "표준 정의만. S/R·망치/유성·추세선 확인은 companion. 와이드/타이트·멀티 TF는 설명만.",
         params: "피벗 · RSI Δ≥1",
       },
       {
@@ -1052,7 +1137,8 @@ const families = [
         bullish: "인라인 RSI(7)이 RSI(21) 상향 돌파.",
         bearish: "RSI(7)이 RSI(21) 하향.",
         stopTarget: "히트에 없음.",
-        notes: "플러그인 시리즈가 아니라 technicalindicators로 인라인 계산. 추세장 유리.",
+        notes:
+          "플러그인 시리즈가 아니라 technicalindicators로 인라인 계산. SMA200·ADX companion.",
         params: "RSI 7 / 21",
       },
     ],
@@ -1066,7 +1152,47 @@ const families = [
     store: "src/lib/macdStrategyStore.ts",
     help: "src/lib/macdStrategyHelp.ts",
     hasStopTarget: false,
-    overview: "시그널/0선/RSI확인/다이버전스/추세돌파. stop/target 없음.",
+    overview:
+      "시그널/0선/RSI확인/다이버전스/추세돌파. stop/target 없음.\n\n**설계:** 전략 엔트리는 최소 조건만 유지한다. SMA200·지지/저항·ADX·0선 스쿨·Hist는 사이드바 **같이 켤 지표**(companion)와 Notes로 올린다 — detector 하드 게이트가 아니다.",
+    companions: [
+      {
+        id: "macd_signal_cross",
+        layers: "SMA200(위=롱·아래=숏) · S/R · ADX · 거래량",
+      },
+      {
+        id: "macd_zero_line",
+        layers: "SMA200(위 0선 하향=눌림 참고) · S/R · ADX · 거래량",
+      },
+      {
+        id: "macd_rsi_confirm",
+        layers: "SMA200 · S/R · 거래량",
+      },
+      {
+        id: "macd_divergence",
+        layers: "거래량 · S/R · RSI · SMA200",
+      },
+      {
+        id: "macd_trend_break",
+        layers: "거래량 · S/R · ADX · SMA200",
+      },
+    ],
+    readmeExtra: `## 구성 요소
+
+| 요소 | 계산(표준) | 역할 |
+|------|------------|------|
+| MACD 선 | EMA12 − EMA26 | 추세·모멘텀 |
+| 시그널 | EMA9(MACD) | 교차 타점 |
+| Hist | MACD − 시그널 | 모멘텀 크기(전략 엔트리 미사용) |
+| 0선 | 0 | 강세/약세 기준 |
+
+**한계:** 추세장에 유리, 횡보 휩쏘↑. 단독 사용 지양 → companion.
+
+## Notes
+
+- 교재 추세추종(SMA200+S/R+시그널 교차) → \`macd_signal_cross\` + companion. 새 id 없음.
+- 0선 **상향**=이 전략 롱 히트. «SMA200 위 + 0선 **하향** 매수»는 companion 설명만.
+- 앱 요약의 «0선 위 골든 신뢰↑»와 일부 교재의 «0선 아래 골든만 롱»은 스쿨이 다름 → SMA200·ADX로 선택.
+- \`macd_trend_break\` 코드는 가격·MACD **동시** 돌파. 교재의 MACD 추세선 선후는 차트에서 확인.`,
     strategies: [
       {
         id: "macd_signal_cross",
@@ -1076,7 +1202,8 @@ const families = [
         bullish: "MACD가 signal 상향(골든). macd>0이면 summary에 신뢰↑ 표기.",
         bearish: "MACD가 signal 하향(데드). macd<0 표기.",
         stopTarget: "히트에 없음.",
-        notes: "0선 위치는 정보일 뿐, 신호는 양쪽 모두 발생.",
+        notes:
+          "0선 위치는 정보일 뿐 필터 아님. SMA200·S/R·ADX는 companion. 0선 아래 골든만 쓰는 스쿨도 있음.",
         params: "12/26/9",
       },
       {
@@ -1088,7 +1215,8 @@ const families = [
           "MACD 0 상향 **또는** 0상향 후 20봉 내 여전히 >0, signal 근처(|diff|≤max(15%*|sig|,1e-6))에서 골든(눌림 재진입).",
         bearish: "0 하향 **또는** 20봉 내 눌림 재숏.",
         stopTarget: "히트에 없음.",
-        notes: "",
+        notes:
+          "롱 히트=0선 상향 계열. SMA200 위에서의 0선 하향 매수는 companion 플레이(별도 마커 없음).",
         params: "재진입 창 20 · near 15%",
       },
       {
@@ -1099,7 +1227,7 @@ const families = [
         bullish: "최근 8봉 내 RSI가 30 상향 후 MACD 골든.",
         bearish: "최근 8봉 내 RSI가 **80** 하향 후 MACD 데드.",
         stopTarget: "히트에 없음.",
-        notes: "숏 쪽 RSI는 70이 아니라 80.",
+        notes: "숏 쪽 RSI는 70이 아니라 80. SMA200·S/R companion.",
         params: "RSI 창 8 · OS30 / OB80",
       },
       {
@@ -1110,7 +1238,7 @@ const families = [
         bullish: "가격 LL + MACD HL (피벗 3–40). 2번째 피벗 후 10봉 내 골든.",
         bearish: "가격 HH + MACD LH 후 10봉 내 데드.",
         stopTarget: "히트에 없음.",
-        notes: "",
+        notes: "RSI 다이버전스·SMA200은 companion.",
         params: "확인 창 10",
       },
       {
@@ -1122,8 +1250,9 @@ const families = [
           "최근 40봉 내 하락 스윙 고 2개. close가 고점 추세선 돌파 + MACD·signal이 각자 추세선 위 + 골든 또는 macd>signal.",
         bearish:
           "상승 스윙 저 2개. close 지지 이탈 + MACD·signal 추세선 아래 + 데드 또는 macd<signal.",
-        stopTarget: "히트에 없음.",
-        notes: "",
+        stopTarget: "히트에 없음. 손익비 2:1·변곡점 손절은 참고(미연결).",
+        notes:
+          "코드는 동시 돌파. 교재의 MACD 추세선→가격 추세선 선후는 companion/차트 확인.",
         params: "lookback 40",
       },
     ],

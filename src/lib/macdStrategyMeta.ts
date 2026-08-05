@@ -31,7 +31,7 @@ export const MACD_STRATEGY_META: Record<
     label: "MACD signal cross",
     labelKo: "시그널 선 크로스",
     description:
-      "MACD가 시그널 상향(골든)·하향(데드) 돌파. 0선 위 골든·0선 아래 데드면 신뢰↑.",
+      "MACD×시그널 골든/데드. 0선·SMA200·S/R은 companion(엔트리 필터 아님).",
     markerBull: "MX↑",
     markerBear: "MX↓",
     typicalDirection: "neutral",
@@ -40,7 +40,7 @@ export const MACD_STRATEGY_META: Record<
     label: "MACD zero-line",
     labelKo: "기준선(0선) 매매",
     description:
-      "MACD가 0선 돌파, 또는 0선 돌파 후 시그널 부근 눌림/반등에서 재진입.",
+      "0선 돌파 또는 돌파 후 시그널 눌림/반등 재진입. SMA200 위 0선 하향 매수는 companion 참고.",
     markerBull: "MZ↑",
     markerBear: "MZ↓",
     typicalDirection: "neutral",
@@ -67,7 +67,7 @@ export const MACD_STRATEGY_META: Record<
     label: "MACD trend break",
     labelKo: "MACD 돌파 매매",
     description:
-      "가격·MACD·시그널이 함께 하락/상승 추세 구조를 돌파할 때 진입.",
+      "가격·MACD·시그널이 함께 추세 구조를 돌파할 때. SMA200·거래량은 companion.",
     markerBull: "MB↑",
     markerBear: "MB↓",
     typicalDirection: "neutral",
