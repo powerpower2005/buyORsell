@@ -59,7 +59,6 @@ import { collectVisibleRiskRewardPlans } from "@/lib/chart/collectRiskRewardPlan
 import { drawRiskRewardPlans } from "@/lib/chart/riskRewardOverlay";
 import {
   formatRewardRisk,
-  methodLabelKo,
 } from "@/lib/evaluation/riskReward";
 import { patternAccentColor } from "@/lib/candlePatternMeta";
 import type { PatternStrategyResult } from "@/lib/evaluation/patternStrategies";
@@ -89,7 +88,6 @@ import {
   formatVolume,
   getVolumeMaPeriods,
   volumeMaColor,
-  volumeMaLabel,
 } from "@/lib/evaluation/volumeMa";
 import type { BbStrategyResult } from "@/lib/evaluation/bbStrategies";
 import type { BbStrategyId } from "@/lib/bbStrategyMeta";
@@ -168,7 +166,6 @@ import {
   FIB_LEVEL_COLORS,
   FIB_CONFLUENCE_COLOR,
   FIB_RETRACEMENT_LEVELS,
-  fibLevelLabel,
   fibRetracementPrice,
   findFibConfluences,
   getFibPendingLow,
@@ -186,6 +183,8 @@ import { tradeJournalToChartMarkers } from "@/lib/chart/tradeJournalMarkers";
 import type { StrategyConfluence } from "@/lib/evaluation/strategyConfluence";
 import { strategyConfluencesToChartMarkers } from "@/lib/chart/strategyConfluenceMarkers";
 import { Card } from "./ui/Card";
+import { ChartLegend } from "./chart/ChartLegend";
+import { SignalSummary } from "./chart/SignalSummary";
 
 type OscSeries = ISeriesApi<"Line"> | ISeriesApi<"Histogram">;
 
@@ -3484,643 +3483,55 @@ export function CandleChart({
         </div>
 
         <div className="mt-3 space-y-2 border-t border-border pt-3">
-          {overlayLegend.length > 0 && (
-            <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
-              <span>지표 오버레이:</span>
-              {overlayLegend.map((item) => (
-                <span key={item.label} className="flex items-center gap-1">
-                  <span
-                    className="inline-block h-0.5 w-4 rounded-sm"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="tabular-nums">{item.label}</span>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {(showVolume || oscPanes.length > 0) && (
-            <div className="flex flex-wrap gap-3 text-xs text-text-secondary">
-              <span>보조 패널:</span>
-              {showVolume && (
-                <>
-                  <span className="tabular-nums text-text-tertiary">
-                    거래량 {fmtVolume(latestVolume)}
-                  </span>
-                  {volumeSnapshot?.averages.map((avg) => (
-                    <span
-                      key={avg.period}
-                      className="flex items-center gap-1 tabular-nums text-text-tertiary"
-                    >
-                      <span
-                        className="inline-block h-0.5 w-3 rounded-sm"
-                        style={{ backgroundColor: volumeMaColor(avg.period) }}
-                      />
-                      {volumeMaLabel(avg.period, timeframe)}{" "}
-                      {avg.available && avg.latest != null
-                        ? formatVolume(avg.latest)
-                        : "—"}
-                    </span>
-                  ))}
-                </>
-              )}
-              {oscPanes.map((pane) => (
-                <span
-                  key={pane.id}
-                  className="tabular-nums text-text-tertiary"
-                >
-                  {pane.title} {pane.latest}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {patternHitLegend.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>캔들 패턴 ({patternHitLegend.length}):</span>
-              {patternHitLegend.map((item) => (
-                <span key={item.key} className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.text}
-                  </span>
-                  <span
-                    className="tabular-nums text-[11px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.detail}
-                  </span>
-                </span>
-              ))}
-            </div>
-          ) : (
-            patternLegend.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span>캔들 패턴:</span>
-                {patternLegend.map((item) => (
-                  <span key={item.text} className="text-text-tertiary">
-                    {item.label}
-                  </span>
-                ))}
-              </div>
-            )
-          )}
-
-          {structureHitLegend.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>스윙 구조:</span>
-              {structureHitLegend.map((item) => (
-                <span key={item.key} className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.text}
-                  </span>
-                  <span className="tabular-nums text-text-tertiary">
-                    {item.detail}
-                  </span>
-                </span>
-              ))}
-            </div>
-          ) : (
-            structureLegend.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span>스윙 구조:</span>
-                {structureLegend.map((item) => (
-                  <span key={item.text} className="text-text-tertiary">
-                    {item.label}
-                  </span>
-                ))}
-              </div>
-            )
-          )}
-
-          {elliottWaveLegend.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>엘리어트 파동:</span>
-              {elliottWaveLegend.map((item) => (
-                <span key={item.key} className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.text}
-                  </span>
-                  <span className="tabular-nums text-text-tertiary">
-                    {item.detail}
-                  </span>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {bbStrategyHitLegend.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>BB 전략:</span>
-              {bbStrategyHitLegend.map((item) => (
-                <span key={item.key} className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.text}
-                  </span>
-                  <span className="tabular-nums text-text-tertiary">
-                    {item.detail}
-                  </span>
-                </span>
-              ))}
-            </div>
-          ) : (
-            bbStrategyLegend.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span>BB 전략:</span>
-                {bbStrategyLegend.map((item) => (
-                  <span
-                    key={`${item.text}-${item.label}`}
-                    className="text-text-tertiary"
-                  >
-                    {item.label}
-                  </span>
-                ))}
-              </div>
-            )
-          )}
-
-          {classicalHitLegend.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>차트 패턴:</span>
-              {classicalHitLegend.map((item) => {
-                const datePart = item.detail.split(" · ")[0] ?? item.detail;
-                const rest = item.detail.includes(" · ")
-                  ? item.detail.slice(datePart.length)
-                  : "";
-                return (
-                  <span key={item.key} className="flex items-center gap-1.5">
-                    <span
-                      className="font-mono text-[10px] font-semibold"
-                      style={{ color: item.color }}
-                    >
-                      {item.text}
-                    </span>
-                    <span
-                      className="tabular-nums text-[11px] font-semibold"
-                      style={{ color: item.color }}
-                    >
-                      {datePart}
-                    </span>
-                    {rest && (
-                      <span className="tabular-nums text-text-tertiary">
-                        {rest}
-                      </span>
-                    )}
-                  </span>
-                );
-              })}
-            </div>
-          ) : (
-            classicalPatternLegend.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span>차트 패턴:</span>
-                {classicalPatternLegend.map((item) => (
-                  <span
-                    key={`${item.text}-${item.label}`}
-                    className="text-text-tertiary"
-                  >
-                    {item.label}
-                  </span>
-                ))}
-              </div>
-            )
-          )}
-
-          {patternStrategyHitLegend.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>패턴 전략:</span>
-              {patternStrategyHitLegend.map((item) => (
-                <span key={item.key} className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.text}
-                  </span>
-                  <span
-                    className="tabular-nums text-[11px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.detail}
-                  </span>
-                </span>
-              ))}
-            </div>
-          ) : (
-            patternStrategyLegend.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span>패턴 전략:</span>
-                {patternStrategyLegend.map((item) => (
-                  <span
-                    key={`${item.text}-${item.label}`}
-                    className="text-text-tertiary"
-                  >
-                    {item.label}
-                  </span>
-                ))}
-              </div>
-            )
-          )}
-
-          {rsiStrategyHitLegend.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>RSI 전략:</span>
-              {rsiStrategyHitLegend.map((item) => (
-                <span key={item.key} className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.text}
-                  </span>
-                  <span className="tabular-nums text-text-tertiary">
-                    {item.detail}
-                  </span>
-                </span>
-              ))}
-            </div>
-          ) : (
-            rsiStrategyLegend.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span>RSI 전략:</span>
-                {rsiStrategyLegend.map((item) => (
-                  <span
-                    key={`${item.text}-${item.label}`}
-                    className="text-text-tertiary"
-                  >
-                    {item.label}
-                  </span>
-                ))}
-              </div>
-            )
-          )}
-
-          {volumeStrategyHitLegend.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>거래량 전략:</span>
-              {volumeStrategyHitLegend.map((item) => (
-                <span key={item.key} className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.text}
-                  </span>
-                  <span className="tabular-nums text-text-tertiary">
-                    {item.detail}
-                  </span>
-                </span>
-              ))}
-            </div>
-          ) : (
-            volumeStrategyLegend.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span>거래량 전략:</span>
-                {volumeStrategyLegend.map((item) => (
-                  <span
-                    key={`${item.text}-${item.label}`}
-                    className="text-text-tertiary"
-                  >
-                    {item.label}
-                  </span>
-                ))}
-              </div>
-            )
-          )}
-
-          {comboStrategyHitLegend.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>복합 전략:</span>
-              {comboStrategyHitLegend.map((item) => (
-                <span key={item.key} className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.text}
-                  </span>
-                  <span className="tabular-nums text-text-tertiary">
-                    {item.detail}
-                  </span>
-                </span>
-              ))}
-            </div>
-          ) : (
-            comboStrategyLegend.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span>복합 전략:</span>
-                {comboStrategyLegend.map((item) => (
-                  <span
-                    key={`${item.text}-${item.label}`}
-                    className="text-text-tertiary"
-                  >
-                    {item.label}
-                  </span>
-                ))}
-              </div>
-            )
-          )}
-
-          {macdStrategyHitLegend.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>MACD 전략:</span>
-              {macdStrategyHitLegend.map((item) => (
-                <span key={item.key} className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.text}
-                  </span>
-                  <span className="tabular-nums text-text-tertiary">
-                    {item.detail}
-                  </span>
-                </span>
-              ))}
-            </div>
-          ) : (
-            macdStrategyLegend.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span>MACD 전략:</span>
-                {macdStrategyLegend.map((item) => (
-                  <span
-                    key={`${item.text}-${item.label}`}
-                    className="text-text-tertiary"
-                  >
-                    {item.label}
-                  </span>
-                ))}
-              </div>
-            )
-          )}
-
-          {classicStrategyHitLegend.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>고전 이론:</span>
-              {classicStrategyHitLegend.map((item) => (
-                <span key={item.key} className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.text}
-                  </span>
-                  <span className="tabular-nums text-text-tertiary">
-                    {item.detail}
-                  </span>
-                </span>
-              ))}
-            </div>
-          ) : (
-            classicStrategyLegend.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span>고전 이론:</span>
-                {classicStrategyLegend.map((item) => (
-                  <span
-                    key={`${item.text}-${item.label}`}
-                    className="text-text-tertiary"
-                  >
-                    {item.label}
-                  </span>
-                ))}
-              </div>
-            )
-          )}
-
-          {stochStrategyHitLegend.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>스토캐 전략:</span>
-              {stochStrategyHitLegend.map((item) => (
-                <span key={item.key} className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.text}
-                  </span>
-                  <span className="tabular-nums text-text-tertiary">
-                    {item.detail}
-                  </span>
-                </span>
-              ))}
-            </div>
-          ) : (
-            stochStrategyLegend.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span>스토캐 전략:</span>
-                {stochStrategyLegend.map((item) => (
-                  <span
-                    key={`${item.text}-${item.label}`}
-                    className="text-text-tertiary"
-                  >
-                    {item.label}
-                  </span>
-                ))}
-              </div>
-            )
-          )}
-
-          {ichimokuStrategyHitLegend.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>일목 전략:</span>
-              {ichimokuStrategyHitLegend.map((item) => (
-                <span key={item.key} className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: item.color }}
-                  >
-                    {item.text}
-                  </span>
-                  <span className="tabular-nums text-text-tertiary">
-                    {item.detail}
-                  </span>
-                </span>
-              ))}
-            </div>
-          ) : (
-            ichimokuStrategyLegend.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span>일목 전략:</span>
-                {ichimokuStrategyLegend.map((item) => (
-                  <span
-                    key={`${item.text}-${item.label}`}
-                    className="text-text-tertiary"
-                  >
-                    {item.label}
-                  </span>
-                ))}
-              </div>
-            )
-          )}
-
-          {visibleTrendlines.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>동적 추세선 ({visibleTrendlines.length}):</span>
-              {visibleTrendlines.map((line) => {
-                const siblings =
-                  line.kind === "ascending"
-                    ? (trendlines?.ascending ?? [])
-                    : (trendlines?.descending ?? []);
-                const index = siblings.findIndex((l) => l.id === line.id);
-                const color =
-                  chartTrendlineColors?.[line.id] ??
-                  TRENDLINE_COLORS[line.kind];
-                return (
-                  <span key={line.id} className="flex items-center gap-1.5">
-                    <span
-                      className="inline-block h-0.5 w-4 rounded-sm"
-                      style={{ backgroundColor: color }}
-                    />
-                    <span className="tabular-nums text-text-tertiary">
-                      {line.kind === "ascending" ? "↑" : "↓"}
-                      {index >= 0 ? ` #${index + 1}` : ""} · 터치{" "}
-                      {line.touches} · 점수 {line.score}
-                      {line.broken ? " · 이탈" : ""}
-                    </span>
-                  </span>
-                );
-              })}
-            </div>
-          )}
-          {srZones.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>지지·저항 가격대 ({srZones.length}):</span>
-              {srZones.map((z) => (
-                <span key={z.id} className="flex items-center gap-1.5">
-                  <span
-                    className="inline-block h-2 w-4 rounded-sm"
-                    style={{ backgroundColor: SR_ZONE_COLORS[z.kind].stroke }}
-                  />
-                  <span className="tabular-nums text-text-tertiary">
-                    {z.kind === "support" ? "S" : "R"}×{z.quality.touchEvents}{" "}
-                    {z.low.toFixed(2)}–{z.high.toFixed(2)} ({z.quality.grade})
-                  </span>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {journalEntries && journalEntries.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>매매 기록 ({journalEntries.length}):</span>
-              {journalEntries.slice(-8).map((e) => (
-                <span key={e.id} className="tabular-nums text-text-tertiary">
-                  <span
-                    className={
-                      e.side === "buy" ? "text-positive" : "text-negative"
-                    }
-                  >
-                    {e.side === "buy" ? "매수" : "매도"}
-                  </span>{" "}
-                  {e.date} {e.price}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {showStrategyConfluence &&
-            strategyConfluences &&
-            strategyConfluences.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span>전략 겹침 ({strategyConfluences.length}):</span>
-                {strategyConfluences.slice(-8).map((c) => (
-                  <span
-                    key={`${c.barIndex}-${c.direction}`}
-                    className="tabular-nums text-text-tertiary"
-                  >
-                    {c.date} ×{c.hits.length}{" "}
-                    {c.direction === "bullish" ? "↑" : "↓"} (
-                    {c.hits.map((h) => h.label).join(", ")})
-                  </span>
-                ))}
-              </div>
-            )}
-
-          {showRiskReward && riskRewardPlans.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>손익비 v1 ({riskRewardPlans.length}):</span>
-              {riskRewardPlans.map((p) => (
-                <span
-                  key={p.key}
-                  className="tabular-nums text-text-tertiary"
-                >
-                  <span
-                    className={
-                      p.direction === "bullish"
-                        ? "text-positive"
-                        : "text-negative"
-                    }
-                  >
-                    {formatRewardRisk(p.rewardRisk)}
-                  </span>{" "}
-                  {p.label} · {methodLabelKo(p.method)} · 손절{" "}
-                  {p.stopPrice.toFixed(2)} · 목표 {p.targetPrice.toFixed(2)}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {showFibLegend && (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>피보나치 되돌림:</span>
-              {showFibAnchors && (
-                <>
-                  <span className="tabular-nums text-text-tertiary">
-                    0% {fibRetracement!.high.price.toFixed(2)} ({fibRetracement!.high.date})
-                  </span>
-                  <span className="tabular-nums text-text-tertiary">
-                    100% {fibRetracement!.low.price.toFixed(2)} ({fibRetracement!.low.date})
-                  </span>
-                </>
-              )}
-              {visibleFibLevels.map((ratio) => (
-                <span key={ratio} className="flex items-center gap-1.5">
-                  <span
-                    className="inline-block h-0.5 w-4 rounded-sm"
-                    style={{ backgroundColor: FIB_LEVEL_COLORS[ratio] }}
-                  />
-                  <span className="tabular-nums text-text-tertiary">
-                    {fibLevelLabel(ratio)}{" "}
-                    {fibRetracementPrice(
-                      fibRetracement!.low.price,
-                      fibRetracement!.high.price,
-                      ratio,
-                    ).toFixed(2)}
-                  </span>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {fibConfluences.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-              <span>Confluence (피보+지지·저항):</span>
-              {fibConfluences.map((hit, i) => (
-                <span key={i} className="flex items-center gap-1.5">
-                  <span
-                    className="inline-block h-2 w-4 rounded-sm"
-                    style={{ backgroundColor: FIB_CONFLUENCE_COLOR }}
-                  />
-                  <span className="tabular-nums text-text-tertiary">
-                    {fibLevelLabel(hit.ratio)} +{" "}
-                    {hit.zoneKind === "support" ? "S" : "R"}{" "}
-                    {hit.fibPrice.toFixed(2)}
-                  </span>
-                </span>
-              ))}
-            </div>
-          )}
+          <ChartLegend
+            overlayLegend={overlayLegend}
+            showVolume={showVolume}
+            latestVolume={latestVolume}
+            volumeAverages={volumeSnapshot?.averages ?? []}
+            timeframe={timeframe}
+            oscPanes={oscPanes}
+            showFibLegend={showFibLegend}
+            showFibAnchors={showFibAnchors}
+            fibRetracement={fibRetracement}
+            visibleFibLevels={visibleFibLevels}
+          />
+          <SignalSummary
+            patternHitLegend={patternHitLegend}
+            patternLegend={patternLegend}
+            structureHitLegend={structureHitLegend}
+            structureLegend={structureLegend}
+            elliottWaveLegend={elliottWaveLegend}
+            bbStrategyHitLegend={bbStrategyHitLegend}
+            bbStrategyLegend={bbStrategyLegend}
+            classicalHitLegend={classicalHitLegend}
+            classicalPatternLegend={classicalPatternLegend}
+            patternStrategyHitLegend={patternStrategyHitLegend}
+            patternStrategyLegend={patternStrategyLegend}
+            rsiStrategyHitLegend={rsiStrategyHitLegend}
+            rsiStrategyLegend={rsiStrategyLegend}
+            volumeStrategyHitLegend={volumeStrategyHitLegend}
+            volumeStrategyLegend={volumeStrategyLegend}
+            comboStrategyHitLegend={comboStrategyHitLegend}
+            comboStrategyLegend={comboStrategyLegend}
+            macdStrategyHitLegend={macdStrategyHitLegend}
+            macdStrategyLegend={macdStrategyLegend}
+            classicStrategyHitLegend={classicStrategyHitLegend}
+            classicStrategyLegend={classicStrategyLegend}
+            stochStrategyHitLegend={stochStrategyHitLegend}
+            stochStrategyLegend={stochStrategyLegend}
+            ichimokuStrategyHitLegend={ichimokuStrategyHitLegend}
+            ichimokuStrategyLegend={ichimokuStrategyLegend}
+            visibleTrendlines={visibleTrendlines}
+            trendlines={trendlines}
+            chartTrendlineColors={chartTrendlineColors}
+            srZones={srZones}
+            journalEntries={journalEntries}
+            showStrategyConfluence={!!showStrategyConfluence}
+            strategyConfluences={strategyConfluences}
+            showRiskReward={!!showRiskReward}
+            riskRewardPlans={riskRewardPlans}
+            fibConfluences={fibConfluences}
+          />
         </div>
       </div>
     </Card>
