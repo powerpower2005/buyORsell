@@ -385,11 +385,10 @@ export function evaluateQuote(
   let classicStrategies: ClassicStrategyResult | null = null;
   if (!fatalError) {
     try {
-      classicStrategies = detectClassicStrategies(
-        prepared,
-        indicators,
-        fullLookback,
-      );
+      classicStrategies = detectClassicStrategies(prepared, indicators, {
+        ...fullLookback,
+        timeframe,
+      });
     } catch (err) {
       const fatal = absorbError(err, warnings);
       if (fatal) fatalError = fatal;

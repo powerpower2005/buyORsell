@@ -134,6 +134,53 @@ function makeHit(inst: ChartPatternInstance, bars: OHLCVBar[]): ChartPatternHit 
   };
 }
 
+/** Long stop: structural low, tightened by breakout candle low when confirmed. */
+function stopLong(
+  entry: number | null,
+  structural: number,
+  bars: OHLCVBar[],
+): number {
+  if (entry == null) return structural;
+  return Math.max(structural, bars[entry]!.low);
+}
+
+/** Short stop: structural high, tightened by breakout candle high when confirmed. */
+function stopShort(
+  entry: number | null,
+  structural: number,
+  bars: OHLCVBar[],
+): number {
+  if (entry == null) return structural;
+  return Math.min(structural, bars[entry]!.high);
+}
+
+/** Curriculum: triangle SL ≈ nearest swing low in the pattern zone. */
+function nearestSwingLow(
+  lows: Pivot[],
+  start: number,
+  end: number,
+  fallback: number,
+): number {
+  const zone = lows.filter((l) => l.idx >= start && l.idx <= end);
+  if (!zone.length) return fallback;
+  return zone.reduce((best, l) => (l.price > best.price ? l : best)).price;
+}
+
+/** Curriculum: triangle SL ≈ nearest swing high in the pattern zone. */
+function nearestSwingHigh(
+  highs: Pivot[],
+  start: number,
+  end: number,
+  fallback: number,
+): number {
+  const zone = highs.filter((h) => h.idx >= start && h.idx <= end);
+  if (!zone.length) return fallback;
+  return zone.reduce((best, h) => (h.price < best.price ? h : best)).price;
+}
+
+/** Fall & flag / pennant: curriculum target ≈ 80% of pole (not full 100%). */
+const POLE_TARGET_FRAC = 0.8;
+
 function detectDoubleBottom(
   bars: OHLCVBar[],
   lows: Pivot[],
@@ -163,6 +210,8 @@ function detectDoubleBottom(
       // Measured move: neckline − trough height projected above neckline.
       const target = neck.price + depth;
       const confirmed = entry != null;
+      // Curriculum: prefer breakout-bar low; floor at second trough.
+      const stop = stopLong(entry, b.price, bars);
       out.push({
         key: `double_bottom-${a.idx}-${b.idx}`,
         id: "double_bottom",
@@ -185,12 +234,11 @@ function detectDoubleBottom(
           ),
         ],
         entryBar: entry,
-        // Curriculum: stop below the second trough.
-        stopPrice: b.price,
+        stopPrice: stop,
         targetPrice: target,
         score: confirmed ? 78 : 55,
         summary: confirmed
-          ? `쌍바닥 목선 돌파 · 목표 ${target.toFixed(2)} · 손절 ${b.price.toFixed(2)}`
+          ? `쌍바닥 목선 돌파 · 목표 ${target.toFixed(2)} · 손절 ${stop.toFixed(2)}`
           : "쌍바닥 형성 중 (목선 대기)",
       });
     }
@@ -227,6 +275,13 @@ function detectDoubleTop(
       const entry = crossedBelow(bars, b.idx + 1, scanTo, () => neck.price);
       const target = neck.price - height;
       const confirmed = entry != null;
+      const peak = Math.max(a.price, b.price);
+      const stop = stopShort(entry, peak, bars);
+      // Curriculum hint: 1st peak volume ≥ 2nd → higher confidence (not a hard gate).
+      const vol1 = bars[a.idx]?.volume ?? 0;
+      const vol2 = bars[b.idx]?.volume ?? 0;
+      const volFade = vol1 > 0 && vol2 > 0 && vol1 >= vol2 * 1.05;
+      const score = confirmed ? (volFade ? 82 : 78) : volFade ? 58 : 55;
       out.push({
         key: `double_top-${a.idx}-${b.idx}`,
         id: "double_top",
@@ -249,12 +304,12 @@ function detectDoubleTop(
           ),
         ],
         entryBar: entry,
-        stopPrice: Math.max(a.price, b.price),
+        stopPrice: stop,
         targetPrice: target,
-        score: confirmed ? 78 : 55,
+        score,
         summary: confirmed
-          ? `쌍봉 목선 이탈 · 목표 ${target.toFixed(2)} · 손절 ${Math.max(a.price, b.price).toFixed(2)}`
-          : "쌍봉 형성 중 (목선 대기)",
+          ? `쌍봉 목선 이탈 · 목표 ${target.toFixed(2)} · 손절 ${stop.toFixed(2)}${volFade ? " · 고1거래량≥고2" : ""}`
+          : `쌍봉 형성 중 (목선 대기)${volFade ? " · 고1거래량≥고2" : ""}`,
       });
     }
   }
@@ -268,6 +323,8 @@ function detectCupAndHandle(
   atr: Array<number | null>,
 ): ChartPatternInstance[] {
   const out: ChartPatternInstance[] = [];
+
+  // Bullish cup: similar rim highs + mid cup low + shallow handle low.
   for (let i = 0; i < highs.length - 1; i++) {
     const leftRim = highs[i];
     for (let j = i + 1; j < highs.length; j++) {
@@ -291,14 +348,24 @@ function detectCupAndHandle(
       if (Math.abs(cupLow.idx - mid) > (rightRim.idx - leftRim.idx) * 0.35)
         continue;
 
-      // Handle: shallow pullback after right rim
+      // Cup depth ≤ ~1/2 of prior advance into left rim.
+      const priorLows = lows.filter(
+        (l) => l.idx < leftRim.idx && l.idx >= leftRim.idx - 80,
+      );
+      if (priorLows.length) {
+        const priorLow = priorLows.reduce((best, l) =>
+          l.price < best.price ? l : best,
+        );
+        const priorAdvance = leftRim.price - priorLow.price;
+        if (priorAdvance > tol && cupDepth > priorAdvance * 0.5) continue;
+      }
+
       const handleLows = lows.filter(
         (l) => l.idx > rightRim.idx && l.idx <= rightRim.idx + 30,
       );
       if (!handleLows.length) continue;
       const handleLow = handleLows[0];
       const handleDepth = rightRim.price - handleLow.price;
-      // Curriculum: handle deeper than ~1/3 of cup raises failure odds.
       if (handleDepth <= 0 || handleDepth > cupDepth / 3) continue;
 
       const breakLevel = rightRim.price;
@@ -310,6 +377,10 @@ function detectCupAndHandle(
         () => breakLevel,
       );
       const target = breakLevel + cupDepth;
+      const stop =
+        entry != null
+          ? Math.min(handleLow.price, bars[entry].low)
+          : handleLow.price;
       out.push({
         key: `cup_and_handle-${leftRim.idx}-${handleLow.idx}`,
         id: "cup_and_handle",
@@ -338,13 +409,260 @@ function detectCupAndHandle(
           ),
         ],
         entryBar: entry,
-        stopPrice: handleLow.price,
+        stopPrice: stop,
         targetPrice: target,
         score: entry != null ? 74 : 52,
         summary:
           entry != null
             ? `컵앤핸들 돌파 · 목표 ${target.toFixed(2)}`
             : "컵앤핸들 형성 중",
+      });
+    }
+  }
+
+  // Bearish inverted cup: similar rim lows + mid cup high + shallow handle high.
+  for (let i = 0; i < lows.length - 1; i++) {
+    const leftRim = lows[i];
+    for (let j = i + 1; j < lows.length; j++) {
+      const rightRim = lows[j];
+      if (rightRim.idx - leftRim.idx < 20 || rightRim.idx - leftRim.idx > 90)
+        continue;
+      const tol = atrAt(atr, rightRim.idx, leftRim.price * 0.01) * 0.7;
+      if (!nearEqual(leftRim.price, rightRim.price, tol * 1.2)) continue;
+
+      const cupHighs = highs.filter(
+        (h) => h.idx > leftRim.idx && h.idx < rightRim.idx,
+      );
+      if (!cupHighs.length) continue;
+      const cupHigh = cupHighs.reduce((best, h) =>
+        h.price > best.price ? h : best,
+      );
+      const cupDepth = cupHigh.price - Math.max(leftRim.price, rightRim.price);
+      if (cupDepth < tol * 2) continue;
+      const mid = (leftRim.idx + rightRim.idx) / 2;
+      if (Math.abs(cupHigh.idx - mid) > (rightRim.idx - leftRim.idx) * 0.35)
+        continue;
+
+      // Cup depth ≤ ~1/2 of prior decline into left rim.
+      const priorHighs = highs.filter(
+        (h) => h.idx < leftRim.idx && h.idx >= leftRim.idx - 80,
+      );
+      if (priorHighs.length) {
+        const priorHigh = priorHighs.reduce((best, h) =>
+          h.price > best.price ? h : best,
+        );
+        const priorDecline = priorHigh.price - leftRim.price;
+        if (priorDecline > tol && cupDepth > priorDecline * 0.5) continue;
+      }
+
+      const handleHighs = highs.filter(
+        (h) => h.idx > rightRim.idx && h.idx <= rightRim.idx + 30,
+      );
+      if (!handleHighs.length) continue;
+      const handleHigh = handleHighs[0];
+      const handleDepth = handleHigh.price - rightRim.price;
+      if (handleDepth <= 0 || handleDepth > cupDepth / 3) continue;
+
+      const breakLevel = rightRim.price;
+      const scanTo = Math.min(bars.length - 1, handleHigh.idx + 20);
+      const entry = crossedBelow(
+        bars,
+        handleHigh.idx + 1,
+        scanTo,
+        () => breakLevel,
+      );
+      const target = breakLevel - cupDepth;
+      const stop =
+        entry != null
+          ? Math.max(handleHigh.price, bars[entry].high)
+          : handleHigh.price;
+      out.push({
+        key: `cup_and_handle-inv-${leftRim.idx}-${handleHigh.idx}`,
+        id: "cup_and_handle",
+        direction: "bearish",
+        status: entry != null ? "confirmed" : "forming",
+        startBar: leftRim.idx,
+        endBar: entry ?? handleHigh.idx,
+        pivots: [
+          pt(leftRim, "rimL"),
+          pt(cupHigh, "cup"),
+          pt(rightRim, "rimR"),
+          pt(handleHigh, "handle"),
+        ],
+        segments: [
+          seg(leftRim, cupHigh, "outline"),
+          seg(cupHigh, rightRim, "outline"),
+          seg(rightRim, handleHigh, "resistance"),
+          seg(
+            { idx: rightRim.idx, date: rightRim.date, price: breakLevel },
+            {
+              idx: entry ?? scanTo,
+              date: bars[entry ?? scanTo].date,
+              price: breakLevel,
+            },
+            "support",
+          ),
+        ],
+        entryBar: entry,
+        stopPrice: stop,
+        targetPrice: target,
+        score: entry != null ? 74 : 52,
+        summary:
+          entry != null
+            ? `역컵앤핸들 이탈 · 목표 ${target.toFixed(2)}`
+            : "역컵앤핸들 형성 중",
+      });
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Horizontal consolidation (flat support + resistance) after a prior trend.
+ * Distinct from double top/bottom (reversal at extremes).
+ */
+function detectRectangle(
+  bars: OHLCVBar[],
+  lows: Pivot[],
+  highs: Pivot[],
+  atr: Array<number | null>,
+): ChartPatternInstance[] {
+  const out: ChartPatternInstance[] = [];
+  for (let end = 3; end <= highs.length; end++) {
+    const winHighs = highs.slice(Math.max(0, end - 4), end);
+    if (winHighs.length < 2) continue;
+    const start = winHighs[0].idx;
+    const last = winHighs.at(-1)!.idx;
+    if (last - start < 12 || last - start > 70) continue;
+    const winLows = lows.filter((l) => l.idx >= start && l.idx <= last + 3);
+    if (winLows.length < 2) continue;
+
+    const tol = atrAt(atr, last, bars[last].close * 0.01) * 0.55;
+    const highFit = fitSlope(
+      winHighs.map((p) => ({ idx: p.idx, price: p.price })),
+    );
+    const lowPts = winLows.slice(-4);
+    const lowFit = fitSlope(lowPts.map((p) => ({ idx: p.idx, price: p.price })));
+    if (!highFit || !lowFit) continue;
+
+    const flatHigh =
+      Math.abs(highFit.slope) * (last - start) <= tol * 0.9 &&
+      nearEqual(winHighs[0].price, winHighs.at(-1)!.price, tol * 1.15);
+    const flatLow =
+      Math.abs(lowFit.slope) * (last - start) <= tol * 0.9 &&
+      nearEqual(lowPts[0].price, lowPts.at(-1)!.price, tol * 1.15);
+    if (!flatHigh || !flatLow) continue;
+
+    const resistance =
+      winHighs.reduce((s, h) => s + h.price, 0) / winHighs.length;
+    const support = lowPts.reduce((s, l) => s + l.price, 0) / lowPts.length;
+    const height = resistance - support;
+    if (height < tol * 1.4) continue;
+    // Must be a real box (not a thin noise band).
+    if (height > atrAt(atr, last, bars[last].close * 0.01) * 8) continue;
+
+    // Prior trend into the box → continuation bias.
+    const priorFrom = Math.max(0, start - 20);
+    const priorMove = bars[start].close - bars[priorFrom].close;
+    const atrS = atrAt(atr, start, bars[start].close * 0.01);
+    const priorBull = priorMove > atrS * 1.5;
+    const priorBear = priorMove < -atrS * 1.5;
+    if (!priorBull && !priorBear) continue;
+
+    const scanTo = Math.min(bars.length - 1, last + 20);
+    const mid = (support + resistance) / 2;
+
+    if (priorBull) {
+      const entry = crossedAbove(bars, last + 1, scanTo, () => resistance);
+      const target = resistance + height;
+      // Curriculum: stop near half box height (mid) or below.
+      const stop =
+        entry != null ? Math.min(mid, bars[entry].low) : mid;
+      out.push({
+        key: `rect-bull-${start}-${last}`,
+        id: "rectangle",
+        direction: "bullish",
+        status: entry != null ? "confirmed" : "forming",
+        startBar: start,
+        endBar: entry ?? last,
+        pivots: [
+          ...winHighs.map((h, n) => pt(h, `h${n + 1}`)),
+          ...lowPts.map((l, n) => pt(l, `l${n + 1}`)),
+        ],
+        segments: [
+          seg(
+            { idx: start, date: bars[start].date, price: resistance },
+            {
+              idx: entry ?? scanTo,
+              date: bars[entry ?? scanTo].date,
+              price: resistance,
+            },
+            "resistance",
+          ),
+          seg(
+            { idx: start, date: bars[start].date, price: support },
+            {
+              idx: entry ?? scanTo,
+              date: bars[entry ?? scanTo].date,
+              price: support,
+            },
+            "support",
+          ),
+        ],
+        entryBar: entry,
+        stopPrice: stop,
+        targetPrice: target,
+        score: entry != null ? 73 : 50,
+        summary:
+          entry != null
+            ? `강세 직사각형 돌파 · 목표 ${target.toFixed(2)}`
+            : "강세 직사각형 형성 중",
+      });
+    } else {
+      const entry = crossedBelow(bars, last + 1, scanTo, () => support);
+      const target = support - height;
+      const stop =
+        entry != null ? Math.max(mid, bars[entry].high) : mid;
+      out.push({
+        key: `rect-bear-${start}-${last}`,
+        id: "rectangle",
+        direction: "bearish",
+        status: entry != null ? "confirmed" : "forming",
+        startBar: start,
+        endBar: entry ?? last,
+        pivots: [
+          ...winHighs.map((h, n) => pt(h, `h${n + 1}`)),
+          ...lowPts.map((l, n) => pt(l, `l${n + 1}`)),
+        ],
+        segments: [
+          seg(
+            { idx: start, date: bars[start].date, price: resistance },
+            {
+              idx: entry ?? scanTo,
+              date: bars[entry ?? scanTo].date,
+              price: resistance,
+            },
+            "resistance",
+          ),
+          seg(
+            { idx: start, date: bars[start].date, price: support },
+            {
+              idx: entry ?? scanTo,
+              date: bars[entry ?? scanTo].date,
+              price: support,
+            },
+            "support",
+          ),
+        ],
+        entryBar: entry,
+        stopPrice: stop,
+        targetPrice: target,
+        score: entry != null ? 73 : 50,
+        summary:
+          entry != null
+            ? `약세 직사각형 이탈 · 목표 ${target.toFixed(2)}`
+            : "약세 직사각형 형성 중",
       });
     }
   }
@@ -385,6 +703,11 @@ function detectHeadAndShoulders(
     const entry = crossedBelow(bars, rs.idx + 1, scanTo, levelAt);
     const entryLvl = entry != null ? levelAt(entry) : levelAt(rs.idx);
     const target = entryLvl - height;
+    const stop = stopShort(
+      entry,
+      Math.max(ls.price, rs.price, head.price),
+      bars,
+    );
 
     out.push({
       key: `hs-${ls.idx}-${head.idx}-${rs.idx}`,
@@ -415,12 +738,12 @@ function detectHeadAndShoulders(
         ),
       ],
       entryBar: entry,
-      stopPrice: Math.max(ls.price, rs.price, head.price),
+      stopPrice: stop,
       targetPrice: target,
       score: entry != null ? 80 : 58,
       summary:
         entry != null
-          ? `헤드앤숄더 목선 이탈 · 목표 ${target.toFixed(2)}`
+          ? `헤드앤숄더 목선 이탈 · 목표 ${target.toFixed(2)} · 손절 ${stop.toFixed(2)}`
           : `헤드앤숄더 형성 중 (slope ${neckSlope.toFixed(4)})`,
     });
   }
@@ -450,6 +773,7 @@ function detectHeadAndShoulders(
     const entry = crossedAbove(bars, rs.idx + 1, scanTo, levelAt);
     const entryLvl = entry != null ? levelAt(entry) : levelAt(rs.idx);
     const target = entryLvl + height;
+    const stop = stopLong(entry, head.price, bars);
 
     out.push({
       key: `ihs-${ls.idx}-${head.idx}-${rs.idx}`,
@@ -480,13 +804,13 @@ function detectHeadAndShoulders(
         ),
       ],
       entryBar: entry,
-      // Curriculum: stop below the head (deepest trough).
-      stopPrice: head.price,
+      // Curriculum: breakout-bar low (tightened vs head trough).
+      stopPrice: stop,
       targetPrice: target,
       score: entry != null ? 80 : 58,
       summary:
         entry != null
-          ? `역헤드앤숄더 목선 돌파 · 목표 ${target.toFixed(2)}`
+          ? `역헤드앤숄더 목선 돌파 · 목표 ${target.toFixed(2)} · 손절 ${stop.toFixed(2)}`
           : "역헤드앤숄더 형성 중",
     });
   }
@@ -505,6 +829,8 @@ function detectTripleTop(
     const a = highs[i];
     const b = highs[i + 1];
     const c = highs[i + 2];
+    // Curriculum: ≥~7–8 bars between successive peaks.
+    if (b.idx - a.idx < 7 || c.idx - b.idx < 7) continue;
     if (c.idx - a.idx < 12 || c.idx - a.idx > 80) continue;
     const tol = atrAt(atr, b.idx, b.price * 0.01) * 0.55;
     if (!nearEqual(a.price, b.price, tol) || !nearEqual(b.price, c.price, tol))
@@ -521,6 +847,7 @@ function detectTripleTop(
     const scanTo = Math.min(bars.length - 1, c.idx + 25);
     const entry = crossedBelow(bars, c.idx + 1, scanTo, () => neck.price);
     const target = neck.price - height;
+    const stop = stopShort(entry, Math.max(a.price, b.price, c.price), bars);
     out.push({
       key: `triple_top-${a.idx}-${c.idx}`,
       id: "triple_top",
@@ -543,12 +870,12 @@ function detectTripleTop(
         ),
       ],
       entryBar: entry,
-      stopPrice: c.price,
+      stopPrice: stop,
       targetPrice: target,
       score: entry != null ? 76 : 54,
       summary:
         entry != null
-          ? `3중 천장 목선 이탈 · 목표 ${target.toFixed(2)}`
+          ? `3중 천장 목선 이탈 · 목표 ${target.toFixed(2)} · 손절 ${stop.toFixed(2)}`
           : "3중 천장 형성 중",
     });
   }
@@ -566,6 +893,7 @@ function detectTripleBottom(
     const a = lows[i];
     const b = lows[i + 1];
     const c = lows[i + 2];
+    if (b.idx - a.idx < 7 || c.idx - b.idx < 7) continue;
     if (c.idx - a.idx < 12 || c.idx - a.idx > 80) continue;
     const tol = atrAt(atr, b.idx, b.price * 0.01) * 0.55;
     if (!nearEqual(a.price, b.price, tol) || !nearEqual(b.price, c.price, tol))
@@ -583,6 +911,10 @@ function detectTripleBottom(
     const scanTo = Math.min(bars.length - 1, c.idx + 25);
     const entry = crossedAbove(bars, c.idx + 1, scanTo, () => neck.price);
     const target = neck.price + height;
+    // Curriculum: stop at previous candle low (bar before breakout).
+    const trough = Math.min(a.price, b.price, c.price);
+    const stop =
+      entry != null && entry > 0 ? bars[entry - 1]!.low : trough;
     out.push({
       key: `triple_bottom-${a.idx}-${c.idx}`,
       id: "triple_bottom",
@@ -605,12 +937,12 @@ function detectTripleBottom(
         ),
       ],
       entryBar: entry,
-      stopPrice: c.price,
+      stopPrice: stop,
       targetPrice: target,
       score: entry != null ? 76 : 54,
       summary:
         entry != null
-          ? `3중 바닥 목선 돌파 · 목표 ${target.toFixed(2)}`
+          ? `3중 바닥 목선 돌파 · 목표 ${target.toFixed(2)} · 손절 ${stop.toFixed(2)}`
           : "3중 바닥 형성 중",
     });
   }
@@ -673,16 +1005,16 @@ function detectWedges(
         entry = down;
         direction = "bearish";
         breakPx = supportAt(down);
-        stop = Math.max(...winHighs.map((h) => h.price));
+        stop = stopShort(down, Math.max(...winHighs.map((h) => h.price)), bars);
         target = breakPx - widthStart;
-        summaryDone = `상승 쐐기 지지 이탈 · 목표 ${target.toFixed(2)}`;
+        summaryDone = `상승 쐐기 지지 이탈 · 목표 ${target.toFixed(2)} · 손절 ${stop.toFixed(2)}`;
       } else if (up != null) {
         entry = up;
         direction = "bullish";
         breakPx = resistAt(up);
-        stop = Math.min(...winLows.map((l) => l.price));
+        stop = stopLong(up, Math.min(...winLows.map((l) => l.price)), bars);
         target = breakPx + widthStart;
-        summaryDone = `상승 쐐기 상단 돌파(지속) · 목표 ${target.toFixed(2)}`;
+        summaryDone = `상승 쐐기 상단 돌파(지속) · 목표 ${target.toFixed(2)} · 손절 ${stop.toFixed(2)}`;
       } else {
         stop = Math.max(...winHighs.map((h) => h.price));
         target = supportAt(endIdx) - widthStart;
@@ -735,16 +1067,16 @@ function detectWedges(
         entry = up;
         direction = "bullish";
         breakPx = resistAt(up);
-        stop = Math.min(...winLows.map((l) => l.price));
+        stop = stopLong(up, Math.min(...winLows.map((l) => l.price)), bars);
         target = breakPx + widthStart;
-        summaryDone = `하강 쐐기 저항 돌파 · 목표 ${target.toFixed(2)}`;
+        summaryDone = `하강 쐐기 저항 돌파 · 목표 ${target.toFixed(2)} · 손절 ${stop.toFixed(2)}`;
       } else if (down != null) {
         entry = down;
         direction = "bearish";
         breakPx = supportAt(down);
-        stop = Math.max(...winHighs.map((h) => h.price));
+        stop = stopShort(down, Math.max(...winHighs.map((h) => h.price)), bars);
         target = breakPx - widthStart;
-        summaryDone = `하강 쐐기 하단 이탈(지속) · 목표 ${target.toFixed(2)}`;
+        summaryDone = `하강 쐐기 하단 이탈(지속) · 목표 ${target.toFixed(2)} · 손절 ${stop.toFixed(2)}`;
       } else {
         stop = Math.min(...winLows.map((l) => l.price));
         target = resistAt(endIdx) + widthStart;
@@ -802,9 +1134,8 @@ function detectTriangles(
     const highFit = fitSlope(
       winHighs.map((p) => ({ idx: p.idx, price: p.price })),
     );
-    const lowFit = fitSlope(
-      winLows.slice(-3).map((p) => ({ idx: p.idx, price: p.price })),
-    );
+    const lowPts = winLows.slice(-3);
+    const lowFit = fitSlope(lowPts.map((p) => ({ idx: p.idx, price: p.price })));
     if (!highFit || !lowFit) continue;
     if (last - start < 10 || last - start > 70) continue;
 
@@ -813,79 +1144,131 @@ function detectTriangles(
       nearEqual(winHighs[0].price, winHighs.at(-1)!.price, tol * 1.1);
     const flatLow =
       Math.abs(lowFit.slope) * (last - start) <= tol * 0.9 &&
-      nearEqual(winLows[0].price, winLows.at(-1)!.price, tol * 1.1);
+      nearEqual(lowPts[0].price, lowPts.at(-1)!.price, tol * 1.1);
+
+    const scanTo = Math.min(bars.length - 1, last + 20);
+    const resistAt = (idx: number) => priceOnFit(highFit, idx);
+    const supportAt = (idx: number) => priceOnFit(lowFit, idx);
 
     if (kind === "ascending_triangle") {
+      // Neutral: flat resistance + rising support — break either way.
       if (!flatHigh || !(lowFit.slope > 0)) continue;
-      const resistance = winHighs.reduce((s, h) => s + h.price, 0) / winHighs.length;
-      const height = resistance - winLows[0].price;
+      const resistance =
+        winHighs.reduce((s, h) => s + h.price, 0) / winHighs.length;
+      const height = resistance - priceOnFit(lowFit, lowPts[0].idx);
       if (height < tol * 1.2) continue;
-      const scanTo = Math.min(bars.length - 1, last + 20);
-      const entry = crossedAbove(bars, last + 1, scanTo, () => resistance);
-      const target = resistance + height;
+
+      const up = crossedAbove(bars, last + 1, scanTo, () => resistance);
+      const down = crossedBelow(bars, last + 1, scanTo, supportAt);
+
+      let entry: number | null = null;
+      let direction: TrendLabel = "neutral";
+      let target: number | null = null;
+      let stop: number | null = null;
+      let summaryDone = "";
+      if (up != null && (down == null || up <= down)) {
+        entry = up;
+        direction = "bullish";
+        target = bars[up].close + height;
+        stop = nearestSwingLow(lows, start, up, supportAt(up));
+        summaryDone = `상승 삼각형 상단 돌파 · 목표 ${target.toFixed(2)}`;
+      } else if (down != null) {
+        entry = down;
+        direction = "bearish";
+        target = bars[down].close - height;
+        stop = nearestSwingHigh(highs, start, down, resistance);
+        summaryDone = `상승 삼각형 하단 이탈 · 목표 ${target.toFixed(2)}`;
+      }
+
       out.push({
         key: `asc_tri-${start}-${last}`,
         id: "ascending_triangle",
-        direction: "bullish",
+        direction,
         status: entry != null ? "confirmed" : "forming",
         startBar: start,
         endBar: entry ?? last,
         pivots: [
           ...winHighs.map((h, n) => pt(h, `h${n + 1}`)),
-          ...winLows.slice(-3).map((l, n) => pt(l, `l${n + 1}`)),
+          ...lowPts.map((l, n) => pt(l, `l${n + 1}`)),
         ],
         segments: [
           seg(
             { idx: start, date: bars[start].date, price: resistance },
-            { idx: entry ?? scanTo, date: bars[entry ?? scanTo].date, price: resistance },
+            {
+              idx: entry ?? scanTo,
+              date: bars[entry ?? scanTo].date,
+              price: resistance,
+            },
             "resistance",
           ),
-          seg(winLows.slice(-3)[0], winLows.at(-1)!, "support"),
+          seg(lowPts[0], lowPts.at(-1)!, "support"),
         ],
         entryBar: entry,
-        stopPrice: winLows.at(-1)!.price,
+        stopPrice: stop,
         targetPrice: target,
         score: entry != null ? 75 : 53,
         summary:
-          entry != null
-            ? `상승 삼각형 돌파 · 목표 ${target.toFixed(2)}`
-            : "상승 삼각형 형성 중",
+          entry != null ? summaryDone : "상승 삼각형 형성 중 · 돌파 대기",
       });
     } else {
+      // Neutral: flat support + falling resistance — break either way.
       if (!flatLow || !(highFit.slope < 0)) continue;
-      const support = winLows.reduce((s, l) => s + l.price, 0) / winLows.length;
-      const height = winHighs[0].price - support;
+      const support =
+        winLows.reduce((s, l) => s + l.price, 0) / winLows.length;
+      const height = priceOnFit(highFit, winHighs[0].idx) - support;
       if (height < tol * 1.2) continue;
-      const scanTo = Math.min(bars.length - 1, last + 20);
-      const entry = crossedBelow(bars, last + 1, scanTo, () => support);
-      const target = support - height;
+
+      const up = crossedAbove(bars, last + 1, scanTo, resistAt);
+      const down = crossedBelow(bars, last + 1, scanTo, () => support);
+
+      let entry: number | null = null;
+      let direction: TrendLabel = "neutral";
+      let target: number | null = null;
+      let stop: number | null = null;
+      let summaryDone = "";
+      if (up != null && (down == null || up <= down)) {
+        entry = up;
+        direction = "bullish";
+        target = bars[up].close + height;
+        stop = nearestSwingLow(lows, start, up, support);
+        summaryDone = `하락 삼각형 상단 돌파 · 목표 ${target.toFixed(2)}`;
+      } else if (down != null) {
+        entry = down;
+        direction = "bearish";
+        target = bars[down].close - height;
+        stop = nearestSwingHigh(highs, start, down, resistAt(down));
+        summaryDone = `하락 삼각형 하단 이탈 · 목표 ${target.toFixed(2)}`;
+      }
+
       out.push({
         key: `desc_tri-${start}-${last}`,
         id: "descending_triangle",
-        direction: "bearish",
+        direction,
         status: entry != null ? "confirmed" : "forming",
         startBar: start,
         endBar: entry ?? last,
         pivots: [
           ...winHighs.map((h, n) => pt(h, `h${n + 1}`)),
-          ...winLows.slice(-3).map((l, n) => pt(l, `l${n + 1}`)),
+          ...lowPts.map((l, n) => pt(l, `l${n + 1}`)),
         ],
         segments: [
           seg(winHighs[0], winHighs.at(-1)!, "resistance"),
           seg(
             { idx: start, date: bars[start].date, price: support },
-            { idx: entry ?? scanTo, date: bars[entry ?? scanTo].date, price: support },
+            {
+              idx: entry ?? scanTo,
+              date: bars[entry ?? scanTo].date,
+              price: support,
+            },
             "support",
           ),
         ],
         entryBar: entry,
-        stopPrice: winHighs.at(-1)!.price,
+        stopPrice: stop,
         targetPrice: target,
         score: entry != null ? 75 : 53,
         summary:
-          entry != null
-            ? `하락 삼각형 이탈 · 목표 ${target.toFixed(2)}`
-            : "하락 삼각형 형성 중",
+          entry != null ? summaryDone : "하락 삼각형 형성 중 · 돌파 대기",
       });
     }
   }
@@ -894,7 +1277,8 @@ function detectTriangles(
 
 /**
  * Symmetrical triangle: descending highs + ascending lows, converging.
- * Direction is unknown until close breakout of either boundary.
+ * Continuation: require prior trend; only confirm breakouts in that direction.
+ * Stop = tighter of breakout candle extreme and triangle midpoint.
  */
 function detectSymmetricalTriangle(
   bars: OHLCVBar[],
@@ -934,7 +1318,140 @@ function detectSymmetricalTriangle(
     const w1 = priceOnFit(highFit, last) - priceOnFit(lowFit, last);
     if (!(w0 > tol * 1.4 && w1 < w0 * 0.78 && w1 > tol * 0.35)) continue;
 
+    // Prior trend → continuation bias (like rectangle).
+    const priorFrom = Math.max(0, start - 20);
+    const priorMove = bars[start].close - bars[priorFrom].close;
+    const atrS = atrAt(atr, start, bars[start].close * 0.01);
+    const priorBull = priorMove > atrS * 1.5;
+    const priorBear = priorMove < -atrS * 1.5;
+    if (!priorBull && !priorBear) continue;
+
     const height = w0;
+    const scanTo = Math.min(bars.length - 1, last + 20);
+    const resistAt = (idx: number) => priceOnFit(highFit, idx);
+    const supportAt = (idx: number) => priceOnFit(lowFit, idx);
+    const midAt = (idx: number) => (resistAt(idx) + supportAt(idx)) / 2;
+
+    const pivots = [
+      ...winHighs.map((h, n) => pt(h, `h${n + 1}`)),
+      ...lowPts.map((l, n) => pt(l, `l${n + 1}`)),
+    ];
+    const segments = [
+      seg(winHighs[0], winHighs.at(-1)!, "resistance"),
+      seg(lowPts[0], lowPts.at(-1)!, "support"),
+    ];
+
+    if (priorBull) {
+      const entry = crossedAbove(bars, last + 1, scanTo, resistAt);
+      const target =
+        entry != null ? bars[entry].close + height : resistAt(last) + height;
+      const mid = midAt(entry ?? last);
+      const swing =
+        entry != null
+          ? nearestSwingLow(lows, start, entry, supportAt(entry))
+          : mid;
+      const stop =
+        entry != null
+          ? Math.max(bars[entry].low, mid, swing)
+          : mid;
+      out.push({
+        key: `sym_tri-bull-${start}-${last}`,
+        id: "symmetrical_triangle",
+        direction: "bullish",
+        status: entry != null ? "confirmed" : "forming",
+        startBar: start,
+        endBar: entry ?? last,
+        pivots,
+        segments,
+        entryBar: entry,
+        stopPrice: stop,
+        targetPrice: target,
+        score: entry != null ? 74 : 52,
+        summary:
+          entry != null
+            ? `대칭 삼각형(지속·상승 후) 상단 돌파 · 목표 ${target.toFixed(2)}`
+            : "대칭 삼각형(지속·상승 후) 형성 중 · 상단 돌파 대기",
+      });
+    } else {
+      const entry = crossedBelow(bars, last + 1, scanTo, supportAt);
+      const target =
+        entry != null ? bars[entry].close - height : supportAt(last) - height;
+      const mid = midAt(entry ?? last);
+      const swing =
+        entry != null
+          ? nearestSwingHigh(highs, start, entry, resistAt(entry))
+          : mid;
+      const stop =
+        entry != null
+          ? Math.min(bars[entry].high, mid, swing)
+          : mid;
+      out.push({
+        key: `sym_tri-bear-${start}-${last}`,
+        id: "symmetrical_triangle",
+        direction: "bearish",
+        status: entry != null ? "confirmed" : "forming",
+        startBar: start,
+        endBar: entry ?? last,
+        pivots,
+        segments,
+        entryBar: entry,
+        stopPrice: stop,
+        targetPrice: target,
+        score: entry != null ? 74 : 52,
+        summary:
+          entry != null
+            ? `대칭 삼각형(지속·하락 후) 하단 이탈 · 목표 ${target.toFixed(2)}`
+            : "대칭 삼각형(지속·하락 후) 형성 중 · 하단 이탈 대기",
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * Broadening / expanding symmetrical triangle (megaphone):
+ * ascending highs + descending lows — width grows. Neutral until breakout.
+ */
+function detectBroadeningTriangle(
+  bars: OHLCVBar[],
+  lows: Pivot[],
+  highs: Pivot[],
+  atr: Array<number | null>,
+): ChartPatternInstance[] {
+  const out: ChartPatternInstance[] = [];
+  for (let end = 3; end <= highs.length; end++) {
+    const winHighs = highs.slice(Math.max(0, end - 4), end);
+    if (winHighs.length < 3) continue;
+    const start = winHighs[0].idx;
+    const last = winHighs.at(-1)!.idx;
+    const winLows = lows.filter((l) => l.idx >= start && l.idx <= last + 3);
+    if (winLows.length < 2) continue;
+    const tol = atrAt(atr, last, bars[last].close * 0.01) * 0.55;
+    const highFit = fitSlope(
+      winHighs.map((p) => ({ idx: p.idx, price: p.price })),
+    );
+    const lowPts = winLows.slice(-3);
+    const lowFit = fitSlope(lowPts.map((p) => ({ idx: p.idx, price: p.price })));
+    if (!highFit || !lowFit) continue;
+    if (last - start < 12 || last - start > 80) continue;
+
+    const flatHigh =
+      Math.abs(highFit.slope) * (last - start) <= tol * 0.9 &&
+      nearEqual(winHighs[0].price, winHighs.at(-1)!.price, tol * 1.1);
+    const flatLow =
+      Math.abs(lowFit.slope) * (last - start) <= tol * 0.9 &&
+      nearEqual(lowPts[0].price, lowPts.at(-1)!.price, tol * 1.1);
+    if (flatHigh || flatLow) continue;
+    // Expanding: highs rising, lows falling.
+    if (!(highFit.slope > 0 && lowFit.slope < 0)) continue;
+
+    const w0 =
+      priceOnFit(highFit, winHighs[0].idx) - priceOnFit(lowFit, lowPts[0].idx);
+    const w1 = priceOnFit(highFit, last) - priceOnFit(lowFit, last);
+    if (!(w0 > tol * 0.8 && w1 > w0 * 1.22 && w1 > tol * 1.4)) continue;
+
+    // Measured move ≈ width near breakout (widest end).
+    const height = w1;
     const scanTo = Math.min(bars.length - 1, last + 20);
     const resistAt = (idx: number) => priceOnFit(highFit, idx);
     const supportAt = (idx: number) => priceOnFit(lowFit, idx);
@@ -957,14 +1474,13 @@ function detectSymmetricalTriangle(
       stop = resistAt(down);
     }
 
-    const endBar = entry ?? last;
     out.push({
-      key: `sym_tri-${start}-${last}`,
-      id: "symmetrical_triangle",
+      key: `broad_tri-${start}-${last}`,
+      id: "broadening_triangle",
       direction,
       status: entry != null ? "confirmed" : "forming",
       startBar: start,
-      endBar,
+      endBar: entry ?? last,
       pivots: [
         ...winHighs.map((h, n) => pt(h, `h${n + 1}`)),
         ...lowPts.map((l, n) => pt(l, `l${n + 1}`)),
@@ -976,13 +1492,13 @@ function detectSymmetricalTriangle(
       entryBar: entry,
       stopPrice: stop,
       targetPrice: target,
-      score: entry != null ? 74 : 52,
+      score: entry != null ? 72 : 50,
       summary:
         entry != null
           ? direction === "bullish"
-            ? `대칭 삼각형 상단 돌파 · 목표 ${target!.toFixed(2)}`
-            : `대칭 삼각형 하단 이탈 · 목표 ${target!.toFixed(2)}`
-          : "대칭 삼각형 형성 중 · 돌파 대기",
+            ? `확장 삼각형 상단 돌파 · 목표 ${target!.toFixed(2)}`
+            : `확장 삼각형 하단 이탈 · 목표 ${target!.toFixed(2)}`
+          : "확장 삼각형 형성 중 · 돌파 대기",
     });
   }
   return out;
@@ -1027,12 +1543,17 @@ function detectPennant(
       if (!(w0 > atrI * 0.6 && w1 < w0 * 0.7)) continue;
 
       const poleH = Math.abs(move);
+      const poleTarget = poleH * POLE_TARGET_FRAC;
       const scanTo = Math.min(bars.length - 1, endIdx + 15);
       if (poleBull) {
         const levelAt = (idx: number) => priceOnFit(highFit, idx);
         const entry = crossedAbove(bars, endIdx + 1, scanTo, levelAt);
         const target =
-          (entry != null ? bars[entry].close : bars[endIdx].close) + poleH;
+          (entry != null ? bars[entry].close : bars[endIdx].close) +
+          poleTarget;
+        // Curriculum: stop at breakout candle low (fallback: last support swing).
+        const stop =
+          entry != null ? bars[entry].low : ls.at(-1)!.price;
         out.push({
           key: `pennant-bull-${start}-${endIdx}`,
           id: "pennant",
@@ -1060,19 +1581,22 @@ function detectPennant(
             seg(ls[0], ls.at(-1)!, "support"),
           ],
           entryBar: entry,
-          stopPrice: ls.at(-1)!.price,
+          stopPrice: stop,
           targetPrice: target,
           score: entry != null ? 70 : 48,
           summary:
             entry != null
-              ? `상승 페넌트 돌파 · 목표 ${target.toFixed(2)}`
+              ? `상승 페넌트 돌파 · 목표 ${target.toFixed(2)} (폴≈80%)`
               : "상승 페넌트 형성 중",
         });
       } else {
         const levelAt = (idx: number) => priceOnFit(lowFit, idx);
         const entry = crossedBelow(bars, endIdx + 1, scanTo, levelAt);
         const target =
-          (entry != null ? bars[entry].close : bars[endIdx].close) - poleH;
+          (entry != null ? bars[entry].close : bars[endIdx].close) -
+          poleTarget;
+        const stop =
+          entry != null ? bars[entry].high : hs.at(-1)!.price;
         out.push({
           key: `pennant-bear-${start}-${endIdx}`,
           id: "pennant",
@@ -1100,12 +1624,12 @@ function detectPennant(
             seg(ls[0], ls.at(-1)!, "support"),
           ],
           entryBar: entry,
-          stopPrice: hs.at(-1)!.price,
+          stopPrice: stop,
           targetPrice: target,
           score: entry != null ? 70 : 48,
           summary:
             entry != null
-              ? `하락 페넌트 이탈 · 목표 ${target.toFixed(2)}`
+              ? `하락 페넌트 이탈 · 목표 ${target.toFixed(2)} (폴≈80%)`
               : "하락 페넌트 형성 중",
         });
       }
@@ -1158,6 +1682,7 @@ function detectFlag(
       const poleH = Math.abs(move);
       // Flag depth typically within ~1/2 of pole.
       if (w0 > poleH * 0.55) continue;
+      const poleTarget = poleH * POLE_TARGET_FRAC;
 
       const scanTo = Math.min(bars.length - 1, endIdx + 15);
       if (poleBull) {
@@ -1167,7 +1692,11 @@ function detectFlag(
         const levelAt = (idx: number) => priceOnFit(highFit, idx);
         const entry = crossedAbove(bars, endIdx + 1, scanTo, levelAt);
         const target =
-          (entry != null ? bars[entry].close : bars[endIdx].close) + poleH;
+          (entry != null ? bars[entry].close : bars[endIdx].close) +
+          poleTarget;
+        // Curriculum: stop at breakout candle low (fallback: channel support).
+        const stop =
+          entry != null ? bars[entry].low : ls.at(-1)!.price;
         out.push({
           key: `flag-bull-${start}-${endIdx}`,
           id: "flag",
@@ -1195,12 +1724,12 @@ function detectFlag(
             seg(ls[0], ls.at(-1)!, "support"),
           ],
           entryBar: entry,
-          stopPrice: ls.at(-1)!.price,
+          stopPrice: stop,
           targetPrice: target,
           score: entry != null ? 72 : 50,
           summary:
             entry != null
-              ? `상승 깃발 돌파 · 목표 ${target.toFixed(2)}`
+              ? `상승 깃발 돌파 · 목표 ${target.toFixed(2)} (폴≈80%)`
               : "상승 깃발 형성 중",
         });
       } else {
@@ -1210,7 +1739,10 @@ function detectFlag(
         const levelAt = (idx: number) => priceOnFit(lowFit, idx);
         const entry = crossedBelow(bars, endIdx + 1, scanTo, levelAt);
         const target =
-          (entry != null ? bars[entry].close : bars[endIdx].close) - poleH;
+          (entry != null ? bars[entry].close : bars[endIdx].close) -
+          poleTarget;
+        const stop =
+          entry != null ? bars[entry].high : hs.at(-1)!.price;
         out.push({
           key: `flag-bear-${start}-${endIdx}`,
           id: "flag",
@@ -1238,12 +1770,12 @@ function detectFlag(
             seg(ls[0], ls.at(-1)!, "support"),
           ],
           entryBar: entry,
-          stopPrice: hs.at(-1)!.price,
+          stopPrice: stop,
           targetPrice: target,
           score: entry != null ? 72 : 50,
           summary:
             entry != null
-              ? `하락 깃발 이탈 · 목표 ${target.toFixed(2)}`
+              ? `하락 깃발 이탈 · 목표 ${target.toFixed(2)} (폴≈80%)`
               : "하락 깃발 형성 중",
         });
       }
@@ -1296,6 +1828,7 @@ export function detectChartPatterns(
     ...detectDoubleBottom(bars, lows, highs, atr),
     ...detectDoubleTop(bars, lows, highs, atr),
     ...detectCupAndHandle(bars, lows, highs, atr),
+    ...detectRectangle(bars, lows, highs, atr),
     ...detectHeadAndShoulders(bars, lows, highs, atr),
     ...detectTripleTop(bars, lows, highs, atr),
     ...detectTripleBottom(bars, lows, highs, atr),
@@ -1304,6 +1837,7 @@ export function detectChartPatterns(
     ...detectTriangles(bars, lows, highs, atr, "ascending_triangle"),
     ...detectTriangles(bars, lows, highs, atr, "descending_triangle"),
     ...detectSymmetricalTriangle(bars, lows, highs, atr),
+    ...detectBroadeningTriangle(bars, lows, highs, atr),
     ...detectPennant(bars, lows, highs, atr),
     ...detectFlag(bars, lows, highs, atr),
   ].filter((inst) => inst.endBar >= start);

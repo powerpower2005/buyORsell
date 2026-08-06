@@ -395,7 +395,7 @@ const INDICATORS = {
     nameKo: "차트 패턴",
     nameEn: "Classical Chart Patterns",
     category: "structure",
-    what: "H&S, 삼각형, 쌍바닥 등 + 목선·손절·목표가.",
+    what: "H&S, 직사각형, 깃발/페넌트, 대칭 삼각형(지속·선행추세), 중립 삼각형(상승·하락·확장), 컵앤핸들(역컵) 등 + 목선·손절·목표가.",
     params: "—",
     series: "pattern instances",
     file: "src/lib/evaluation/chartPatterns.ts",
@@ -407,7 +407,7 @@ const INDICATORS = {
     nameEn: "Candlestick Patterns",
     category: "structure",
     what:
-      "봉 형태 탐지(전략 패밀리 아님). 사이드바 롱/숏/중립 토글·마커. 신뢰도는 candle confirm companion. 상세: indicators/candle_patterns/.",
+      "봉 형태 탐지(전략 패밀리 아님). OHLC·자리·다음 봉 확인은 docs. 잠자리/묘비 도지·키커 포함. Abandoned Baby 등은 설명만.",
     params: "— (shape thresholds in detector)",
     series: "candle hits per pattern id",
     file: "src/lib/evaluation/candlePatterns.ts",
@@ -449,28 +449,32 @@ const CANDLE_CONFIRM = {
 
 /** @type {{ id: string, label: string, labelKo: string, bias: string, marker: string, confirm: string, description: string }[]} */
 const CANDLE_PATTERNS = [
-  { id: "hammer", label: "Hammer", labelKo: "망치형", bias: "bullish", marker: "Ham", confirm: "reversal_bull", description: "긴 아래꼬리·짧은 몸통. 하락 후 매수 유입 후보. 지지·거래량과 같이 보면 신뢰↑." },
-  { id: "inverted_hammer", label: "Inverted Hammer", labelKo: "역망치형", bias: "bullish", marker: "IH", confirm: "reversal_bull", description: "하락 후 긴 위꼬리. 매수 시도 힌트 — 다음 봉·지지·RSI 확인." },
-  { id: "bullish_engulfing", label: "Bullish Engulfing", labelKo: "상승 장악형", bias: "bullish", marker: "BE", confirm: "reversal_bull", description: "음봉을 양봉이 덮는 2봉 반전 후보. 지지·거래량·VWAP 근처면 의미↑." },
-  { id: "bullish_harami", label: "Bullish Harami", labelKo: "상승 잉태형", bias: "bullish", marker: "BH", confirm: "reversal_bull", description: "큰 음봉 안 작은 양봉. 하락 모멘텀 약화 — 단독보다 RSI·지지 확인." },
-  { id: "piercing", label: "Piercing Pattern", labelKo: "피어싱", bias: "bullish", marker: "Pc", confirm: "reversal_bull", description: "음봉 뒤 양봉이 이전 몸통 상당 회복(장악 전 단계). 지지·거래량." },
-  { id: "tweezers_bottom", label: "Tweezers Bottom", labelKo: "트위저 바텀", bias: "bullish", marker: "TwB", confirm: "reversal_bull", description: "연속 봉 저가 거의 동일. 이중 바닥 감각 — 지지 존과 겹치면 신뢰↑." },
-  { id: "morning_star", label: "Morning Star", labelKo: "샛별형", bias: "bullish", marker: "MS", confirm: "reversal_bull", description: "큰 음봉 → 작은 몸통 → 양봉 회복. 갭 비필수. 지지·거래량 확인." },
-  { id: "bullish_marubozu", label: "Bullish Marubozu", labelKo: "양봉 마루보즈", bias: "bullish", marker: "Mb+", confirm: "continuation_bull", description: "심지 거의 없는 장대 양봉. 강한 매수 우위·지속. 거래량·ADX·추세선." },
-  { id: "three_white_soldiers", label: "Three White Soldiers", labelKo: "적삼병", bias: "bullish", marker: "3W", confirm: "continuation_bull", description: "강한 양봉 3연속·종가 상승. 지속·전환 후보. 거래량·ADX·이평." },
-  { id: "rising_three_methods", label: "Rising Three Methods", labelKo: "상승 삼법형", bias: "bullish", marker: "R3", confirm: "continuation_bull", description: "장대 양봉 → 작은 조정 2~3 → 장대 양봉. 상승 지속. ADX·거래량." },
-  { id: "hanging_man", label: "Hanging Man", labelKo: "교수형", bias: "bearish", marker: "HM", confirm: "reversal_bear", description: "망치와 같은 형태가 상승 뒤 → 피로·하락 경고. 저항·거래량." },
-  { id: "shooting_star", label: "Shooting Star", labelKo: "유성형", bias: "bearish", marker: "SS", confirm: "reversal_bear", description: "상승 후 긴 위꼬리. 매도 압력. 저항·거래량·RSI." },
-  { id: "bearish_engulfing", label: "Bearish Engulfing", labelKo: "하락 장악형", bias: "bearish", marker: "SE", confirm: "reversal_bear", description: "양봉을 음봉이 덮는 2봉 반전. 저항·거래량·VWAP." },
-  { id: "bearish_harami", label: "Bearish Harami", labelKo: "하락 잉태형", bias: "bearish", marker: "RH", confirm: "reversal_bear", description: "큰 양봉 안 작은 음봉. 상승 모멘텀 약화. 저항·RSI." },
-  { id: "dark_cloud_cover", label: "Dark Cloud Cover", labelKo: "먹구름형", bias: "bearish", marker: "DC", confirm: "reversal_bear", description: "양봉 뒤 음봉이 이전 몸통 상당 잠식. 저항·거래량." },
-  { id: "tweezers_top", label: "Tweezers Top", labelKo: "트위저 탑", bias: "bearish", marker: "TwT", confirm: "reversal_bear", description: "연속 봉 고가 거의 동일. 이중 천정 감각 — 저항과 겹치면 신뢰↑." },
-  { id: "evening_star", label: "Evening Star", labelKo: "저녁별형", bias: "bearish", marker: "ES", confirm: "reversal_bear", description: "큰 양봉 → 작은 몸통 → 음봉 되돌림. 저항·거래량." },
-  { id: "bearish_marubozu", label: "Bearish Marubozu", labelKo: "음봉 마루보즈", bias: "bearish", marker: "Mb-", confirm: "continuation_bear", description: "심지 거의 없는 장대 음봉. 강한 매도 우위·지속. 거래량·ADX." },
-  { id: "three_black_crows", label: "Three Black Crows", labelKo: "흑삼병", bias: "bearish", marker: "3C", confirm: "continuation_bear", description: "강한 음봉 3연속·종가 하락. 지속·전환. 거래량·ADX·이평." },
-  { id: "falling_three_methods", label: "Falling Three Methods", labelKo: "하락 삼법형", bias: "bearish", marker: "F3", confirm: "continuation_bear", description: "장대 음봉 → 작은 반등 2~3 → 장대 음봉. 하락 지속. ADX·거래량." },
-  { id: "doji", label: "Doji", labelKo: "도지", bias: "neutral", marker: "D", confirm: "uncertain", description: "시가≈종가. 형태만으로는 중립 — 지지·저항·다음 봉 확인." },
-  { id: "spinning_top", label: "Spinning Top", labelKo: "스피닝 탑", bias: "neutral", marker: "ST", confirm: "uncertain", description: "작은 몸통 + 위·아래 긴 심지. 불확실성 — 단독 진입보다 맥락." },
+  { id: "hammer", label: "Hammer", labelKo: "망치형", bias: "bullish", marker: "Ham", confirm: "reversal_bull", description: "긴 아래꼬리·짧은 몸통(색 비중요). 하락 바닥 반전 후보. 다음 봉 고가 위 종가 확인·손절=저가(마커만, Hard 아님)." },
+  { id: "inverted_hammer", label: "Inverted Hammer", labelKo: "역망치형", bias: "bullish", marker: "IH", confirm: "reversal_bull", description: "하락 후 긴 위꼬리. 매수 시도 힌트 — 다음 봉·지지·RSI." },
+  { id: "dragonfly_doji", label: "Dragonfly Doji", labelKo: "잠자리 도지", bias: "bullish", marker: "Df", confirm: "reversal_bull", description: "도지+긴 아래꼬리. 바닥 반등. 다음 봉 고가 위 종가·손절=저가." },
+  { id: "bullish_engulfing", label: "Bullish Engulfing", labelKo: "상승 장악형", bias: "bullish", marker: "BE", confirm: "reversal_bull", description: "음봉 몸통을 양봉이 완전 장악. 바닥. 2봉 거래량↑ 신뢰↑." },
+  { id: "bullish_harami", label: "Bullish Harami", labelKo: "상승 잉태형", bias: "bullish", marker: "BH", confirm: "reversal_bull", description: "큰 음봉 안 작은 양봉. 약화 힌트. 다음 봉 확인=쓰리 인사이드 업 감각(별도 id 없음)." },
+  { id: "piercing", label: "Piercing Pattern", labelKo: "피어싱", bias: "bullish", marker: "Pc", confirm: "reversal_bull", description: "음봉 뒤 양봉이 이전 몸통 50%+ 회복. 지지·거래량." },
+  { id: "tweezers_bottom", label: "Tweezers Bottom", labelKo: "트위저 바텀", bias: "bullish", marker: "TwB", confirm: "reversal_bull", description: "연속 저가 거의 동일(색 비중요). 지지·거래량↑." },
+  { id: "bullish_kicker", label: "Bullish Kicker", labelKo: "강세 키커", bias: "bullish", marker: "Kk+", confirm: "reversal_bull", description: "음봉 후 시가>이전 시가 갭·양봉. 급전환. 거래량·마루보즈면↑. 일봉 갭 드묾." },
+  { id: "morning_star", label: "Morning Star", labelKo: "샛별형", bias: "bullish", marker: "MS", confirm: "reversal_bull", description: "큰 음봉→작은 몸통→양봉. 갭 비필수(느슨). 하위 TF 합치면 망치 감각." },
+  { id: "bullish_marubozu", label: "Bullish Marubozu", labelKo: "양봉 마루보즈", bias: "bullish", marker: "Mb+", confirm: "continuation_bull", description: "심지 거의 없는 장대 양봉. 지배적 매수. 거래량·ADX." },
+  { id: "three_white_soldiers", label: "Three White Soldiers", labelKo: "적삼병", bias: "bullish", marker: "3W", confirm: "continuation_bull", description: "양봉 3연속·종가 상승. 마지막 고가 돌파 확인·손절=마지막 저가(Notes)." },
+  { id: "rising_three_methods", label: "Rising Three Methods", labelKo: "상승 삼법형", bias: "bullish", marker: "R3", confirm: "continuation_bull", description: "장대 양→작은 조정 2~3→장대 양. 상승 지속." },
+  { id: "hanging_man", label: "Hanging Man", labelKo: "교수형", bias: "bearish", marker: "HM", confirm: "reversal_bear", description: "망치 형태가 상승 상단. 중간 추세면 의미↓. 저항·거래량." },
+  { id: "shooting_star", label: "Shooting Star", labelKo: "유성형", bias: "bearish", marker: "SS", confirm: "reversal_bear", description: "상승 후 긴 위꼬리. 다음 봉 저가 아래 종가·손절=고가." },
+  { id: "gravestone_doji", label: "Gravestone Doji", labelKo: "묘비 도지", bias: "bearish", marker: "Gv", confirm: "reversal_bear", description: "도지+긴 위꼬리. 상단 매도. 다음 봉 확인·손절=고가." },
+  { id: "bearish_engulfing", label: "Bearish Engulfing", labelKo: "하락 장악형", bias: "bearish", marker: "SE", confirm: "reversal_bear", description: "양봉을 음봉이 완전 장악. 상단. 2봉 거래량↑." },
+  { id: "bearish_harami", label: "Bearish Harami", labelKo: "하락 잉태형", bias: "bearish", marker: "RH", confirm: "reversal_bear", description: "큰 양봉 안 작은 음봉. 쓰리 인사이드 다운 감각(별도 id 없음)." },
+  { id: "dark_cloud_cover", label: "Dark Cloud Cover", labelKo: "먹구름형", bias: "bearish", marker: "DC", confirm: "reversal_bear", description: "양봉 뒤 음봉이 몸통 50%+ 잠식. 저항·거래량." },
+  { id: "tweezers_top", label: "Tweezers Top", labelKo: "트위저 탑", bias: "bearish", marker: "TwT", confirm: "reversal_bear", description: "연속 고가 거의 동일. 저항·거래량↑." },
+  { id: "bearish_kicker", label: "Bearish Kicker", labelKo: "약세 키커", bias: "bearish", marker: "Kk-", confirm: "reversal_bear", description: "양봉 후 시가<이전 시가 갭·음봉. 상단 급전환. 거래량 confirm." },
+  { id: "evening_star", label: "Evening Star", labelKo: "저녁별형", bias: "bearish", marker: "ES", confirm: "reversal_bear", description: "큰 양→작은 몸통→음봉. 하위 TF 합치면 유성 감각." },
+  { id: "bearish_marubozu", label: "Bearish Marubozu", labelKo: "음봉 마루보즈", bias: "bearish", marker: "Mb-", confirm: "continuation_bear", description: "심지 거의 없는 장대 음봉. 지배적 매도." },
+  { id: "three_black_crows", label: "Three Black Crows", labelKo: "흑삼병", bias: "bearish", marker: "3C", confirm: "continuation_bear", description: "음봉 3연속. 마지막 저가 돌파 확인·손절=첫 고가(Notes)." },
+  { id: "falling_three_methods", label: "Falling Three Methods", labelKo: "하락 삼법형", bias: "bearish", marker: "F3", confirm: "continuation_bear", description: "장대 음→작은 반등 2~3→장대 음. 하락 지속." },
+  { id: "doji", label: "Doji", labelKo: "도지", bias: "neutral", marker: "D", confirm: "uncertain", description: "시가≈종가 십자. 불확실. 잠자리/묘비는 별도 id로 분기." },
+  { id: "spinning_top", label: "Spinning Top", labelKo: "스피닝 탑", bias: "neutral", marker: "ST", confirm: "uncertain", description: "작은 몸통+위아래 긴 심지. 바닥/상단에서만 반전 힌트." },
 ];
 
 /** @typedef {{
@@ -610,7 +614,30 @@ const families = [
     store: "src/lib/classicStrategyStore.ts",
     help: "src/lib/classicStrategyHelp.ts",
     hasStopTarget: false,
-    overview: "이평 교차, 피보 되돌림, 갠 존. stop/target 없음.",
+    overview:
+      "이평 교차, 52주·N봉 고점 돌파, SMA200 지지 반등, 피보 되돌림, 갠 존. stop/target 없음.\n\n**범위:** 앱은 차트 **타이밍**(이평·고점·S/R·돌파)만 다룬다. 펀더멘털 DB·사업/독점/촉매 평가·멀티배거 스크리너(예: 379일 2×)·시장 사이클 엔진은 **미구현·범위 밖**(멀티배거 커리큘럼 #4).\n\n**장기 관점:** 주봉·월봉 TF를 우선. SMA200은 일봉 본선; 주봉에서는 SMA50 companion(≈1년 감각)을 같이 보라.",
+    companions: [
+      {
+        id: "ma_golden_dead",
+        layers: "거래량(교차 전후 추세 지속)",
+      },
+      {
+        id: "high_52w_break",
+        layers: "거래량 · S/R · ADX · SMA50",
+      },
+      {
+        id: "sma200_support",
+        layers: "거래량 · S/R · ADX · SMA50(주봉≈1년 보조)",
+      },
+      {
+        id: "fib_wave_pullback",
+        layers: "S/R · 거래량",
+      },
+      {
+        id: "gann_zone",
+        layers: "S/R · 거래량",
+      },
+    ],
     strategies: [
       {
         id: "ma_golden_dead",
@@ -622,6 +649,32 @@ const families = [
         stopTarget: "히트에 없음.",
         notes: "sma:20, sma:50 시리즈 필요. 추세 중반 신호일 수 있음.",
         params: "SMA 20 / 50",
+      },
+      {
+        id: "high_52w_break",
+        label: "52주·N봉 고점 돌파",
+        summary: "직전 N봉 고점 종가 상향 돌파(TF별 N).",
+        indicators: [],
+        bullish:
+          "N=252(1d)/52(1w)/24(1mo), min(N, bars-1). close > prior N-bar high 이고 prev close ≤ 같은 천장(첫 돌파 봉).",
+        bearish: "없음(롱 전용).",
+        stopTarget: "히트에 없음.",
+        notes:
+          "OHLC only(지표 레이어 없음). evaluateQuote가 timeframe를 detectClassicStrategies에 전달. 펀더·스크리너·사이클은 범위 밖.",
+        params: "N TF-aware · 종가 돌파",
+      },
+      {
+        id: "sma200_support",
+        label: "SMA200 지지 반등",
+        summary: "SMA200 위 국면 + 이평 근처 눌림 + 양봉.",
+        indicators: ["sma"],
+        bullish:
+          "sma:200 값 존재. close≥SMA200. low가 SMA±tol(≈0.5–1%·ATR) 터치. close>open & close≥SMA. 클러스터 5봉 디듀프.",
+        bearish: "없음(롱 전용).",
+        stopTarget: "히트에 없음.",
+        notes:
+          "시리즈 없으면 스킵. 주봉 SMA200은 매우 김 → Help/companion에 SMA50 안내. 펀더·사이클 범위 밖.",
+        params: "sma:200 · tol ~0.5–1%",
       },
       {
         id: "fib_wave_pullback",
@@ -1409,7 +1462,37 @@ const families = [
     help: "src/lib/patternStrategyHelp.ts",
     hasStopTarget: true,
     overview:
-      "고전 차트 패턴 인스턴스 기반. **유일하게 히트에 stopPrice/targetPrice** (measured move).",
+      "고전 차트 패턴 인스턴스 기반. **유일하게 히트에 stopPrice/targetPrice** (measured move).\n\n**≠ 캔들스틱:** 일본식 봉 패턴은 [`indicators/candle_patterns`](../../indicators/candle_patterns/README.md) (전략 패밀리 아님).\n\n**PCR/옵션 OI 없음** — valid 돌파는 거래량·RSI·MACD·리테스트·망치/잉걸핑으로 확인. `breakout_confirm_entry`=돌파 **다음** 봉 확인. `fake_breakout`=경고, `trap_entry`=종가 실패 반대 진입(목표×1.35).",
+    companions: [
+      {
+        id: "breakout_entry",
+        layers: "거래량 · RSI · MACD · 지지·저항",
+      },
+      {
+        id: "breakout_confirm_entry",
+        layers: "거래량 · RSI · MACD · 지지·저항",
+      },
+      {
+        id: "retest_entry",
+        layers: "거래량 · RSI · MACD · 지지·저항 · 망치/잉걸핑·유성",
+      },
+      {
+        id: "volume_breakout",
+        layers: "거래량 · RSI · MACD · 지지·저항",
+      },
+      {
+        id: "triple_confirm",
+        layers: "거래량 · RSI · MACD · 지지·저항",
+      },
+      {
+        id: "fake_breakout",
+        layers: "거래량 · RSI · MACD · 지지·저항 · 망치/잉걸핑·유성",
+      },
+      {
+        id: "trap_entry",
+        layers: "거래량 · RSI · MACD · 지지·저항 · 망치/잉걸핑·유성",
+      },
+    ],
     strategies: [
       {
         id: "breakout_entry",
@@ -1420,8 +1503,21 @@ const families = [
         bearish: "확정 약세 패턴 entryBar.",
         stopTarget:
           "pattern stop/target via levelsFromPattern. rewardRisk·rrMethod=pattern.",
-        notes: "공격적. volume은 패턴 엔진/표시와 연관.",
+        notes: "공격적. 커리큘럼 기본은 breakout_confirm_entry.",
         params: "confirm bar",
+      },
+      {
+        id: "breakout_confirm_entry",
+        label: "돌파 다음 봉 확인 진입",
+        summary: "돌파 다음 봉이 같은 방향 확인일 때만 진입.",
+        indicators: ["chart_patterns", "volume"],
+        bullish:
+          "entryBar+1 양봉 · close≥level · low가 레벨 근처 유지. triple_bottom 손절=돌파봉 low.",
+        bearish: "entryBar+1 음봉 · close≤level · high가 레벨 근처 유지.",
+        stopTarget: "pattern levels (triple_bottom confirm 시 돌파봉 low).",
+        notes:
+          "커리큘럼: 돌파 봉 진입 금지. 삼중·대칭 삼각형에 특히 권장.",
+        params: "next bar after entryBar",
       },
       {
         id: "retest_entry",
@@ -1443,7 +1539,7 @@ const families = [
         bullish: "breakout_entry와 동일 + entryBar vol ≥ 1.35 × prior20 avg.",
         bearish: "동일 필터의 약세.",
         stopTarget: "pattern levels.",
-        notes: "",
+        notes: "PCR 없음 — 거래량이 valid/invalid 돌파 필터 역할.",
         params: "vol ≥1.35×MA20",
       },
       {
@@ -1454,21 +1550,37 @@ const families = [
         bullish: "volume_breakout 조건 + 같은 인스턴스 retest 성공 → retest봉 히트.",
         bearish: "동일.",
         stopTarget: "pattern levels.",
-        notes: "가장 엄격.",
+        notes: "가장 엄격. 정확도% 주장 없음 — 세 확인이 필터.",
         params: "세 조건 AND",
       },
       {
         id: "fake_breakout",
-        label: "가짜 돌파 경고",
-        summary: "돌파 실패 → 반대 방향 경고.",
+        label: "가짜 돌파·이탈 경고",
+        summary: "종가 재관통(실패) 또는 윅 관통 후 종가 회복(스탑 헌팅).",
         indicators: ["chart_patterns"],
         bullish:
-          "약세 패턴 확정 후 15봉 내 close가 레벨을 반대 관통 → 강세 경고(failDir).",
-        bearish: "강세 확정 후 15봉 내 close < level−tol → 약세 가짜 경고.",
+          "약세 돌파 후 종가 재상향(실패) → 롱 경고. 또는 강세 돌파 후 지지 윅 이탈·종가 회복(헌팅) → 롱 회복 신호.",
+        bearish:
+          "강세 돌파 후 종가 재하향(실패) → 숏 경고. 또는 약세 돌파 후 저항 윅·종가 회복(헌팅) → 숏 회복 신호.",
         stopTarget:
           "히트에 패턴 필드는 남을 수 있으나 levelsFromPattern 재작성 스킵(경고용).",
-        notes: "주력 진입 시스템 아님. 반대 경고.",
-        params: "fail 창 15",
+        notes:
+          "경고 전용. 반대 진입 RR은 trap_entry. PCR 없음.",
+        params: "fail 창 15 · 종가 실패 우선, 아니면 윅 헌팅",
+      },
+      {
+        id: "trap_entry",
+        label: "트랩(가짜 돌파) 진입",
+        summary: "종가 재관통 실패 시 반대 방향 공격 진입 + 확장 목표가.",
+        indicators: ["chart_patterns"],
+        bullish:
+          "약세 돌파 실패(종가 재상향) → 롱. stop=실패 저점−버퍼. target=close+높이×1.35.",
+        bearish:
+          "강세 돌파 실패(종가 재하향) → 숏. stop=실패 고점+버퍼. target=close−높이×1.35.",
+        stopTarget: "trap stop/target via levelsFromPattern (RR 계획 있음).",
+        notes:
+          "깃발·삼각형 포함 모든 확정 패턴. 윅 헌팅은 트랩 아님. 공격적.",
+        params: "TRAP_TARGET_MULT=1.35 · fail 창 15",
       },
     ],
   },
@@ -1663,7 +1775,20 @@ function writeCandlePatternDocs() {
 > [indicators INDEX](../INDEX.md) · [companions](../../strategies/COMPANIONS.md) · **전략 패밀리 아님**
 
 봉 **형태** 탐지 + 사이드바 롱/숏/중립 토글·차트 마커. 진입 플레이북(\`*Strategies.ts\`)이 아니라 확인 레이어에 가깝다.
-\`pattern\` 전략 패밀리(=고전 차트 패턴 H&S 등)와 혼동하지 말 것.
+고전 차트 패턴 전략은 [\`strategies/pattern\`](../../strategies/pattern/README.md) (H&S·돌파 등) — **혼동 금지**.
+
+## 기초
+
+| 항목 | 내용 |
+|------|------|
+| OHLC | 시·고·저·종. 몸통=시↔종, 심지(그림자)=고·저 연장 |
+| 색 | 양봉(종>시)·음봉(종<시). 망치·역망치 등은 **색보다 형태·자리** |
+| 자리 | 바닥/상단·S/R에서만 의미가 커짐. 추세 중간은 약함 |
+| 확인 | 교재식: 다음 봉이 패턴 고/저 돌파 종가. 앱은 **마커만** — Hard 엔트리 아님 |
+| 손절 Notes | 보통 패턴 저가(롱)·고가(숏). 히트에 stop 필드 없음 |
+| TF | 하위 TF 여러 봉을 합치면 상위 TF 단일봉(모닝스타→망치 등) |
+
+**미구현(설명만):** Abandoned Baby, Three Line Strike, Three Outside/Inside Up·Down → 장악·하라미+확인봉·companion으로 대체.
 
 ## Code
 
@@ -1673,9 +1798,10 @@ function writeCandlePatternDocs() {
 | Meta | \`src/lib/candlePatternMeta.ts\` |
 | Help | \`src/lib/chartLayerHelp.ts\` → \`candlePatternHelp\` |
 | Confirm | \`src/lib/candlePatternConfirm.ts\` |
+| Config | \`config/candle-patterns.json\` |
 | Store | \`src/lib/candlePatternStore.ts\` |
 
-**설계:** 탐지는 형태만(느슨). 신뢰도는 confirm companion(거래량·S/R·RSI 등). 전략 companion에도 \`candle:hammer\` 등으로 붙는다.
+**설계:** 탐지는 형태만(느슨). 신뢰도는 confirm(거래량·S/R·RSI 등). 전략 companion에도 \`candle:hammer\` 등으로 붙는다.
 
 ## Confirm groups
 
@@ -1738,7 +1864,8 @@ ${CANDLE_CONFIRM[p.confirm]}
 ## Notes
 
 - 전략 패밀리 엔트리 아님. 다른 전략의 companion로도 사용 (\`candle:${p.id}\`).
-- 형태만으로 진입하지 말 것.
+- 형태만으로 진입하지 말 것. 자리(S/R)·다음 봉 확인·거래량은 confirm.
+- 교재식 진입/손절은 Help·메타 설명 참고(히트에 stop/target 없음).
 `;
     fs.writeFileSync(path.join(dir, `${p.id}.md`), doc, "utf8");
   }

@@ -20,5 +20,10 @@
   "threeMethodsMinCounterBars": 2,
   "threeMethodsMaxCounterBars": 3,
   "spinningTopMaxBodyRangeRatio": 0.35,
-  "spinningTopMinShadowToBody": 1
+  "spinningTopMinShadowToBody": 1,
+  "dragonflyMinLowerShadowRangeRatio": 0.6,
+  "dragonflyMaxUpperShadowRangeRatio": 0.15,
+  "gravestoneMinUpperShadowRangeRatio": 0.6,
+  "gravestoneMaxLowerShadowRangeRatio": 0.15,
+  "kickerMinBodyRangeRatio": 0.35
 }

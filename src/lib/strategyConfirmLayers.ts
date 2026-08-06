@@ -29,12 +29,15 @@ const VWAP: LayerKey = "aux:vwap";
 const SUP: LayerKey = "sr:support";
 const RES: LayerKey = "sr:resistance";
 const SMA20: LayerKey = "sma:20";
+const SMA50: LayerKey = "sma:50";
 const SMA200: LayerKey = "sma:200";
 const BB_WIDE: LayerKey = "aux:bbWide";
 const DISPARITY: LayerKey = "aux:disparity";
 const HAMMER = candle("hammer");
 const SHOOTING = candle("shooting_star");
 const HANGING = candle("hanging_man");
+const BULL_ENGULF = candle("bullish_engulfing");
+const BEAR_ENGULF = candle("bearish_engulfing");
 const BULL_MARU = candle("bullish_marubozu");
 const BEAR_MARU = candle("bearish_marubozu");
 
@@ -111,12 +114,37 @@ function extraConfirmLayers(
   id: string,
 ): StrategyCompanion[] {
   switch (family) {
-    case "pattern":
-      return [
-        companion(VOL, "돌파·리테스트 봉의 참여 강도"),
+    case "pattern": {
+      const base: StrategyCompanion[] = [
+        companion(VOL, "돌파·리테스트 봉의 참여 강도 (PCR 대체)"),
+        companion(RSI, "돌파 모멘텀·과열 확인(가짜 돌파↓)"),
+        companion(MACD, "추세·모멘텀 방향이 돌파와 같은지"),
         companion(SUP, "상승 돌파 후 지지로 바뀐 레벨"),
         companion(RES, "하락 돌파 후 저항으로 바뀐 레벨"),
       ];
+      if (id === "fake_breakout" || id === "retest_entry" || id === "trap_entry") {
+        return [
+          ...base,
+          companion(
+            HAMMER,
+            "지지 윅 이탈 후 회복·망치형이면 스탑 헌팅 반등 신뢰↑",
+          ),
+          companion(
+            BULL_ENGULF,
+            "가짜 이탈 회복·리테스트 양봉 확인(불리시 잉걸핑)",
+          ),
+          companion(
+            SHOOTING,
+            "저항 윅 돌파 후 회복·유성이면 헌팅 후 재하락 신뢰↑",
+          ),
+          companion(
+            BEAR_ENGULF,
+            "가짜 돌파 실패·리테스트 음봉 확인(베어리시 잉걸핑)",
+          ),
+        ];
+      }
+      return base;
+    }
     case "bb":
       if (id === "band_sr") {
         return [
@@ -428,6 +456,25 @@ function extraConfirmLayers(
     case "classic":
       if (id === "ma_golden_dead") {
         return [companion(VOL, "교차 전후 추세 지속 여부")];
+      }
+      if (id === "high_52w_break") {
+        return [
+          companion(VOL, "신고가 돌파 봉 참여 강도 — 평균 대비↑면 신뢰↑"),
+          companion(SUP, "돌파 전 지지·박스 상단이 신고가와 겹치는지"),
+          companion(ADX, "추세 강도 — 약하면 휩쏘·되돌림 주의"),
+          companion(SMA50, "중기 추세가 같이 우상향인지"),
+        ];
+      }
+      if (id === "sma200_support") {
+        return [
+          companion(VOL, "지지 반등 봉 수급"),
+          companion(SUP, "SMA200이 수평 지지·매물대와 겹치는지"),
+          companion(ADX, "장기 추세 강도"),
+          companion(
+            SMA50,
+            "주봉·장기 투자: SMA50≈1년 감각 보조(일봉은 SMA200 본선)",
+          ),
+        ];
       }
       return [
         companion(SUP, "되돌림 구간의 지지"),

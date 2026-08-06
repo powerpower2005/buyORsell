@@ -2397,7 +2397,9 @@ export function ChartSidebar({
                   ? "classicalLong"
                   : bias === "bearish"
                     ? "classicalShort"
-                    : "classicalBoth";
+                    : bias === "both"
+                      ? "classicalBoth"
+                      : "classicalNeutral";
               const state = groupState(
                 ids.map((id) => classicalPatternVis[id]),
               );

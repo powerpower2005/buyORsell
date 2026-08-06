@@ -46,6 +46,8 @@ const FAKE_WINDOW = 15;
 const VOL_LOOKBACK = 20;
 const VOL_MULT = 1.35;
 const RETEST_ATR_FRAC = 0.35;
+/** Trap curriculum: panic move often larger than normal measured move. */
+const TRAP_TARGET_MULT = 1.35;
 
 function avgVolume(bars: OHLCVBar[], endIdx: number, n: number): number {
   const from = Math.max(0, endIdx - n);
@@ -163,6 +165,51 @@ export function detectPatternStrategies(
       ),
     );
 
+    const level = breakLevel(inst);
+    const band =
+      level != null
+        ? Math.abs(level) * 0.004 +
+          Math.abs((inst.targetPrice ?? level) - level) * 0.02
+        : 0;
+    const tol =
+      level != null
+        ? Math.max(band, Math.abs(level) * 0.002) * RETEST_ATR_FRAC * 10
+        : 0;
+
+    // Next-bar confirmation (curriculum: do not enter on the breakout candle).
+    const confirmIdx = entry + 1;
+    if (level != null && confirmIdx < bars.length) {
+      const cbar = bars[confirmIdx]!;
+      const confirmedNext =
+        dir === "bullish"
+          ? cbar.close > cbar.open &&
+            cbar.close >= level - tol &&
+            cbar.low >= level - tol * 2
+          : cbar.close < cbar.open &&
+            cbar.close <= level + tol &&
+            cbar.high <= level + tol * 2;
+      if (confirmedNext) {
+        // Triple-bottom curriculum: stop at prior (breakout) candle low when confirming.
+        const confirmStop =
+          inst.id === "triple_bottom" && entry > 0
+            ? bars[entry]!.low
+            : stop;
+        hits.push(
+          makeHit(
+            "breakout_confirm_entry",
+            confirmIdx,
+            bars,
+            dir,
+            `돌파 다음 봉 확인 · ${inst.id} · 레벨 ${level.toFixed(2)}`,
+            inst.id,
+            inst.key,
+            confirmStop,
+            target,
+          ),
+        );
+      }
+    }
+
     const avgVol = avgVolume(bars, entry, VOL_LOOKBACK);
     const entryVol = bars[entry].volume ?? 0;
     const volumeOk = avgVol > 0 && entryVol >= avgVol * VOL_MULT;
@@ -182,12 +229,7 @@ export function detectPatternStrategies(
       );
     }
 
-    const level = breakLevel(inst);
     if (level == null) continue;
-    const band =
-      Math.abs(level) * 0.004 +
-      Math.abs((inst.targetPrice ?? level) - level) * 0.02;
-    const tol = Math.max(band, Math.abs(level) * 0.002) * RETEST_ATR_FRAC * 10;
 
     const retestTo = Math.min(bars.length - 1, entry + RETEST_WINDOW);
     let retestBar: number | null = null;
@@ -240,26 +282,78 @@ export function detectPatternStrategies(
 
     const fakeTo = Math.min(bars.length - 1, entry + FAKE_WINDOW);
     for (let i = entry + 1; i <= fakeTo; i++) {
-      const close = bars[i].close;
-      const failed =
-        dir === "bullish" ? close < level - tol : close > level + tol;
-      if (!failed) continue;
+      const bar = bars[i]!;
+      const close = bar.close;
 
-      const failDir: TrendLabel = dir === "bullish" ? "bearish" : "bullish";
-      hits.push(
-        makeHit(
-          "fake_breakout",
-          i,
-          bars,
-          failDir,
-          `가짜 돌파 · ${inst.id} · 레벨 ${level.toFixed(2)} 재관통`,
-          inst.id,
-          inst.key,
-          stop,
-          target,
-        ),
-      );
-      break;
+      // (1) Close re-penetration → false breakout/breakdown (thesis fail).
+      const closeFailed =
+        dir === "bullish" ? close < level - tol : close > level + tol;
+      if (closeFailed) {
+        const failDir: TrendLabel = dir === "bullish" ? "bearish" : "bullish";
+        hits.push(
+          makeHit(
+            "fake_breakout",
+            i,
+            bars,
+            failDir,
+            `가짜 돌파(종가 재관통) · ${inst.id} · 레벨 ${level.toFixed(2)}`,
+            inst.id,
+            inst.key,
+            stop,
+            target,
+          ),
+        );
+        // Trap entry: opposite side with oversized measured-move target + buffer.
+        const height =
+          target != null
+            ? Math.abs(target - level)
+            : Math.max(Math.abs(level) * 0.015, tol * 4);
+        const buf = Math.max(Math.abs(level) * 0.003, tol);
+        const trapStop =
+          failDir === "bearish"
+            ? Math.max(bar.high, level) + buf
+            : Math.min(bar.low, level) - buf;
+        const trapTarget =
+          failDir === "bearish"
+            ? close - height * TRAP_TARGET_MULT
+            : close + height * TRAP_TARGET_MULT;
+        hits.push(
+          makeHit(
+            "trap_entry",
+            i,
+            bars,
+            failDir,
+            `트랩 진입(돌파 실패 공황) · ${inst.id} · 목표×${TRAP_TARGET_MULT}`,
+            inst.id,
+            inst.key,
+            trapStop,
+            trapTarget,
+          ),
+        );
+        break;
+      }
+
+      // (2) Wick pierce + close reclaim → stop-hunt / false breakdown then recover.
+      const wickHunt =
+        dir === "bullish"
+          ? bar.low < level - tol && close >= level
+          : bar.high > level + tol && close <= level;
+      if (wickHunt) {
+        hits.push(
+          makeHit(
+            "fake_breakout",
+            i,
+            bars,
+            dir,
+            `윅 가짜 이탈 후 회복(스탑 헌팅) · ${inst.id} · 레벨 ${level.toFixed(2)}`,
+            inst.id,
+            inst.key,
+            stop,
+            target,
+          ),
+        );
+        break;
+      }
     }
   }
 

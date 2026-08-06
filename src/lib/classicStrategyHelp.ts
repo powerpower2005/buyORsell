@@ -23,6 +23,42 @@ export const CLASSIC_STRATEGY_HELP: Record<ClassicStrategyId, HelpContent> = {
       "후행성이 큽니다. 횡보 휩쏘·중반 진입이 흔하고, ‘얼마나 갈지’는 알려 주지 않습니다.",
     tip: "골든 직후 전량 추격보다, 정배열 유지·눌림을 보는 편이 안전합니다.",
   },
+  high_52w_break: {
+    title: "52주·N봉 고점 돌파",
+    summary: CLASSIC_STRATEGY_META.high_52w_break.description,
+    howToFind:
+      "직전 N봉 고점(일봉≈252·주봉≈52·월봉≈24, 가용 봉 부족 시 그만큼 축소)을 종가가 상향 돌파하면 롱 마커. 장기 신고가·모멘텀 타이밍용입니다. 펀더멘털·독점·촉매 스크리너는 앱 범위 밖입니다.",
+    ...BREAK,
+    higher:
+      "N봉 고점 종가 돌파 → 롱 후보. 거래량·ADX·중기 이평(SMA50)을 companion으로 확인하세요.",
+    lower:
+      "이 전략은 상향 돌파만 표시합니다(멀티배거 커리큘럼 롱 타이밍). 하향 붕괴는 별도 S/R·추세 전략을 보세요.",
+    worksWith:
+      "거래량, ADX, SMA50, 지지·저항. 장기 관점은 주봉·월봉 TF를 우선하세요.",
+    pros:
+      "객관적 신고가 돌파. 다우·모멘텀·멀티배거 진입 타이밍의 뼈대입니다.",
+    cons:
+      "후행·추격. 펀더·사업 품질·사이클은 평가하지 않습니다. 횡보 박스 상단 휩쏘도 가능합니다.",
+    tip: "앱은 타이밍(이평·고점·S/R·돌파)만 다룹니다. 펀더멘털 DB·멀티배거 스크리너(379일 2×)·시장 사이클 엔진은 미구현·범위 밖입니다.",
+  },
+  sma200_support: {
+    title: "SMA200 지지 반등",
+    summary: CLASSIC_STRATEGY_META.sma200_support.description,
+    howToFind:
+      "SMA200 시리즈가 있는 봉에서 종가≥이평(상승 국면)이고, 저점이 SMA200 근처(약 0.5~1% 또는 ATR 감각)로 눌린 뒤 양봉·종가≥이평이면 롱. 봉 수 부족으로 sma:200이 없으면 히트 없음. 주봉에서 SMA200은 매우 길어 — 주봉 투자자는 SMA50 companion을 같이 보세요.",
+    ...BREAK,
+    higher:
+      "SMA200 지지 + 양봉 확인 → 롱. 손절은 이평·저점 아래 감각으로.",
+    lower:
+      "숏(이평 아래 저항)은 멀티배거 커리큘럼 우선순위에서 제외 — 미표시.",
+    worksWith:
+      "거래량, ADX, SMA50(주봉≈1년 감각), 수평 지지. 장기 관점은 1w/1mo + SMA200(일) 또는 SMA50(주).",
+    pros:
+      "장기 추세 필터와 눌림 타이밍을 한 규칙으로. 골든크로스보다 ‘어디에 살지’가 분명합니다.",
+    cons:
+      "후행. 일봉 200봉 미만이면 신호 없음. 사업·밸류·사이클은 평가하지 않습니다.",
+    tip: "앱=차트 타이밍. 펀더·독점·촉매·멀티배거 스크리너·사이클 엔진은 범위 밖. 장기 홀딩은 주봉/월봉을 보세요.",
+  },
   fib_wave_pullback: {
     title: "피보 2·4파 눌림",
     summary: CLASSIC_STRATEGY_META.fib_wave_pullback.description,

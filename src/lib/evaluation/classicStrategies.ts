@@ -1,4 +1,10 @@
-import type { IndicatorResults, OHLCVBar, SeriesPoint, TrendLabel } from "../types";
+import type {
+  IndicatorResults,
+  OHLCVBar,
+  SeriesPoint,
+  Timeframe,
+  TrendLabel,
+} from "../types";
 import {
   CLASSIC_STRATEGY_META,
   type ClassicStrategyId,
@@ -302,6 +308,107 @@ function detectFibWavePullback(
   return hits;
 }
 
+/** Lookback bars for ~1y high: 252d / 52w / 24mo. */
+function nBarHighLookback(timeframe: Timeframe | undefined, barCount: number): number {
+  const target =
+    timeframe === "1w" ? 52 : timeframe === "1mo" ? 24 : 252;
+  return Math.max(2, Math.min(target, barCount - 1));
+}
+
+function priorNBarHigh(bars: OHLCVBar[], i: number, n: number): number | null {
+  const from = i - n;
+  if (from < 0) return null;
+  let hi = -Infinity;
+  for (let k = from; k < i; k++) {
+    hi = Math.max(hi, bars[k]!.high);
+  }
+  return Number.isFinite(hi) ? hi : null;
+}
+
+function detectHigh52wBreak(
+  bars: OHLCVBar[],
+  start: number,
+  timeframe: Timeframe | undefined,
+): ClassicStrategyHit[] {
+  const n = nBarHighLookback(timeframe, bars.length);
+  const hits: ClassicStrategyHit[] = [];
+  const tfLabel =
+    timeframe === "1w" ? "주봉≈52" : timeframe === "1mo" ? "월봉≈24" : "일봉≈252";
+
+  for (let i = Math.max(start, n); i < bars.length; i++) {
+    const priorHigh = priorNBarHigh(bars, i, n);
+    if (priorHigh == null || !(priorHigh > 0)) continue;
+    const cur = bars[i]!;
+    // Close above prior N-bar high (window excludes current bar).
+    if (!(cur.close > priorHigh)) continue;
+    // First bar of the break: previous close was not already above the same ceiling.
+    const prev = bars[i - 1]!;
+    if (prev.close > priorHigh) continue;
+
+    hits.push(
+      hit(
+        "high_52w_break",
+        i,
+        bars,
+        "bullish",
+        `${tfLabel} N=${n} 고점 ${priorHigh.toFixed(0)} 종가 돌파`,
+      ),
+    );
+  }
+  return hits;
+}
+
+/**
+ * Bull SMA200 support bounce: regime close>SMA200, pullback near SMA,
+ * then bullish confirm (close>open && close≥sma).
+ */
+function detectSma200Support(
+  bars: OHLCVBar[],
+  indicators: IndicatorResults,
+  start: number,
+): ClassicStrategyHit[] {
+  const sma = mapSeries(indicators.indicators.sma?.series["sma:200"]);
+  if (!sma.size) return [];
+  const hits: ClassicStrategyHit[] = [];
+  let lastHit = -999;
+
+  for (let i = Math.max(start, 1); i < bars.length; i++) {
+    const d = bars[i]!.date;
+    const s = sma.get(d);
+    if (s == null || !(s > 0)) continue;
+    const bar = bars[i]!;
+    // Bull regime: close above SMA200
+    if (!(bar.close >= s)) continue;
+
+    const atr = atrAt(bars, i);
+    const pctTol = s * 0.01; // 1%
+    const atrTol = atr * 0.5;
+    const tol = Math.max(s * 0.005, Math.min(pctTol, atrTol * 2)); // ~0.5–1% band
+
+    const near =
+      bar.low <= s + tol && bar.low >= s - tol * 1.5;
+    if (!near) continue;
+
+    const bullConfirm = bar.close > bar.open && bar.close >= s;
+    if (!bullConfirm) continue;
+
+    // De-dupe clusters within 5 bars
+    if (i - lastHit < 5) continue;
+    lastHit = i;
+
+    hits.push(
+      hit(
+        "sma200_support",
+        i,
+        bars,
+        "bullish",
+        `SMA200(${s.toFixed(0)}) 지지 반등·양봉`,
+      ),
+    );
+  }
+  return hits;
+}
+
 /** Gann unit price per bar ≈ ATR (1×1). */
 function gannUnit(bars: OHLCVBar[], anchorIdx: number): number {
   const a = atrAt(bars, anchorIdx);
@@ -525,7 +632,7 @@ function detectGannZone(
 export function detectClassicStrategies(
   bars: OHLCVBar[],
   indicators: IndicatorResults,
-  options?: { lookbackBars?: number },
+  options?: { lookbackBars?: number; timeframe?: Timeframe },
 ): ClassicStrategyResult | null {
   if (bars.length < 40) return null;
 
@@ -536,6 +643,8 @@ export function detectClassicStrategies(
 
   const all = [
     ...detectMaGoldenDead(bars, indicators, start),
+    ...detectHigh52wBreak(bars, start, options?.timeframe),
+    ...detectSma200Support(bars, indicators, start),
     ...detectFibWavePullback(bars, start),
     ...detectGannZone(bars, start, zones, fans),
   ];

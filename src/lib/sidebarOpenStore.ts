@@ -37,6 +37,7 @@ export const SIDEBAR_OPEN_KEYS = [
   "classicalLong",
   "classicalShort",
   "classicalBoth",
+  "classicalNeutral",
   "classicalPatternStrategies",
   "fib",
   "fibLevels",

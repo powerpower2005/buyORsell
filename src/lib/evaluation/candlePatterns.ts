@@ -10,6 +10,8 @@ import {
 
 export type CandlePatternId =
   | "doji"
+  | "dragonfly_doji"
+  | "gravestone_doji"
   | "spinning_top"
   | "hammer"
   | "inverted_hammer"
@@ -25,6 +27,8 @@ export type CandlePatternId =
   | "tweezers_top"
   | "bullish_marubozu"
   | "bearish_marubozu"
+  | "bullish_kicker"
+  | "bearish_kicker"
   | "morning_star"
   | "evening_star"
   | "three_white_soldiers"
@@ -60,6 +64,8 @@ interface BarMetrics {
 
 const LABELS: Record<CandlePatternId, string> = {
   doji: patternLabel("doji"),
+  dragonfly_doji: patternLabel("dragonfly_doji"),
+  gravestone_doji: patternLabel("gravestone_doji"),
   spinning_top: patternLabel("spinning_top"),
   hammer: patternLabel("hammer"),
   inverted_hammer: patternLabel("inverted_hammer"),
@@ -75,6 +81,8 @@ const LABELS: Record<CandlePatternId, string> = {
   tweezers_top: patternLabel("tweezers_top"),
   bullish_marubozu: patternLabel("bullish_marubozu"),
   bearish_marubozu: patternLabel("bearish_marubozu"),
+  bullish_kicker: patternLabel("bullish_kicker"),
+  bearish_kicker: patternLabel("bearish_kicker"),
   morning_star: patternLabel("morning_star"),
   evening_star: patternLabel("evening_star"),
   three_white_soldiers: patternLabel("three_white_soldiers"),
@@ -124,6 +132,24 @@ function hit(
 
 function isDoji(m: BarMetrics, c: typeof patternConfig): boolean {
   return m.bodyRangeRatio <= c.dojiMaxBodyRangeRatio;
+}
+
+/** Doji with long lower shadow, little upper — dragonfly. */
+function isDragonflyDoji(m: BarMetrics, c: typeof patternConfig): boolean {
+  if (!isDoji(m, c) || m.range <= 0) return false;
+  return (
+    m.lowerShadow / m.range >= c.dragonflyMinLowerShadowRangeRatio &&
+    m.upperShadow / m.range <= c.dragonflyMaxUpperShadowRangeRatio
+  );
+}
+
+/** Doji with long upper shadow, little lower — gravestone. */
+function isGravestoneDoji(m: BarMetrics, c: typeof patternConfig): boolean {
+  if (!isDoji(m, c) || m.range <= 0) return false;
+  return (
+    m.upperShadow / m.range >= c.gravestoneMinUpperShadowRangeRatio &&
+    m.lowerShadow / m.range <= c.gravestoneMaxLowerShadowRangeRatio
+  );
 }
 
 function isSpinningTop(m: BarMetrics, c: typeof patternConfig): boolean {
@@ -249,7 +275,11 @@ function detectAtIndex(bars: OHLCVBar[], idx: number): CandlePatternHit[] {
   const found: CandlePatternHit[] = [];
   const trend = priorTrend(bars, idx);
 
-  if (isDoji(m, c)) {
+  if (isDragonflyDoji(m, c)) {
+    found.push(hit("dragonfly_doji", bar.date, idx, "bullish"));
+  } else if (isGravestoneDoji(m, c)) {
+    found.push(hit("gravestone_doji", bar.date, idx, "bearish"));
+  } else if (isDoji(m, c)) {
     found.push(hit("doji", bar.date, idx, "neutral"));
   } else if (isSpinningTop(m, c)) {
     found.push(hit("spinning_top", bar.date, idx, "neutral"));
@@ -364,6 +394,26 @@ function detectAtIndex(bars: OHLCVBar[], idx: number): CandlePatternHit[] {
     }
     if (nearlyEqual(bar.high, prev.high, c.tweezersMaxRelativeDiff)) {
       found.push(hit("tweezers_top", bar.date, idx, "bearish"));
+    }
+
+    // Kicker: opposite color after open gaps past prior open (standard; volume = companion).
+    if (
+      pm.bearish &&
+      m.bullish &&
+      pm.bodyRangeRatio >= c.kickerMinBodyRangeRatio &&
+      m.bodyRangeRatio >= c.kickerMinBodyRangeRatio &&
+      bar.open > prev.open
+    ) {
+      found.push(hit("bullish_kicker", bar.date, idx, "bullish"));
+    }
+    if (
+      pm.bullish &&
+      m.bearish &&
+      pm.bodyRangeRatio >= c.kickerMinBodyRangeRatio &&
+      m.bodyRangeRatio >= c.kickerMinBodyRangeRatio &&
+      bar.open < prev.open
+    ) {
+      found.push(hit("bearish_kicker", bar.date, idx, "bearish"));
     }
   }
 

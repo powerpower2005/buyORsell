@@ -15,20 +15,24 @@ export interface CandlePatternMeta {
 export const CANDLE_PATTERN_ORDER: CandlePatternId[] = [
   "hammer",
   "inverted_hammer",
+  "dragonfly_doji",
   "bullish_engulfing",
   "bullish_harami",
   "piercing",
   "tweezers_bottom",
+  "bullish_kicker",
   "morning_star",
   "bullish_marubozu",
   "three_white_soldiers",
   "rising_three_methods",
   "hanging_man",
   "shooting_star",
+  "gravestone_doji",
   "bearish_engulfing",
   "bearish_harami",
   "dark_cloud_cover",
   "tweezers_top",
+  "bearish_kicker",
   "evening_star",
   "bearish_marubozu",
   "three_black_crows",
@@ -49,9 +53,27 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     label: "Doji",
     labelKo: "도지",
     description:
-      "시가와 종가가 거의 같아 방향성이 약합니다. 형태만으로는 중립이며, 지지·저항·다음 봉 확인이 중요합니다.",
+      "시가와 종가가 거의 같아 십자 형태. 불확실·추세 말 반전 후보. 자리·다음 봉 확인이 핵심. 잠자리/묘비는 별도 id.",
     markerText: "D",
     typicalDirection: "neutral",
+  },
+  dragonfly_doji: {
+    id: "dragonfly_doji",
+    label: "Dragonfly Doji",
+    labelKo: "잠자리 도지",
+    description:
+      "도지+긴 아래꼬리·위꼬리 거의 없음. 하락 바닥에서 매수 유입·반등 후보. 다음 봉이 고가 위 종가 확인·손절은 저가(교재식 Notes).",
+    markerText: "Df",
+    typicalDirection: "bullish",
+  },
+  gravestone_doji: {
+    id: "gravestone_doji",
+    label: "Gravestone Doji",
+    labelKo: "묘비 도지",
+    description:
+      "도지+긴 위꼬리·아래꼬리 거의 없음. 상승 상단에서 매도 압력·조정 후보. 다음 봉 확인·손절은 고가.",
+    markerText: "Gv",
+    typicalDirection: "bearish",
   },
   spinning_top: {
     id: "spinning_top",
@@ -67,7 +89,7 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     label: "Hammer",
     labelKo: "망치형",
     description:
-      "긴 아래꼬리·짧은 몸통. 하락 후 매수 유입 후보입니다. 지지대·거래량과 같이 보면 신뢰도가 올라갑니다.",
+      "긴 아래꼬리·짧은 몸통. 하락 후 매수 유입 후보(색 비중요). 다음 봉이 고가 위 종가 확인·손절은 망치 저가. 지지·거래량 confirm.",
     markerText: "Ham",
     typicalDirection: "bullish",
   },
@@ -76,7 +98,7 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     label: "Hanging Man",
     labelKo: "교수형",
     description:
-      "망치형과 같은 형태가 상승 뒤에 나오면 피로·하락 전환 경고입니다. 저항·거래량 확인이 핵심입니다.",
+      "망치와 같은 형태가 상승 뒤에 나오면 피로·하락 경고. 중간 추세에선 의미↓. 저항·거래량 확인.",
     markerText: "HM",
     typicalDirection: "bearish",
   },
@@ -85,7 +107,7 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     label: "Inverted Hammer",
     labelKo: "역망치형",
     description:
-      "하락 후 긴 위꼬리. 매수 시도가 있었다는 힌트이며, 다음 봉·지지·RSI와 같이 확인하세요.",
+      "하락 후 긴 위꼬리. 매수 시도 힌트(색 비중요). 다음 봉·지지·RSI 확인.",
     markerText: "IH",
     typicalDirection: "bullish",
   },
@@ -94,7 +116,7 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     label: "Shooting Star",
     labelKo: "유성형",
     description:
-      "상승 후 긴 위꼬리. 매도 압력 후보입니다. 저항대·거래량·RSI와 겹치면 신뢰↑.",
+      "상승 후 긴 위꼬리. 매도 압력. 다음 봉이 저가 아래 종가 확인·손절은 유성 고가. 저항·거래량·RSI.",
     markerText: "SS",
     typicalDirection: "bearish",
   },
@@ -103,7 +125,7 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     label: "Bullish Engulfing",
     labelKo: "상승 장악형",
     description:
-      "음봉을 양봉이 덮는 2봉 반전 후보입니다. 지지·거래량·VWAP 근처면 더 의미 있습니다.",
+      "음봉을 양봉이 몸통 전체 장악. 바닥에서 반전 후보. 2봉 거래량↑면 신뢰↑(companion).",
     markerText: "BE",
     typicalDirection: "bullish",
   },
@@ -112,7 +134,7 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     label: "Bearish Engulfing",
     labelKo: "하락 장악형",
     description:
-      "양봉을 음봉이 덮는 2봉 반전 후보입니다. 저항·거래량·VWAP 근처면 더 의미 있습니다.",
+      "양봉을 음봉이 몸통 전체 장악. 상단에서 반전 후보. 2봉 거래량↑면 신뢰↑.",
     markerText: "SE",
     typicalDirection: "bearish",
   },
@@ -121,7 +143,7 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     label: "Bullish Harami",
     labelKo: "상승 잉태형",
     description:
-      "큰 음봉 안에 작은 양봉. 하락 모멘텀 약화 힌트입니다. 단독보다 RSI·지지 확인용.",
+      "큰 음봉 안에 작은 양봉. 하락 모멘텀 약화. 단독보다 RSI·지지·다음 봉 확인(쓰리 인사이드 업 감각).",
     markerText: "BH",
     typicalDirection: "bullish",
   },
@@ -130,7 +152,7 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     label: "Bearish Harami",
     labelKo: "하락 잉태형",
     description:
-      "큰 양봉 안에 작은 음봉. 상승 모멘텀 약화 힌트입니다. 저항·RSI와 같이 보세요.",
+      "큰 양봉 안에 작은 음봉. 상승 모멘텀 약화. 저항·RSI·다음 봉 확인.",
     markerText: "RH",
     typicalDirection: "bearish",
   },
@@ -139,7 +161,7 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     label: "Piercing Pattern",
     labelKo: "피어싱",
     description:
-      "음봉 뒤 양봉이 이전 몸통 상당 부분을 회복합니다(장악형 전 단계). 지지·거래량 확인.",
+      "음봉 뒤 양봉이 이전 몸통 50%+ 회복(완전 장악 전). 하락 끝 반등 후보. 지지·거래량.",
     markerText: "Pc",
     typicalDirection: "bullish",
   },
@@ -148,7 +170,7 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     label: "Dark Cloud Cover",
     labelKo: "먹구름형",
     description:
-      "양봉 뒤 음봉이 이전 몸통 상당 부분을 잠식합니다. 저항·거래량과 같이 보면 좋습니다.",
+      "양봉 뒤 음봉이 이전 몸통 50%+ 잠식. 상승 끝 조정 후보. 저항·거래량.",
     markerText: "DC",
     typicalDirection: "bearish",
   },
@@ -157,7 +179,7 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     label: "Tweezers Bottom",
     labelKo: "트위저 바텀",
     description:
-      "연속 봉의 저가가 거의 같습니다. 이중 바닥 감각의 반등 후보—지지 존과 겹치면 신뢰↑.",
+      "연속 봉 저가 거의 동일. 이중 바닥 감각 — 지지·거래량↑면 신뢰↑. 색 비중요.",
     markerText: "TwB",
     typicalDirection: "bullish",
   },
@@ -166,7 +188,7 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     label: "Tweezers Top",
     labelKo: "트위저 탑",
     description:
-      "연속 봉의 고가가 거의 같습니다. 이중 천정 감각의 조정 후보—저항 존과 겹치면 신뢰↑.",
+      "연속 봉 고가 거의 동일. 이중 천정 감각 — 저항·거래량↑. 색 비중요.",
     markerText: "TwT",
     typicalDirection: "bearish",
   },
@@ -186,6 +208,24 @@ export const CANDLE_PATTERN_META: Record<CandlePatternId, CandlePatternMeta> = {
     description:
       "심지가 거의 없는 장대 음봉. 강한 매도 우위·지속 후보입니다. 거래량·ADX·추세선과 확인.",
     markerText: "Mb-",
+    typicalDirection: "bearish",
+  },
+  bullish_kicker: {
+    id: "bullish_kicker",
+    label: "Bullish Kicker",
+    labelKo: "강세 키커",
+    description:
+      "음봉 뒤 시가가 이전 시가 위로 갭·양봉. 매도→매수 급전환. 2봉 거래량↑·마루보즈면 신뢰↑(companion). 바닥에서 의미↑.",
+    markerText: "Kk+",
+    typicalDirection: "bullish",
+  },
+  bearish_kicker: {
+    id: "bearish_kicker",
+    label: "Bearish Kicker",
+    labelKo: "약세 키커",
+    description:
+      "양봉 뒤 시가가 이전 시가 아래로 갭·음봉. 매수→매도 급전환. 거래량·상단 자리 확인. 일봉 갭은 드물 수 있음.",
+    markerText: "Kk-",
     typicalDirection: "bearish",
   },
   morning_star: {

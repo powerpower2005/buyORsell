@@ -147,6 +147,10 @@ function layersForClassic(id: ClassicStrategyId): Set<LayerKey> {
     case "ma_golden_dead":
       add(out, sma(20), sma(50));
       break;
+    case "sma200_support":
+      add(out, sma(200));
+      break;
+    case "high_52w_break":
     case "fib_wave_pullback":
     case "gann_zone":
       break;

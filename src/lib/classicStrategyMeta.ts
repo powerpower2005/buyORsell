@@ -1,13 +1,17 @@
 import type { TrendLabel } from "./types";
 
-/** Classical chart-theory playbooks (Dow/MA · Elliott fib · Gann). */
+/** Classical chart-theory playbooks (Dow/MA · Elliott fib · Gann · 52w · SMA200). */
 export type ClassicStrategyId =
   | "ma_golden_dead"
+  | "high_52w_break"
+  | "sma200_support"
   | "fib_wave_pullback"
   | "gann_zone";
 
 export const CLASSIC_STRATEGY_ORDER: ClassicStrategyId[] = [
   "ma_golden_dead",
+  "high_52w_break",
+  "sma200_support",
   "fib_wave_pullback",
   "gann_zone",
 ];
@@ -31,6 +35,24 @@ export const CLASSIC_STRATEGY_META: Record<
     markerBull: "GC↑",
     markerBear: "DC↓",
     typicalDirection: "neutral",
+  },
+  high_52w_break: {
+    label: "52-week / N-bar high break",
+    labelKo: "52주·N봉 고점 돌파",
+    description:
+      "직전 N봉(일봉≈252·주봉≈52·월봉≈24) 고점을 종가가 상향 돌파. 장기 신고가·모멘텀 타이밍용.",
+    markerBull: "52↑",
+    markerBear: "52↓",
+    typicalDirection: "bullish",
+  },
+  sma200_support: {
+    label: "SMA200 support bounce",
+    labelKo: "SMA200 지지 반등",
+    description:
+      "종가>SMA200 국면에서 가격이 SMA200 근처로 눌린 뒤 양봉·종가≥이평 확인 시 롱. 장기 추세 필터+눌림 타이밍.",
+    markerBull: "200↑",
+    markerBear: "200↓",
+    typicalDirection: "bullish",
   },
   fib_wave_pullback: {
     label: "Fib wave 2/4 pullback",
