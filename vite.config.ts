@@ -64,7 +64,7 @@ export default defineConfig({
       manifest: {
         name: "개미브레인롯",
         short_name: "개미브레인롯",
-        description: "OHLCV 기술 분석",
+        description: "OHLCV 기술적 분석 — 차트 패턴·지표·전략 시그널",
         theme_color: "#191919",
         background_color: "#191919",
         display: "standalone",
