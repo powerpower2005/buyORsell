@@ -4,6 +4,7 @@ import { ColorSwatchPicker } from "@/components/ColorSwatchPicker";
 import { HelpTip } from "@/components/HelpTip";
 import { getIndicatorConfig } from "@/lib/configStore";
 import type { IndicatorConfigSectionId } from "@/components/IndicatorConfigForm";
+import { SERIES } from "@/lib/chart/chartTheme";
 import {
   auxHelp,
   bbStrategyHelp,
@@ -1569,7 +1570,7 @@ export function ChartSidebar({
                 label={ICHIMOKU_PART_META[part].labelKo}
                 color={
                   part === "cloud"
-                    ? "#22c55e"
+                    ? SERIES.teal
                     : resolveIchimokuColor(ichiColors, part)
                 }
                 checked={ichiVis[part]}

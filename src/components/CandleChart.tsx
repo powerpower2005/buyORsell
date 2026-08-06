@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CandlestickSeries,
-  ColorType,
   createChart,
   createSeriesMarkers,
   HistogramSeries,
@@ -73,6 +72,18 @@ import {
   toVolumeData,
   VOLUME_PANE_HEIGHT,
 } from "@/lib/chart/oscillatorPaneSpecs";
+import {
+  BOLLINGER,
+  candleOptions,
+  chartOptions,
+  CHART_SURFACE,
+  computeMainPaneHeight,
+  DIRECTION,
+  OSC_LEVEL,
+  SCALE_MARGINS,
+  SERIES,
+  SIGNAL,
+} from "@/lib/chart/chartTheme";
 import {
   computeVolumeAverages,
   formatVolume,
@@ -298,9 +309,17 @@ interface Props {
   recentSignalWindow?: { enabled: boolean; bars: number } | null;
 }
 
-function useViewportChartHeight(fixed?: number) {
+function useViewportChartHeight(
+  fixed: number | undefined,
+  auxPaneHeights: number[],
+) {
+  const auxKey = auxPaneHeights.join(",");
   const compute = () =>
-    Math.min(920, Math.max(640, Math.round(window.innerHeight * 0.74)));
+    computeMainPaneHeight({
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      auxPaneHeights,
+    });
 
   const [height, setHeight] = useState(fixed ?? 720);
 
@@ -309,11 +328,20 @@ function useViewportChartHeight(fixed?: number) {
       setHeight(fixed);
       return;
     }
-    const update = () => setHeight(compute());
+    let raf = 0;
+    const update = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => setHeight(compute()));
+    };
     update();
     window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [fixed]);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", update);
+    };
+    // auxKey serializes heights so we don't depend on array identity
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fixed, auxKey]);
 
   return height;
 }
@@ -383,8 +411,6 @@ export function CandleChart({
   const oscSeriesRefs = useRef<Map<string, OscSeries>>(new Map());
   /** Only fit/zoom-reset when candle data or timeframe actually changes. */
   const fittedBarsKeyRef = useRef<string>("");
-  const mainHeight = useViewportChartHeight(heightProp);
-
   const captureTimeRange = (): LogicalRange | null => {
     try {
       return chartRef.current?.timeScale().getVisibleLogicalRange() ?? null;
@@ -418,6 +444,13 @@ export function CandleChart({
     () => buildOscPaneSpecs(indicators, auxIndicatorVisibility),
     [indicators, auxIndicatorVisibility],
   );
+  const auxPaneHeights = useMemo(() => {
+    const heights: number[] = [];
+    if (showVolume) heights.push(VOLUME_PANE_HEIGHT);
+    for (const pane of oscPanes) heights.push(pane.height);
+    return heights;
+  }, [showVolume, oscPanes]);
+  const mainHeight = useViewportChartHeight(heightProp, auxPaneHeights);
   const volumePaneHeight = showVolume ? VOLUME_PANE_HEIGHT : 0;
   const totalHeight =
     mainHeight + volumePaneHeight + oscExtraHeight(oscPanes);
@@ -721,14 +754,14 @@ export function CandleChart({
       if (p.value === 1) {
         out.set(p.date, {
           color: "rgba(34, 211, 238, 0.35)",
-          borderColor: "#22d3ee",
-          wickColor: "#22d3ee",
+          borderColor: SERIES.cyan,
+          wickColor: SERIES.cyan,
         });
       } else if (p.value === 3) {
         out.set(p.date, {
           color: "rgba(251, 146, 60, 0.35)",
-          borderColor: "#fb923c",
-          wickColor: "#fb923c",
+          borderColor: SERIES.orange,
+          wickColor: SERIES.orange,
         });
       }
     }
@@ -1017,7 +1050,7 @@ export function CandleChart({
         key: p.id,
         text: p.kind === "impulse" ? "추진" : "조정",
         detail: `${p.summary} · 점수 ${p.score}`,
-        color: p.direction === "bullish" ? "#22c55e" : "#ef4444",
+        color: p.direction === "bullish" ? SIGNAL.bullish : SIGNAL.bearish,
       }));
   }, [elliottWaves, chartElliottWaveVisibility]);
 
@@ -1403,7 +1436,7 @@ export function CandleChart({
         if (pattern.kind === "impulse" && !ewVis.impulse) continue;
         if (pattern.kind === "corrective" && !ewVis.corrective) continue;
 
-        const color = pattern.direction === "bullish" ? "#22c55e" : "#ef4444";
+        const color = pattern.direction === "bullish" ? SIGNAL.bullish : SIGNAL.bearish;
         ctx.strokeStyle = color;
         ctx.lineWidth = pattern.kind === "impulse" ? 2 : 1.5;
         ctx.setLineDash(pattern.kind === "corrective" ? [5, 4] : []);
@@ -1441,12 +1474,12 @@ export function CandleChart({
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, Math.PI * 2);
             ctx.fill();
-            ctx.strokeStyle = "#ffffff";
+            ctx.strokeStyle = CHART_SURFACE.ink;
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, Math.PI * 2);
             ctx.stroke();
-            ctx.fillStyle = "#ffffff";
+            ctx.fillStyle = CHART_SURFACE.ink;
             ctx.font = "bold 10px sans-serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
@@ -1465,14 +1498,14 @@ export function CandleChart({
       const yPend = series.priceToCoordinate(pending.price);
       if (xPend != null && yPend != null) {
         ctx.save();
-        ctx.fillStyle = "#22c55e";
-        ctx.shadowColor = "#22c55e";
+        ctx.fillStyle = SIGNAL.bullish;
+        ctx.shadowColor = SIGNAL.bullish;
         ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.arc(xPend, yPend, 6, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
-        ctx.strokeStyle = "#ffffff";
+        ctx.strokeStyle = CHART_SURFACE.ink;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.arc(xPend, yPend, 6, 0, Math.PI * 2);
@@ -1497,40 +1530,18 @@ export function CandleChart({
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const chart = createChart(containerRef.current, {
-      width:
-        containerRef.current.clientWidth ||
-        containerRef.current.parentElement?.clientWidth ||
-        600,
-      height: mainHeight,
-      layout: {
-        background: { type: ColorType.Solid, color: "#252525" },
-        textColor: "#8b95a1",
-        attributionLogo: false,
-        panes: {
-          separatorColor: "#3a3a3c",
-          separatorHoverColor: "rgba(139, 149, 161, 0.15)",
-        },
-      },
-      grid: {
-        vertLines: { color: "#3a3a3c" },
-        horzLines: { color: "#3a3a3c" },
-      },
-      rightPriceScale: {
-        borderColor: "#3a3a3c",
-        scaleMargins: { top: 0.05, bottom: 0.05 },
-      },
-    });
+    const chart = createChart(
+      containerRef.current,
+      chartOptions({
+        width:
+          containerRef.current.clientWidth ||
+          containerRef.current.parentElement?.clientWidth ||
+          600,
+        height: mainHeight,
+      }),
+    );
 
-    const candles = chart.addSeries(CandlestickSeries, {
-      upColor: "#00c471",
-      downColor: "#f04452",
-      borderVisible: false,
-      wickUpColor: "#00c471",
-      wickDownColor: "#f04452",
-      lastValueVisible: false,
-      priceLineVisible: false,
-    });
+    const candles = chart.addSeries(CandlestickSeries, candleOptions());
 
     chartRef.current = chart;
     candleRef.current = candles;
@@ -1833,14 +1844,14 @@ export function CandleChart({
       const colors = parsePeriodColors(keltnerCfg.params.colors);
       if (keltnerOut.series.mid?.length) {
         upsertLine("keltner:mid", keltnerOut.series.mid, {
-          color: colors.mid ?? "#06b6d4",
+          color: colors.mid ?? SERIES.cyan,
           lineWidth: 2,
           visible: keltnerVis,
         });
       }
       if (keltnerOut.series.upper?.length) {
         upsertLine("keltner:upper", keltnerOut.series.upper, {
-          color: colors.upper ?? "#22d3ee",
+          color: colors.upper ?? BOLLINGER.upper,
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           visible: keltnerVis,
@@ -1848,7 +1859,7 @@ export function CandleChart({
       }
       if (keltnerOut.series.lower?.length) {
         upsertLine("keltner:lower", keltnerOut.series.lower, {
-          color: colors.lower ?? "#67e8f9",
+          color: colors.lower ?? BOLLINGER.lower,
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           visible: keltnerVis,
@@ -1863,7 +1874,7 @@ export function CandleChart({
       const colors = parsePeriodColors(bbWideCfg.params.colors);
       if (bbWideOut.series.middle?.length) {
         upsertLine("bbWide:middle", bbWideOut.series.middle, {
-          color: colors.middle ?? "#f87171",
+          color: colors.middle ?? BOLLINGER.mid,
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           visible: bbWideVis,
@@ -1871,14 +1882,14 @@ export function CandleChart({
       }
       if (bbWideOut.series.upper?.length) {
         upsertLine("bbWide:upper", bbWideOut.series.upper, {
-          color: colors.upper ?? "#ef4444",
+          color: colors.upper ?? SIGNAL.bearish,
           lineWidth: 1,
           visible: bbWideVis,
         });
       }
       if (bbWideOut.series.lower?.length) {
         upsertLine("bbWide:lower", bbWideOut.series.lower, {
-          color: colors.lower ?? "#dc2626",
+          color: colors.lower ?? SIGNAL.bearish,
           lineWidth: 1,
           visible: bbWideVis,
         });
@@ -1890,16 +1901,16 @@ export function CandleChart({
     const vwapVis = auxIndicatorVisibility?.vwap === true;
     if (vwapCfg?.enabled && vwapOut) {
       const colors = parsePeriodColors(vwapCfg.params.colors);
-      const vwapColor = colors.vwap ?? "#3b82f6";
-      const band1 = colors.band1 ?? "#f97316";
-      const band2 = colors.band2 ?? "#fb923c";
+      const vwapColor = colors.vwap ?? SERIES.accent;
+      const band1 = colors.band1 ?? SERIES.orangeDeep;
+      const band2 = colors.band2 ?? SERIES.orange;
       const slope = vwapOut.latest.slope;
       const centerColor =
         slope == null || slope === 0
           ? vwapColor
           : slope > 0
-            ? "#00c471"
-            : "#f04452";
+            ? DIRECTION.up
+            : DIRECTION.down;
       if (vwapOut.series.vwap?.length) {
         upsertLine("vwap", vwapOut.series.vwap, {
           color: centerColor,
@@ -1946,9 +1957,9 @@ export function CandleChart({
     const foreverVis = auxIndicatorVisibility?.forever_vwap === true;
     if (foreverCfg?.enabled && foreverOut) {
       const colors = parsePeriodColors(foreverCfg.params.colors);
-      const up = colors.up ?? "#f97316";
-      const down = colors.down ?? "#a855f7";
-      const anchoredColor = colors.anchored ?? "#94a3b8";
+      const up = colors.up ?? SERIES.orangeDeep;
+      const down = colors.down ?? SERIES.purple;
+      const anchoredColor = colors.anchored ?? SERIES.slate;
       const trend = foreverOut.latest.trend;
       const centerColor =
         trend == null || trend === 0 ? up : trend > 0 ? up : down;
@@ -1975,7 +1986,7 @@ export function CandleChart({
     if (psarCfg?.enabled && psarPoints?.length) {
       const bull = (psarOut?.latest.direction ?? 0) > 0;
       upsertLine("psar", psarPoints, {
-        color: bull ? "#00c471" : "#f04452",
+        color: bull ? DIRECTION.up : DIRECTION.down,
         lineWidth: 1,
         lineStyle: LineStyle.SparseDotted,
         visible: auxIndicatorVisibility?.psar === true,
@@ -1988,7 +1999,7 @@ export function CandleChart({
     if (stCfg?.enabled && stPoints?.length) {
       const bull = (stOut?.latest.direction ?? 0) > 0;
       upsertLine("supertrend", stPoints, {
-        color: bull ? "#00c471" : "#f04452",
+        color: bull ? DIRECTION.up : DIRECTION.down,
         lineWidth: 2,
         visible: auxIndicatorVisibility?.supertrend === true,
       });
@@ -2071,6 +2082,9 @@ export function CandleChart({
         volumePane,
       );
       volume.setData(toVolumeData(bars));
+      volume.priceScale().applyOptions({
+        scaleMargins: { ...SCALE_MARGINS.volume },
+      });
       volumeRef.current = volume;
 
       for (const avg of volumeSnapshot.averages) {
@@ -2122,6 +2136,9 @@ export function CandleChart({
             },
             paneIndex,
           );
+          series.priceScale().applyOptions({
+          scaleMargins: { ...SCALE_MARGINS.oscillator },
+        });
           series.setData(data);
           oscSeriesRefs.current.set(key, series);
           return series;
@@ -2129,7 +2146,7 @@ export function CandleChart({
 
         const line = addRsiLine(
           "rsi",
-          "#c084fc",
+          SERIES.purple,
           2,
           toLineData(out.rsi?.series.rsi),
         );
@@ -2138,7 +2155,7 @@ export function CandleChart({
         const oversold = getIndicatorConfig("rsi")?.oversold ?? 30;
         line.createPriceLine({
           price: overbought,
-          color: "rgba(240, 68, 82, 0.35)",
+          color: OSC_LEVEL.overbought,
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
@@ -2146,7 +2163,7 @@ export function CandleChart({
         });
         line.createPriceLine({
           price: oversold,
-          color: "rgba(0, 196, 113, 0.35)",
+          color: OSC_LEVEL.oversold,
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
@@ -2157,7 +2174,7 @@ export function CandleChart({
         if (out.rsi?.series.rsiUpper?.length) {
           addRsiLine(
             "rsiUpper",
-            "#f9a8d4",
+            SERIES.pink,
             1,
             toLineData(out.rsi.series.rsiUpper),
           );
@@ -2165,7 +2182,7 @@ export function CandleChart({
         if (out.rsi?.series.rsiLower?.length) {
           addRsiLine(
             "rsiLower",
-            "#86efac",
+            SERIES.teal,
             1,
             toLineData(out.rsi.series.rsiLower),
           );
@@ -2173,7 +2190,7 @@ export function CandleChart({
         if (out.rsi?.series.rsiMid?.length) {
           addRsiLine(
             "rsiMid",
-            "#facc15",
+            SERIES.yellow,
             1,
             toLineData(out.rsi.series.rsiMid),
           );
@@ -2181,7 +2198,7 @@ export function CandleChart({
         if (out.rsi?.series.rsiWeighted?.length) {
           addRsiLine(
             "rsiWeighted",
-            "#1f2937",
+            SERIES.slateDark,
             2,
             toLineData(out.rsi.series.rsiWeighted),
           );
@@ -2213,7 +2230,7 @@ export function CandleChart({
         const macdLine = chart.addSeries(
           LineSeries,
           {
-            color: "#60a5fa",
+            color: SERIES.blue,
             lineWidth: 2,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2235,7 +2252,7 @@ export function CandleChart({
         const signal = chart.addSeries(
           LineSeries,
           {
-            color: "#fbbf24",
+            color: SERIES.amber,
             lineWidth: 1,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2252,7 +2269,7 @@ export function CandleChart({
         const kLine = chart.addSeries(
           LineSeries,
           {
-            color: "#2dd4bf",
+            color: SERIES.teal,
             lineWidth: 2,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2268,7 +2285,7 @@ export function CandleChart({
         const oversold = getIndicatorConfig("stoch")?.oversold ?? 20;
         kLine.createPriceLine({
           price: overbought,
-          color: "rgba(240, 68, 82, 0.45)",
+          color: OSC_LEVEL.overboughtStrong,
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
@@ -2284,7 +2301,7 @@ export function CandleChart({
         });
         kLine.createPriceLine({
           price: oversold,
-          color: "rgba(0, 196, 113, 0.45)",
+          color: OSC_LEVEL.oversoldStrong,
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
@@ -2294,7 +2311,7 @@ export function CandleChart({
         const dLine = chart.addSeries(
           LineSeries,
           {
-            color: "#fb923c",
+            color: SERIES.orange,
             lineWidth: 1,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2311,7 +2328,7 @@ export function CandleChart({
         const line = chart.addSeries(
           LineSeries,
           {
-            color: "#22d3ee",
+            color: SERIES.cyan,
             lineWidth: 2,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2321,7 +2338,7 @@ export function CandleChart({
         );
         line.createPriceLine({
           price: 80,
-          color: "rgba(240, 68, 82, 0.45)",
+          color: OSC_LEVEL.overboughtStrong,
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
@@ -2329,7 +2346,7 @@ export function CandleChart({
         });
         line.createPriceLine({
           price: 20,
-          color: "rgba(0, 196, 113, 0.45)",
+          color: OSC_LEVEL.oversoldStrong,
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
@@ -2344,7 +2361,7 @@ export function CandleChart({
         const line = chart.addSeries(
           LineSeries,
           {
-            color: "#94a3b8",
+            color: SERIES.slate,
             lineWidth: 2,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2361,7 +2378,7 @@ export function CandleChart({
         const line = chart.addSeries(
           LineSeries,
           {
-            color: "#38bdf8",
+            color: SERIES.sky,
             lineWidth: 2,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2394,7 +2411,7 @@ export function CandleChart({
         const line = chart.addSeries(
           LineSeries,
           {
-            color: "#a78bfa",
+            color: SERIES.violet,
             lineWidth: 2,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2411,7 +2428,7 @@ export function CandleChart({
         const line = chart.addSeries(
           LineSeries,
           {
-            color: "#f472b6",
+            color: SERIES.pink,
             lineWidth: 2,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2436,7 +2453,7 @@ export function CandleChart({
         const line = chart.addSeries(
           LineSeries,
           {
-            color: "#34d399",
+            color: SERIES.teal,
             lineWidth: 1,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2458,7 +2475,7 @@ export function CandleChart({
           const smooth = chart.addSeries(
             LineSeries,
             {
-              color: "#fbbf24",
+              color: SERIES.amber,
               lineWidth: 2,
               lastValueVisible: false,
               priceLineVisible: false,
@@ -2476,7 +2493,7 @@ export function CandleChart({
         const line = chart.addSeries(
           LineSeries,
           {
-            color: "#67e8f9",
+            color: SERIES.cyan,
             lineWidth: 2,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2493,7 +2510,7 @@ export function CandleChart({
         const line = chart.addSeries(
           LineSeries,
           {
-            color: "#fb923c",
+            color: SERIES.orange,
             lineWidth: 2,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2518,7 +2535,7 @@ export function CandleChart({
         const adxLine = chart.addSeries(
           LineSeries,
           {
-            color: "#eab308",
+            color: SERIES.yellow,
             lineWidth: 2,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2540,7 +2557,7 @@ export function CandleChart({
         const plusDI = chart.addSeries(
           LineSeries,
           {
-            color: "#00c471",
+            color: DIRECTION.up,
             lineWidth: 1,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2554,7 +2571,7 @@ export function CandleChart({
         const minusDI = chart.addSeries(
           LineSeries,
           {
-            color: "#f04452",
+            color: DIRECTION.down,
             lineWidth: 1,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2574,7 +2591,7 @@ export function CandleChart({
         const line = chart.addSeries(
           LineSeries,
           {
-            color: "#a78bfa",
+            color: SERIES.violet,
             lineWidth: 2,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2584,7 +2601,7 @@ export function CandleChart({
         );
         line.createPriceLine({
           price: overbought,
-          color: "rgba(240, 68, 82, 0.45)",
+          color: OSC_LEVEL.overboughtStrong,
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
@@ -2600,7 +2617,7 @@ export function CandleChart({
         });
         line.createPriceLine({
           price: oversold,
-          color: "rgba(0, 196, 113, 0.45)",
+          color: OSC_LEVEL.oversoldStrong,
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
@@ -2615,7 +2632,7 @@ export function CandleChart({
         const line = chart.addSeries(
           LineSeries,
           {
-            color: "#a78bfa",
+            color: SERIES.violet,
             lineWidth: 2,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2625,7 +2642,7 @@ export function CandleChart({
         );
         line.createPriceLine({
           price: 1,
-          color: "rgba(240, 68, 82, 0.4)",
+          color: OSC_LEVEL.overboughtSoft,
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
@@ -2633,7 +2650,7 @@ export function CandleChart({
         });
         line.createPriceLine({
           price: 0,
-          color: "rgba(0, 196, 113, 0.4)",
+          color: OSC_LEVEL.oversoldSoft,
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
@@ -2648,7 +2665,7 @@ export function CandleChart({
         const line = chart.addSeries(
           LineSeries,
           {
-            color: "#f472b6",
+            color: SERIES.pink,
             lineWidth: 2,
             lastValueVisible: false,
             priceLineVisible: false,
@@ -2840,7 +2857,7 @@ export function CandleChart({
     ) {
       items.push({
         label: `Keltner · ${fmtLegend(indicators.indicators.keltner.latest.mid)}`,
-        color: "#06b6d4",
+        color: SERIES.cyan,
       });
     }
 
@@ -2851,7 +2868,7 @@ export function CandleChart({
     ) {
       items.push({
         label: `WB(44) · ${fmtLegend(indicators.indicators.bbWide.latest.middle)}`,
-        color: "#ef4444",
+        color: SIGNAL.bearish,
       });
     }
 
@@ -2863,17 +2880,17 @@ export function CandleChart({
       const slope = indicators.indicators.vwap.latest.slope;
       const color =
         slope == null || slope === 0
-          ? "#3b82f6"
+          ? SERIES.accent
           : slope > 0
-            ? "#00c471"
-            : "#f04452";
+            ? DIRECTION.up
+            : DIRECTION.down;
       items.push({
         label: `VWAP · ${fmtLegend(indicators.indicators.vwap.latest.vwap)}`,
         color,
       });
       items.push({
         label: "VWAP bands",
-        color: "#f97316",
+        color: SERIES.orangeDeep,
       });
     }
 
@@ -2885,17 +2902,17 @@ export function CandleChart({
       const trend = indicators.indicators.forever_vwap.latest.trend;
       const color =
         trend == null || trend === 0
-          ? "#f97316"
+          ? SERIES.orangeDeep
           : trend > 0
-            ? "#f97316"
-            : "#a855f7";
+            ? SERIES.orangeDeep
+            : SERIES.purple;
       items.push({
         label: `포에버 VWAP · ${fmtLegend(indicators.indicators.forever_vwap.latest.vwap)}`,
         color,
       });
       items.push({
         label: "앵커드 VWAP",
-        color: "#94a3b8",
+        color: SERIES.slate,
       });
     }
 
@@ -2907,7 +2924,7 @@ export function CandleChart({
       const bull = (indicators.indicators.psar.latest.direction ?? 0) > 0;
       items.push({
         label: `PSAR · ${fmtLegend(indicators.indicators.psar.latest.psar)}`,
-        color: bull ? "#00c471" : "#f04452",
+        color: bull ? DIRECTION.up : DIRECTION.down,
       });
     }
 
@@ -2920,7 +2937,7 @@ export function CandleChart({
         (indicators.indicators.supertrend.latest.direction ?? 0) > 0;
       items.push({
         label: `Supertrend · ${fmtLegend(indicators.indicators.supertrend.latest.supertrend)}`,
-        color: bull ? "#00c471" : "#f04452",
+        color: bull ? DIRECTION.up : DIRECTION.down,
       });
     }
 
@@ -2961,10 +2978,10 @@ export function CandleChart({
         })(),
         color:
           hit.direction === "bullish"
-            ? "#00c471"
+            ? DIRECTION.up
             : hit.direction === "bearish"
-              ? "#f04452"
-              : "#8b95a1",
+              ? DIRECTION.down
+              : CHART_SURFACE.text,
       }));
   }, [bbStrategies, chartBbStrategyVisibility, recentMinBarIndex, bars]);
 
@@ -2984,10 +3001,10 @@ export function CandleChart({
         })(),
         color:
           hit.direction === "bullish"
-            ? "#00c471"
+            ? DIRECTION.up
             : hit.direction === "bearish"
-              ? "#f04452"
-              : "#8b95a1",
+              ? DIRECTION.down
+              : CHART_SURFACE.text,
       }));
   }, [rsiStrategies, chartRsiStrategyVisibility, recentMinBarIndex, bars]);
 
@@ -3008,10 +3025,10 @@ export function CandleChart({
         })(),
         color:
           hit.direction === "bullish"
-            ? "#00c471"
+            ? DIRECTION.up
             : hit.direction === "bearish"
-              ? "#f04452"
-              : "#8b95a1",
+              ? DIRECTION.down
+              : CHART_SURFACE.text,
       }));
   }, [volumeStrategies, chartVolumeStrategyVisibility, recentMinBarIndex, bars]);
 
@@ -3032,10 +3049,10 @@ export function CandleChart({
         })(),
         color:
           hit.direction === "bullish"
-            ? "#00c471"
+            ? DIRECTION.up
             : hit.direction === "bearish"
-              ? "#f04452"
-              : "#8b95a1",
+              ? DIRECTION.down
+              : CHART_SURFACE.text,
       }));
   }, [comboStrategies, chartComboStrategyVisibility, recentMinBarIndex, bars]);
 
@@ -3056,10 +3073,10 @@ export function CandleChart({
         })(),
         color:
           hit.direction === "bullish"
-            ? "#00c471"
+            ? DIRECTION.up
             : hit.direction === "bearish"
-              ? "#f04452"
-              : "#8b95a1",
+              ? DIRECTION.down
+              : CHART_SURFACE.text,
       }));
   }, [macdStrategies, chartMacdStrategyVisibility, recentMinBarIndex, bars]);
 
@@ -3080,10 +3097,10 @@ export function CandleChart({
         })(),
         color:
           hit.direction === "bullish"
-            ? "#00c471"
+            ? DIRECTION.up
             : hit.direction === "bearish"
-              ? "#f04452"
-              : "#8b95a1",
+              ? DIRECTION.down
+              : CHART_SURFACE.text,
       }));
   }, [classicStrategies, chartClassicStrategyVisibility, recentMinBarIndex, bars]);
 
@@ -3104,10 +3121,10 @@ export function CandleChart({
         })(),
         color:
           hit.direction === "bullish"
-            ? "#00c471"
+            ? DIRECTION.up
             : hit.direction === "bearish"
-              ? "#f04452"
-              : "#8b95a1",
+              ? DIRECTION.down
+              : CHART_SURFACE.text,
       }));
   }, [stochStrategies, chartStochStrategyVisibility, recentMinBarIndex, bars]);
 
@@ -3128,10 +3145,10 @@ export function CandleChart({
         })(),
         color:
           hit.direction === "bullish"
-            ? "#00c471"
+            ? DIRECTION.up
             : hit.direction === "bearish"
-              ? "#f04452"
-              : "#8b95a1",
+              ? DIRECTION.down
+              : CHART_SURFACE.text,
       }));
   }, [ichimokuStrategies, chartIchimokuStrategyVisibility, recentMinBarIndex, bars]);
 
@@ -3168,7 +3185,7 @@ export function CandleChart({
         key: `swing-${s.label}-${s.barIndex}`,
         text: s.label,
         detail: `${s.date} · ${s.price.toFixed(2)}`,
-        color: bullish ? "#00c471" : "#f04452",
+        color: bullish ? DIRECTION.up : DIRECTION.down,
       });
     }
     for (const t of structure.transitions.slice(-4)) {
@@ -3177,7 +3194,7 @@ export function CandleChart({
           key: `tr-bull-${t.barIndex}`,
           text: "↑BULL",
           detail: t.date,
-          color: "#00c471",
+          color: DIRECTION.up,
         });
       }
       if (t.to === "bearish" && chartStructureVisibility.bearish_transition) {
@@ -3185,7 +3202,7 @@ export function CandleChart({
           key: `tr-bear-${t.barIndex}`,
           text: "↓BEAR",
           detail: t.date,
-          color: "#f04452",
+          color: DIRECTION.down,
         });
       }
     }
@@ -3403,8 +3420,8 @@ export function CandleChart({
                     style={{
                       color:
                         ohlcvReadout.close >= ohlcvReadout.open
-                          ? "#00c471"
-                          : "#f04452",
+                          ? DIRECTION.up
+                          : DIRECTION.down,
                     }}
                   >
                     {fmtPrice(ohlcvReadout.close)}
@@ -3417,9 +3434,9 @@ export function CandleChart({
                         ohlcvReadout.changePct == null
                           ? undefined
                           : ohlcvReadout.changePct > 0
-                            ? "#00c471"
+                            ? DIRECTION.up
                             : ohlcvReadout.changePct < 0
-                              ? "#f04452"
+                              ? DIRECTION.down
                               : undefined,
                     }}
                     className={

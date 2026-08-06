@@ -5,6 +5,7 @@ import {
   AUX_INDICATOR_ORDER,
   type AuxIndicatorId,
 } from "@/lib/auxIndicatorStore";
+import { VOLUME_BAR } from "@/lib/chart/chartTheme";
 
 export const OSC_PANE_HEIGHT = 120;
 export const OSC_MACD_PANE_HEIGHT = 140;
@@ -295,9 +296,7 @@ export function toVolumeData(bars: OHLCVBar[]) {
     time: b.date as `${number}-${number}-${number}`,
     value: b.volume,
     color:
-      b.close >= b.open
-        ? "rgba(0, 196, 113, 0.55)"
-        : "rgba(240, 68, 82, 0.55)",
+      b.close >= b.open ? VOLUME_BAR.up : VOLUME_BAR.down,
   }));
 }
 

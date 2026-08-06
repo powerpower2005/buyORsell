@@ -1,5 +1,6 @@
 import type { SeriesMarker, Time } from "lightweight-charts";
 import type { TradeJournalEntry } from "@/lib/tradeJournalStore";
+import { DIRECTION } from "@/lib/chart/chartTheme";
 
 /** Buy / sell markers for manual journal entries. */
 export function tradeJournalToChartMarkers(
@@ -11,7 +12,7 @@ export function tradeJournalToChartMarkers(
     return {
       time: e.date as Time,
       position: buy ? "belowBar" : "aboveBar",
-      color: buy ? "#22c55e" : "#ef4444",
+      color: buy ? DIRECTION.up : DIRECTION.down,
       shape: buy ? "arrowUp" : "arrowDown",
       text: buy ? "매수" : "매도",
       id: `journal-${e.id}`,

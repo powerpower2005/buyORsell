@@ -10,12 +10,13 @@ import type {
   SwingStructureResult,
 } from "@/lib/evaluation/swingStructure";
 import type { SwingChartToggleId } from "@/lib/swingStructureStore";
+import { SIGNAL } from "@/lib/chart/chartTheme";
 
 const LABEL_COLOR: Record<SwingLabel, string> = {
-  HH: "#00c471",
-  HL: "#00c471",
-  LH: "#f04452",
-  LL: "#f04452",
+  HH: SIGNAL.bullish,
+  HL: SIGNAL.bullish,
+  LH: SIGNAL.bearish,
+  LL: SIGNAL.bearish,
 };
 
 function swingMarkers(
@@ -59,7 +60,7 @@ function transitionMarkers(
         time: t.date as Time,
         position,
         shape,
-        color: toBull ? "#00c471" : "#f04452",
+        color: toBull ? SIGNAL.bullish : SIGNAL.bearish,
         text: "",
         id: `transition-${t.to}-${t.barIndex}`,
         size: 2,
@@ -98,10 +99,18 @@ export function visibleStructureLegend(
     });
   }
   if (visibility.bullish_transition) {
-    items.push({ text: "↑BULL", label: "하락→상승", color: "#00c471" });
+    items.push({
+      text: "↑BULL",
+      label: "하락→상승",
+      color: SIGNAL.bullish,
+    });
   }
   if (visibility.bearish_transition) {
-    items.push({ text: "↓BEAR", label: "상승→하락", color: "#f04452" });
+    items.push({
+      text: "↓BEAR",
+      label: "상승→하락",
+      color: SIGNAL.bearish,
+    });
   }
   return items;
 }

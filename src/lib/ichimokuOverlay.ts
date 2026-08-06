@@ -1,4 +1,6 @@
 /** Ichimoku chart overlay ids (maps to plugin series keys). */
+import { SERIES } from "@/lib/chart/chartTheme";
+
 export type IchimokuPartId =
   | "tenkan"
   | "kijun"
@@ -57,11 +59,11 @@ export const ICHIMOKU_DEFAULT_COLORS: Record<
   Exclude<IchimokuPartId, "cloud">,
   string
 > = {
-  tenkan: "#ef4444",
-  kijun: "#3b82f6",
-  chikou: "#a855f7",
-  spanA: "#22c55e",
-  spanB: "#f97316",
+  tenkan: SERIES.rose,
+  kijun: SERIES.accent,
+  chikou: SERIES.purple,
+  spanA: SERIES.teal,
+  spanB: SERIES.orangeDeep,
 };
 
 export function resolveIchimokuColor(

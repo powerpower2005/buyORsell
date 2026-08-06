@@ -1,5 +1,6 @@
 import type { OHLCVBar, Timeframe } from "../types";
 import { requireNonEmptyArray } from "../require";
+import { CHART_SURFACE, SERIES } from "@/lib/chart/chartTheme";
 
 export const VOLUME_MA_PERIODS = [3, 7, 15, 30] as const;
 export const VOLUME_MA_PERIODS_DAILY = [...VOLUME_MA_PERIODS, 90] as const;
@@ -31,13 +32,13 @@ const TF_UNIT: Record<Timeframe, string> = {
 };
 
 export const VOLUME_MA_COLORS: Record<number, string> = {
-  3: "#3182f6",
-  6: "#34d399",
-  7: "#fbbf24",
-  12: "#60a5fa",
-  15: "#c084fc",
-  30: "#8b95a1",
-  90: "#64748b",
+  3: SERIES.accent,
+  6: SERIES.teal,
+  7: SERIES.amber,
+  12: SERIES.blue,
+  15: SERIES.purple,
+  30: CHART_SURFACE.text,
+  90: SERIES.slate,
 };
 
 export function getVolumeMaPeriods(timeframe: Timeframe): readonly number[] {
@@ -48,7 +49,7 @@ export function getVolumeMaPeriods(timeframe: Timeframe): readonly number[] {
 }
 
 export function volumeMaColor(period: number): string {
-  return VOLUME_MA_COLORS[period] ?? "#8b95a1";
+  return VOLUME_MA_COLORS[period] ?? CHART_SURFACE.text;
 }
 
 function sma(values: number[], period: number): number[] {

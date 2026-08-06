@@ -1,5 +1,6 @@
 import type { SeriesMarker, Time } from "lightweight-charts";
 import type { IndicatorResults } from "@/lib/types";
+import { SERIES } from "@/lib/chart/chartTheme";
 
 /** Diamond-like flip markers from forever_vwap.series.flip (when overlay is on). */
 export function foreverVwapToChartMarkers(
@@ -18,7 +19,7 @@ export function foreverVwapToChartMarkers(
       time: p.date as Time,
       position: bull ? "belowBar" : "aboveBar",
       shape: "square",
-      color: bull ? "#f97316" : "#a855f7",
+      color: bull ? SERIES.orangeDeep : SERIES.purple,
       text: "",
       id: `forever-vwap-flip-${p.date}`,
       size: 1.25,

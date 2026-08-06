@@ -6,6 +6,7 @@ import {
   RR_V1_HORIZON_BARS,
   type RiskRewardPlan,
 } from "@/lib/evaluation/riskReward";
+import { CHART_SURFACE, DIRECTION } from "@/lib/chart/chartTheme";
 
 function xAt(chart: IChartApi, date: string): number | null {
   return chart
@@ -54,14 +55,14 @@ export function drawRiskRewardPlans(
     const width = Math.max(8, right - left);
 
     ctx.globalAlpha = 0.14;
-    ctx.fillStyle = "#ef4444";
+    ctx.fillStyle = DIRECTION.down;
     ctx.fillRect(
       left,
       Math.min(yEntry, yStop),
       width,
       Math.abs(yStop - yEntry) || 1,
     );
-    ctx.fillStyle = "#22c55e";
+    ctx.fillStyle = DIRECTION.up;
     ctx.fillRect(
       left,
       Math.min(yEntry, yTarget),
@@ -81,9 +82,9 @@ export function drawRiskRewardPlans(
       ctx.setLineDash([]);
     };
 
-    drawLine(yEntry, "#e2e8f0", [4, 3]);
-    drawLine(yStop, "#f87171", [6, 3]);
-    drawLine(yTarget, "#4ade80", [6, 3]);
+    drawLine(yEntry, CHART_SURFACE.inkMuted, [4, 3]);
+    drawLine(yStop, DIRECTION.down, [6, 3]);
+    drawLine(yTarget, DIRECTION.up, [6, 3]);
 
     ctx.strokeStyle = "rgba(226, 232, 240, 0.45)";
     ctx.lineWidth = 1;
@@ -102,7 +103,7 @@ export function drawRiskRewardPlans(
     const ly = Math.min(yTarget, yEntry) - 6;
     ctx.fillStyle = "rgba(15, 23, 42, 0.72)";
     ctx.fillRect(lx - 4, ly - 12, tw + 8, 16);
-    ctx.fillStyle = "#f8fafc";
+    ctx.fillStyle = CHART_SURFACE.inkSoft;
     ctx.fillText(label, lx, ly);
   }
 }

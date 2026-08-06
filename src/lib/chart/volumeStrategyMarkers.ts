@@ -9,6 +9,7 @@ import {
   type VolumeStrategyId,
 } from "@/lib/volumeStrategyMeta";
 import { directionColor } from "@/lib/candlePatternMeta";
+import { SERIES } from "@/lib/chart/chartTheme";
 
 function hitToMarker(hit: VolumeStrategyHit): SeriesMarker<Time> {
   const position =
@@ -27,8 +28,8 @@ function hitToMarker(hit: VolumeStrategyHit): SeriesMarker<Time> {
         : "circle";
   const color = forever
     ? hit.direction === "bullish"
-      ? "#f97316"
-      : "#a855f7"
+      ? SERIES.orangeDeep
+      : SERIES.purple
     : directionColor(hit.direction);
 
   return {

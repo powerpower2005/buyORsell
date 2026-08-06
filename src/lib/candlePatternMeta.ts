@@ -1,6 +1,7 @@
 import type { CandlePatternId } from "./evaluation/candlePatterns";
 import type { PatternBias } from "./patternBias";
 import type { TrendLabel } from "./types";
+import { CHART_SURFACE, SIGNAL } from "@/lib/chart/chartTheme";
 
 export interface CandlePatternMeta {
   id: CandlePatternId;
@@ -295,16 +296,16 @@ export function patternLabel(id: CandlePatternId): string {
 }
 
 export function directionColor(direction: TrendLabel): string {
-  if (direction === "bullish") return "#00c471";
-  if (direction === "bearish") return "#f04452";
-  return "#8b95a1";
+  if (direction === "bullish") return SIGNAL.bullish;
+  if (direction === "bearish") return SIGNAL.bearish;
+  return CHART_SURFACE.text;
 }
 
 /** Brighter marker/bar accents so pattern days stand out from normal candles. */
 export function patternAccentColor(direction: TrendLabel): string {
-  if (direction === "bullish") return "#38bdf8";
-  if (direction === "bearish") return "#fb923c";
-  return "#fbbf24";
+  if (direction === "bullish") return SIGNAL.bullish;
+  if (direction === "bearish") return SIGNAL.bearish;
+  return SIGNAL.neutral;
 }
 
 /** Chart marker arrow size for candle / classical patterns. */
