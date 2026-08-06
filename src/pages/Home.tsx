@@ -452,7 +452,7 @@ export function HomePage() {
             type="button"
             onClick={() => onTabChange(id)}
             className={clsx(
-              "rounded-md px-3 py-1.5 text-sm",
+              "rounded-md px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
               tab === id
                 ? "bg-accent text-white"
                 : "bg-surface-elevated text-text-secondary hover:text-text-primary",
@@ -493,29 +493,6 @@ export function HomePage() {
         </>
       ) : (
         <>
-      <WatchlistSidebar
-        tickers={catalogTickers}
-        active={ticker}
-        timeframe={timeframe}
-        loading={catalogLoading}
-        onSelect={(t) => {
-          setInput(t);
-          setTicker(t);
-          setScreen("setup");
-          setActionMode("analyze");
-          syncUrl(t, timeframe);
-        }}
-      />
-      {catalogTickers.length > 0 && (
-        <p className="text-left text-sm text-text-secondary">
-          수집된 종목은{" "}
-          <Link to="/browse" className="text-accent no-underline hover:underline">
-            보유 데이터
-          </Link>
-          에서 바로 볼 수 있습니다.
-        </p>
-      )}
-
       {catalogError && (
         <ErrorBanner title="종목 목록 로드 실패" message={catalogError} />
       )}
@@ -551,7 +528,7 @@ export function HomePage() {
                   type="button"
                   onClick={() => setActionMode("fetch")}
                   className={clsx(
-                    "rounded-md px-3 py-1.5 text-sm",
+                    "rounded-md px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
                     actionMode === "fetch"
                       ? "bg-accent text-white"
                       : "bg-surface-elevated text-text-secondary hover:text-text-primary",
@@ -563,7 +540,7 @@ export function HomePage() {
                   type="button"
                   onClick={() => setActionMode("analyze")}
                   className={clsx(
-                    "rounded-md px-3 py-1.5 text-sm",
+                    "rounded-md px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
                     actionMode === "analyze"
                       ? "bg-accent text-white"
                       : "bg-surface-elevated text-text-secondary hover:text-text-primary",
@@ -597,6 +574,34 @@ export function HomePage() {
             </Card>
           )}
         </>
+      )}
+
+      {(catalogLoading || catalogTickers.length > 0) && (
+        <WatchlistSidebar
+          tickers={catalogTickers}
+          active={ticker}
+          timeframe={timeframe}
+          loading={catalogLoading}
+          onSelect={(t) => {
+            setInput(t);
+            setTicker(t);
+            setScreen("setup");
+            setActionMode("analyze");
+            syncUrl(t, timeframe);
+          }}
+        />
+      )}
+      {catalogTickers.length > 0 && (
+        <p className="text-sm text-text-secondary">
+          수집된 종목은{" "}
+          <Link
+            to="/browse"
+            className="text-accent no-underline hover:underline"
+          >
+            보유 데이터
+          </Link>
+          에서 바로 볼 수 있습니다.
+        </p>
       )}
 
       {screen === "results" && ticker && (

@@ -1140,7 +1140,7 @@ export function ChartSidebar({
       >
         <button
           type="button"
-          className="flex flex-1 items-center justify-center rounded-lg border border-border bg-surface px-2 py-2 text-[11px] font-medium text-text-secondary hover:border-accent/40 hover:text-text-primary lg:flex-none lg:px-1.5 lg:py-3 lg:[writing-mode:vertical-rl] lg:tracking-wide"
+          className="flex flex-1 items-center justify-center rounded-lg border border-border bg-surface px-2 py-2 text-[11px] font-medium text-text-secondary hover:border-accent/40 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg lg:flex-none lg:px-1.5 lg:py-3 lg:[writing-mode:vertical-rl] lg:tracking-wide"
           onClick={() => setCollapsedPersisted(false)}
           title="차트 레이어 펼치기"
         >
@@ -1149,7 +1149,7 @@ export function ChartSidebar({
         {onEditIndicator && (
           <button
             type="button"
-            className="flex flex-1 items-center justify-center rounded-lg border border-accent/40 bg-accent/10 px-2 py-2 text-[11px] font-medium text-accent hover:bg-accent/20 lg:flex-none lg:px-1.5 lg:py-3 lg:[writing-mode:vertical-rl] lg:tracking-wide"
+            className="flex flex-1 items-center justify-center rounded-lg border border-accent/40 bg-accent/10 px-2 py-2 text-[11px] font-medium text-accent hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg lg:flex-none lg:px-1.5 lg:py-3 lg:[writing-mode:vertical-rl] lg:tracking-wide"
             onClick={() => onEditIndicator("all")}
             title="지표 편집"
           >

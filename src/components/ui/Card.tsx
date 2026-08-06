@@ -9,7 +9,7 @@ export function Card({ children, className, ...props }: CardProps) {
   return (
     <div
       className={clsx(
-        "rounded-lg border border-border bg-surface p-5 text-left",
+        "rounded-lg border border-border bg-surface p-5",
         className,
       )}
       {...props}
@@ -21,7 +21,7 @@ export function Card({ children, className, ...props }: CardProps) {
 
 export function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <h2 className="mb-3 text-left text-lg font-semibold text-text-primary">
+    <h2 className="mb-3 text-lg font-semibold text-text-primary">
       {children}
     </h2>
   );

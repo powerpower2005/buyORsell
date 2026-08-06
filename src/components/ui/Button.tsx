@@ -15,7 +15,7 @@ export function Button({
   return (
     <button
       className={clsx(
-        "rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:opacity-40",
+        "rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
         variant === "primary" && "bg-accent text-white hover:brightness-110",
         variant === "secondary" &&
           "border border-border bg-surface text-text-primary hover:bg-surface-elevated",
