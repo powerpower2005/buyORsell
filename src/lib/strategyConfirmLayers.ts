@@ -305,10 +305,43 @@ function extraConfirmLayers(
       }
       return [companion(VOL, "크로스·돌파 봉 참여 강도")];
     case "stoch":
-      if (id === "stoch_sr_bounce" || id === "stoch_triple_bottom") {
-        return [companion(SUP), companion(RES), companion(VOL)];
+      if (id === "stoch_ma20_cross") {
+        return [
+          companion(VOL, "이평 눌림·반등 후 K/D 크로스 봉 참여 강도"),
+          companion(ADX, "횡보·이평 혼선 구간 교차 걸러내기"),
+          companion(MACD, "모멘텀이 SMA20·크로스 방향과 같은지"),
+        ];
       }
-      if (id === "stoch_ma20_cross") return [companion(VOL)];
+      if (id === "stoch_divergence") {
+        return [
+          companion(
+            SUP,
+            "상승 다이버전스가 지지·매물대에서인지 (단독 다이버전스 경고)",
+          ),
+          companion(RES, "하락 다이버전스가 저항·매물대에서인지"),
+          companion(VOL, "확인 크로스 봉 수급"),
+          companion(SMA20, "추세 필터 — 강한 추세 중 이른 역추세 주의"),
+          companion(ADX, "다이버전스 단독 금지 — 추세 강도·전환 감각"),
+        ];
+      }
+      if (id === "stoch_sr_bounce") {
+        return [
+          companion(SUP, "지지 재접촉·존 미깨짐 확인"),
+          companion(RES, "저항 재접촉·존 미깨짐 확인"),
+          companion(VOL, "OB/OS 이탈 봉 참여 강도"),
+          companion(SMA20, "추세 방향과 같은 쪽 반등·이탈인지"),
+          companion(ADX, "강한 추세에서 존 한 번에 붕괴 주의"),
+        ];
+      }
+      if (id === "stoch_triple_bottom") {
+        return [
+          companion(SMA20, "가짜 3중 바닥 — 이평 위/아래 맥락"),
+          companion(VOL, "세 번째 바닥 후 골든 봉 수급"),
+          companion(SUP, "가격 삼중 바닥·지지와 겹치는지"),
+          companion(RES, "3중 천장·저항과 겹치는지"),
+          companion(ADX, "강한 하락(추세) 중 가짜 바닥 걸러내기"),
+        ];
+      }
       return [companion(VOL), companion(SUP), companion(RES)];
     case "ichimoku":
       if (id === "ichi_tk_cross") {

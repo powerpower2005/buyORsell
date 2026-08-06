@@ -140,7 +140,7 @@ const INDICATORS = {
     nameKo: "스토캐스틱",
     nameEn: "Stochastic Oscillator",
     category: "momentum",
-    what: "느린 %K(스무딩)와 %D=SMA(%K).",
+    what: "%K=(종−N저)/(N고−N저)×100. slowing 1≈Fast·↑=Slow. %D=SMA(%K). 단독 OB/OS·%D교차 지양. 패널 1세트(다중 파동은 수동).",
     params: "period 14 · slowing 1 · signal 3 · OB 80 · OS 20",
     series: "stochK, stochD",
     file: "src/lib/evaluation/indicators/index.ts",
@@ -1266,7 +1266,45 @@ const families = [
     store: "src/lib/stochStrategyStore.ts",
     help: "src/lib/stochStrategyHelp.ts",
     hasStopTarget: false,
-    overview: "%K/%D + SMA20 / S·R / 3중바닥. stop/target 없음.",
+    overview:
+      "%K/%D + SMA20 / S·R / 3중바닥. stop/target 없음.\n\n**설계:** 전략 엔트리는 최소. 단독 OB/OS·단독 %D 교차·후행은 **같이 켤 지표**와 Notes로 완화. 대/중/소 다중 스토캐(20·16·5)는 패널 1세트라 설명만 — 새 id 없음.",
+    companions: [
+      {
+        id: "stoch_ma20_cross",
+        layers: "거래량 · ADX · MACD",
+      },
+      {
+        id: "stoch_divergence",
+        layers: "S/R · 거래량 · SMA20 · ADX (단독 다이버전스 경고)",
+      },
+      {
+        id: "stoch_sr_bounce",
+        layers: "S/R · 거래량 · SMA20 · ADX",
+      },
+      {
+        id: "stoch_triple_bottom",
+        layers: "SMA20 · 거래량 · S/R · ADX (가짜 바닥)",
+      },
+    ],
+    readmeExtra: `## 개념
+
+| 항목 | 내용 |
+|------|------|
+| %K | (종−N저)/(N고−N저)×100. period=범위 봉 수 (앱 기본 14, 교재 추천 5는 설정) |
+| slowing | 1≈Fast, ↑=Slow(%K 스무딩). 앱 기본 slowing 1 |
+| %D | SMA(%K). 하이킨아시식 추세 감각·후행 있음 — 단독 골든/데드 금지 |
+| 80/20 · 50 | OB/OS 참고 · 50=미들(애매) |
+| 힌지 | %K가 내려오다 고개 듦 — 첫 반전 후보(노이즈↑, 하드 엔트리 아님) |
+
+**후행:** 캔들→파동→추세가 1차. 스토캐는 해석 보조. 짧은 TF(1·5분) 비추천 — 앱은 일·주·월.
+
+**다중 파동(설명만):** 대 20,12,12 / 중 16,6 / 소 5,3,3. 정렬·호흡은 수동. 인스턴스·전략 id 없음.
+
+## Notes
+
+- 맹신·가벼운 사용·캔들 없이 쓰지 말 것.
+- 다이버전스·OB/OS만의 단순 매매 경고 → companion(S/R·이평·거래량).
+- 앱 기본 (14,1,3) vs 교재 랭스5 — 설정으로 선택.`,
     strategies: [
       {
         id: "stoch_ma20_cross",
@@ -1277,7 +1315,8 @@ const families = [
           "close > sma20×0.998 + SMA20 근처(mid 2% 또는 low≤sma×1.005) + %K/%D 골든.",
         bearish: "close < sma20×1.002 + 위에서 근처 + %K/%D 데드.",
         stopTarget: "히트에 없음.",
-        notes: "sma:20 필요.",
+        notes:
+          "sma:20 필요. 단독 OB/OS 대신 추세+크로스. 거래량·ADX·MACD companion.",
         params: "near SMA20 2%",
       },
       {
@@ -1289,7 +1328,8 @@ const families = [
           "가격 LL + %K HL, 첫 피벗 %K≤OS(20). 2번째 피벗 후 10봉 내 골든.",
         bearish: "가격 HH + %K LH, 첫 %K≥OB(80). 10봉 내 데드.",
         stopTarget: "히트에 없음.",
-        notes: "",
+        notes:
+          "단독 다이버전스 금지. S/R·거래량·SMA20·ADX companion.",
         params: "확인 10 · OB/OS 80/20",
       },
       {
@@ -1300,7 +1340,8 @@ const families = [
         bullish: "미깨진 지지(터치≥2) 근처 + %K가 OS(20) 상향.",
         bearish: "미깨진 저항 근처 + %K가 OB(80) 하향.",
         stopTarget: "히트에 없음.",
-        notes: "존 패드 = max(반높이, mid×0.4%).",
+        notes:
+          "존 패드 = max(반높이, mid×0.4%). OB/OS는 자리와 겹칠 때. SMA20·거래량·ADX companion.",
         params: "touches≥2 · OS/OB 20/80",
       },
       {
@@ -1311,7 +1352,8 @@ const families = [
         bullish: "최근 50봉 %K 로컬 저 3개가 상승 + 마지막 저 후 8봉 내 골든.",
         bearish: "%K 로컬 고 3개 하락 + 8봉 내 데드 (3중 천장).",
         stopTarget: "히트에 없음.",
-        notes: "같은 id의 약세 분기가 3중 천장.",
+        notes:
+          "약세 분기=3중 천장. 가짜 바닥 → SMA20·거래량·S/R·ADX companion.",
         params: "lookback 50 · 확인 8",
       },
     ],
