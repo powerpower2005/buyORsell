@@ -10,9 +10,11 @@ Local docs under `docs/` (**gitignored**). Also see repo root `AGENTS.md`.
 ## Agent entry
 
 1. `docs/indicators/INDEX.md` — **labeled technical indicators** (`rsi`, `bb`, `vwap`, …)
-2. `docs/strategies/INDEX.md` — every strategy id → **indicator labels** → doc → detector
-3. `docs/strategies/{family}/{id}.md` — detailed entry rules + indicator table
-4. **Changelogs (required on every edit):**
+2. `docs/indicators/candle_patterns/` — candlestick patterns (not a strategy family)
+3. `docs/strategies/INDEX.md` — every strategy id → **indicator labels** → doc → detector
+4. `docs/strategies/{family}/{id}.md` — detailed entry rules + indicator table
+5. `docs/strategies/COMPANIONS.md` — confirm layers map (strategies + candles)
+6. **Changelogs (required on every edit):**
    - `docs/indicators/CHANGELOG.md` — which indicator labels changed
    - `docs/strategies/CHANGELOG.md` — which strategy ids changed
 
@@ -42,5 +44,8 @@ Skip only pure refactors with zero behavior/doc/label impact.
 | Detectors | `src/lib/evaluation/*Strategies.ts` |
 | Meta | `src/lib/*StrategyMeta.ts` |
 | Indicators | `src/lib/evaluation/indicators/` |
+| Candle patterns | `src/lib/evaluation/candlePatterns.ts` · `candlePatternMeta.ts` |
+| Strategy companions | `src/lib/strategyConfirmLayers.ts` |
+| Candle confirm | `src/lib/candlePatternConfirm.ts` |
 | Layer deps | `src/lib/strategyIndicatorDeps.ts` |
 | Orchestration | `src/lib/evaluation/evaluateQuote.ts` |

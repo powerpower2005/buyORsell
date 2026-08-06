@@ -1,8 +1,10 @@
 /**
  * Generate local docs/ (gitignored):
  * - docs/indicators/INDEX.md  — labeled indicator catalog
+ * - docs/indicators/candle_patterns/{README,id}.md — candlestick pattern catalog
  * - docs/indicators/CHANGELOG.md — indicator change log (created once; never overwritten)
  * - docs/strategies/INDEX.md  — strategy index + indicator labels
+ * - docs/strategies/COMPANIONS.md — confirm-layer map (strategies + candles)
  * - docs/strategies/CHANGELOG.md — strategy change log (created once; never overwritten)
  * - docs/strategies/{family}/{id}.md — detailed per-strategy docs
  *
@@ -404,9 +406,10 @@ const INDICATORS = {
     nameKo: "캔들 패턴",
     nameEn: "Candlestick Patterns",
     category: "structure",
-    what: "장악형 등 캔들 패턴.",
-    params: "—",
-    series: "candle hits",
+    what:
+      "봉 형태 탐지(전략 패밀리 아님). 사이드바 롱/숏/중립 토글·마커. 신뢰도는 candle confirm companion. 상세: indicators/candle_patterns/.",
+    params: "— (shape thresholds in detector)",
+    series: "candle hits per pattern id",
     file: "src/lib/evaluation/candlePatterns.ts",
     kind: "structure",
   },
@@ -430,6 +433,44 @@ const CATEGORY_ORDER = [
   ["volume", "거래량·자금흐름 (Volume)"],
   ["structure", "구조·오버레이 (Structure)"],
   ["helper", "헬퍼 (Helper)"],
+];
+
+/**
+ * Candlestick catalog for docs (mirrors `candlePatternMeta.ts` + groups in `candlePatternConfirm.ts`).
+ * Not a strategy family — detection + sidebar markers + confirm companions.
+ */
+const CANDLE_CONFIRM = {
+  reversal_bull: "거래량 · 지지 · RSI · VWAP",
+  reversal_bear: "거래량 · 저항 · RSI · VWAP",
+  continuation_bull: "거래량 · ADX · MACD · SMA20",
+  continuation_bear: "거래량 · ADX · MACD · SMA20",
+  uncertain: "거래량 · 지지 · 저항 · RSI",
+};
+
+/** @type {{ id: string, label: string, labelKo: string, bias: string, marker: string, confirm: string, description: string }[]} */
+const CANDLE_PATTERNS = [
+  { id: "hammer", label: "Hammer", labelKo: "망치형", bias: "bullish", marker: "Ham", confirm: "reversal_bull", description: "긴 아래꼬리·짧은 몸통. 하락 후 매수 유입 후보. 지지·거래량과 같이 보면 신뢰↑." },
+  { id: "inverted_hammer", label: "Inverted Hammer", labelKo: "역망치형", bias: "bullish", marker: "IH", confirm: "reversal_bull", description: "하락 후 긴 위꼬리. 매수 시도 힌트 — 다음 봉·지지·RSI 확인." },
+  { id: "bullish_engulfing", label: "Bullish Engulfing", labelKo: "상승 장악형", bias: "bullish", marker: "BE", confirm: "reversal_bull", description: "음봉을 양봉이 덮는 2봉 반전 후보. 지지·거래량·VWAP 근처면 의미↑." },
+  { id: "bullish_harami", label: "Bullish Harami", labelKo: "상승 잉태형", bias: "bullish", marker: "BH", confirm: "reversal_bull", description: "큰 음봉 안 작은 양봉. 하락 모멘텀 약화 — 단독보다 RSI·지지 확인." },
+  { id: "piercing", label: "Piercing Pattern", labelKo: "피어싱", bias: "bullish", marker: "Pc", confirm: "reversal_bull", description: "음봉 뒤 양봉이 이전 몸통 상당 회복(장악 전 단계). 지지·거래량." },
+  { id: "tweezers_bottom", label: "Tweezers Bottom", labelKo: "트위저 바텀", bias: "bullish", marker: "TwB", confirm: "reversal_bull", description: "연속 봉 저가 거의 동일. 이중 바닥 감각 — 지지 존과 겹치면 신뢰↑." },
+  { id: "morning_star", label: "Morning Star", labelKo: "샛별형", bias: "bullish", marker: "MS", confirm: "reversal_bull", description: "큰 음봉 → 작은 몸통 → 양봉 회복. 갭 비필수. 지지·거래량 확인." },
+  { id: "bullish_marubozu", label: "Bullish Marubozu", labelKo: "양봉 마루보즈", bias: "bullish", marker: "Mb+", confirm: "continuation_bull", description: "심지 거의 없는 장대 양봉. 강한 매수 우위·지속. 거래량·ADX·추세선." },
+  { id: "three_white_soldiers", label: "Three White Soldiers", labelKo: "적삼병", bias: "bullish", marker: "3W", confirm: "continuation_bull", description: "강한 양봉 3연속·종가 상승. 지속·전환 후보. 거래량·ADX·이평." },
+  { id: "rising_three_methods", label: "Rising Three Methods", labelKo: "상승 삼법형", bias: "bullish", marker: "R3", confirm: "continuation_bull", description: "장대 양봉 → 작은 조정 2~3 → 장대 양봉. 상승 지속. ADX·거래량." },
+  { id: "hanging_man", label: "Hanging Man", labelKo: "교수형", bias: "bearish", marker: "HM", confirm: "reversal_bear", description: "망치와 같은 형태가 상승 뒤 → 피로·하락 경고. 저항·거래량." },
+  { id: "shooting_star", label: "Shooting Star", labelKo: "유성형", bias: "bearish", marker: "SS", confirm: "reversal_bear", description: "상승 후 긴 위꼬리. 매도 압력. 저항·거래량·RSI." },
+  { id: "bearish_engulfing", label: "Bearish Engulfing", labelKo: "하락 장악형", bias: "bearish", marker: "SE", confirm: "reversal_bear", description: "양봉을 음봉이 덮는 2봉 반전. 저항·거래량·VWAP." },
+  { id: "bearish_harami", label: "Bearish Harami", labelKo: "하락 잉태형", bias: "bearish", marker: "RH", confirm: "reversal_bear", description: "큰 양봉 안 작은 음봉. 상승 모멘텀 약화. 저항·RSI." },
+  { id: "dark_cloud_cover", label: "Dark Cloud Cover", labelKo: "먹구름형", bias: "bearish", marker: "DC", confirm: "reversal_bear", description: "양봉 뒤 음봉이 이전 몸통 상당 잠식. 저항·거래량." },
+  { id: "tweezers_top", label: "Tweezers Top", labelKo: "트위저 탑", bias: "bearish", marker: "TwT", confirm: "reversal_bear", description: "연속 봉 고가 거의 동일. 이중 천정 감각 — 저항과 겹치면 신뢰↑." },
+  { id: "evening_star", label: "Evening Star", labelKo: "저녁별형", bias: "bearish", marker: "ES", confirm: "reversal_bear", description: "큰 양봉 → 작은 몸통 → 음봉 되돌림. 저항·거래량." },
+  { id: "bearish_marubozu", label: "Bearish Marubozu", labelKo: "음봉 마루보즈", bias: "bearish", marker: "Mb-", confirm: "continuation_bear", description: "심지 거의 없는 장대 음봉. 강한 매도 우위·지속. 거래량·ADX." },
+  { id: "three_black_crows", label: "Three Black Crows", labelKo: "흑삼병", bias: "bearish", marker: "3C", confirm: "continuation_bear", description: "강한 음봉 3연속·종가 하락. 지속·전환. 거래량·ADX·이평." },
+  { id: "falling_three_methods", label: "Falling Three Methods", labelKo: "하락 삼법형", bias: "bearish", marker: "F3", confirm: "continuation_bear", description: "장대 음봉 → 작은 반등 2~3 → 장대 음봉. 하락 지속. ADX·거래량." },
+  { id: "doji", label: "Doji", labelKo: "도지", bias: "neutral", marker: "D", confirm: "uncertain", description: "시가≈종가. 형태만으로는 중립 — 지지·저항·다음 봉 확인." },
+  { id: "spinning_top", label: "Spinning Top", labelKo: "스피닝 탑", bias: "neutral", marker: "ST", confirm: "uncertain", description: "작은 몸통 + 위·아래 긴 심지. 불확실성 — 단독 진입보다 맥락." },
 ];
 
 /** @typedef {{
@@ -1575,6 +1616,9 @@ ${Object.values(INDICATORS)
       } else {
         body += `- **Used by:** _(none — unused by playbooks)_\n`;
       }
+      if (i.id === "candle_patterns") {
+        body += `- **Docs:** [candle_patterns/README.md](./candle_patterns/README.md) (${CANDLE_PATTERNS.length} patterns)\n`;
+      }
       body += `\n`;
     }
   }
@@ -1594,6 +1638,176 @@ ${Object.values(INDICATORS)
 `;
 
   fs.writeFileSync(path.join(indRoot, "INDEX.md"), body, "utf8");
+}
+
+function biasKo(bias) {
+  if (bias === "bullish") return "롱";
+  if (bias === "bearish") return "숏";
+  return "중립";
+}
+
+function writeCandlePatternDocs() {
+  const dir = path.join(indRoot, "candle_patterns");
+  ensureDir(dir);
+  const byBias = (b) => CANDLE_PATTERNS.filter((p) => p.bias === b);
+  const rows = (list) =>
+    list
+      .map(
+        (p) =>
+          `| \`${p.id}\` | ${p.labelKo} | ${p.label} | \`${p.marker}\` | ${CANDLE_CONFIRM[p.confirm]} | [doc](./${p.id}.md) |`,
+      )
+      .join("\n");
+
+  const readme = `# 캔들 패턴 (\`candle_patterns\`)
+
+> [indicators INDEX](../INDEX.md) · [companions](../../strategies/COMPANIONS.md) · **전략 패밀리 아님**
+
+봉 **형태** 탐지 + 사이드바 롱/숏/중립 토글·차트 마커. 진입 플레이북(\`*Strategies.ts\`)이 아니라 확인 레이어에 가깝다.
+\`pattern\` 전략 패밀리(=고전 차트 패턴 H&S 등)와 혼동하지 말 것.
+
+## Code
+
+| Role | Path |
+|------|------|
+| Detector | \`src/lib/evaluation/candlePatterns.ts\` → \`detectCandlePatterns\` |
+| Meta | \`src/lib/candlePatternMeta.ts\` |
+| Help | \`src/lib/chartLayerHelp.ts\` → \`candlePatternHelp\` |
+| Confirm | \`src/lib/candlePatternConfirm.ts\` |
+| Store | \`src/lib/candlePatternStore.ts\` |
+
+**설계:** 탐지는 형태만(느슨). 신뢰도는 confirm companion(거래량·S/R·RSI 등). 전략 companion에도 \`candle:hammer\` 등으로 붙는다.
+
+## Confirm groups
+
+| group | layers |
+|-------|--------|
+| reversal_bull | ${CANDLE_CONFIRM.reversal_bull} |
+| reversal_bear | ${CANDLE_CONFIRM.reversal_bear} |
+| continuation_bull | ${CANDLE_CONFIRM.continuation_bull} |
+| continuation_bear | ${CANDLE_CONFIRM.continuation_bear} |
+| uncertain | ${CANDLE_CONFIRM.uncertain} |
+
+## Patterns (${CANDLE_PATTERNS.length})
+
+### Bullish (롱)
+
+| id | KO | EN | marker | confirm | doc |
+|----|----|----|--------|---------|-----|
+${rows(byBias("bullish"))}
+
+### Bearish (숏)
+
+| id | KO | EN | marker | confirm | doc |
+|----|----|----|--------|---------|-----|
+${rows(byBias("bearish"))}
+
+### Neutral
+
+| id | KO | EN | marker | confirm | doc |
+|----|----|----|--------|---------|-----|
+${rows(byBias("neutral"))}
+`;
+
+  fs.writeFileSync(path.join(dir, "README.md"), readme, "utf8");
+
+  for (const p of CANDLE_PATTERNS) {
+    const doc = `# ${p.labelKo} (\`${p.id}\`)
+
+> [candle_patterns](./README.md) · bias **${biasKo(p.bias)}** (\`${p.bias}\`) · marker \`${p.marker}\`
+
+## Summary
+
+${p.description}
+
+## Confirm layers (신뢰도)
+
+${CANDLE_CONFIRM[p.confirm]}
+
+코드: \`src/lib/candlePatternConfirm.ts\` → \`CANDLE_PATTERN_CONFIRM['${p.id}']\`  
+하드 게이트 아님 — 사이드바에서 같이 켠 뒤 위치·수급·모멘텀 확인.
+
+## Code map
+
+| Role | Path |
+|------|------|
+| Detector | \`src/lib/evaluation/candlePatterns.ts\` (id \`${p.id}\`) |
+| Meta | \`src/lib/candlePatternMeta.ts\` |
+| Help | \`candlePatternHelp('${p.id}')\` |
+| Confirm | \`confirmLayersFor('${p.id}')\` |
+
+## Notes
+
+- 전략 패밀리 엔트리 아님. 다른 전략의 companion로도 사용 (\`candle:${p.id}\`).
+- 형태만으로 진입하지 말 것.
+`;
+    fs.writeFileSync(path.join(dir, `${p.id}.md`), doc, "utf8");
+  }
+}
+
+function writeCompanionsDoc() {
+  const familyBlocks = families
+    .filter((f) => f.companions?.length)
+    .map((f) => {
+      const rows = f.companions
+        .map((c) => `| \`${c.id}\` | ${c.layers} |`)
+        .join("\n");
+      return `### \`${f.id}\` (${f.label})
+
+| strategy | 같이 보면 좋은 것 |
+|----------|-------------------|
+${rows}
+`;
+    })
+    .join("\n");
+
+  const candleRows = CANDLE_PATTERNS.map(
+    (p) =>
+      `| \`${p.id}\` | ${p.labelKo} | ${CANDLE_CONFIRM[p.confirm]} |`,
+  ).join("\n");
+
+  const body = `# Companions (confirm layers)
+
+> [strategies INDEX](./INDEX.md) · [candle patterns](../indicators/candle_patterns/README.md)
+
+전략(또는 캔들) 토글 아래 **「같이 켤 지표」**. **하드 엔트리 조건이 아님** — 신뢰도·맥락용.
+
+## Where defined (code)
+
+| What | Path |
+|------|------|
+| Strategy companions | \`src/lib/strategyConfirmLayers.ts\` → \`companionsForStrategy\` / \`extraConfirmLayers\` |
+| Core deps (auto ON) | \`src/lib/strategyIndicatorDeps.ts\` → \`layersForStrategy\` |
+| Candle confirm | \`src/lib/candlePatternConfirm.ts\` → \`CANDLE_PATTERN_CONFIRM\` |
+| UI tip | 사이드바 전략·캔들 패널 |
+
+\`companionsForStrategy\` = **deps(자동 켜짐)** + **extra confirm(why 문구)**.
+
+## Docs surfaces
+
+| Surface | Content |
+|---------|---------|
+| \`strategies/{family}/README.md\` | Confirm layers 표 (\`gen-strategy-docs\` \`companions:\`) |
+| 이 파일 | 전체 맵 + 코드 위치 |
+| \`indicators/candle_patterns/\` | 패턴별 confirm |
+
+전용 \`companions/\` 폴더는 없음 — **코드 소스 + 패밀리 README + 여기**.
+
+## Strategy families (from gen catalog)
+
+${familyBlocks || "_No family companions tables in generator._"}
+
+## Candle patterns
+
+| id | KO | confirm |
+|----|----|---------|
+${candleRows}
+
+## Edit rule
+
+Companion why/목록을 바꾸면 \`strategyConfirmLayers.ts\` 또는 \`candlePatternConfirm.ts\`를 고치고, 패밀리 \`companions:\` / \`CANDLE_CONFIRM\` 표를 맞춘 뒤 \`node scripts/gen-strategy-docs.mjs\`. changelog에 관련 전략·\`candle_patterns\` id를 남긴다.
+`;
+
+  fs.writeFileSync(path.join(stratRoot, "COMPANIONS.md"), body, "utf8");
 }
 
 function strategyDoc(family, s) {
@@ -1713,15 +1927,16 @@ function strategiesIndex() {
   return `# Strategy index (agent)
 
 Local-only. Labels/rules text source of truth: \`*StrategyMeta.ts\`.  
-**Indicators catalog:** [../indicators/INDEX.md](../indicators/INDEX.md) · **changelog:** [CHANGELOG.md](./CHANGELOG.md)
+**Indicators catalog:** [../indicators/INDEX.md](../indicators/INDEX.md) · **Candles:** [../indicators/candle_patterns/README.md](../indicators/candle_patterns/README.md) · **Companions:** [COMPANIONS.md](./COMPANIONS.md) · **changelog:** [CHANGELOG.md](./CHANGELOG.md)
 
 ## Quick start
 
 1. Find strategy in flat table (id + **indicator labels**).
 2. Open doc for full entry rules + code map.
-3. Indicator definitions: \`docs/indicators/INDEX.md\`.
-4. Edit: detector + meta; refresh docs via \`node scripts/gen-strategy-docs.mjs\`.
-5. **Always** append what changed to [CHANGELOG.md](./CHANGELOG.md) (and indicator changelog if labels/impl changed).
+3. Indicator definitions: \`docs/indicators/INDEX.md\`. Candles: \`docs/indicators/candle_patterns/\` (not a strategy family).
+4. Companions (같이 켤 지표): [COMPANIONS.md](./COMPANIONS.md) · code \`strategyConfirmLayers.ts\`.
+5. Edit: detector + meta; refresh docs via \`node scripts/gen-strategy-docs.mjs\`.
+6. **Always** append what changed to [CHANGELOG.md](./CHANGELOG.md) (and indicator changelog if labels/impl changed).
 
 ## Families (${families.length} · ${total} strategies)
 
@@ -1743,6 +1958,8 @@ ${flat}
 | Evaluate | \`src/lib/evaluation/evaluateQuote.ts\` |
 | Indicator plugins | \`src/lib/evaluation/indicators/\` |
 | Layer deps | \`src/lib/strategyIndicatorDeps.ts\` |
+| Strategy companions | \`src/lib/strategyConfirmLayers.ts\` |
+| Candle detect / confirm | \`candlePatterns.ts\` · \`candlePatternConfirm.ts\` |
 | RR | \`src/lib/evaluation/riskReward.ts\` |
 | Playbook BT | \`src/lib/evaluation/playbookBacktest.ts\` |
 
@@ -1763,9 +1980,11 @@ function readme() {
 ## Agent start
 
 1. **[indicators/INDEX.md](./indicators/INDEX.md)** — 기술지표 라벨 카탈로그
-2. **[strategies/INDEX.md](./strategies/INDEX.md)** — 전략 id → 지표 라벨 → 문서 → 코드
-3. \`strategies/{family}/{id}.md\` — 전략별 상세 (진입 규칙 + 지표 라벨)
-4. **Changelogs (필수):** [indicators/CHANGELOG.md](./indicators/CHANGELOG.md) · [strategies/CHANGELOG.md](./strategies/CHANGELOG.md)
+2. **[indicators/candle_patterns/README.md](./indicators/candle_patterns/README.md)** — 캔들 패턴 (전략 패밀리 아님)
+3. **[strategies/INDEX.md](./strategies/INDEX.md)** — 전략 id → 지표 라벨 → 문서 → 코드
+4. **[strategies/COMPANIONS.md](./strategies/COMPANIONS.md)** — 같이 켤 지표(confirm) 맵
+5. \`strategies/{family}/{id}.md\` — 전략별 상세 (진입 규칙 + 지표 라벨)
+6. **Changelogs (필수):** [indicators/CHANGELOG.md](./indicators/CHANGELOG.md) · [strategies/CHANGELOG.md](./strategies/CHANGELOG.md)
 
 ## Changelog (required)
 
@@ -1775,6 +1994,8 @@ function readme() {
 |-----------|------|-----------|
 | Indicator impl / label / params | \`indicators/CHANGELOG.md\` | 라벨 id (\`rsi\`, \`bb\`, …) |
 | Strategy detector / meta / rules | \`strategies/CHANGELOG.md\` | 전략 id (\`band_breakout\`, …) |
+| Candle pattern meta / confirm | \`indicators/CHANGELOG.md\` | \`candle_patterns\` / pattern id |
+| Companion lists / why | \`strategies/CHANGELOG.md\` (+ COMPANIONS regenerate) | 관련 strategy id |
 
 형식: 날짜 섹션 최상단 prepend, 불릿에 **어떤 id**가 **어떻게** 바뀌었는지.
 
@@ -1792,6 +2013,9 @@ node scripts/gen-strategy-docs.mjs
 | Detectors | \`src/lib/evaluation/*Strategies.ts\` |
 | Meta | \`src/lib/*StrategyMeta.ts\` |
 | Indicators | \`src/lib/evaluation/indicators/\` |
+| Candle patterns | \`src/lib/evaluation/candlePatterns.ts\` · \`candlePatternMeta.ts\` |
+| Strategy companions | \`src/lib/strategyConfirmLayers.ts\` |
+| Candle confirm | \`src/lib/candlePatternConfirm.ts\` |
 | Deps | \`src/lib/strategyIndicatorDeps.ts\` |
 `;
 }
@@ -1862,9 +2086,11 @@ Local docs under \`docs/\` (**gitignored**). Also see repo root \`AGENTS.md\`.
 ## Agent entry
 
 1. \`docs/indicators/INDEX.md\` — **labeled technical indicators** (\`rsi\`, \`bb\`, \`vwap\`, …)
-2. \`docs/strategies/INDEX.md\` — every strategy id → **indicator labels** → doc → detector
-3. \`docs/strategies/{family}/{id}.md\` — detailed entry rules + indicator table
-4. **Changelogs (required on every edit):**
+2. \`docs/indicators/candle_patterns/\` — candlestick patterns (not a strategy family)
+3. \`docs/strategies/INDEX.md\` — every strategy id → **indicator labels** → doc → detector
+4. \`docs/strategies/{family}/{id}.md\` — detailed entry rules + indicator table
+5. \`docs/strategies/COMPANIONS.md\` — confirm layers map (strategies + candles)
+6. **Changelogs (required on every edit):**
    - \`docs/indicators/CHANGELOG.md\` — which indicator labels changed
    - \`docs/strategies/CHANGELOG.md\` — which strategy ids changed
 
@@ -1894,6 +2120,9 @@ Skip only pure refactors with zero behavior/doc/label impact.
 | Detectors | \`src/lib/evaluation/*Strategies.ts\` |
 | Meta | \`src/lib/*StrategyMeta.ts\` |
 | Indicators | \`src/lib/evaluation/indicators/\` |
+| Candle patterns | \`src/lib/evaluation/candlePatterns.ts\` · \`candlePatternMeta.ts\` |
+| Strategy companions | \`src/lib/strategyConfirmLayers.ts\` |
+| Candle confirm | \`src/lib/candlePatternConfirm.ts\` |
 | Layer deps | \`src/lib/strategyIndicatorDeps.ts\` |
 | Orchestration | \`src/lib/evaluation/evaluateQuote.ts\` |
 `;
@@ -1906,6 +2135,8 @@ ensureDir(indRoot);
 ensureDir(stratRoot);
 ensureChangelogs();
 writeIndicatorsCatalog();
+writeCandlePatternDocs();
+writeCompanionsDoc();
 fs.writeFileSync(path.join(docsRoot, "README.md"), readme(), "utf8");
 fs.writeFileSync(path.join(stratRoot, "INDEX.md"), strategiesIndex(), "utf8");
 
@@ -1923,5 +2154,5 @@ updateCursorRule();
 const count = families.reduce((n, f) => n + f.strategies.length, 0);
 const indCount = Object.keys(INDICATORS).length;
 console.log(
-  `Wrote indicators catalog (${indCount} labels), ${families.length} families, ${count} strategy docs (changelogs preserved).`,
+  `Wrote indicators catalog (${indCount} labels), candle patterns (${CANDLE_PATTERNS.length}), companions map, ${families.length} families, ${count} strategy docs (changelogs preserved).`,
 );

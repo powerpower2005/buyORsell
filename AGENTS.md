@@ -5,8 +5,10 @@
 Local docs live under `docs/` (gitignored). Entry points:
 
 1. `docs/indicators/INDEX.md` — indicator labels
-2. `docs/strategies/INDEX.md` — strategy id → labels → doc → detector
-3. `docs/strategies/{family}/{id}.md` — entry rules
+2. `docs/indicators/candle_patterns/` — candlestick patterns (not a strategy family)
+3. `docs/strategies/INDEX.md` — strategy id → labels → doc → detector
+4. `docs/strategies/COMPANIONS.md` — confirm layers (같이 켤 지표)
+5. `docs/strategies/{family}/{id}.md` — entry rules
 
 Regenerate indexes/docs (does **not** overwrite changelogs):
 
@@ -23,7 +25,8 @@ Whenever you change **indicators** or **strategies**, append to the matching cha
 | Touched | Append to | Name each |
 |---------|-----------|-----------|
 | Indicator impl, label, params, series, catalog | `docs/indicators/CHANGELOG.md` | label id (`rsi`, `bb`, …) |
-| Detector, meta, entry rules, deps, playbook | `docs/strategies/CHANGELOG.md` | strategy id (`band_breakout`, …) |
+| Candle pattern meta / confirm | `docs/indicators/CHANGELOG.md` | `candle_patterns` / pattern id |
+| Detector, meta, entry rules, deps, playbook, companions | `docs/strategies/CHANGELOG.md` | strategy id (`band_breakout`, …) |
 
 ### How to write
 
