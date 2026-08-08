@@ -9,6 +9,43 @@ import {
 import { SCALE_MARGINS } from "@/lib/chart/chartTheme";
 
 /**
+ * Price / volume panes: never let autoscale dip below 0
+ * (stock prices and volumes aren’t negative; bottom scaleMargins can otherwise
+ * push the axis into negatives on cheap names).
+ */
+export function nonNegativeAutoscale(
+  padRatio = 0.08,
+): AutoscaleInfoProvider {
+  return (base) => {
+    const res = base();
+    if (!res?.priceRange) return res;
+    let { minValue, maxValue } = res.priceRange;
+    if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) return res;
+
+    minValue = Math.max(0, minValue);
+    maxValue = Math.max(maxValue, minValue);
+
+    if (minValue === maxValue) {
+      const d = Math.max(minValue * 0.05, 1e-6);
+      return {
+        priceRange: {
+          minValue: Math.max(0, minValue - d),
+          maxValue: maxValue + d,
+        },
+      };
+    }
+
+    const pad = (maxValue - minValue) * padRatio;
+    return {
+      priceRange: {
+        minValue: Math.max(0, minValue - pad),
+        maxValue: maxValue + pad,
+      },
+    };
+  };
+}
+
+/**
  * Y-axis = visible series min/max ∪ guide levels, then a little padding.
  * Guide lines stay on-screen without relying on createPriceLine autoscale.
  */

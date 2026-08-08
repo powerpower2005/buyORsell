@@ -17,6 +17,7 @@ import {
 } from "lightweight-charts";
 import type { OHLCVBar, Timeframe } from "@/lib/types";
 import { candleOptions, chartOptions } from "@/lib/chart/chartTheme";
+import { nonNegativeAutoscale } from "@/lib/chart/paneScale";
 import type { MarkerTooltip } from "@/lib/chart/markerTooltips";
 import type { OhlcvReadout } from "./ChartReadout";
 
@@ -104,7 +105,13 @@ export function useChartInstance({
       }),
     );
 
-    const candles = chart.addSeries(CandlestickSeries, candleOptions());
+    const candles = chart.addSeries(CandlestickSeries, {
+      ...candleOptions(),
+      // Equity prices aren’t negative; clamp so bottom scale margin can’t
+      // invent a below-zero axis on low-priced names.
+      autoscaleInfoProvider: nonNegativeAutoscale(0.06),
+    });
+    candles.priceScale().applyOptions({ autoScale: true });
 
     chartRef.current = chart;
     candleRef.current = candles;

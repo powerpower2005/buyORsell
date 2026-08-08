@@ -24,6 +24,7 @@ import {
 import {
   addPaneDataLine,
   addPaneRefLevel,
+  nonNegativeAutoscale,
   paddedDataAutoscale,
   timeExtent,
 } from "@/lib/chart/paneScale";
@@ -160,7 +161,7 @@ export function useSecondaryPanes({
           priceFormat: { type: "volume" },
           lastValueVisible: false,
           priceLineVisible: false,
-          autoscaleInfoProvider: paddedDataAutoscale(0.08),
+          autoscaleInfoProvider: nonNegativeAutoscale(0.08),
         },
         volumePane,
       );
