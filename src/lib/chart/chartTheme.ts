@@ -137,7 +137,10 @@ export const GRID = {
 
 export const SCALE_MARGINS = {
   main: { top: 0.14, bottom: 0.10 },
+  /** @deprecated overlay-on-main leftover; use volumePane for the dedicated volume pane */
   volume: { top: 0.72, bottom: 0.02 },
+  /** Dedicated volume pane — fit bars to the pane, not a 72% empty top. */
+  volumePane: { top: 0.12, bottom: 0.06 },
   oscillator: { top: 0.12, bottom: 0.12 },
 } as const;
 

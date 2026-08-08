@@ -696,16 +696,23 @@ function Leaf({
         </div>
       )}
       {hasCompanions && companions && onCompanionChange && companionVisible && (
-        <div className="mt-1.5 space-y-1 border-l border-border/80 pl-2">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] font-medium text-text-tertiary">
+        <details className="group mt-1.5 border-l border-border/80 pl-2">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded py-0.5 text-[10px] font-medium text-text-tertiary marker:content-none hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg [&::-webkit-details-marker]:hidden">
+            <span>
+              <span className="mr-1 inline-block w-2 transition-transform group-open:rotate-90">
+                ▸
+              </span>
               같이 켤 지표
-            </p>
+              <span className="ml-1 tabular-nums text-text-tertiary/80">
+                ({companions.length})
+              </span>
+            </span>
             {onEnableAllCompanions && (
               <button
                 type="button"
                 className="rounded px-1 py-0.5 text-[10px] font-medium text-accent hover:bg-accent/10"
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   onEnableAllCompanions();
                 }}
@@ -713,28 +720,30 @@ function Leaf({
                 모두 켜기
               </button>
             )}
-          </div>
-          {companions.map((c) => (
-            <div
-              key={c.key}
-              className="flex items-start gap-2 rounded px-0.5 py-0.5"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-medium text-text-secondary">
-                  {c.label}
-                </p>
-                <p className="text-[10px] leading-snug text-text-tertiary">
-                  {c.why}
-                </p>
+          </summary>
+          <div className="mt-1 space-y-1">
+            {companions.map((c) => (
+              <div
+                key={c.key}
+                className="flex items-start gap-2 rounded px-0.5 py-0.5"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-medium text-text-secondary">
+                    {c.label}
+                  </p>
+                  <p className="text-[10px] leading-snug text-text-tertiary">
+                    {c.why}
+                  </p>
+                </div>
+                <OnOffSwitch
+                  on={companionVisible(c.key)}
+                  onChange={(next) => onCompanionChange(c.key, next)}
+                  label={`${c.label} 표시`}
+                />
               </div>
-              <OnOffSwitch
-                on={companionVisible(c.key)}
-                onChange={(next) => onCompanionChange(c.key, next)}
-                label={`${c.label} 표시`}
-              />
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </details>
       )}
     </div>
   );

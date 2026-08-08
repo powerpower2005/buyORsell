@@ -25,10 +25,14 @@ function fmt(value: number | null | undefined, digits = 2): string {
 
 export function toLineData(points: SeriesPoint[] | undefined) {
   if (!points?.length) return [];
-  return points.map((p) => ({
-    time: p.date as `${number}-${number}-${number}`,
-    value: p.value,
-  }));
+  // Drop non-finite values — zeros/NaNs at warm-up otherwise pin the Y min to 0
+  // and squash the real series against the top of a huge axis.
+  return points
+    .filter((p) => Number.isFinite(p.value))
+    .map((p) => ({
+      time: p.date as `${number}-${number}-${number}`,
+      value: p.value,
+    }));
 }
 
 /** Active oscillator panes in display order (only when toggled + data exists). */
