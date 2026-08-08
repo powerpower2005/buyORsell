@@ -10,7 +10,8 @@ import {
 } from "./evaluation/riskReward";
 import { computeAtrSeries } from "./evaluation/pivots";
 
-export const RECENT_SIGNAL_WINDOW_BARS = 5;
+/** List/scan window: only the latest bar counts as “recent”. */
+export const RECENT_SIGNAL_WINDOW_BARS = 1;
 
 export interface RecentStrategyHit {
   family: string;
