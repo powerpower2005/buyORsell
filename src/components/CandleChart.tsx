@@ -1,18 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  CandlestickSeries,
-  createChart,
-  createSeriesMarkers,
   HistogramSeries,
   LineSeries,
   LineStyle,
-  type CandlestickData,
   type IChartApi,
   type ISeriesApi,
-  type ISeriesMarkersPluginApi,
   type LogicalRange,
-  type MouseEventParams,
-  type Time,
 } from "lightweight-charts";
 import type { OHLCVBar, Timeframe, IndicatorResults } from "@/lib/types";
 import type { CandlePatternId, CandlePatternResult } from "@/lib/evaluation/candlePatterns";
@@ -30,33 +23,26 @@ import {
   type BbBandId,
 } from "@/lib/bbOverlay";
 import {
-  patternsToChartMarkers,
   visiblePatternLegend,
 } from "@/lib/chart/patternMarkers";
 import { patternBarHighlights } from "@/lib/chart/patternBarHighlights";
 import {
   recentWindowMinBarIndex,
-  withRecentWindowHits,
 } from "@/lib/strategyRecency";
 import {
-  structureToChartMarkers,
   visibleStructureLegend,
 } from "@/lib/chart/structureMarkers";
 import {
-  bbStrategiesToChartMarkers,
   visibleBbStrategyLegend,
 } from "@/lib/chart/bbStrategyMarkers";
 import {
-  classicalPatternsToChartMarkers,
   visibleClassicalPatternInstances,
   visibleClassicalPatternLegend,
 } from "@/lib/chart/classicalPatternMarkers";
 import {
-  patternStrategiesToChartMarkers,
   visiblePatternStrategyLegend,
 } from "@/lib/chart/patternStrategyMarkers";
 import { collectVisibleRiskRewardPlans } from "@/lib/chart/collectRiskRewardPlans";
-import { drawRiskRewardPlans } from "@/lib/chart/riskRewardOverlay";
 import {
   formatRewardRisk,
 } from "@/lib/evaluation/riskReward";
@@ -73,8 +59,6 @@ import {
 } from "@/lib/chart/oscillatorPaneSpecs";
 import {
   BOLLINGER,
-  candleOptions,
-  chartOptions,
   CHART_SURFACE,
   computeMainPaneHeight,
   DIRECTION,
@@ -85,7 +69,6 @@ import {
 } from "@/lib/chart/chartTheme";
 import {
   computeVolumeAverages,
-  formatVolume,
   getVolumeMaPeriods,
   volumeMaColor,
 } from "@/lib/evaluation/volumeMa";
@@ -94,36 +77,28 @@ import type { BbStrategyId } from "@/lib/bbStrategyMeta";
 import type { RsiStrategyResult } from "@/lib/evaluation/rsiStrategies";
 import type { RsiStrategyId } from "@/lib/rsiStrategyMeta";
 import {
-  rsiStrategiesToChartMarkers,
   visibleRsiStrategyLegend,
 } from "@/lib/chart/rsiStrategyMarkers";
 import type { VolumeStrategyResult } from "@/lib/evaluation/volumeStrategies";
 import type { VolumeStrategyId } from "@/lib/volumeStrategyMeta";
 import {
-  volumeStrategiesToChartMarkers,
   visibleVolumeStrategyLegend,
 } from "@/lib/chart/volumeStrategyMarkers";
-import { foreverVwapToChartMarkers } from "@/lib/chart/foreverVwapMarkers";
 import type { ComboStrategyResult } from "@/lib/evaluation/comboStrategies";
 import type { ComboStrategyId } from "@/lib/comboStrategyMeta";
 import {
-  comboStrategiesToChartMarkers,
   visibleComboStrategyLegend,
 } from "@/lib/chart/comboStrategyMarkers";
 import {
-  buildStrategyMarkerTooltips,
   type MarkerTooltip,
 } from "@/lib/chart/markerTooltips";
 import {
-  macdStrategiesToChartMarkers,
   visibleMacdStrategyLegend,
 } from "@/lib/chart/macdStrategyMarkers";
 import {
-  stochStrategiesToChartMarkers,
   visibleStochStrategyLegend,
 } from "@/lib/chart/stochStrategyMarkers";
 import {
-  ichimokuStrategiesToChartMarkers,
   visibleIchimokuStrategyLegend,
 } from "@/lib/chart/ichimokuStrategyMarkers";
 import type { IchimokuStrategyResult } from "@/lib/evaluation/ichimokuStrategies";
@@ -133,7 +108,6 @@ import type { MacdStrategyId } from "@/lib/macdStrategyMeta";
 import type { ClassicStrategyResult } from "@/lib/evaluation/classicStrategies";
 import type { ClassicStrategyId } from "@/lib/classicStrategyMeta";
 import {
-  classicStrategiesToChartMarkers,
   visibleClassicStrategyLegend,
 } from "@/lib/chart/classicStrategyMarkers";
 import type { StochStrategyResult } from "@/lib/evaluation/stochStrategies";
@@ -150,7 +124,7 @@ import {
   CHART_PATTERN_META,
   type ChartPatternId,
 } from "@/lib/chartPatternMeta";
-import { SR_ZONE_COLORS, visibleSrZones } from "@/lib/chart/srZoneOverlay";
+import { visibleSrZones } from "@/lib/chart/srZoneOverlay";
 import type { SwingChartToggleId } from "@/lib/swingStructureStore";
 import {
   anyElliottWaveVisible,
@@ -158,86 +132,38 @@ import {
 } from "@/lib/elliottWaveStore";
 import type { SrChartToggleId } from "@/lib/srZoneStore";
 import {
-  TRENDLINE_COLORS,
   type TrendlineChartToggleId,
 } from "@/lib/trendlineStore";
 import type { Trendline } from "@/lib/evaluation/trendlines";
 import {
-  FIB_LEVEL_COLORS,
-  FIB_CONFLUENCE_COLOR,
   FIB_RETRACEMENT_LEVELS,
-  fibRetracementPrice,
   findFibConfluences,
-  getFibPendingLow,
-  setFibDrawMode,
-  setFibPendingLow,
-  setFibRetracement,
-  type FibAnchor,
   type FibExtraId,
   type FibLevelRatio,
   type FibRetracement,
 } from "@/lib/fibonacciStore";
 import type { AuxIndicatorId } from "@/lib/auxIndicatorStore";
 import type { TradeJournalEntry } from "@/lib/tradeJournalStore";
-import { tradeJournalToChartMarkers } from "@/lib/chart/tradeJournalMarkers";
 import type { StrategyConfluence } from "@/lib/evaluation/strategyConfluence";
-import { strategyConfluencesToChartMarkers } from "@/lib/chart/strategyConfluenceMarkers";
 import { Card } from "./ui/Card";
 import { ChartLegend } from "./chart/ChartLegend";
+import {
+  ChartReadout,
+  fmtPrice,
+  type OhlcvReadout,
+} from "./chart/ChartReadout";
+import { useFibonacciDraw } from "./chart/useFibonacciDraw";
+import { useOverlayCanvas } from "./chart/useOverlayCanvas";
+import { syncPaneLayout, usePaneLayout } from "./chart/usePaneLayout";
+import { useSeriesMarkers } from "./chart/useSeriesMarkers";
+import { dailyChangePct, useChartInstance } from "./chart/useChartInstance";
 import { SignalSummary } from "./chart/SignalSummary";
 
 type OscSeries = ISeriesApi<"Line"> | ISeriesApi<"Histogram">;
 
-type OhlcvReadout = {
-  date: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-  /** Previous-close based daily change (%). Null for the first bar. */
-  changePct: number | null;
-};
-
 function fmtLegend(value: number | null | undefined, digits = 2): string {
   if (value == null || Number.isNaN(value)) return "—";
   return value.toFixed(digits);
-}
-
-function fmtPrice(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  if (Math.abs(value) >= 1000) return value.toFixed(2);
-  if (Math.abs(value) >= 1) return value.toFixed(2);
-  return value.toFixed(4);
-}
-
-function fmtChangePct(value: number | null): string {
-  if (value == null || !Number.isFinite(value)) return "—";
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toFixed(2)}%`;
-}
-
-function dailyChangePct(
-  close: number,
-  prevClose: number | undefined,
-): number | null {
-  if (prevClose == null || prevClose === 0 || !Number.isFinite(close)) {
-    return null;
-  }
-  return ((close - prevClose) / prevClose) * 100;
-}
-
-function isCandleData(
-  data: unknown,
-): data is CandlestickData<Time> {
-  return (
-    !!data &&
-    typeof data === "object" &&
-    "open" in data &&
-    "high" in data &&
-    "low" in data &&
-    "close" in data
-  );
 }
 
 interface Props {
@@ -400,12 +326,10 @@ export function CandleChart({
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const overlayRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candleRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volumeRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const volumeMaRefs = useRef<Map<number, ISeriesApi<"Line">>>(new Map());
-  const markersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
   const overlayRefs = useRef<Map<string, ISeriesApi<"Line">>>(new Map());
   const oscSeriesRefs = useRef<Map<string, OscSeries>>(new Map());
   /** Only fit/zoom-reset when candle data or timeframe actually changes. */
@@ -475,36 +399,15 @@ export function CandleChart({
     return labels;
   }, [showVolume, oscPanes, latestVolume]);
 
-  const [paneLabelTops, setPaneLabelTops] = useState<Record<string, number>>(
-    {},
-  );
-
   // Mutable refs so event handlers always read fresh values without re-subscribing
   const barsRef = useRef<OHLCVBar[]>(bars);
   barsRef.current = bars;
-  const fibDrawModeRef = useRef<boolean>(fibDrawMode ?? false);
-  fibDrawModeRef.current = fibDrawMode ?? false;
-  const fibRetRef = useRef<FibRetracement | null>(fibRetracement ?? null);
-  fibRetRef.current = fibRetracement ?? null;
-  const fibLevelsRef = useRef<Record<FibLevelRatio, boolean> | undefined>(
-    fibLevelVisibility,
-  );
-  fibLevelsRef.current = fibLevelVisibility;
-  const fibExtrasRef = useRef<Partial<Record<FibExtraId, boolean>> | undefined>(
-    fibExtraVisibility,
-  );
-  fibExtrasRef.current = fibExtraVisibility;
-  const onFibChangeRef = useRef<(() => void) | undefined>(onFibChange);
-  onFibChangeRef.current = onFibChange;
-
-  const [pickHint, setPickHint] = useState<string | null>(null);
   const [hoverOhlcv, setHoverOhlcv] = useState<OhlcvReadout | null>(null);
   const [markerHover, setMarkerHover] = useState<{
     x: number;
     y: number;
     tip: MarkerTooltip;
   } | null>(null);
-  const markerTooltipsRef = useRef<Map<string, MarkerTooltip>>(new Map());
   const setMarkerHoverRef = useRef(setMarkerHover);
   setMarkerHoverRef.current = setMarkerHover;
 
@@ -529,212 +432,41 @@ export function CandleChart({
     return recentWindowMinBarIndex(bars.length, recentSignalWindow.bars);
   }, [recentSignalWindow?.enabled, recentSignalWindow?.bars, bars.length]);
 
-  const chartMarkers = useMemo(() => {
-    const winOn = recentMinBarIndex != null;
-    const barCount = bars.length;
-    const winBars = recentSignalWindow?.bars ?? 0;
-    const candleBag = withRecentWindowHits(
+  const { markersRef, markerTooltipsRef, bindMarkers } =
+    useSeriesMarkers({
+      bars,
       patterns,
-      winOn,
-      barCount,
-      winBars,
-    );
-    const classicalBag = withRecentWindowHits(
-      classicalPatterns,
-      winOn,
-      barCount,
-      winBars,
-    );
-    const bbBag = withRecentWindowHits(bbStrategies, winOn, barCount, winBars);
-    const patternStratBag = withRecentWindowHits(
-      patternStrategies,
-      winOn,
-      barCount,
-      winBars,
-    );
-    const rsiBag = withRecentWindowHits(rsiStrategies, winOn, barCount, winBars);
-    const volumeBag = withRecentWindowHits(
-      volumeStrategies,
-      winOn,
-      barCount,
-      winBars,
-    );
-    const comboBag = withRecentWindowHits(
-      comboStrategies,
-      winOn,
-      barCount,
-      winBars,
-    );
-    const macdBag = withRecentWindowHits(
-      macdStrategies,
-      winOn,
-      barCount,
-      winBars,
-    );
-    const classicBag = withRecentWindowHits(
-      classicStrategies,
-      winOn,
-      barCount,
-      winBars,
-    );
-    const stochBag = withRecentWindowHits(
-      stochStrategies,
-      winOn,
-      barCount,
-      winBars,
-    );
-    const ichiBag = withRecentWindowHits(
-      ichimokuStrategies,
-      winOn,
-      barCount,
-      winBars,
-    );
-    const confFiltered =
-      winOn && strategyConfluences?.length
-        ? strategyConfluences.filter((c) => c.barIndex >= recentMinBarIndex!)
-        : strategyConfluences;
-
-    const bbVis =
-      chartBbStrategyVisibility ?? ({} as Record<BbStrategyId, boolean>);
-    const rsiVis =
-      chartRsiStrategyVisibility ?? ({} as Record<RsiStrategyId, boolean>);
-    const volumeVisMap =
-      chartVolumeStrategyVisibility ??
-      ({} as Record<VolumeStrategyId, boolean>);
-    const comboVis =
-      chartComboStrategyVisibility ?? ({} as Record<ComboStrategyId, boolean>);
-    const macdVis =
-      chartMacdStrategyVisibility ?? ({} as Record<MacdStrategyId, boolean>);
-    const classicVis =
-      chartClassicStrategyVisibility ??
-      ({} as Record<ClassicStrategyId, boolean>);
-    const stochVis =
-      chartStochStrategyVisibility ?? ({} as Record<StochStrategyId, boolean>);
-    const ichiVis =
-      chartIchimokuStrategyVisibility ??
-      ({} as Record<IchimokuStrategyId, boolean>);
-    const patternVisMap =
-      chartPatternStrategyVisibility ??
-      ({} as Record<PatternStrategyId, boolean>);
-
-    const patternMs = patternsToChartMarkers(
-      candleBag,
-      chartPatternVisibility ?? ({} as Record<CandlePatternId, boolean>),
-    );
-    const structureMs = structureToChartMarkers(
+      chartPatternVisibility,
       structure,
-      chartStructureVisibility ?? ({} as Record<SwingChartToggleId, boolean>),
-    );
-    const bbStratMs = bbStrategiesToChartMarkers(bbBag, bbVis);
-    const classicalMs = classicalPatternsToChartMarkers(
-      classicalBag,
-      chartClassicalPatternVisibility ??
-        ({} as Record<ChartPatternId, boolean>),
-      recentMinBarIndex,
-    );
-    const patternStratMs = patternStrategiesToChartMarkers(
-      patternStratBag,
-      patternVisMap,
-    );
-    const rsiStratMs = rsiStrategiesToChartMarkers(rsiBag, rsiVis);
-    const volumeStratMs = volumeStrategiesToChartMarkers(
-      volumeBag,
-      volumeVisMap,
-    );
-    const foreverVwapMs = foreverVwapToChartMarkers(
+      chartStructureVisibility,
+      bbStrategies,
+      chartBbStrategyVisibility,
+      classicalPatterns,
+      chartClassicalPatternVisibility,
+      patternStrategies,
+      chartPatternStrategyVisibility,
+      rsiStrategies,
+      chartRsiStrategyVisibility,
+      volumeStrategies,
+      chartVolumeStrategyVisibility,
+      comboStrategies,
+      chartComboStrategyVisibility,
+      macdStrategies,
+      chartMacdStrategyVisibility,
+      classicStrategies,
+      chartClassicStrategyVisibility,
+      stochStrategies,
+      chartStochStrategyVisibility,
+      ichimokuStrategies,
+      chartIchimokuStrategyVisibility,
       indicators,
-      auxIndicatorVisibility?.forever_vwap === true,
-    );
-    const comboStratMs = comboStrategiesToChartMarkers(comboBag, comboVis);
-    const macdStratMs = macdStrategiesToChartMarkers(macdBag, macdVis);
-    const classicStratMs = classicStrategiesToChartMarkers(
-      classicBag,
-      classicVis,
-    );
-    const stochStratMs = stochStrategiesToChartMarkers(stochBag, stochVis);
-    const ichiStratMs = ichimokuStrategiesToChartMarkers(ichiBag, ichiVis);
-    const journalMs = tradeJournalToChartMarkers(journalEntries);
-    const confluenceMs = strategyConfluencesToChartMarkers(
-      confFiltered,
+      auxIndicatorVisibility,
+      journalEntries,
+      strategyConfluences,
       showStrategyConfluence,
-    );
-
-    const closeByBar = new Map<number, number>();
-    for (let i = 0; i < bars.length; i++) {
-      const c = bars[i]?.close;
-      if (c != null && Number.isFinite(c)) closeByBar.set(i, c);
-    }
-
-    markerTooltipsRef.current = buildStrategyMarkerTooltips({
-      bb: { hits: bbBag?.recent, visibility: bbVis },
-      rsi: { hits: rsiBag?.recent, visibility: rsiVis },
-      macd: { hits: macdBag?.recent, visibility: macdVis },
-      classic: { hits: classicBag?.recent, visibility: classicVis },
-      stoch: { hits: stochBag?.recent, visibility: stochVis },
-      volume: { hits: volumeBag?.recent, visibility: volumeVisMap },
-      combo: { hits: comboBag?.recent, visibility: comboVis },
-      ichimoku: { hits: ichiBag?.recent, visibility: ichiVis },
-      pattern: { hits: patternStratBag?.recent, visibility: patternVisMap },
-      confluences: confFiltered,
-      showConfluence: showStrategyConfluence,
-      closeByBar,
+      recentMinBarIndex,
+      recentSignalWindow,
     });
-
-    return [
-      ...patternMs,
-      ...structureMs,
-      ...bbStratMs,
-      ...classicalMs,
-      ...patternStratMs,
-      ...rsiStratMs,
-      ...volumeStratMs,
-      ...foreverVwapMs,
-      ...comboStratMs,
-      ...macdStratMs,
-      ...classicStratMs,
-      ...stochStratMs,
-      ...ichiStratMs,
-      ...journalMs,
-      ...confluenceMs,
-    ].sort((a, b) => {
-      const byDate = String(a.time).localeCompare(String(b.time));
-      if (byDate !== 0) return byDate;
-      return String(a.id).localeCompare(String(b.id));
-    });
-  }, [
-    patterns,
-    chartPatternVisibility,
-    structure,
-    chartStructureVisibility,
-    bbStrategies,
-    chartBbStrategyVisibility,
-    classicalPatterns,
-    chartClassicalPatternVisibility,
-    patternStrategies,
-    chartPatternStrategyVisibility,
-    rsiStrategies,
-    chartRsiStrategyVisibility,
-    volumeStrategies,
-    chartVolumeStrategyVisibility,
-    indicators,
-    auxIndicatorVisibility?.forever_vwap,
-    comboStrategies,
-    chartComboStrategyVisibility,
-    macdStrategies,
-    chartMacdStrategyVisibility,
-    classicStrategies,
-    chartClassicStrategyVisibility,
-    stochStrategies,
-    chartStochStrategyVisibility,
-    ichimokuStrategies,
-    chartIchimokuStrategyVisibility,
-    journalEntries,
-    strategyConfluences,
-    showStrategyConfluence,
-    recentMinBarIndex,
-    recentSignalWindow?.bars,
-    bars.length,
-  ]);
 
   const barHighlights = useMemo(() => {
     const base = patternBarHighlights(
@@ -783,27 +515,6 @@ export function CandleChart({
       ),
     [supportResistance, chartSrVisibility],
   );
-  const srZonesRef = useRef(srZones);
-  srZonesRef.current = srZones;
-
-  const kumoCloudRef = useRef<{
-    visible: boolean;
-    spanA: { date: string; value: number }[];
-    spanB: { date: string; value: number }[];
-  }>({ visible: false, spanA: [], spanB: [] });
-
-  useEffect(() => {
-    const cfg = getIndicatorConfig("ichimoku");
-    const out = indicators?.indicators.ichimoku;
-    const showCloud =
-      (ichimokuVisibility?.cloud ?? false) && !!cfg?.enabled && !!out;
-    kumoCloudRef.current = {
-      visible: showCloud,
-      spanA: out?.series.spanA ?? [],
-      spanB: out?.series.spanB ?? [],
-    };
-  }, [indicators, ichimokuVisibility]);
-
   const visibleTrendlines = useMemo(() => {
     if (!trendlines) return [] as Trendline[];
     const vis =
@@ -820,11 +531,6 @@ export function CandleChart({
     if (vis.descending) out.push(...trendlines.descending.filter(keep));
     return out;
   }, [trendlines, chartTrendlineVisibility, chartTrendlineLineVisibility]);
-  const trendlinesRef = useRef(visibleTrendlines);
-  trendlinesRef.current = visibleTrendlines;
-  const trendlineColorsRef = useRef(chartTrendlineColors ?? {});
-  trendlineColorsRef.current = chartTrendlineColors ?? {};
-
   const patternLegend = useMemo(
     () =>
       chartPatternVisibility
@@ -1004,9 +710,6 @@ export function CandleChart({
     recentMinBarIndex,
   ]);
 
-  const riskRewardPlansRef = useRef(riskRewardPlans);
-  riskRewardPlansRef.current = riskRewardPlans;
-
   const visibleClassicalInstances = useMemo(
     () =>
       visibleClassicalPatternInstances(
@@ -1017,20 +720,6 @@ export function CandleChart({
       ),
     [classicalPatterns, chartClassicalPatternVisibility, recentMinBarIndex, bars],
   );
-  const classicalInstancesRef = useRef(visibleClassicalInstances);
-  classicalInstancesRef.current = visibleClassicalInstances;
-  const classicStrategiesRef = useRef(classicStrategies);
-  classicStrategiesRef.current = classicStrategies;
-  const chartClassicStrategyVisibilityRef = useRef(
-    chartClassicStrategyVisibility,
-  );
-  chartClassicStrategyVisibilityRef.current = chartClassicStrategyVisibility;
-
-  const elliottWavesRef = useRef(elliottWaves);
-  elliottWavesRef.current = elliottWaves;
-  const chartElliottWaveVisibilityRef = useRef(chartElliottWaveVisibility);
-  chartElliottWaveVisibilityRef.current = chartElliottWaveVisibility;
-
   const elliottWaveLegend = useMemo(() => {
     if (!elliottWaves || !chartElliottWaveVisibility) return [];
     if (!anyElliottWaveVisible(chartElliottWaveVisibility)) return [];
@@ -1071,646 +760,68 @@ export function CandleChart({
     showFibConfluence,
   ]);
 
-  // ─── Overlay draw ──────────────────────────────────────────────────────────
+  const { overlayRef, drawChartOverlays } = useOverlayCanvas({
+    chartRef,
+    candleRef,
+    wrapRef,
+    barsRef,
+    srZones,
+    visibleTrendlines,
+    chartTrendlineColors,
+    visibleClassicalInstances,
+    classicStrategies,
+    chartClassicStrategyVisibility,
+    fibRetracement,
+    fibLevelVisibility,
+    fibExtraVisibility,
+    elliottWaves,
+    chartElliottWaveVisibility,
+    riskRewardPlans,
+    indicators,
+    ichimokuVisibility,
+  });
 
-  const drawChartOverlays = () => {
-    const canvas = overlayRef.current;
-    const wrap = wrapRef.current;
-    const series = candleRef.current;
-    const chart = chartRef.current;
-    if (!canvas || !wrap || !series || !chart) return;
+  const { pickHint, onFibClick } = useFibonacciDraw({
+    fibDrawMode,
+    onFibChange,
+    barsRef,
+    drawChartOverlays,
+  });
 
-    const width = wrap.clientWidth;
-    const h = wrap.clientHeight;
-    if (width <= 0 || h <= 0) return;
+  const { paneLabelTops } = usePaneLayout({
+    chartRef,
+    containerRef,
+    wrapRef,
+    totalHeight,
+    mainHeight,
+    showVolume,
+    oscPanes,
+    timeframe,
+    captureTimeRange,
+    restoreTimeRange,
+    drawChartOverlays,
+  });
 
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.floor(width * dpr);
-    canvas.height = Math.floor(h * dpr);
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${h}px`;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, h);
-
-    // Price overlays belong on pane 0 only (oscillator panes share this canvas).
-    const pane0H = chart.panes()[0]?.getHeight() ?? h;
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, 0, width, pane0H);
-    ctx.clip();
-
-    // ── Ichimoku Kumo (cloud) ────────────────────────────────────────────────
-    const kumo = kumoCloudRef.current;
-    if (kumo.visible && kumo.spanA.length && kumo.spanB.length) {
-      const bMap = new Map(kumo.spanB.map((p) => [p.date, p.value]));
-      const pts: { date: string; a: number; b: number }[] = [];
-      for (const p of kumo.spanA) {
-        const bv = bMap.get(p.date);
-        if (bv == null) continue;
-        pts.push({ date: p.date, a: p.value, b: bv });
-      }
-      for (let i = 1; i < pts.length; i++) {
-        const p0 = pts[i - 1]!;
-        const p1 = pts[i]!;
-        const x0 = chart
-          .timeScale()
-          .timeToCoordinate(p0.date as `${number}-${number}-${number}`);
-        const x1 = chart
-          .timeScale()
-          .timeToCoordinate(p1.date as `${number}-${number}-${number}`);
-        const yA0 = series.priceToCoordinate(p0.a);
-        const yB0 = series.priceToCoordinate(p0.b);
-        const yA1 = series.priceToCoordinate(p1.a);
-        const yB1 = series.priceToCoordinate(p1.b);
-        if (
-          x0 == null ||
-          x1 == null ||
-          yA0 == null ||
-          yB0 == null ||
-          yA1 == null ||
-          yB1 == null
-        ) {
-          continue;
-        }
-        const bull = p1.a >= p1.b;
-        ctx.fillStyle = bull
-          ? "rgba(34, 197, 94, 0.16)"
-          : "rgba(239, 68, 68, 0.16)";
-        ctx.beginPath();
-        ctx.moveTo(x0, yA0);
-        ctx.lineTo(x1, yA1);
-        ctx.lineTo(x1, yB1);
-        ctx.lineTo(x0, yB0);
-        ctx.closePath();
-        ctx.fill();
-      }
-    }
-
-    // ── S/R zone bands ────────────────────────────────────────────────────────
-    for (const zone of srZonesRef.current) {
-      const y1 = series.priceToCoordinate(zone.high);
-      const y2 = series.priceToCoordinate(zone.low);
-      if (y1 == null || y2 == null) continue;
-      const top = Math.min(y1, y2);
-      const bandH = Math.max(2, Math.abs(y2 - y1));
-      const colors = SR_ZONE_COLORS[zone.kind];
-
-      ctx.fillStyle = colors.fill;
-      ctx.fillRect(0, top, width, bandH);
-
-      ctx.strokeStyle = colors.stroke;
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 3]);
-      ctx.beginPath();
-      ctx.moveTo(0, y1);
-      ctx.lineTo(width, y1);
-      ctx.moveTo(0, y2);
-      ctx.lineTo(width, y2);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-
-    // Dynamic trendlines
-    for (const line of trendlinesRef.current) {
-      const x1 = chart
-        .timeScale()
-        .timeToCoordinate(line.date1 as `${number}-${number}-${number}`);
-      const x2 = chart
-        .timeScale()
-        .timeToCoordinate(line.date2 as `${number}-${number}-${number}`);
-      const endDate = barsRef.current[line.endBarIndex]?.date ?? line.date2;
-      const xEnd = chart
-        .timeScale()
-        .timeToCoordinate(endDate as `${number}-${number}-${number}`);
-      const y1 = series.priceToCoordinate(line.y1);
-      const y2 = series.priceToCoordinate(line.y2);
-      const yEnd = series.priceToCoordinate(line.yAtEnd);
-      if (x1 == null || y1 == null || yEnd == null) continue;
-      const color =
-        trendlineColorsRef.current[line.id] ?? TRENDLINE_COLORS[line.kind];
-      ctx.strokeStyle = color;
-      ctx.lineWidth = line.broken ? 1 : 2;
-      ctx.setLineDash(line.broken ? [4, 4] : []);
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      if (x2 != null && y2 != null) ctx.lineTo(x2, y2);
-      if (xEnd != null) ctx.lineTo(xEnd, yEnd);
-      else ctx.lineTo(width, yEnd);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Anchor dots
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x1, y1, 3, 0, Math.PI * 2);
-      ctx.fill();
-      if (x2 != null && y2 != null) {
-        ctx.beginPath();
-        ctx.arc(x2, y2, 3, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    // Classical chart pattern geometry
-    for (const inst of classicalInstancesRef.current) {
-      const color = CHART_PATTERN_META[inst.id].color;
-      for (const s of inst.segments) {
-        const sx = chart
-          .timeScale()
-          .timeToCoordinate(s.date1 as `${number}-${number}-${number}`);
-        const ex = chart
-          .timeScale()
-          .timeToCoordinate(s.date2 as `${number}-${number}-${number}`);
-        const sy = series.priceToCoordinate(s.y1);
-        const ey = series.priceToCoordinate(s.y2);
-        if (sx == null || ex == null || sy == null || ey == null) continue;
-        ctx.strokeStyle = color;
-        ctx.lineWidth = s.role === "neckline" ? 2 : 1.25;
-        ctx.globalAlpha = inst.status === "forming" ? 0.55 : 0.9;
-        ctx.setLineDash(
-          s.role === "neckline" || inst.status === "forming" ? [5, 3] : [],
-        );
-        ctx.beginPath();
-        ctx.moveTo(sx, sy);
-        ctx.lineTo(ex, ey);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.globalAlpha = 1;
-      }
-      for (const p of inst.pivots) {
-        const px = chart
-          .timeScale()
-          .timeToCoordinate(p.date as `${number}-${number}-${number}`);
-        const py = series.priceToCoordinate(p.price);
-        if (px == null || py == null) continue;
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    // ── Gann fans & retracement zones (classic gann_zone strategy) ───────────
-    const classic = classicStrategiesRef.current;
-    const classicVis = chartClassicStrategyVisibilityRef.current;
-    if (classicVis?.gann_zone && classic) {
-      for (const zone of classic.gannZones ?? []) {
-        const yTop = series.priceToCoordinate(zone.rzh);
-        const yBot = series.priceToCoordinate(zone.rzl);
-        if (yTop == null || yBot == null) continue;
-        const top = Math.min(yTop, yBot);
-        const bandH = Math.max(2, Math.abs(yBot - yTop));
-        ctx.fillStyle =
-          zone.bias === "bullish"
-            ? "rgba(34, 197, 94, 0.12)"
-            : "rgba(239, 68, 68, 0.12)";
-        ctx.fillRect(0, top, width, bandH);
-        ctx.save();
-        ctx.strokeStyle =
-          zone.bias === "bullish"
-            ? "rgba(34, 197, 94, 0.35)"
-            : "rgba(239, 68, 68, 0.35)";
-        ctx.lineWidth = 1;
-        ctx.setLineDash([4, 4]);
-        ctx.beginPath();
-        ctx.moveTo(0, yTop);
-        ctx.lineTo(width, yTop);
-        ctx.moveTo(0, yBot);
-        ctx.lineTo(width, yBot);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.restore();
-      }
-
-      const barsSnap = barsRef.current;
-      const endIdx = barsSnap.length - 1;
-      const endDate = endIdx >= 0 ? barsSnap[endIdx]!.date : null;
-      for (const ray of classic.gannFans ?? []) {
-        const x0 = chart
-          .timeScale()
-          .timeToCoordinate(ray.anchorDate as `${number}-${number}-${number}`);
-        const y0 = series.priceToCoordinate(ray.anchorPrice);
-        if (x0 == null || y0 == null || !endDate) continue;
-        const endPrice =
-          ray.anchorPrice + ray.slope * (endIdx - ray.anchorIndex);
-        const x1 = chart
-          .timeScale()
-          .timeToCoordinate(endDate as `${number}-${number}-${number}`);
-        const y1 = series.priceToCoordinate(endPrice);
-        if (x1 == null || y1 == null) continue;
-        const color =
-          ray.bias === "bullish"
-            ? "rgba(34, 197, 94, 0.45)"
-            : "rgba(239, 68, 68, 0.45)";
-        ctx.save();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = ray.kind === "1x1" ? 1.5 : 1;
-        ctx.globalAlpha = 0.55;
-        ctx.setLineDash(ray.kind === "2x1" ? [3, 3] : []);
-        ctx.beginPath();
-        ctx.moveTo(x0, y0);
-        ctx.lineTo(x1, y1);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.globalAlpha = 1;
-        ctx.restore();
-      }
-    }
-
-    // ── Fibonacci retracement ─────────────────────────────────────────────────
-    const fib = fibRetRef.current;
-    const levelVis = fibLevelsRef.current;
-
-    if (fib && fib.high.price > fib.low.price) {
-      const xLow = chart
-        .timeScale()
-        .timeToCoordinate(fib.low.date as `${number}-${number}-${number}`);
-      const xHigh = chart
-        .timeScale()
-        .timeToCoordinate(fib.high.date as `${number}-${number}-${number}`);
-
-      if (xLow != null && xHigh != null) {
-        const xStart = Math.min(xLow, xHigh);
-        const extras = fibExtrasRef.current;
-        const drawAnchors = extras?.anchors === true;
-        const drawConfluence = extras?.confluence === true;
-
-        const confluences = drawConfluence
-          ? findFibConfluences(fib, srZonesRef.current, levelVis)
-          : [];
-        const confluenceRatios = new Set(confluences.map((c) => c.ratio));
-
-        // 0% / 100% guides (no price text — values live in legend)
-        if (drawAnchors) {
-          const y0 = series.priceToCoordinate(fib.high.price);
-          if (y0 != null) {
-            ctx.save();
-            ctx.strokeStyle = "rgba(255,255,255,0.28)";
-            ctx.lineWidth = 1;
-            ctx.setLineDash([6, 4]);
-            ctx.beginPath();
-            ctx.moveTo(xStart, y0);
-            ctx.lineTo(width, y0);
-            ctx.stroke();
-            ctx.restore();
-          }
-
-          const y100 = series.priceToCoordinate(fib.low.price);
-          if (y100 != null) {
-            ctx.save();
-            ctx.strokeStyle = "rgba(255,255,255,0.28)";
-            ctx.lineWidth = 1;
-            ctx.setLineDash([6, 4]);
-            ctx.beginPath();
-            ctx.moveTo(xStart, y100);
-            ctx.lineTo(width, y100);
-            ctx.stroke();
-            ctx.restore();
-          }
-        }
-
-        // Confluence highlight bands (full width, gold/amber)
-        for (const hit of confluences) {
-          const yTop = series.priceToCoordinate(hit.zoneHigh);
-          const yBot = series.priceToCoordinate(hit.zoneLow);
-          if (yTop == null || yBot == null) continue;
-          const cfTop = Math.min(yTop, yBot);
-          const cfH = Math.max(4, Math.abs(yBot - yTop));
-
-          ctx.fillStyle = "rgba(251,191,36,0.22)";
-          ctx.fillRect(0, cfTop, width, cfH);
-
-          ctx.save();
-          ctx.strokeStyle = FIB_CONFLUENCE_COLOR;
-          ctx.lineWidth = 1.5;
-          ctx.setLineDash([]);
-          ctx.beginPath();
-          ctx.moveTo(0, cfTop);
-          ctx.lineTo(width, cfTop);
-          ctx.moveTo(0, cfTop + cfH);
-          ctx.lineTo(width, cfTop + cfH);
-          ctx.stroke();
-          ctx.restore();
-        }
-
-        // Fib level lines (dashed, from xStart to right edge)
-        for (const ratio of FIB_RETRACEMENT_LEVELS) {
-          if (!levelVis || levelVis[ratio] !== true) continue;
-          const fibPrice = fibRetracementPrice(
-            fib.low.price,
-            fib.high.price,
-            ratio,
-          );
-          const yFib = series.priceToCoordinate(fibPrice);
-          if (yFib == null) continue;
-
-          const hasConf = confluenceRatios.has(ratio);
-          const color = FIB_LEVEL_COLORS[ratio];
-
-          ctx.save();
-          ctx.strokeStyle = color;
-          ctx.lineWidth = hasConf ? 2.5 : 1.5;
-          ctx.globalAlpha = hasConf ? 1 : 0.82;
-          ctx.setLineDash([5, 3]);
-          ctx.beginPath();
-          ctx.moveTo(xStart, yFib);
-          ctx.lineTo(width, yFib);
-          ctx.stroke();
-          ctx.restore();
-        }
-      }
-    }
-
-    // ── Elliott wave zigzag overlays ─────────────────────────────────────────
-    const ew = elliottWavesRef.current;
-    const ewVis = chartElliottWaveVisibilityRef.current;
-    if (ew && ewVis && anyElliottWaveVisible(ewVis)) {
-      const patterns = ew.primary.length
-        ? ew.primary
-        : ew.patterns.slice(0, 2);
-      for (const pattern of patterns) {
-        if (pattern.kind === "impulse" && !ewVis.impulse) continue;
-        if (pattern.kind === "corrective" && !ewVis.corrective) continue;
-
-        const color = pattern.direction === "bullish" ? SIGNAL.bullish : SIGNAL.bearish;
-        ctx.strokeStyle = color;
-        ctx.lineWidth = pattern.kind === "impulse" ? 2 : 1.5;
-        ctx.setLineDash(pattern.kind === "corrective" ? [5, 4] : []);
-
-        const pivots = pattern.pivots;
-        if (pivots.length >= 2) {
-          ctx.beginPath();
-          let started = false;
-          for (const p of pivots) {
-            const x = chart
-              .timeScale()
-              .timeToCoordinate(p.date as `${number}-${number}-${number}`);
-            const y = series.priceToCoordinate(p.price);
-            if (x == null || y == null) continue;
-            if (!started) {
-              ctx.moveTo(x, y);
-              started = true;
-            } else {
-              ctx.lineTo(x, y);
-            }
-          }
-          if (started) ctx.stroke();
-        }
-        ctx.setLineDash([]);
-
-        if (ewVis.labels) {
-          for (const p of pivots) {
-            if (p.label == null) continue;
-            const x = chart
-              .timeScale()
-              .timeToCoordinate(p.date as `${number}-${number}-${number}`);
-            const y = series.priceToCoordinate(p.price);
-            if (x == null || y == null) continue;
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.arc(x, y, 8, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = CHART_SURFACE.ink;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.arc(x, y, 8, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.fillStyle = CHART_SURFACE.ink;
-            ctx.font = "bold 10px sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(p.label, x, y);
-          }
-        }
-      }
-    }
-
-    // ── Pending low anchor dot ────────────────────────────────────────────────
-    const pending = getFibPendingLow();
-    if (pending) {
-      const xPend = chart
-        .timeScale()
-        .timeToCoordinate(pending.date as `${number}-${number}-${number}`);
-      const yPend = series.priceToCoordinate(pending.price);
-      if (xPend != null && yPend != null) {
-        ctx.save();
-        ctx.fillStyle = SIGNAL.bullish;
-        ctx.shadowColor = SIGNAL.bullish;
-        ctx.shadowBlur = 8;
-        ctx.beginPath();
-        ctx.arc(xPend, yPend, 6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-        ctx.strokeStyle = CHART_SURFACE.ink;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.arc(xPend, yPend, 6, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-    }
-
-    // ── Risk/reward v1 (entry / stop / target) ────────────────────────────────
-    drawRiskRewardPlans(
-      ctx,
-      chart,
-      series,
-      barsRef.current,
-      riskRewardPlansRef.current,
-    );
-
-    ctx.restore();
-  };
-
-  // ─── Chart creation / teardown ─────────────────────────────────────────────
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const chart = createChart(
-      containerRef.current,
-      chartOptions({
-        width:
-          containerRef.current.clientWidth ||
-          containerRef.current.parentElement?.clientWidth ||
-          600,
-        height: mainHeight,
-      }),
-    );
-
-    const candles = chart.addSeries(CandlestickSeries, candleOptions());
-
-    chartRef.current = chart;
-    candleRef.current = candles;
-    volumeRef.current = null;
-    volumeMaRefs.current = new Map();
-    markersRef.current = createSeriesMarkers(candles, []);
-    overlayRefs.current = new Map();
-    oscSeriesRefs.current = new Map();
-
-    const onRange = () => drawChartOverlays();
-    chart.timeScale().subscribeVisibleLogicalRangeChange(onRange);
-
-    const onCrosshairMove = (param: MouseEventParams<Time>) => {
-      if (
-        param.point === undefined ||
-        param.time === undefined ||
-        param.point.x < 0 ||
-        param.point.y < 0
-      ) {
-        setHoverOhlcv(null);
-        setMarkerHoverRef.current(null);
-        return;
-      }
-
-      const hovered = param.hoveredInfo;
-      if (
-        hovered?.objectKind === "series-marker" &&
-        hovered.objectId != null
-      ) {
-        const tip = markerTooltipsRef.current.get(String(hovered.objectId));
-        if (tip) {
-          setMarkerHoverRef.current({
-            x: param.point.x,
-            y: param.point.y,
-            tip,
-          });
-        } else {
-          setMarkerHoverRef.current(null);
-        }
-      } else {
-        setMarkerHoverRef.current(null);
-      }
-
-      const candleData = param.seriesData.get(candles);
-      if (!isCandleData(candleData)) {
-        setHoverOhlcv(null);
-        return;
-      }
-      const timeStr = String(param.time);
-      const barsData = barsRef.current;
-      const barIdx = barsData.findIndex((b) => b.date === timeStr);
-      const bar = barIdx >= 0 ? barsData[barIdx] : undefined;
-      const prev = barIdx > 0 ? barsData[barIdx - 1] : undefined;
-      setHoverOhlcv({
-        date: timeStr,
-        open: candleData.open,
-        high: candleData.high,
-        low: candleData.low,
-        close: candleData.close,
-        volume: bar?.volume ?? 0,
-        changePct: dailyChangePct(candleData.close, prev?.close),
-      });
-    };
-    chart.subscribeCrosshairMove(onCrosshairMove);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const onClickHandler = (param: any) => {
-      if (!fibDrawModeRef.current) return;
-      if (!param.time) return;
-
-      const timeStr = String(param.time);
-      const barsData = barsRef.current;
-      const barIdx = barsData.findIndex((b) => b.date === timeStr);
-      if (barIdx < 0) return;
-      const bar = barsData[barIdx];
-
-      const pending = getFibPendingLow();
-      if (!pending) {
-        const anchor: FibAnchor = {
-          date: bar.date,
-          barIndex: barIdx,
-          price: bar.low,
-        };
-        setFibPendingLow(anchor);
-        setPickHint("피보나치: 고점(스윙 고) 캔들을 클릭하세요");
-        drawChartOverlays();
-      } else {
-        if (bar.high <= pending.price) {
-          setPickHint(
-            "피보나치: 고점은 저점보다 위여야 합니다. 다시 고점을 클릭하세요",
-          );
-          return;
-        }
-        if (barIdx < pending.barIndex) {
-          setPickHint(
-            "피보나치: 고점은 저점보다 오른쪽(이후) 봉이어야 합니다",
-          );
-          return;
-        }
-        const highAnchor: FibAnchor = {
-          date: bar.date,
-          barIndex: barIdx,
-          price: bar.high,
-        };
-        const newFib: FibRetracement = { low: pending, high: highAnchor };
-        setFibRetracement(newFib);
-        setFibPendingLow(null);
-        setFibDrawMode(false);
-        setPickHint(null);
-        onFibChangeRef.current?.();
-        drawChartOverlays();
-      }
-    };
-    chart.subscribeClick(onClickHandler);
-
-    const ro = new ResizeObserver(() => {
-      if (containerRef.current) {
-        chart.applyOptions({ width: containerRef.current.clientWidth });
-        drawChartOverlays();
-      }
-    });
-    ro.observe(containerRef.current);
-
-    return () => {
-      chart.timeScale().unsubscribeVisibleLogicalRangeChange(onRange);
-      chart.unsubscribeCrosshairMove(onCrosshairMove);
-      chart.unsubscribeClick(onClickHandler);
-      ro.disconnect();
-      chart.remove();
-      chartRef.current = null;
-      candleRef.current = null;
-      volumeRef.current = null;
-      volumeMaRefs.current = new Map();
-      markersRef.current = null;
-      overlayRefs.current = new Map();
-      oscSeriesRefs.current = new Map();
-      fittedBarsKeyRef.current = "";
-      setHoverOhlcv(null);
-      setMarkerHoverRef.current(null);
-    };
-    // recreate chart on timeframe only; overlay redraw bound via other deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeframe]);
-
-  useEffect(() => {
-    const chart = chartRef.current;
-    if (!chart) return;
-    const savedRange = captureTimeRange();
-    chart.applyOptions({ height: totalHeight });
-    if (containerRef.current) {
-      containerRef.current.style.height = `${totalHeight}px`;
-    }
-    if (wrapRef.current) {
-      wrapRef.current.style.height = `${totalHeight}px`;
-    }
-    const panes = chart.panes();
-    if (panes[0]) panes[0].setHeight(mainHeight);
-    const volOffset = showVolume ? 1 : 0;
-    if (showVolume && panes[1]) panes[1].setHeight(VOLUME_PANE_HEIGHT);
-    oscPanes.forEach((pane, i) => {
-      const api = panes[i + 1 + volOffset];
-      if (api) api.setHeight(pane.height);
-    });
-    restoreTimeRange(savedRange);
-    requestAnimationFrame(() => {
-      restoreTimeRange(savedRange);
-      drawChartOverlays();
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [totalHeight, mainHeight, oscPanes, showVolume]);
+  useChartInstance({
+    containerRef,
+    chartRef,
+    candleRef,
+    volumeRef,
+    volumeMaRefs,
+    markersRef,
+    overlayRefs,
+    oscSeriesRefs,
+    fittedBarsKeyRef,
+    barsRef,
+    markerTooltipsRef,
+    setMarkerHoverRef,
+    setHoverOhlcv,
+    mainHeight,
+    timeframe,
+    bindMarkers,
+    drawChartOverlays,
+    onFibClick,
+  });
 
   // ─── MA / BB overlays (pane 0) ─────────────────────────────────────────────
   // Toggle via visible:true/false (do not removeSeries on every click — that can
@@ -2054,15 +1165,15 @@ export function CandleChart({
 
     const hasSecondary = showVolume || oscPanes.length > 0;
     if (!hasSecondary) {
-      chart.applyOptions({ height: mainHeight });
-      if (containerRef.current) {
-        containerRef.current.style.height = `${mainHeight}px`;
-      }
-      if (wrapRef.current) {
-        wrapRef.current.style.height = `${mainHeight}px`;
-      }
-      const panes = chart.panes();
-      if (panes[0]) panes[0].setHeight(mainHeight);
+      syncPaneLayout({
+        chart,
+        container: containerRef.current,
+        wrap: wrapRef.current,
+        totalHeight,
+        mainHeight,
+        showVolume,
+        oscPanes,
+      });
       restoreTimeRange(savedRange);
       drawChartOverlays();
       return;
@@ -2685,20 +1796,14 @@ export function CandleChart({
       }
     });
 
-    chart.applyOptions({ height: totalHeight });
-    if (containerRef.current) {
-      containerRef.current.style.height = `${totalHeight}px`;
-    }
-    if (wrapRef.current) {
-      wrapRef.current.style.height = `${totalHeight}px`;
-    }
-    const panes = chart.panes();
-    if (panes[0]) panes[0].setHeight(mainHeight);
-    const heightVolOffset = showVolume ? 1 : 0;
-    if (showVolume && panes[1]) panes[1].setHeight(VOLUME_PANE_HEIGHT);
-    oscPanes.forEach((pane, i) => {
-      const api = panes[i + 1 + heightVolOffset];
-      if (api) api.setHeight(pane.height);
+    syncPaneLayout({
+      chart,
+      container: containerRef.current,
+      wrap: wrapRef.current,
+      totalHeight,
+      mainHeight,
+      showVolume,
+      oscPanes,
     });
     restoreTimeRange(savedRange);
     requestAnimationFrame(() => {
@@ -2716,99 +1821,6 @@ export function CandleChart({
     mainHeight,
     totalHeight,
   ]);
-
-  // Keep pane name tags aligned when the user drags pane separators.
-  useEffect(() => {
-    const measure = () => {
-      const chart = chartRef.current;
-      const wrap = wrapRef.current;
-      if (!chart || !wrap) return;
-      const wrapTop = wrap.getBoundingClientRect().top;
-      const panes = chart.panes();
-      const next: Record<string, number> = {};
-      let paneIndex = 1;
-      if (showVolume) {
-        const el = panes[paneIndex]?.getHTMLElement();
-        if (el) {
-          next.volume = el.getBoundingClientRect().top - wrapTop + 4;
-        }
-        paneIndex += 1;
-      }
-      oscPanes.forEach((pane, i) => {
-        const el = panes[paneIndex + i]?.getHTMLElement();
-        if (el) {
-          next[pane.id] = el.getBoundingClientRect().top - wrapTop + 4;
-        }
-      });
-      setPaneLabelTops((prev) => {
-        const keys = Object.keys(next);
-        if (
-          keys.length === Object.keys(prev).length &&
-          keys.every((k) => prev[k] === next[k])
-        ) {
-          return prev;
-        }
-        return next;
-      });
-    };
-
-    measure();
-    const raf = requestAnimationFrame(measure);
-
-    const chart = chartRef.current;
-    const observed = new Set<Element>();
-    const ro = new ResizeObserver(() => measure());
-    if (wrapRef.current) {
-      ro.observe(wrapRef.current);
-      observed.add(wrapRef.current);
-    }
-    if (chart) {
-      for (const pane of chart.panes()) {
-        const el = pane.getHTMLElement();
-        if (el && !observed.has(el)) {
-          ro.observe(el);
-          observed.add(el);
-        }
-      }
-    }
-
-    // Separator drag updates heights continuously; poll while pointer is down.
-    const wrap = wrapRef.current;
-    let dragging = false;
-    let rafLoop = 0;
-    const onPointerDown = (e: PointerEvent) => {
-      const t = e.target;
-      if (!(t instanceof Element)) return;
-      // Pane separators live inside the chart; any drag on chart can resize panes.
-      if (!containerRef.current?.contains(t)) return;
-      dragging = true;
-      const tick = () => {
-        if (!dragging) return;
-        measure();
-        rafLoop = requestAnimationFrame(tick);
-      };
-      cancelAnimationFrame(rafLoop);
-      rafLoop = requestAnimationFrame(tick);
-    };
-    const stopDrag = () => {
-      if (!dragging) return;
-      dragging = false;
-      cancelAnimationFrame(rafLoop);
-      measure();
-    };
-    wrap?.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("pointerup", stopDrag);
-    window.addEventListener("pointercancel", stopDrag);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      cancelAnimationFrame(rafLoop);
-      ro.disconnect();
-      wrap?.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("pointerup", stopDrag);
-      window.removeEventListener("pointercancel", stopDrag);
-    };
-  }, [oscPanes, showVolume, totalHeight, timeframe, mainHeight]);
 
   const overlayLegend = useMemo(() => {
     if (!indicators) return [];
@@ -3258,8 +2270,6 @@ export function CandleChart({
         }
       }
 
-      markersRef.current?.setMarkers(chartMarkers);
-
       if (shouldFit) {
         fittedBarsKeyRef.current = barsKey;
         chartRef.current?.timeScale().fitContent();
@@ -3271,57 +2281,7 @@ export function CandleChart({
       console.error("CandleChart setData failed:", err);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bars, chartMarkers, barHighlights, timeframe, showVolume, volumeSnapshot]);
-
-  // ─── SR zone redraw ────────────────────────────────────────────────────────
-
-  useEffect(() => {
-    drawChartOverlays();
-    const chart = chartRef.current;
-    if (!chart) return;
-    const onRange = () => drawChartOverlays();
-    chart.timeScale().subscribeVisibleLogicalRangeChange(onRange);
-    return () => {
-      chart.timeScale().unsubscribeVisibleLogicalRangeChange(onRange);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [srZones]);
-
-  // ─── Fib retracement / level visibility redraw ────────────────────────────
-
-  useEffect(() => {
-    drawChartOverlays();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    fibRetracement,
-    fibLevelVisibility,
-    fibExtraVisibility,
-    visibleTrendlines,
-    srZones,
-    chartTrendlineColors,
-    visibleClassicalInstances,
-    classicStrategies,
-    chartClassicStrategyVisibility,
-    ichimokuVisibility,
-    indicators,
-    elliottWaves,
-    chartElliottWaveVisibility,
-    riskRewardPlans,
-  ]);
-
-  // ─── Fib draw mode lifecycle ───────────────────────────────────────────────
-
-  useEffect(() => {
-    if (fibDrawMode) {
-      setFibPendingLow(null);
-      setPickHint("피보나치: 저점(스윙 저) 캔들을 클릭하세요");
-    } else {
-      setFibPendingLow(null);
-      setPickHint(null);
-      drawChartOverlays();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fibDrawMode]);
+  }, [bars, barHighlights, timeframe, showVolume, volumeSnapshot]);
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
@@ -3362,101 +2322,11 @@ export function CandleChart({
             className="pointer-events-none absolute inset-0 z-[1]"
             aria-hidden
           />
-          {markerHover && (
-            <div
-              className="pointer-events-none absolute z-[3] max-w-[240px] rounded-md border border-border/80 bg-bg/95 px-2.5 py-1.5 text-left shadow-lg backdrop-blur-[2px]"
-              style={{
-                left: Math.min(
-                  markerHover.x + 14,
-                  (wrapRef.current?.clientWidth ?? 320) - 250,
-                ),
-                top: Math.max(8, markerHover.y - 8),
-              }}
-            >
-              <p className="text-[11px] font-semibold text-text-primary">
-                {markerHover.tip.title}
-              </p>
-              {markerHover.tip.lines.map((line) => (
-                <p
-                  key={line}
-                  className="mt-0.5 text-[10px] leading-snug text-text-secondary"
-                >
-                  {line}
-                </p>
-              ))}
-            </div>
-          )}
-          {ohlcvReadout && (
-            <div
-              className="pointer-events-none absolute left-2 top-2 z-[2] rounded bg-black/55 px-2.5 py-1.5 text-[11px] leading-relaxed text-text-secondary backdrop-blur-[2px]"
-              aria-live="polite"
-            >
-              <div className="mb-0.5 tabular-nums text-text-tertiary">
-                {ohlcvReadout.date}
-              </div>
-              <div className="flex flex-wrap gap-x-2.5 gap-y-0.5 tabular-nums">
-                <span>
-                  O{" "}
-                  <span className="text-text-primary">
-                    {fmtPrice(ohlcvReadout.open)}
-                  </span>
-                </span>
-                <span>
-                  H{" "}
-                  <span className="text-text-primary">
-                    {fmtPrice(ohlcvReadout.high)}
-                  </span>
-                </span>
-                <span>
-                  L{" "}
-                  <span className="text-text-primary">
-                    {fmtPrice(ohlcvReadout.low)}
-                  </span>
-                </span>
-                <span>
-                  C{" "}
-                  <span
-                    style={{
-                      color:
-                        ohlcvReadout.close >= ohlcvReadout.open
-                          ? DIRECTION.up
-                          : DIRECTION.down,
-                    }}
-                  >
-                    {fmtPrice(ohlcvReadout.close)}
-                  </span>
-                </span>
-                <span>
-                  <span
-                    style={{
-                      color:
-                        ohlcvReadout.changePct == null
-                          ? undefined
-                          : ohlcvReadout.changePct > 0
-                            ? DIRECTION.up
-                            : ohlcvReadout.changePct < 0
-                              ? DIRECTION.down
-                              : undefined,
-                    }}
-                    className={
-                      ohlcvReadout.changePct == null ||
-                      ohlcvReadout.changePct === 0
-                        ? "text-text-primary"
-                        : undefined
-                    }
-                  >
-                    {fmtChangePct(ohlcvReadout.changePct)}
-                  </span>
-                </span>
-                <span>
-                  V{" "}
-                  <span className="text-text-primary">
-                    {formatVolume(ohlcvReadout.volume)}
-                  </span>
-                </span>
-              </div>
-            </div>
-          )}
+          <ChartReadout
+            ohlcvReadout={ohlcvReadout}
+            markerHover={markerHover}
+            containerRef={wrapRef}
+          />
           {secondaryPaneLabelMeta.map((label) => {
             const top = paneLabelTops[label.key];
             if (top == null) return null;
