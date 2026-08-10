@@ -6,10 +6,10 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:HOOD",
-  "fetchedAt": "2026-08-07T14:48:51.073Z",
-  "lastBarDate": "2026-08-06",
+  "fetchedAt": "2026-08-10T03:49:30.743Z",
+  "lastBarDate": "2026-08-07",
   "barCount": 190,
-  "checksum": "d57b424b",
+  "checksum": "f98b5d28",
   "ohlcv": [
     {
       "date": "2022-12-23",
@@ -1524,12 +1524,12 @@
       "volume": 113975379
     },
     {
-      "date": "2026-08-06",
+      "date": "2026-08-07",
       "open": 86.69,
-      "high": 95.6,
+      "high": 95.75,
       "low": 85.3,
-      "close": 90.71,
-      "volume": 70058111
+      "close": 93.29,
+      "volume": 84918652
     }
   ],
   "aggregatedFrom": "1d"
