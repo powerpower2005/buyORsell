@@ -6,7 +6,7 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NYSE:VRT",
-  "fetchedAt": "2026-08-12T10:05:14.245Z",
+  "fetchedAt": "2026-08-12T15:00:10.093Z",
   "lastBarDate": "2026-08-11",
   "barCount": 191,
   "checksum": "a07e8440",
