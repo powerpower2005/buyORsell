@@ -856,9 +856,30 @@ export function ChartSidebar({
           ? `${newest.barsAgo}봉 전`
           : newest.date;
     const px = formatSignalClose(newest.close);
-    const dir =
-      newest.direction === "bullish" ? "↑ 롱" : "↓ 숏";
-    return `최근 겹침 ${withConfluence}개 전략 · ${when}${px ? ` · ${px}` : ""} ×${newest.confluenceCount} ${dir}`;
+    let longN = 0;
+    let shortN = 0;
+    for (const r of recencyMap.values()) {
+      if (
+        r.barIndex !== newest.barIndex ||
+        !r.confluenceCount ||
+        r.confluenceCount < 2
+      ) {
+        continue;
+      }
+      if (r.direction === "bullish") {
+        longN = Math.max(longN, r.confluenceCount);
+      } else if (r.direction === "bearish") {
+        shortN = Math.max(shortN, r.confluenceCount);
+      }
+    }
+    const whenPx = `${when}${px ? ` · ${px}` : ""}`;
+    if (longN > 0 && shortN > 0) {
+      return `최근 충돌 · 롱×${longN} / 숏×${shortN} · ${whenPx}`;
+    }
+    if (longN > 0) {
+      return `최근 롱 합의 ×${longN} · ${whenPx}`;
+    }
+    return `최근 숏 합의 ×${shortN} · ${whenPx}`;
   }, [recencyMap]);
   const tlAlgo = useMemo(() => getTrendlineAlgoVersion(), [refreshTick]);
   const catalogVis = useMemo(
@@ -1351,7 +1372,7 @@ export function ChartSidebar({
             label="전략 겹침 강조"
             hint={
               recentConfluenceSummary ??
-              "같은 봉·방향에 전략 2개↑이면 ×N 마커 · 최근 시그널에 겹침 배지"
+              "같은 봉 롱/숏 합의·충돌 표시 · 최근 시그널에 겹침 배지"
             }
             checked={strategyConfluenceOn}
             help={CHART_LAYER_HELP.strategyConfluence}

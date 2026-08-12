@@ -17,6 +17,55 @@ export interface StrategyConfluence {
   hits: StrategyHitRef[];
 }
 
+/** Same-bar view: long-only, short-only, or both directions overlapping. */
+export type StrategyConfluenceKind = "long" | "short" | "conflict";
+
+export interface StrategyConfluenceBar {
+  barIndex: number;
+  date: string;
+  kind: StrategyConfluenceKind;
+  longHits: StrategyHitRef[];
+  shortHits: StrategyHitRef[];
+}
+
+export function confluenceKindLabel(kind: StrategyConfluenceKind): string {
+  if (kind === "conflict") return "충돌";
+  if (kind === "long") return "롱 합의";
+  return "숏 합의";
+}
+
+/** Merge direction-keyed confluences into one row per bar. */
+export function groupConfluencesByBar(
+  items: StrategyConfluence[] | undefined | null,
+): StrategyConfluenceBar[] {
+  if (!items?.length) return [];
+  const byBar = new Map<number, StrategyConfluenceBar>();
+  for (const c of items) {
+    let row = byBar.get(c.barIndex);
+    if (!row) {
+      row = {
+        barIndex: c.barIndex,
+        date: c.date,
+        kind: "long",
+        longHits: [],
+        shortHits: [],
+      };
+      byBar.set(c.barIndex, row);
+    }
+    if (c.direction === "bullish") row.longHits = c.hits;
+    else if (c.direction === "bearish") row.shortHits = c.hits;
+  }
+  const out: StrategyConfluenceBar[] = [];
+  for (const row of byBar.values()) {
+    const hasL = row.longHits.length > 0;
+    const hasS = row.shortHits.length > 0;
+    if (!hasL && !hasS) continue;
+    row.kind = hasL && hasS ? "conflict" : hasL ? "long" : "short";
+    out.push(row);
+  }
+  return out.sort((a, b) => a.barIndex - b.barIndex);
+}
+
 function pushHits(
   out: StrategyHitRef[],
   family: string,

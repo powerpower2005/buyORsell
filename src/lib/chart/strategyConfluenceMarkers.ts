@@ -1,6 +1,9 @@
 import type { SeriesMarker, Time } from "lightweight-charts";
-import type { StrategyConfluence } from "@/lib/evaluation/strategyConfluence";
-import { DIRECTION } from "@/lib/chart/chartTheme";
+import {
+  groupConfluencesByBar,
+  type StrategyConfluence,
+} from "@/lib/evaluation/strategyConfluence";
+import { DIRECTION, SIGNAL } from "@/lib/chart/chartTheme";
 
 /** Larger markers when multiple playbooks agree on the same bar. */
 export function strategyConfluencesToChartMarkers(
@@ -9,17 +12,29 @@ export function strategyConfluencesToChartMarkers(
 ): SeriesMarker<Time>[] {
   if (!enabled || !items?.length) return [];
   // Keep chart readable — show newest overlaps only.
-  const capped = items.slice(-30);
+  const capped = groupConfluencesByBar(items).slice(-30);
   return capped.map((c) => {
-    const bull = c.direction === "bullish";
-    const n = c.hits.length;
+    if (c.kind === "conflict") {
+      const ln = c.longHits.length;
+      const sn = c.shortHits.length;
+      return {
+        time: c.date as Time,
+        position: "aboveBar",
+        color: SIGNAL.neutral,
+        shape: "square",
+        text: `L${ln}/S${sn}`,
+        id: `sconf-${c.barIndex}-conflict`,
+      } as SeriesMarker<Time>;
+    }
+    const bull = c.kind === "long";
+    const n = bull ? c.longHits.length : c.shortHits.length;
     return {
       time: c.date as Time,
       position: bull ? "belowBar" : "aboveBar",
       color: bull ? DIRECTION.up : DIRECTION.down,
       shape: bull ? "arrowUp" : "arrowDown",
       text: `x${n}`,
-      id: `sconf-${c.barIndex}-${c.direction}`,
+      id: `sconf-${c.barIndex}-${bull ? "bullish" : "bearish"}`,
     } as SeriesMarker<Time>;
   });
 }

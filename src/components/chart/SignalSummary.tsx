@@ -6,7 +6,11 @@ import {
 } from "@/lib/evaluation/riskReward";
 import type { SrZone } from "@/lib/evaluation/supportResistance";
 import type { Trendline, TrendlineResult } from "@/lib/evaluation/trendlines";
-import type { StrategyConfluence } from "@/lib/evaluation/strategyConfluence";
+import {
+  confluenceKindLabel,
+  groupConfluencesByBar,
+  type StrategyConfluence,
+} from "@/lib/evaluation/strategyConfluence";
 import { SR_ZONE_COLORS } from "@/lib/chart/srZoneOverlay";
 import { TRENDLINE_COLORS } from "@/lib/trendlineStore";
 import {
@@ -177,10 +181,18 @@ export function SignalSummary({
   fibConfluences,
 }: SignalSummaryProps) {
   const journalCount = journalEntries?.length ?? 0;
-  const confluenceCount =
+  const confluenceBars =
     showStrategyConfluence && strategyConfluences?.length
-      ? strategyConfluences.length
-      : 0;
+      ? groupConfluencesByBar(strategyConfluences)
+      : [];
+  const confluenceCount = confluenceBars.length;
+  const confluenceConflict = confluenceBars.filter(
+    (c) => c.kind === "conflict",
+  ).length;
+  const confluenceLong = confluenceBars.filter((c) => c.kind === "long").length;
+  const confluenceShort = confluenceBars.filter(
+    (c) => c.kind === "short",
+  ).length;
   const rrCount = showRiskReward ? riskRewardPlans.length : 0;
 
   const sizes = [
@@ -521,26 +533,46 @@ export function SignalSummary({
           </GroupRow>
         )}
 
-        {confluenceCount > 0 && strategyConfluences && (
-          <GroupRow label={`전략 겹침 (${confluenceCount}):`}>
-            {strategyConfluences.slice(-8).map((c) => (
-              <span
-                key={`${c.barIndex}-${c.direction}`}
-                className="tabular-nums text-text-secondary"
-              >
+        {confluenceCount > 0 && (
+          <GroupRow
+            label={`전략 겹침 (${confluenceCount}봉 · 충돌 ${confluenceConflict} · 롱 ${confluenceLong} · 숏 ${confluenceShort}):`}
+          >
+            {confluenceBars.slice(-8).map((c) => {
+              const kindClass =
+                c.kind === "conflict"
+                  ? "text-amber-300"
+                  : c.kind === "long"
+                    ? "text-positive"
+                    : "text-negative";
+              const headline =
+                c.kind === "conflict"
+                  ? `${c.date} · ${confluenceKindLabel("conflict")} · 롱×${c.longHits.length} / 숏×${c.shortHits.length}`
+                  : `${c.date} · ${confluenceKindLabel(c.kind)} ×${
+                      c.kind === "long"
+                        ? c.longHits.length
+                        : c.shortHits.length
+                    }`;
+              return (
                 <span
-                  className={
-                    c.direction === "bullish"
-                      ? "text-positive"
-                      : "text-negative"
-                  }
+                  key={`${c.barIndex}-${c.kind}`}
+                  className="flex flex-col gap-0.5 tabular-nums text-text-secondary"
                 >
-                  {c.date} ×{c.hits.length}{" "}
-                  {c.direction === "bullish" ? "↑ 롱" : "↓ 숏"}
-                </span>{" "}
-                ({c.hits.map((h) => h.label).join(", ")})
-              </span>
-            ))}
+                  <span className={kindClass}>{headline}</span>
+                  {c.longHits.length > 0 && (
+                    <span>
+                      <span className="text-positive">↑</span>{" "}
+                      {c.longHits.map((h) => h.label).join(", ")}
+                    </span>
+                  )}
+                  {c.shortHits.length > 0 && (
+                    <span>
+                      <span className="text-negative">↓</span>{" "}
+                      {c.shortHits.map((h) => h.label).join(", ")}
+                    </span>
+                  )}
+                </span>
+              );
+            })}
           </GroupRow>
         )}
 

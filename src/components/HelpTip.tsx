@@ -43,58 +43,56 @@ export function HelpTip({ help, label }: Props) {
         onClick={() => setOpen(false)}
       >
         <Card
-            className="max-h-[min(85vh,640px)] w-full max-w-md overflow-y-auto text-left"
+          className="max-h-[min(90vh,760px)] w-full max-w-2xl overflow-y-auto text-left"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-start justify-between gap-3">
             <h3
               id={titleId}
-              className="text-sm font-semibold text-text-primary"
+              className="text-lg font-semibold text-text-primary"
             >
               {help.title}
             </h3>
             <Button
               variant="ghost"
-              className="shrink-0 px-2 py-1 text-xs"
+              className="shrink-0 px-2 py-1 text-sm"
               onClick={() => setOpen(false)}
             >
               닫기
             </Button>
           </div>
 
-            <p className="mt-3 text-sm leading-relaxed text-text-secondary">
-              {help.summary}
-            </p>
+          <p className="mt-4 text-base leading-relaxed text-text-secondary">
+            {help.summary}
+          </p>
 
-            {help.howToFind && (
-              <div className="mt-4 rounded-md border border-border/80 bg-bg px-3 py-2.5">
-                <p className="text-[11px] font-semibold text-text-primary">
-                  찾는 법
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-text-secondary">
-                  {help.howToFind}
-                </p>
-              </div>
-            )}
+          {help.howToFind && (
+            <div className="mt-5 rounded-md border border-border/80 bg-bg px-4 py-3">
+              <p className="text-sm font-semibold text-text-primary">찾는 법</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-text-secondary">
+                {help.howToFind}
+              </p>
+            </div>
+          )}
 
-            {(help.higher || help.lower) && (
-            <div className="mt-4 space-y-2.5">
+          {(help.higher || help.lower) && (
+            <div className="mt-5 space-y-3">
               {help.higher && (
-                <div className="rounded-md border border-border/80 bg-bg px-3 py-2.5">
-                  <p className="text-[11px] font-semibold text-accent">
+                <div className="rounded-md border border-border/80 bg-bg px-4 py-3">
+                  <p className="text-sm font-semibold text-accent">
                     {help.higherLabel ?? "값이 높아지면"}
                   </p>
-                  <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                  <p className="mt-1.5 text-sm leading-relaxed text-text-secondary">
                     {help.higher}
                   </p>
                 </div>
               )}
               {help.lower && (
-                <div className="rounded-md border border-border/80 bg-bg px-3 py-2.5">
-                  <p className="text-[11px] font-semibold text-text-tertiary">
+                <div className="rounded-md border border-border/80 bg-bg px-4 py-3">
+                  <p className="text-sm font-semibold text-text-tertiary">
                     {help.lowerLabel ?? "값이 낮아지면"}
                   </p>
-                  <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                  <p className="mt-1.5 text-sm leading-relaxed text-text-secondary">
                     {help.lower}
                   </p>
                 </div>
@@ -103,43 +101,41 @@ export function HelpTip({ help, label }: Props) {
           )}
 
           {help.worksWith && (
-            <div className="mt-4 rounded-md border border-border/80 bg-bg px-3 py-2.5">
-              <p className="text-[11px] font-semibold text-text-primary">
+            <div className="mt-5 rounded-md border border-border/80 bg-bg px-4 py-3">
+              <p className="text-sm font-semibold text-text-primary">
                 같이 보면 좋은 것
               </p>
-              <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+              <p className="mt-1.5 text-sm leading-relaxed text-text-secondary">
                 {help.worksWith}
               </p>
             </div>
           )}
 
           {help.bestFor && (
-            <div className="mt-4 rounded-md border border-border/80 bg-bg px-3 py-2.5">
-              <p className="text-[11px] font-semibold text-text-primary">
+            <div className="mt-5 rounded-md border border-border/80 bg-bg px-4 py-3">
+              <p className="text-sm font-semibold text-text-primary">
                 어디에 쓰면 좋은지
               </p>
-              <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+              <p className="mt-1.5 text-sm leading-relaxed text-text-secondary">
                 {help.bestFor}
               </p>
             </div>
           )}
 
           {(help.pros || help.cons) && (
-            <div className="mt-4 space-y-2.5">
+            <div className="mt-5 space-y-3">
               {help.pros && (
-                <div className="rounded-md border border-border/80 bg-bg px-3 py-2.5">
-                  <p className="text-[11px] font-semibold text-accent">장점</p>
-                  <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                <div className="rounded-md border border-border/80 bg-bg px-4 py-3">
+                  <p className="text-sm font-semibold text-accent">장점</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-text-secondary">
                     {help.pros}
                   </p>
                 </div>
               )}
               {help.cons && (
-                <div className="rounded-md border border-border/80 bg-bg px-3 py-2.5">
-                  <p className="text-[11px] font-semibold text-text-tertiary">
-                    단점
-                  </p>
-                  <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                <div className="rounded-md border border-border/80 bg-bg px-4 py-3">
+                  <p className="text-sm font-semibold text-text-tertiary">단점</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-text-secondary">
                     {help.cons}
                   </p>
                 </div>
@@ -148,7 +144,7 @@ export function HelpTip({ help, label }: Props) {
           )}
 
           {help.tip && (
-            <p className="mt-4 text-[11px] leading-relaxed text-text-tertiary">
+            <p className="mt-5 text-sm leading-relaxed text-text-tertiary">
               참고: {help.tip}
             </p>
           )}
@@ -161,7 +157,7 @@ export function HelpTip({ help, label }: Props) {
     <>
       <button
         type="button"
-        className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-border text-[10px] font-semibold leading-none text-text-tertiary hover:border-accent/50 hover:text-accent"
+        className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border text-xs font-semibold leading-none text-text-tertiary hover:border-accent/50 hover:text-accent"
         aria-label={label ?? `${help.title} 도움말`}
         onClick={(e) => {
           e.preventDefault();

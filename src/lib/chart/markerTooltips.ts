@@ -1,5 +1,9 @@
 import type { TrendLabel } from "@/lib/types";
-import type { StrategyConfluence } from "@/lib/evaluation/strategyConfluence";
+import {
+  confluenceKindLabel,
+  groupConfluencesByBar,
+  type StrategyConfluence,
+} from "@/lib/evaluation/strategyConfluence";
 
 export interface MarkerTooltip {
   title: string;
@@ -145,8 +149,7 @@ export function buildStrategyMarkerTooltips(input: {
   );
 
   if (input.showConfluence && input.confluences?.length) {
-    for (const c of input.confluences.slice(-30)) {
-      const names = c.hits.map((h) => h.label).join(", ");
+    for (const c of groupConfluencesByBar(input.confluences).slice(-30)) {
       const close = closes?.get(c.barIndex);
       const closeBit =
         close != null && Number.isFinite(close)
@@ -155,9 +158,22 @@ export function buildStrategyMarkerTooltips(input: {
               minimumFractionDigits: 0,
             })}`
           : "";
-      map.set(`sconf-${c.barIndex}-${c.direction}`, {
-        title: `전략 겹침 ×${c.hits.length} · ${dirLabel(c.direction)}`,
-        lines: [`${dirLabel(c.direction)}${closeBit}`, names],
+      if (c.kind === "conflict") {
+        map.set(`sconf-${c.barIndex}-conflict`, {
+          title: `전략 겹침 · ${confluenceKindLabel("conflict")} · 롱×${c.longHits.length} / 숏×${c.shortHits.length}`,
+          lines: [
+            `충돌${closeBit}`,
+            `↑ ${c.longHits.map((h) => h.label).join(", ")}`,
+            `↓ ${c.shortHits.map((h) => h.label).join(", ")}`,
+          ],
+        });
+        continue;
+      }
+      const bull = c.kind === "long";
+      const hits = bull ? c.longHits : c.shortHits;
+      map.set(`sconf-${c.barIndex}-${bull ? "bullish" : "bearish"}`, {
+        title: `전략 겹침 · ${confluenceKindLabel(c.kind)} ×${hits.length}`,
+        lines: [`${dirLabel(bull ? "bullish" : "bearish")}${closeBit}`, hits.map((h) => h.label).join(", ")],
       });
     }
   }
