@@ -156,7 +156,7 @@ export function buildStrategyMarkerTooltips(input: {
             })}`
           : "";
       map.set(`sconf-${c.barIndex}-${c.direction}`, {
-        title: `전략 겹침 ×${c.hits.length}`,
+        title: `전략 겹침 ×${c.hits.length} · ${dirLabel(c.direction)}`,
         lines: [`${dirLabel(c.direction)}${closeBit}`, names],
       });
     }

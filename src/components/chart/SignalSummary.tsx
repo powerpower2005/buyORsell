@@ -528,9 +528,17 @@ export function SignalSummary({
                 key={`${c.barIndex}-${c.direction}`}
                 className="tabular-nums text-text-secondary"
               >
-                {c.date} ×{c.hits.length}{" "}
-                {c.direction === "bullish" ? "↑" : "↓"} (
-                {c.hits.map((h) => h.label).join(", ")})
+                <span
+                  className={
+                    c.direction === "bullish"
+                      ? "text-positive"
+                      : "text-negative"
+                  }
+                >
+                  {c.date} ×{c.hits.length}{" "}
+                  {c.direction === "bullish" ? "↑ 롱" : "↓ 숏"}
+                </span>{" "}
+                ({c.hits.map((h) => h.label).join(", ")})
               </span>
             ))}
           </GroupRow>

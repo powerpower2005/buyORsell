@@ -584,10 +584,16 @@ function RecencyBadge({ recency }: { recency: StrategyRecency }) {
       </span>
       {confluenceLabel && (
         <span
-          className="shrink-0 rounded border border-amber-400/40 bg-amber-500/15 px-1 py-px text-[10px] font-medium leading-none tabular-nums text-amber-300"
+          className={clsx(
+            "shrink-0 rounded border px-1 py-px text-[10px] font-medium leading-none tabular-nums",
+            recency.direction === "bullish"
+              ? "border-positive/40 bg-positive/15 text-positive"
+              : "border-negative/40 bg-negative/15 text-negative",
+          )}
           title={title}
         >
           {confluenceLabel}
+          {recency.direction === "bullish" ? " ↑" : " ↓"}
         </span>
       )}
     </>
@@ -850,8 +856,9 @@ export function ChartSidebar({
           ? `${newest.barsAgo}봉 전`
           : newest.date;
     const px = formatSignalClose(newest.close);
-    const dir = newest.direction === "bullish" ? "↑" : "↓";
-    return `최근 겹침 ${withConfluence}개 전략 · ${when}${px ? ` · ${px}` : ""} ×${newest.confluenceCount}${dir}`;
+    const dir =
+      newest.direction === "bullish" ? "↑ 롱" : "↓ 숏";
+    return `최근 겹침 ${withConfluence}개 전략 · ${when}${px ? ` · ${px}` : ""} ×${newest.confluenceCount} ${dir}`;
   }, [recencyMap]);
   const tlAlgo = useMemo(() => getTrendlineAlgoVersion(), [refreshTick]);
   const catalogVis = useMemo(

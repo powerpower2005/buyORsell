@@ -1,6 +1,6 @@
 import type { SeriesMarker, Time } from "lightweight-charts";
 import type { StrategyConfluence } from "@/lib/evaluation/strategyConfluence";
-import { SERIES, SIGNAL } from "@/lib/chart/chartTheme";
+import { DIRECTION } from "@/lib/chart/chartTheme";
 
 /** Larger markers when multiple playbooks agree on the same bar. */
 export function strategyConfluencesToChartMarkers(
@@ -16,7 +16,7 @@ export function strategyConfluencesToChartMarkers(
     return {
       time: c.date as Time,
       position: bull ? "belowBar" : "aboveBar",
-      color: bull ? SERIES.amber : SIGNAL.bearish,
+      color: bull ? DIRECTION.up : DIRECTION.down,
       shape: bull ? "arrowUp" : "arrowDown",
       text: `x${n}`,
       id: `sconf-${c.barIndex}-${c.direction}`,
