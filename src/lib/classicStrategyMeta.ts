@@ -31,7 +31,7 @@ export const CLASSIC_STRATEGY_META: Record<
     label: "MA golden/dead cross",
     labelKo: "이평 골든·데드",
     description:
-      "SMA20이 SMA50을 상향(골든)·하향(데드) 돌파. 정배열·역배열 전환 확인용(실전은 종종 추세 중반).",
+      "단기 이평(20)이 중기 이평(50)을 위로 뚫으면 매수, 아래로 뚫으면 매도. 이미 추세 중반인 경우가 많습니다.",
     markerBull: "GC↑",
     markerBear: "DC↓",
     typicalDirection: "neutral",
@@ -40,7 +40,7 @@ export const CLASSIC_STRATEGY_META: Record<
     label: "52-week / N-bar high break",
     labelKo: "52주·N봉 고점 돌파",
     description:
-      "직전 N봉(일봉≈252·주봉≈52·월봉≈24) 고점을 종가가 상향 돌파. 장기 신고가·모멘텀 타이밍용.",
+      "최근 N봉 고점을 종가가 위로 뚫으면 매수. 장기 신고가·모멘텀 타이밍용입니다.",
     markerBull: "52↑",
     markerBear: "52↓",
     typicalDirection: "bullish",
@@ -49,7 +49,7 @@ export const CLASSIC_STRATEGY_META: Record<
     label: "SMA200 support bounce",
     labelKo: "SMA200 지지 반등",
     description:
-      "종가>SMA200 국면에서 가격이 SMA200 근처로 눌린 뒤 양봉·종가≥이평 확인 시 롱. 장기 추세 필터+눌림 타이밍.",
+      "200일선 위 국면에서 선 근처로 눌린 뒤 양봉·종가가 이평 위면 매수합니다.",
     markerBull: "200↑",
     markerBear: "200↓",
     typicalDirection: "bullish",
@@ -58,7 +58,7 @@ export const CLASSIC_STRATEGY_META: Record<
     label: "Fib wave 2/4 pullback",
     labelKo: "피보 2·4파 눌림",
     description:
-      "스윙 추진 뒤 38.2~61.8% 되돌림 구간에서 반등/저항 확인 시 진입(엘리어트 2·4파 감각).",
+      "한바탕 움직인 뒤 대략 38~62% 되돌림 구간에서 반등·저항이 확인되면 진입합니다.",
     markerBull: "F2↑",
     markerBear: "F4↓",
     typicalDirection: "neutral",
@@ -67,7 +67,7 @@ export const CLASSIC_STRATEGY_META: Record<
     label: "Gann retracement zone",
     labelKo: "갠 되돌림 존",
     description:
-      "스윙 고·저로 1×1·1×2 각도 기반 RZH~RZL 구간을 잡고, 구간 내 반등/저항 확인 시 진입. 각도선 터치도 표시.",
+      "스윙 고·저로 잡은 되돌림 구간에서 반등·저항이 확인되면 진입합니다.",
     markerBull: "GZ↑",
     markerBear: "GZ↓",
     typicalDirection: "neutral",

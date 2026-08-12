@@ -37,7 +37,7 @@ export const ICHIMOKU_STRATEGY_META: Record<
     label: "Tenkan/Kijun cross",
     labelKo: "전환·기준선 호전·역전",
     description:
-      "전환선이 기준선을 상향 돌파(호전)하면 롱, 하향 돌파(역전)하면 숏.",
+      "전환선이 기준선을 위로 뚫으면 매수, 아래로 뚫으면 매도합니다.",
     markerBull: "TK↑",
     markerBear: "TK↓",
     typicalDirection: "neutral",
@@ -46,7 +46,7 @@ export const ICHIMOKU_STRATEGY_META: Record<
     label: "Chikou span cross",
     labelKo: "후행스팬 호전·역전",
     description:
-      "후행스팬이 26봉 전 캔들을 상향 돌파하면 롱, 하향 이탈하면 숏.",
+      "지금 종가를 26봉 전에 그린 선이 그때 캔들을 위·아래로 뚫을 때 진입합니다.",
     markerBull: "CK↑",
     markerBear: "CK↓",
     typicalDirection: "neutral",
@@ -55,7 +55,7 @@ export const ICHIMOKU_STRATEGY_META: Record<
     label: "Kumo twist",
     labelKo: "구름 색 전환(비틀림)",
     description:
-      "선행스팬1이 2를 상향 돌파하면 양운 전환(롱), 하향이면 음운 전환(숏).",
+      "구름이 강세색으로 바뀌면 상승 우위, 약세색으로 바뀌면 하락 우위입니다.",
     markerBull: "KT↑",
     markerBear: "KT↓",
     typicalDirection: "neutral",
@@ -64,7 +64,7 @@ export const ICHIMOKU_STRATEGY_META: Record<
     label: "Price vs Kumo break",
     labelKo: "가격 구름 돌파·이탈",
     description:
-      "종가가 구름 상단을 돌파하면 롱, 하단을 이탈하면 숏. 두꺼운 구름일수록 신뢰↑.",
+      "종가가 구름 위를 마감하면 매수, 구름 아래를 마감하면 매도. 두꺼운 구름일수록 신뢰↑.",
     markerBull: "KB↑",
     markerBear: "KB↓",
     typicalDirection: "neutral",
@@ -73,7 +73,7 @@ export const ICHIMOKU_STRATEGY_META: Record<
     label: "Four-signal trend turn",
     labelKo: "일목 추세 전환(4신호)",
     description:
-      "기준선 돌파 + TK 호전/역전 + 후행스팬 호전/역전 + 구름 색 전환이 짧은 구간에 모일 때.",
+      "기준선·전환교차·후행·구름 색이 짧은 구간에 같은 방향으로 모일 때 진입합니다.",
     markerBull: "TT↑",
     markerBear: "TT↓",
     typicalDirection: "neutral",
@@ -82,7 +82,7 @@ export const ICHIMOKU_STRATEGY_META: Record<
     label: "Chikou + Kumo breakout",
     labelKo: "일목 돌파 매매",
     description:
-      "후행스팬 강한 돌파 후 장대봉으로 구름을 돌파. 손익비 2:1 참고.",
+      "후행스팬이 강하게 뚫은 뒤 장대봉으로 구름을 돌파할 때 진입합니다.",
     markerBull: "BO↑",
     markerBear: "BO↓",
     typicalDirection: "neutral",
@@ -91,7 +91,7 @@ export const ICHIMOKU_STRATEGY_META: Record<
     label: "Kumo breakout retest",
     labelKo: "구름 돌파 후 리테스트",
     description:
-      "구름 돌파 뒤 되돌림이 구름에 닿고 다시 이탈(재탈환)하면 진입. 꼬리·거래량은 companion.",
+      "구름 돌파 뒤 되돌림이 구름에 닿고 다시 같은 쪽으로 마감하면 진입합니다.",
     markerBull: "RT↑",
     markerBear: "RT↓",
     typicalDirection: "neutral",
@@ -100,7 +100,7 @@ export const ICHIMOKU_STRATEGY_META: Record<
     label: "Kumo support/resistance",
     labelKo: "구름 지지·저항",
     description:
-      "양운 하단·음운 상단 터치 후 전환선 돌파/이탈. 수평 구름·캔들은 companion.",
+      "구름 가장자리에 닿은 뒤 전환선이 같은 방향으로 움직이면 진입합니다.",
     markerBull: "SR↑",
     markerBear: "SR↓",
     typicalDirection: "neutral",

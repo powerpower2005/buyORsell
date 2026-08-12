@@ -31,7 +31,7 @@ export const RSI_STRATEGY_META: Record<
     label: "Classic RSI OB/OS",
     labelKo: "고전 RSI 과매수·과매도",
     description:
-      "고정 70/30 돌파·이탈. 추세장 실패 잦음 — SMA200·ADX는 companion.",
+      "RSI가 30 아래에서 올라오면 매수, 70 위에서 내려오면 매도. 강한 추세에서는 실패가 잦아 횡보에서만 참고하세요.",
     markerBull: "R30↑",
     markerBear: "R70↓",
     typicalDirection: "neutral",
@@ -40,7 +40,7 @@ export const RSI_STRATEGY_META: Record<
     label: "Super RSI dynamic OB/OS",
     labelKo: "슈퍼 RSI 유동 과매수·과매도",
     description:
-      "가중 RSI가 유동 과매수선 하향 이탈→숏, 유동 과매도선 상향 이탈→롱.",
+      "시장에 맞춰 움직이는 ‘너무 올랐다/내렸다’ 기준을 가중 RSI가 뚫고 돌아올 때 진입합니다.",
     markerBull: "SR↑",
     markerBear: "SR↓",
     typicalDirection: "neutral",
@@ -49,7 +49,7 @@ export const RSI_STRATEGY_META: Record<
     label: "Super RSI squeeze mid-cross",
     labelKo: "슈퍼 RSI 수렴→중심선 돌파",
     description:
-      "유동 밴드 폭이 축소된 뒤 발산하며 가중 RSI가 중심선을 돌파할 때 진입.",
+      "위·아래 기준이 좁아졌다가 벌어질 때, 가중 RSI가 중심선을 뚫으면 진입합니다.",
     markerBull: "SM↑",
     markerBear: "SM↓",
     typicalDirection: "neutral",
@@ -58,7 +58,7 @@ export const RSI_STRATEGY_META: Record<
     label: "RSI divergence",
     labelKo: "RSI 다이버전스",
     description:
-      "가격 LL+RSI HL(상승)·HH+RSI LH(하락). S/R·캔들 확인은 companion.",
+      "주가와 RSI가 어긋날 때(가격은 더 낮은데 RSI는 덜 낮음 등) 반전 후보로 봅니다.",
     markerBull: "RD↑",
     markerBear: "RD↓",
     typicalDirection: "neutral",
@@ -67,7 +67,7 @@ export const RSI_STRATEGY_META: Record<
     label: "Double RSI cross",
     labelKo: "이중 RSI 교차",
     description:
-      "단기 RSI(7)×장기 RSI(21). 추세장 유리 — SMA200·ADX companion.",
+      "단기 RSI(7)가 장기 RSI(21)를 위·아래로 뚫을 때 진입. 추세장에 유리합니다.",
     markerBull: "DX↑",
     markerBear: "DX↓",
     typicalDirection: "neutral",

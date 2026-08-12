@@ -31,7 +31,7 @@ export const MACD_STRATEGY_META: Record<
     label: "MACD signal cross",
     labelKo: "시그널 선 크로스",
     description:
-      "MACD×시그널 골든/데드. 0선·SMA200·S/R은 companion(엔트리 필터 아님).",
+      "파란 MACD가 노란 시그널을 위·아래로 뚫을 때 진입. 0선·200일선은 참고용입니다.",
     markerBull: "MX↑",
     markerBear: "MX↓",
     typicalDirection: "neutral",
@@ -40,7 +40,7 @@ export const MACD_STRATEGY_META: Record<
     label: "MACD zero-line",
     labelKo: "기준선(0선) 매매",
     description:
-      "0선 돌파 또는 돌파 후 시그널 눌림/반등 재진입. SMA200 위 0선 하향 매수는 companion 참고.",
+      "MACD가 0을 뚫거나, 뚫은 뒤 시그널 근처 눌림·반등에서 같은 방향으로 재진입합니다.",
     markerBull: "MZ↑",
     markerBear: "MZ↓",
     typicalDirection: "neutral",
@@ -49,7 +49,7 @@ export const MACD_STRATEGY_META: Record<
     label: "MACD + RSI OB/OS",
     labelKo: "과매수·과매도 확인",
     description:
-      "RSI 과매도 탈출 후 MACD 골든→롱, RSI 과매수 이탈 후 MACD 데드→숏.",
+      "RSI가 너무 내렸다/올랐다에서 나온 뒤 MACD 교차로 확인되면 진입합니다.",
     markerBull: "MR↑",
     markerBear: "MR↓",
     typicalDirection: "neutral",
@@ -58,7 +58,7 @@ export const MACD_STRATEGY_META: Record<
     label: "MACD divergence",
     labelKo: "MACD 다이버전스",
     description:
-      "가격 LL+MACD HL(상승) 또는 가격 HH+MACD LH(하락) 후 시그널 크로스로 확인.",
+      "주가와 MACD가 어긋난 뒤 시그널 교차로 확인할 때 진입합니다.",
     markerBull: "MD↑",
     markerBear: "MD↓",
     typicalDirection: "neutral",
@@ -67,7 +67,7 @@ export const MACD_STRATEGY_META: Record<
     label: "MACD trend break",
     labelKo: "MACD 돌파 매매",
     description:
-      "가격·MACD·시그널이 함께 추세 구조를 돌파할 때. SMA200·거래량은 companion.",
+      "가격 구조 돌파와 MACD·시그널 방향이 같이 맞을 때 진입합니다.",
     markerBull: "MB↑",
     markerBear: "MB↓",
     typicalDirection: "neutral",
