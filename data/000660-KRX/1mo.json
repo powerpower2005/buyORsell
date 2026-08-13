@@ -6,7 +6,7 @@
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
   "resolvedSymbol": "KRX:000660",
-  "fetchedAt": "2026-08-12T14:51:32.547Z",
+  "fetchedAt": "2026-08-13T04:02:31.512Z",
   "lastBarDate": "2026-08-12",
   "barCount": 46,
   "checksum": "d2bfc51e",
