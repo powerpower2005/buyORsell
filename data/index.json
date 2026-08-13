@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-13T07:55:15.065Z",
+  "updatedAt": "2026-08-13T08:18:39.592Z",
   "entries": [
     {
       "ticker": "000660:KRX",
@@ -318,25 +318,25 @@
       "ticker": "PLTR:NASDAQ",
       "timeframe": "1d",
       "path": "data/PLTR-NASDAQ/1d.json",
-      "fetchedAt": "2026-08-13T07:48:46.543Z",
-      "lastBarDate": "2026-08-12",
-      "barCount": 842
+      "fetchedAt": "2026-08-13T07:50:18.032Z",
+      "lastBarDate": "2024-03-25",
+      "barCount": 680
     },
     {
       "ticker": "PLTR:NASDAQ",
       "timeframe": "1mo",
       "path": "data/PLTR-NASDAQ/1mo.json",
-      "fetchedAt": "2026-08-13T07:48:46.543Z",
-      "lastBarDate": "2026-08-12",
-      "barCount": 50
+      "fetchedAt": "2026-08-13T07:50:18.032Z",
+      "lastBarDate": "2024-03-25",
+      "barCount": 43
     },
     {
       "ticker": "PLTR:NASDAQ",
       "timeframe": "1w",
       "path": "data/PLTR-NASDAQ/1w.json",
-      "fetchedAt": "2026-08-13T07:48:46.543Z",
-      "lastBarDate": "2026-08-12",
-      "barCount": 198
+      "fetchedAt": "2026-08-13T07:50:18.032Z",
+      "lastBarDate": "2024-03-25",
+      "barCount": 157
     },
     {
       "ticker": "QQQ:NASDAQ",
