@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-13T04:12:39.074Z",
+  "updatedAt": "2026-08-13T06:02:46.404Z",
   "entries": [
     {
       "ticker": "000660:KRX",
@@ -97,6 +97,30 @@
       "fetchedAt": "2026-08-13T04:04:52.200Z",
       "lastBarDate": "2026-08-12",
       "barCount": 191
+    },
+    {
+      "ticker": "CRD:NTYSE",
+      "timeframe": "1d",
+      "path": "data/CRD-NTYSE/1d.json",
+      "fetchedAt": "2026-08-13T05:59:17.099Z",
+      "lastBarDate": "2026-08-12",
+      "barCount": 484
+    },
+    {
+      "ticker": "CRD:NTYSE",
+      "timeframe": "1mo",
+      "path": "data/CRD-NTYSE/1mo.json",
+      "fetchedAt": "2026-08-13T05:59:17.099Z",
+      "lastBarDate": "2026-08-12",
+      "barCount": 25
+    },
+    {
+      "ticker": "CRD:NTYSE",
+      "timeframe": "1w",
+      "path": "data/CRD-NTYSE/1w.json",
+      "fetchedAt": "2026-08-13T05:59:17.099Z",
+      "lastBarDate": "2026-08-12",
+      "barCount": 105
     },
     {
       "ticker": "GLW:NYSE",
