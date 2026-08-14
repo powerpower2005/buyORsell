@@ -6,7 +6,7 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NYSE:CRM",
-  "fetchedAt": "2026-08-14T10:00:38.541Z",
+  "fetchedAt": "2026-08-14T14:50:56.257Z",
   "lastBarDate": "2026-08-13",
   "barCount": 188,
   "checksum": "96e3f975",
