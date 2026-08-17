@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-17T09:52:21.577Z",
+  "updatedAt": "2026-08-17T14:39:04.302Z",
   "entries": [
     {
       "ticker": "000660:KRX",
       "timeframe": "1d",
       "path": "data/000660-KRX/1d.json",
-      "fetchedAt": "2026-08-17T09:32:54.984Z",
+      "fetchedAt": "2026-08-17T14:19:28.882Z",
       "lastBarDate": "2026-08-14",
       "barCount": 918
     },
@@ -14,7 +14,7 @@
       "ticker": "000660:KRX",
       "timeframe": "1mo",
       "path": "data/000660-KRX/1mo.json",
-      "fetchedAt": "2026-08-17T09:32:54.984Z",
+      "fetchedAt": "2026-08-17T14:19:28.882Z",
       "lastBarDate": "2026-08-14",
       "barCount": 46
     },
@@ -22,7 +22,7 @@
       "ticker": "000660:KRX",
       "timeframe": "1w",
       "path": "data/000660-KRX/1w.json",
-      "fetchedAt": "2026-08-17T09:32:54.984Z",
+      "fetchedAt": "2026-08-17T14:19:28.882Z",
       "lastBarDate": "2026-08-14",
       "barCount": 197
     },
@@ -30,7 +30,7 @@
       "ticker": "005930:KRX",
       "timeframe": "1d",
       "path": "data/005930-KRX/1d.json",
-      "fetchedAt": "2026-08-17T09:33:41.741Z",
+      "fetchedAt": "2026-08-17T14:20:15.774Z",
       "lastBarDate": "2026-08-14",
       "barCount": 918
     },
@@ -38,7 +38,7 @@
       "ticker": "005930:KRX",
       "timeframe": "1mo",
       "path": "data/005930-KRX/1mo.json",
-      "fetchedAt": "2026-08-17T09:33:41.741Z",
+      "fetchedAt": "2026-08-17T14:20:15.774Z",
       "lastBarDate": "2026-08-14",
       "barCount": 46
     },
@@ -46,7 +46,7 @@
       "ticker": "005930:KRX",
       "timeframe": "1w",
       "path": "data/005930-KRX/1w.json",
-      "fetchedAt": "2026-08-17T09:33:41.741Z",
+      "fetchedAt": "2026-08-17T14:20:15.774Z",
       "lastBarDate": "2026-08-14",
       "barCount": 197
     },
@@ -54,7 +54,7 @@
       "ticker": "009150:KRX",
       "timeframe": "1d",
       "path": "data/009150-KRX/1d.json",
-      "fetchedAt": "2026-08-17T09:34:28.723Z",
+      "fetchedAt": "2026-08-17T14:21:02.688Z",
       "lastBarDate": "2026-08-14",
       "barCount": 912
     },
@@ -62,7 +62,7 @@
       "ticker": "009150:KRX",
       "timeframe": "1mo",
       "path": "data/009150-KRX/1mo.json",
-      "fetchedAt": "2026-08-17T09:34:28.723Z",
+      "fetchedAt": "2026-08-17T14:21:02.688Z",
       "lastBarDate": "2026-08-14",
       "barCount": 46
     },
@@ -70,7 +70,7 @@
       "ticker": "009150:KRX",
       "timeframe": "1w",
       "path": "data/009150-KRX/1w.json",
-      "fetchedAt": "2026-08-17T09:34:28.723Z",
+      "fetchedAt": "2026-08-17T14:21:02.688Z",
       "lastBarDate": "2026-08-14",
       "barCount": 195
     },
@@ -78,7 +78,7 @@
       "ticker": "010120:KRX",
       "timeframe": "1d",
       "path": "data/010120-KRX/1d.json",
-      "fetchedAt": "2026-08-17T09:35:15.761Z",
+      "fetchedAt": "2026-08-17T14:21:49.852Z",
       "lastBarDate": "2026-08-14",
       "barCount": 907
     },
@@ -86,7 +86,7 @@
       "ticker": "010120:KRX",
       "timeframe": "1mo",
       "path": "data/010120-KRX/1mo.json",
-      "fetchedAt": "2026-08-17T09:35:15.761Z",
+      "fetchedAt": "2026-08-17T14:21:49.852Z",
       "lastBarDate": "2026-08-14",
       "barCount": 46
     },
@@ -94,7 +94,7 @@
       "ticker": "010120:KRX",
       "timeframe": "1w",
       "path": "data/010120-KRX/1w.json",
-      "fetchedAt": "2026-08-17T09:35:15.761Z",
+      "fetchedAt": "2026-08-17T14:21:49.852Z",
       "lastBarDate": "2026-08-14",
       "barCount": 195
     },
@@ -102,7 +102,7 @@
       "ticker": "AAPL:NASDAQ",
       "timeframe": "1d",
       "path": "data/AAPL-NASDAQ/1d.json",
-      "fetchedAt": "2026-08-17T09:36:02.538Z",
+      "fetchedAt": "2026-08-17T14:22:36.822Z",
       "lastBarDate": "2026-08-14",
       "barCount": 916
     },
@@ -110,7 +110,7 @@
       "ticker": "AAPL:NASDAQ",
       "timeframe": "1mo",
       "path": "data/AAPL-NASDAQ/1mo.json",
-      "fetchedAt": "2026-08-17T09:36:02.538Z",
+      "fetchedAt": "2026-08-17T14:22:36.822Z",
       "lastBarDate": "2026-08-14",
       "barCount": 45
     },
@@ -118,7 +118,7 @@
       "ticker": "AAPL:NASDAQ",
       "timeframe": "1w",
       "path": "data/AAPL-NASDAQ/1w.json",
-      "fetchedAt": "2026-08-17T09:36:02.538Z",
+      "fetchedAt": "2026-08-17T14:22:36.822Z",
       "lastBarDate": "2026-08-14",
       "barCount": 191
     },
@@ -150,7 +150,7 @@
       "ticker": "CRM:NYSE",
       "timeframe": "1d",
       "path": "data/CRM-NYSE/1d.json",
-      "fetchedAt": "2026-08-17T09:40:27.348Z",
+      "fetchedAt": "2026-08-17T14:27:02.664Z",
       "lastBarDate": "2026-08-14",
       "barCount": 902
     },
@@ -158,7 +158,7 @@
       "ticker": "CRM:NYSE",
       "timeframe": "1mo",
       "path": "data/CRM-NYSE/1mo.json",
-      "fetchedAt": "2026-08-17T09:40:27.348Z",
+      "fetchedAt": "2026-08-17T14:27:02.664Z",
       "lastBarDate": "2026-08-14",
       "barCount": 44
     },
@@ -166,7 +166,7 @@
       "ticker": "CRM:NYSE",
       "timeframe": "1w",
       "path": "data/CRM-NYSE/1w.json",
-      "fetchedAt": "2026-08-17T09:40:27.348Z",
+      "fetchedAt": "2026-08-17T14:27:02.664Z",
       "lastBarDate": "2026-08-14",
       "barCount": 188
     },
@@ -174,7 +174,7 @@
       "ticker": "GLW:NYSE",
       "timeframe": "1d",
       "path": "data/GLW-NYSE/1d.json",
-      "fetchedAt": "2026-08-17T09:41:13.984Z",
+      "fetchedAt": "2026-08-17T14:27:49.589Z",
       "lastBarDate": "2026-08-14",
       "barCount": 911
     },
@@ -182,7 +182,7 @@
       "ticker": "GLW:NYSE",
       "timeframe": "1mo",
       "path": "data/GLW-NYSE/1mo.json",
-      "fetchedAt": "2026-08-17T09:41:13.984Z",
+      "fetchedAt": "2026-08-17T14:27:49.589Z",
       "lastBarDate": "2026-08-14",
       "barCount": 45
     },
@@ -190,7 +190,7 @@
       "ticker": "GLW:NYSE",
       "timeframe": "1w",
       "path": "data/GLW-NYSE/1w.json",
-      "fetchedAt": "2026-08-17T09:41:13.984Z",
+      "fetchedAt": "2026-08-17T14:27:49.589Z",
       "lastBarDate": "2026-08-14",
       "barCount": 190
     },
@@ -198,7 +198,7 @@
       "ticker": "HOOD:NASDAQ",
       "timeframe": "1d",
       "path": "data/HOOD-NASDAQ/1d.json",
-      "fetchedAt": "2026-08-17T09:42:00.888Z",
+      "fetchedAt": "2026-08-17T14:28:36.490Z",
       "lastBarDate": "2026-08-14",
       "barCount": 915
     },
@@ -206,7 +206,7 @@
       "ticker": "HOOD:NASDAQ",
       "timeframe": "1mo",
       "path": "data/HOOD-NASDAQ/1mo.json",
-      "fetchedAt": "2026-08-17T09:42:00.888Z",
+      "fetchedAt": "2026-08-17T14:28:36.490Z",
       "lastBarDate": "2026-08-14",
       "barCount": 45
     },
@@ -214,7 +214,7 @@
       "ticker": "HOOD:NASDAQ",
       "timeframe": "1w",
       "path": "data/HOOD-NASDAQ/1w.json",
-      "fetchedAt": "2026-08-17T09:42:00.888Z",
+      "fetchedAt": "2026-08-17T14:28:36.490Z",
       "lastBarDate": "2026-08-14",
       "barCount": 191
     },
@@ -222,7 +222,7 @@
       "ticker": "KOSPI:KRX",
       "timeframe": "1d",
       "path": "data/KOSPI-KRX/1d.json",
-      "fetchedAt": "2026-08-17T09:42:47.805Z",
+      "fetchedAt": "2026-08-17T14:29:23.766Z",
       "lastBarDate": "2026-08-14",
       "barCount": 918
     },
@@ -230,7 +230,7 @@
       "ticker": "KOSPI:KRX",
       "timeframe": "1mo",
       "path": "data/KOSPI-KRX/1mo.json",
-      "fetchedAt": "2026-08-17T09:42:47.805Z",
+      "fetchedAt": "2026-08-17T14:29:23.766Z",
       "lastBarDate": "2026-08-14",
       "barCount": 46
     },
@@ -238,7 +238,7 @@
       "ticker": "KOSPI:KRX",
       "timeframe": "1w",
       "path": "data/KOSPI-KRX/1w.json",
-      "fetchedAt": "2026-08-17T09:42:47.805Z",
+      "fetchedAt": "2026-08-17T14:29:23.766Z",
       "lastBarDate": "2026-08-14",
       "barCount": 197
     },
@@ -246,7 +246,7 @@
       "ticker": "MU:NASDAQ",
       "timeframe": "1d",
       "path": "data/MU-NASDAQ/1d.json",
-      "fetchedAt": "2026-08-17T09:43:34.549Z",
+      "fetchedAt": "2026-08-17T14:30:10.667Z",
       "lastBarDate": "2026-08-14",
       "barCount": 916
     },
@@ -254,7 +254,7 @@
       "ticker": "MU:NASDAQ",
       "timeframe": "1mo",
       "path": "data/MU-NASDAQ/1mo.json",
-      "fetchedAt": "2026-08-17T09:43:34.549Z",
+      "fetchedAt": "2026-08-17T14:30:10.667Z",
       "lastBarDate": "2026-08-14",
       "barCount": 45
     },
@@ -262,7 +262,7 @@
       "ticker": "MU:NASDAQ",
       "timeframe": "1w",
       "path": "data/MU-NASDAQ/1w.json",
-      "fetchedAt": "2026-08-17T09:43:34.549Z",
+      "fetchedAt": "2026-08-17T14:30:10.667Z",
       "lastBarDate": "2026-08-14",
       "barCount": 191
     },
@@ -270,7 +270,7 @@
       "ticker": "NDX:INDEXNASDAQ",
       "timeframe": "1d",
       "path": "data/NDX-INDEXNASDAQ/1d.json",
-      "fetchedAt": "2026-08-17T09:44:21.455Z",
+      "fetchedAt": "2026-08-17T14:30:57.609Z",
       "lastBarDate": "2026-08-14",
       "barCount": 922
     },
@@ -278,7 +278,7 @@
       "ticker": "NDX:INDEXNASDAQ",
       "timeframe": "1mo",
       "path": "data/NDX-INDEXNASDAQ/1mo.json",
-      "fetchedAt": "2026-08-17T09:44:21.455Z",
+      "fetchedAt": "2026-08-17T14:30:57.609Z",
       "lastBarDate": "2026-08-14",
       "barCount": 45
     },
@@ -286,7 +286,7 @@
       "ticker": "NDX:INDEXNASDAQ",
       "timeframe": "1w",
       "path": "data/NDX-INDEXNASDAQ/1w.json",
-      "fetchedAt": "2026-08-17T09:44:21.455Z",
+      "fetchedAt": "2026-08-17T14:30:57.609Z",
       "lastBarDate": "2026-08-14",
       "barCount": 193
     },
@@ -294,7 +294,7 @@
       "ticker": "NVDA:NASDAQ",
       "timeframe": "1d",
       "path": "data/NVDA-NASDAQ/1d.json",
-      "fetchedAt": "2026-08-17T09:45:08.355Z",
+      "fetchedAt": "2026-08-17T14:31:44.506Z",
       "lastBarDate": "2026-08-14",
       "barCount": 922
     },
@@ -302,7 +302,7 @@
       "ticker": "NVDA:NASDAQ",
       "timeframe": "1mo",
       "path": "data/NVDA-NASDAQ/1mo.json",
-      "fetchedAt": "2026-08-17T09:45:08.355Z",
+      "fetchedAt": "2026-08-17T14:31:44.506Z",
       "lastBarDate": "2026-08-14",
       "barCount": 45
     },
@@ -310,7 +310,7 @@
       "ticker": "NVDA:NASDAQ",
       "timeframe": "1w",
       "path": "data/NVDA-NASDAQ/1w.json",
-      "fetchedAt": "2026-08-17T09:45:08.355Z",
+      "fetchedAt": "2026-08-17T14:31:44.506Z",
       "lastBarDate": "2026-08-14",
       "barCount": 193
     },
@@ -318,7 +318,7 @@
       "ticker": "PLTR:NASDAQ",
       "timeframe": "1d",
       "path": "data/PLTR-NASDAQ/1d.json",
-      "fetchedAt": "2026-08-17T09:48:08.317Z",
+      "fetchedAt": "2026-08-17T14:34:45.274Z",
       "lastBarDate": "2026-08-14",
       "barCount": 740
     },
@@ -326,7 +326,7 @@
       "ticker": "PLTR:NASDAQ",
       "timeframe": "1mo",
       "path": "data/PLTR-NASDAQ/1mo.json",
-      "fetchedAt": "2026-08-17T09:48:08.317Z",
+      "fetchedAt": "2026-08-17T14:34:45.274Z",
       "lastBarDate": "2026-08-14",
       "barCount": 46
     },
@@ -334,7 +334,7 @@
       "ticker": "PLTR:NASDAQ",
       "timeframe": "1w",
       "path": "data/PLTR-NASDAQ/1w.json",
-      "fetchedAt": "2026-08-17T09:48:08.317Z",
+      "fetchedAt": "2026-08-17T14:34:45.274Z",
       "lastBarDate": "2026-08-14",
       "barCount": 170
     },
@@ -342,7 +342,7 @@
       "ticker": "QQQ:NASDAQ",
       "timeframe": "1d",
       "path": "data/QQQ-NASDAQ/1d.json",
-      "fetchedAt": "2026-08-17T09:50:01.232Z",
+      "fetchedAt": "2026-08-17T14:36:42.759Z",
       "lastBarDate": "2026-08-14",
       "barCount": 915
     },
@@ -350,7 +350,7 @@
       "ticker": "QQQ:NASDAQ",
       "timeframe": "1mo",
       "path": "data/QQQ-NASDAQ/1mo.json",
-      "fetchedAt": "2026-08-17T09:50:01.232Z",
+      "fetchedAt": "2026-08-17T14:36:42.759Z",
       "lastBarDate": "2026-08-14",
       "barCount": 45
     },
@@ -358,7 +358,7 @@
       "ticker": "QQQ:NASDAQ",
       "timeframe": "1w",
       "path": "data/QQQ-NASDAQ/1w.json",
-      "fetchedAt": "2026-08-17T09:50:01.232Z",
+      "fetchedAt": "2026-08-17T14:36:42.759Z",
       "lastBarDate": "2026-08-14",
       "barCount": 191
     },
@@ -366,7 +366,7 @@
       "ticker": "SOXX:NASDAQ",
       "timeframe": "1d",
       "path": "data/SOXX-NASDAQ/1d.json",
-      "fetchedAt": "2026-08-17T09:50:48.057Z",
+      "fetchedAt": "2026-08-17T14:37:30.089Z",
       "lastBarDate": "2026-08-14",
       "barCount": 936
     },
@@ -374,7 +374,7 @@
       "ticker": "SOXX:NASDAQ",
       "timeframe": "1mo",
       "path": "data/SOXX-NASDAQ/1mo.json",
-      "fetchedAt": "2026-08-17T09:50:48.057Z",
+      "fetchedAt": "2026-08-17T14:37:30.089Z",
       "lastBarDate": "2026-08-14",
       "barCount": 45
     },
@@ -382,7 +382,7 @@
       "ticker": "SOXX:NASDAQ",
       "timeframe": "1w",
       "path": "data/SOXX-NASDAQ/1w.json",
-      "fetchedAt": "2026-08-17T09:50:48.057Z",
+      "fetchedAt": "2026-08-17T14:37:30.089Z",
       "lastBarDate": "2026-08-14",
       "barCount": 192
     },
@@ -390,7 +390,7 @@
       "ticker": "TSLA:NASDAQ",
       "timeframe": "1d",
       "path": "data/TSLA-NASDAQ/1d.json",
-      "fetchedAt": "2026-08-17T09:51:34.749Z",
+      "fetchedAt": "2026-08-17T14:38:17.507Z",
       "lastBarDate": "2026-08-14",
       "barCount": 921
     },
@@ -398,7 +398,7 @@
       "ticker": "TSLA:NASDAQ",
       "timeframe": "1mo",
       "path": "data/TSLA-NASDAQ/1mo.json",
-      "fetchedAt": "2026-08-17T09:51:34.749Z",
+      "fetchedAt": "2026-08-17T14:38:17.507Z",
       "lastBarDate": "2026-08-14",
       "barCount": 45
     },
@@ -406,7 +406,7 @@
       "ticker": "TSLA:NASDAQ",
       "timeframe": "1w",
       "path": "data/TSLA-NASDAQ/1w.json",
-      "fetchedAt": "2026-08-17T09:51:34.749Z",
+      "fetchedAt": "2026-08-17T14:38:17.507Z",
       "lastBarDate": "2026-08-14",
       "barCount": 192
     },
@@ -414,7 +414,7 @@
       "ticker": "VRT:NYSE",
       "timeframe": "1d",
       "path": "data/VRT-NYSE/1d.json",
-      "fetchedAt": "2026-08-17T09:52:21.565Z",
+      "fetchedAt": "2026-08-17T14:39:04.291Z",
       "lastBarDate": "2026-08-14",
       "barCount": 915
     },
@@ -422,7 +422,7 @@
       "ticker": "VRT:NYSE",
       "timeframe": "1mo",
       "path": "data/VRT-NYSE/1mo.json",
-      "fetchedAt": "2026-08-17T09:52:21.565Z",
+      "fetchedAt": "2026-08-17T14:39:04.291Z",
       "lastBarDate": "2026-08-14",
       "barCount": 45
     },
@@ -430,7 +430,7 @@
       "ticker": "VRT:NYSE",
       "timeframe": "1w",
       "path": "data/VRT-NYSE/1w.json",
-      "fetchedAt": "2026-08-17T09:52:21.565Z",
+      "fetchedAt": "2026-08-17T14:39:04.291Z",
       "lastBarDate": "2026-08-14",
       "barCount": 191
     }
