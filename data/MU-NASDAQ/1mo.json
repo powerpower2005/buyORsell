@@ -6,7 +6,7 @@
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:MU",
-  "fetchedAt": "2026-08-19T09:36:05.970Z",
+  "fetchedAt": "2026-08-19T14:33:20.415Z",
   "lastBarDate": "2026-08-18",
   "barCount": 45,
   "checksum": "29eed588",
