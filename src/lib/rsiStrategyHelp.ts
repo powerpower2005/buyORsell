@@ -8,6 +8,8 @@ export const RSI_STRATEGY_HELP: Record<RsiStrategyId, HelpContent> = {
   rsi_classic_obos: {
     title: "고전 RSI 과매수·과매도",
     summary: RSI_STRATEGY_META.rsi_classic_obos.description,
+    howBuilt:
+      "RSI=100−100/(1+평균상승폭/평균하락폭). 30 아래에서 다시 올라오면 최근 하락폭 우세가 깨지기 시작한 것, 70 위에서 내려오면 상승폭 우세가 꺾이기 시작한 것으로 봅니다. 강한 추세에서는 이 구간이 오래 갑니다.",
     howToFind:
       "RSI가 30 아래에서 다시 위로 올라오면 매수 후보, 70 위에서 다시 아래로 내려오면 매도 후보입니다. 강한 상승·하락장에서는 이 구간이 오래 가서, 반대로 들어가면 실패하기 쉽습니다. 횡보에서만 참고하세요.",
     ...LONG_SHORT,
@@ -22,6 +24,8 @@ export const RSI_STRATEGY_HELP: Record<RsiStrategyId, HelpContent> = {
   super_rsi_obos: {
     title: "슈퍼 RSI 유동 과매수·과매도",
     summary: RSI_STRATEGY_META.super_rsi_obos.description,
+    howBuilt:
+      "검정선=RSI의 4봉 평균. 분홍/녹색=RSI에 씌운 볼린저(20·±1.5σ). 고정 70/30 대신 ‘요즘 RSI 흩어짐’이 과열선입니다. 가중선이 하단 밴드를 위로 뚫고 나오면, 최근 약세가 유동 기준을 탈출한 것으로 봅니다.",
     howToFind:
       "분홍(위)·녹색(아래) 선은 시장에 맞춰 움직이는 ‘너무 올랐다/내렸다’ 기준입니다. 검은 가중 RSI가 위 기준을 뚫고 다시 내려오면 매도, 아래 기준을 뚫고 다시 올라오면 매수입니다.",
     ...LONG_SHORT,
@@ -34,6 +38,8 @@ export const RSI_STRATEGY_HELP: Record<RsiStrategyId, HelpContent> = {
   super_rsi_squeeze_mid: {
     title: "슈퍼 RSI 수렴→중심선 돌파",
     summary: RSI_STRATEGY_META.super_rsi_squeeze_mid.description,
+    howBuilt:
+      "유동 밴드 폭=RSI의 표준편차. 폭이 줄었다가 다시 벌어질 때 가중 RSI가 노란 중심(RSI의 20봉 평균=RSI 50 감각)을 뚫으면, 모멘텀 압축 후 방향이 난 것으로 봅니다. 가격 볼린저 스퀴즈와 같은 논리입니다.",
     howToFind:
       "위·아래 유동 기준이 좁아졌다가 다시 벌어질 때, 검은 가중 RSI가 노란 중심선을 위·아래로 뚫는 봉을 찾습니다. 조용하다가 방향이 나는 구간입니다.",
     ...LONG_SHORT,
@@ -45,6 +51,8 @@ export const RSI_STRATEGY_HELP: Record<RsiStrategyId, HelpContent> = {
   rsi_divergence: {
     title: "RSI 다이버전스",
     summary: RSI_STRATEGY_META.rsi_divergence.description,
+    howBuilt:
+      "RSI는 최근 상승폭 vs 하락폭입니다. 가격 저점은 낮아졌는데 RSI 저점은 높아지면, 더 싸게 마감했어도 하락폭 우위는 이전보다 약해진 것=파는 힘이 줄었다고 봅니다.",
     howToFind:
       "주가는 더 낮은 저점인데 RSI 저점은 높아지면 → 매수 후보(상승 다이버전스). 주가는 더 높은 고점인데 RSI 고점은 낮아지면 → 매도 후보(하락 다이버전스). 두 번째 꺾임에 신호가 납니다.",
     ...LONG_SHORT,
@@ -57,6 +65,8 @@ export const RSI_STRATEGY_HELP: Record<RsiStrategyId, HelpContent> = {
   double_rsi_cross: {
     title: "이중 RSI 교차",
     summary: RSI_STRATEGY_META.double_rsi_cross.description,
+    howBuilt:
+      "RSI(7)과 RSI(21)은 같은 공식을 짧은/긴 창에 쓴 것입니다. 단기가 장기를 위로 뚫으면, 아주 최근 상승폭 우위가 중간 창보다 커지기 시작한 골든크로스와 같습니다.",
     howToFind:
       "단기 RSI(7)가 장기 RSI(21)를 아래에서 위로 뚫으면 매수, 위에서 아래로 뚫으면 매도입니다. 교차만 봅니다.",
     ...LONG_SHORT,

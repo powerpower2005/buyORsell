@@ -8,6 +8,8 @@ export const COMBO_STRATEGY_HELP: Record<ComboStrategyId, HelpContent> = {
   st_adx: {
     title: "슈퍼트렌드 + ADX (추세 추종)",
     summary: COMBO_STRATEGY_META.st_adx.description,
+    howBuilt:
+      "슈퍼트렌드=ATR×배수 트레일 손절이 뒤집힌 방향. ADX는 |+DI−(−DI)|의 평균이라 ‘한쪽으로 기울어진 강도’만 봅니다. ADX>25일 때만 뒤집힘을 받아, 횡보에서 손절선이 자주 바뀌는 노이즈를 줄입니다.",
     howToFind:
       "ADX가 25 위인 강한 추세에서만 봅니다. 슈퍼트렌드가 상승(초록·가격 아래)으로 바뀌고 종가가 선 위이면 매수, 하락(빨강·가격 위)으로 바뀌고 종가가 선 아래이면 매도. 횡보(ADX 낮음)에서는 신호가 거의 안 나옵니다.",
     ...LONG_SHORT,
@@ -22,6 +24,8 @@ export const COMBO_STRATEGY_HELP: Record<ComboStrategyId, HelpContent> = {
   kc_cci: {
     title: "켈트너 + CCI (돌파·모멘텀)",
     summary: COMBO_STRATEGY_META.kc_cci.description,
+    howBuilt:
+      "켈트너 밖=평소 ATR보다 더 간 돌파. CCI>+100은 대표가가 통계 평균에서 위로 많이 벗어난 모멘텀. ATR이 최근보다 커진 봉만 받아, 조용한 구간의 가짜 돌파를 걸러 냅니다.",
     howToFind:
       "종가가 켈트너 상단을 뚫고 CCI가 +100을 위로 뚫으면 매수, 하단 이탈 + CCI −100 하향이면 매도. 변동성(ATR)이 최근보다 커진 봉만 진입합니다.",
     ...LONG_SHORT,
@@ -36,6 +40,8 @@ export const COMBO_STRATEGY_HELP: Record<ComboStrategyId, HelpContent> = {
   vwap_flow: {
     title: "VWAP + MFI + OBV (자금 흐름)",
     summary: COMBO_STRATEGY_META.vwap_flow.description,
+    howBuilt:
+      "VWAP 위 지지=평균 단가보다 비싸게 지키며 반등. MFI>50은 대표가×거래량 유입이 유출보다 큼. OBV 신고는 상승 마감 거래량이 새 고점을 만든 것입니다. 세 개가 겹치면 가격 지지가 자금으로도 확인된 것으로 봅니다.",
     howToFind:
       "매수: 가격이 VWAP 위에서 지지되며 양봉 반등 + MFI가 50 위에서 상승 + OBV가 최근 고점 갱신. 매도: VWAP 아래 저항 + MFI 50 아래 하락 + OBV 신저. VWAP은 중심, MFI·OBV는 ‘진짜 자금’ 확인입니다.",
     ...LONG_SHORT,
@@ -50,6 +56,8 @@ export const COMBO_STRATEGY_HELP: Record<ComboStrategyId, HelpContent> = {
   pctb_mean_reversion: {
     title: "%B + CCI + ATR (평균 회귀)",
     summary: COMBO_STRATEGY_META.pctb_mean_reversion.description,
+    howBuilt:
+      "%B>1은 볼린저 상단 밖(통계적 극단). CCI 과열은 대표가 이격. ATR이 갑자기 안 커지고 ADX<20이면 ‘가속 추세’가 아니라 횡보 이탈이라, 평균(밴드 안)으로 돌아올 확률이 더 크다고 봅니다.",
     howToFind:
       "횡보(추세가 약할 때)에, 가격이 볼린저 바깥까지 과하게 벗어나면 다시 안으로 돌아올 것을 노립니다. 밴드 밖 + CCI 과열 + ATR이 갑자기 안 커짐 + ADX<20일 때만 신호가 납니다. 강한 추세에서는 끄세요.",
     ...LONG_SHORT,
@@ -64,6 +72,8 @@ export const COMBO_STRATEGY_HELP: Record<ComboStrategyId, HelpContent> = {
   psar_adx: {
     title: "Parabolic SAR + ADX + ATR (전환·추적)",
     summary: COMBO_STRATEGY_META.psar_adx.description,
+    howBuilt:
+      "SAR 점이 가격 아래로 내려오면 따라오던 하락 손절이 깨져 방향이 뒤집힌 것입니다. ADX>20은 그 뒤집힘이 횡보 휩쏘가 아닐 강도. ATR×2는 평소 진폭의 두 배를 손절 여유로 둡니다.",
     howToFind:
       "ADX>20인 상태에서 SAR 점이 가격 아래로 내려오면 매수, 가격 위로 올라오면 매도. 손절·추적은 SAR 점선 또는 진입가 ± ATR×2를 참고하세요.",
     ...LONG_SHORT,
@@ -78,6 +88,8 @@ export const COMBO_STRATEGY_HELP: Record<ComboStrategyId, HelpContent> = {
   obv_div_st: {
     title: "OBV 다이버전스 + 슈퍼트렌드 (반전)",
     summary: COMBO_STRATEGY_META.obv_div_st.description,
+    howBuilt:
+      "가격 LL+OBV HL은 더 싼 저점이어도 상승 마감 거래량은 덜 줄었다는 뜻입니다. 슈퍼트렌드 상승 전환은 ATR 트레일이 그 약해진 매도를 확인한 뒤에야 들어가는 필터입니다.",
     howToFind:
       "주가는 더 낮은 저점인데 OBV 저점은 높아진 뒤 슈퍼트렌드가 상승으로 바뀌면 매수. 주가 고점은 더 높은데 OBV 고점은 낮아진 뒤 슈퍼트렌드가 하락으로 바뀌면 매도. MFI에도 같은 어긋남이 있으면 신뢰↑.",
     ...LONG_SHORT,

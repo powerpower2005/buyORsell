@@ -8,6 +8,8 @@ export const CLASSIC_STRATEGY_HELP: Record<ClassicStrategyId, HelpContent> = {
   ma_golden_dead: {
     title: "이평 골든·데드",
     summary: CLASSIC_STRATEGY_META.ma_golden_dead.description,
+    howBuilt:
+      "SMA20·SMA50은 각각 최근 20·50봉 종가의 산술평균입니다. 짧은 평균이 긴 평균을 위로 뚫으면, 아주 최근 가격이 중간 창 평균보다 비싸지기 시작한 것=매수 우위가 중기보다 빨라진 골든크로스입니다. 데드는 그 반대입니다. 교차는 이미 움직인 뒤라 후행입니다.",
     howToFind:
       "단기 이평(SMA20)이 중기 이평(SMA50)을 아래에서 위로 뚫으면 매수(골든), 위에서 아래로 뚫으면 매도(데드). 사이드바에서 SMA 20·50을 켜 두세요.",
     ...LONG_SHORT,
@@ -24,6 +26,8 @@ export const CLASSIC_STRATEGY_HELP: Record<ClassicStrategyId, HelpContent> = {
   high_52w_break: {
     title: "52주·N봉 고점 돌파",
     summary: CLASSIC_STRATEGY_META.high_52w_break.description,
+    howBuilt:
+      "직전 N봉(일≈252, 주≈52, 월≈24)의 고점만 보고, 그 창에서 이번 봉은 뺍니다. 종가가 그 고점을 처음 넘으면 ‘그동안 막히던 천장’을 사는 쪽이 봉을 닫은 것=신고가 돌파입니다. 꼬리만 뚫고 종가가 아래면 신호가 없습니다.",
     howToFind:
       "최근 N봉 고점(일봉≈1년, 주봉≈1년, 월봉≈2년 분량)을 종가가 위로 뚫으면 매수 신호가 납니다. 장기 신고가·모멘텀 타이밍용입니다.",
     ...LONG_SHORT,
@@ -39,6 +43,8 @@ export const CLASSIC_STRATEGY_HELP: Record<ClassicStrategyId, HelpContent> = {
   sma200_support: {
     title: "SMA200 지지 반등",
     summary: CLASSIC_STRATEGY_META.sma200_support.description,
+    howBuilt:
+      "SMA200=최근 200봉 종가 평균. 장기 보유자의 대략적 단가입니다. 종가가 그 위인 국면에서 저점이 이평 근처(약 0.5~1%·ATR 여유)로 눌린 뒤 양봉·종가가 선 위면, 장기 평균을 지키며 다시 산 것으로 봅니다. 200봉이 없으면 선을 못 그립니다.",
     howToFind:
       "200일선이 있고 종가가 그 위인 상승 국면에서, 저점이 200일선 근처로 눌린 뒤 양봉·종가가 이평 위면 매수입니다. 봉이 부족해 200일선이 없으면 신호 없음.",
     ...LONG_SHORT,
@@ -52,6 +58,8 @@ export const CLASSIC_STRATEGY_HELP: Record<ClassicStrategyId, HelpContent> = {
   fib_wave_pullback: {
     title: "피보 2·4파 눌림",
     summary: CLASSIC_STRATEGY_META.fib_wave_pullback.description,
+    howBuilt:
+      "스윙 저→고(또는 고→저) 폭의 38.2~61.8% 구간입니다. 황금비 되돌림(0.618)과 그 보수(0.382)라, 추세가 살아 있으면 전 구간을 다 토해 내지 않고 이 근처에서 멈추는 경우가 많다고 봅니다. 앱은 파동 번호를 세지 않고, 저점이 추진 시작 아래로 깨지면(엘리어트 2파 절대규칙) 그 후보는 버립니다. 구간 안 양봉(하락은 음봉) 확인이 진입입니다.",
     howToFind:
       "한바탕 오른 뒤 가격이 대략 38~62% 되돌린 구간에서 양봉·저점 방어가 나오면 매수. 한바탕 내린 뒤 같은 구간에서 음봉·고점 저항이면 매도. 파동 번호에 집착하지 말고 되돌림 구간으로 보세요.",
     ...LONG_SHORT,
@@ -66,6 +74,8 @@ export const CLASSIC_STRATEGY_HELP: Record<ClassicStrategyId, HelpContent> = {
   gann_zone: {
     title: "갠 되돌림 존",
     summary: CLASSIC_STRATEGY_META.gann_zone.description,
+    howBuilt:
+      "1×1 각도=봉당 가격 단위≈그 자리 ATR(시간=가격 균형의 근사). 되돌림 존 RZH≈스윙 폭의 50%, RZL≈33%(갠 1/2·1/3). 피보 38~62와 겹치는 구간입니다. 그 존을 터치한 뒤 양봉이 존 중앙 위로 마감하면 지지, 음봉이 중앙 아래로 마감하면 저항으로 봅니다. 실제 모눈지 45°와는 스케일이 다를 수 있습니다.",
     howToFind:
       "최근 스윙 저·고로 각도선과 되돌림 구간을 잡습니다. 상승 조정 중 구간에서 반등이 확인되면 매수, 하락 조정 중 구간에서 저항이면 매도. 전략을 켜면 차트에 각도선이 같이 그려집니다.",
     ...LONG_SHORT,

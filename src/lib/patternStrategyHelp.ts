@@ -8,6 +8,8 @@ export const PATTERN_STRATEGY_HELP: Record<PatternStrategyId, HelpContent> = {
   breakout_entry: {
     title: "목선·레벨 돌파 진입",
     summary: PATTERN_STRATEGY_META.breakout_entry.description,
+    howBuilt:
+      "패턴 완성=목선·경계에서 이전 종가 ≤선, 이번 종가 >선(하락은 반대). 꼬리만 뚫으면 미완성입니다. 종가가 선을 넘는다는 것은 그 가격대를 지키던 쪽이 봉을 닫지 못한 것=교착이 한쪽 승리로 끝난 날이라, 그 봉을 진입으로 씁니다.",
     howToFind:
       "차트 패턴이 완성되는 날 = 목선(저항/지지)을 종가로 뚫은 날입니다. 그 봉에 바로 진입 신호가 뜹니다. 가짜 돌파가 많으니 «다음 봉 확인»·«거래량 확인»을 같이 켜 두는 편이 안전합니다.",
     ...BREAK,
@@ -21,6 +23,8 @@ export const PATTERN_STRATEGY_HELP: Record<PatternStrategyId, HelpContent> = {
   breakout_confirm_entry: {
     title: "돌파 다음 봉 확인 진입",
     summary: PATTERN_STRATEGY_META.breakout_confirm_entry.description,
+    howBuilt:
+      "돌파 봉은 흔들기(스탑 헌팅)가 많습니다. 다음 봉이 같은 방향 몸통이고 레벨 밖에서 마감하면, 하루 더 ‘그 선을 되찾지 못했다’는 확인입니다. 돌파한 그날에는 이 전략 신호가 없습니다.",
     howToFind:
       "패턴이 종가로 돌파된 **다음 봉**이 같은 방향인지 봅니다. 매수: 양봉·레벨 위 유지 / 매도: 음봉·레벨 아래 유지. 돌파한 그날에는 신호가 없습니다.",
     ...BREAK,
@@ -34,6 +38,8 @@ export const PATTERN_STRATEGY_HELP: Record<PatternStrategyId, HelpContent> = {
   retest_entry: {
     title: "리테스트 안전 진입",
     summary: PATTERN_STRATEGY_META.retest_entry.description,
+    howBuilt:
+      "돌파 후 약 12봉 안에 가격이 그 레벨 근처(ATR의 약 0.35)로 돌아와 양봉(하락은 음봉)으로 버티면, 깨진 저항이 지지로 바뀐 역할 전환입니다. 리테스트 없이 달리면 신호가 없습니다.",
     howToFind:
       "돌파 후 며칠 안에 가격이 돌파했던 레벨 근처로 되돌아와, 지지(또는 저항)로 버티는 양봉/음봉이 나오면 진입합니다. 직사각형·삼각형에서 가짜 돌파를 줄이는 데 유리합니다.",
     ...BREAK,
@@ -47,6 +53,8 @@ export const PATTERN_STRATEGY_HELP: Record<PatternStrategyId, HelpContent> = {
   volume_breakout: {
     title: "거래량 확인 돌파",
     summary: PATTERN_STRATEGY_META.volume_breakout.description,
+    howBuilt:
+      "돌파 봉 거래량 ≥ 최근 20봉 평균 × 1.35. 평균보다 많이 실렸다는 것은 평소보다 많은 참여가 그 종가 돌파에 동의한 것입니다. 거래량만으로는 방향이 없고, 패턴 종가 돌파가 1차입니다.",
     howToFind:
       "패턴 돌파 봉의 거래량이 최근 약 20봉 평균의 1.35배 이상일 때만 신호가 납니다. 참여가 큰 돌파만 남기려는 필터입니다.",
     ...BREAK,
@@ -60,6 +68,8 @@ export const PATTERN_STRATEGY_HELP: Record<PatternStrategyId, HelpContent> = {
   triple_confirm: {
     title: "삼중 확인 진입",
     summary: PATTERN_STRATEGY_META.triple_confirm.description,
+    howBuilt:
+      "①목선 종가 돌파 ②그 봉 거래량>20봉 평균 ③이후 리테스트 확인봉 — 세 가지가 모두 같은 인스턴스에서 맞을 때만입니다. 가격·참여·역할 전환을 한꺼번에 요구해 가짜 돌파를 줄입니다.",
     howToFind:
       "① 목선·레벨 종가 돌파 ② 돌파 봉 거래량이 최근 평균보다 큼 ③ 이후 리테스트에서 확인 양봉/음봉 — 세 조건이 모두 갖춰진 리테스트 봉에만 신호가 납니다.",
     ...BREAK,
@@ -73,6 +83,8 @@ export const PATTERN_STRATEGY_HELP: Record<PatternStrategyId, HelpContent> = {
   fake_breakout: {
     title: "가짜 돌파 · 가짜 이탈 경고",
     summary: PATTERN_STRATEGY_META.fake_breakout.description,
+    howBuilt:
+      "돌파 후 약 15봉. (1) 종가가 레벨 안으로 돌아오면 돌파가 무효=지키던 쪽이 다음 봉들을 되찾은 실패. (2) 꼬리만 뚫고 종가가 원래 쪽으로 회복하면 스탑만 건드린 헌팅으로 보고, 원래 돌파 방향을 유지합니다. 경고 전용(손익비 없음).",
     howToFind:
       "돌파 후 약 15봉 안을 봅니다. (1) 종가가 다시 레벨 안으로 돌아오면 실패 → 반대 방향 경고. (2) 꼬리만 레벨을 뚫고 종가는 회복하면 스탑 헌팅형 → 원래 돌파 방향 유지·회복 신호.",
     ...BREAK,
@@ -88,6 +100,8 @@ export const PATTERN_STRATEGY_HELP: Record<PatternStrategyId, HelpContent> = {
   trap_entry: {
     title: "트랩(가짜 돌파) 진입",
     summary: PATTERN_STRATEGY_META.trap_entry.description,
+    howBuilt:
+      "확정 돌파 후 종가가 레벨을 다시 관통해 돌아오면, 돌파에 베팅한 쪽이 청산당하는 구간입니다. 그 반대 방향으로 들어가고 손절=실패 스윙, 목표≈패턴 높이×1.35(패닉이 측정 목표가보다 커질 수 있다는 가정). 꼬리만 뚫고 종가 회복은 트랩이 아닙니다.",
     howToFind:
       "확정 패턴 돌파 후 종가가 레벨을 다시 뚫고 돌아오면(실패) 그 봉에서 반대 방향 진입 신호·손익비가 생깁니다. 꼬리만 뚫고 종가가 회복한 경우는 트랩이 아니라 가짜 돌파 경고의 회복 신호입니다.",
     ...BREAK,

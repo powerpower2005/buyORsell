@@ -3,6 +3,11 @@
 export interface HelpContent {
   title: string;
   summary: string;
+  /**
+   * How the number is built, and why that formula is read as buy/sell
+   * pressure (or strength, volatility, etc.).
+   */
+  howBuilt?: string;
   /** How to identify / scan for this item on the chart. */
   howToFind?: string;
   /** Primary outcome block (default label: 값이 높아지면). */
@@ -29,6 +34,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "SMA (단순이동평균)",
     summary:
       "최근 N개 봉 종가의 단순 평균입니다. 일간 불규칙을 줄여 추세·이평과의 위치 관계로 향방을 봅니다. 고전 감각은 단기≈25·중기≈75·장기≈150일이며, 강세는 이평 위·약세는 아래·보합은 밀착 후 이탈로 읽습니다.",
+    howBuilt:
+      "최근 N봉 종가를 더해 N으로 나눕니다. 오늘 값이 오르면, 빠지는 맨 앞 봉보다 오늘 종가가 높다는 뜻이라 ‘최근 평균 가격이 올라가는 중’입니다. 가격이 이 선 위면 최근 평균보다 비싸게 거래되니 매수 우위로, 아래면 평균보다 싸게 거래되니 매도 우위로 봅니다. 교차(골든/데드)는 짧은 평균이 긴 평균을 앞질렀다는 뜻입니다.",
     howToFind:
       "단기가 중·장기를 상향 급돌파=매수 후보, 정배열·동시 상승=강세, 중·장기 상승 후 단기 약화=천장권, 세 선 혼선=보류. 반대는 매도·약세·바닥권. 골든/데드=장·단기 교차.",
     higher:
@@ -47,6 +54,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "EMA (지수이동평균)",
     summary:
       "최근 가격에 가중을 둔 이동평균입니다. SMA보다 빠르지만 같은 ‘가격 vs 이평·장단기 배열’ 틀을 씁니다. 강세=이평 위 파동, 약세=아래, 과도 이격=평균 회귀 경향은 동일합니다.",
+    howBuilt:
+      "EMA_t = 종가×k + 어제 EMA×(1−k), k=2/(N+1). 어제 값의 일부를 남기면서 오늘을 더 세게 반영하므로 SMA보다 꺾임이 빠릅니다. 읽는 법은 SMA와 같습니다. 가격·단기 EMA가 장기 EMA 위면 최근이 먼 과거보다 강하다(상승 모멘텀)는 뜻입니다.",
     howToFind:
       "단기·장기 EMA 정배열·역배열, 골든/데드, 가격의 상·하향 돌파를 SMA와 같은 방식으로 읽습니다. 민감도가 높아 전환은 빠르고 가짜 신호도 많습니다.",
     higher:
@@ -65,6 +74,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "MACD (이동평균 수렴·확산)",
     summary:
       "두 이동평균의 차이를 선으로 보여 주는 모멘텀 지표입니다. 파란 선=MACD, 노란 선=시그널, 막대=둘의 차이, 점선=0(기준선). 혼자보다 200일선·지지저항·거래량과 같이 보세요.",
+    howBuilt:
+      "MACD = 단기 EMA(기본 12) − 장기 EMA(기본 26). 단기 평균이 장기보다 높으면 값이 양수(0선 위)=최근이 먼 과거보다 강하다. 시그널은 그 MACD를 다시 9일 EMA한 느린 선입니다. MACD가 시그널을 위로 뚫으면 ‘단기 모멘텀이 자기 평균보다 빨라졌다’는 뜻이라 매수 쪽으로 보고, 아래로 뚫으면 그 반대입니다. 막대=MACD−시그널(간격이 커질수록 힘이 세짐).",
     howToFind:
       "사이드바에서 MACD 패널을 켭니다. 파란 선이 노란 선을 위로 뚫으면 매수 힌트, 아래로 뚫으면 매도 힌트입니다.",
     higherLabel: "상승·0선 위",
@@ -81,6 +92,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "RSI (상대강도지수) · 슈퍼 RSI",
     summary:
       "최근 상승·하락 힘을 0~100으로 보여 줍니다. 70 근처는 너무 올랐다(과매수), 30 근처는 너무 내렸다(과매도) 참고입니다. 강한 추세에서는 이 구간이 오래 가서 반대로만 들어가면 위험합니다.",
+    howBuilt:
+      "고전 RSI: 최근 N봉(기본 14)의 평균 상승폭(AU)·하락폭(AD). RS=AU/AD, RSI=100−100/(1+RS). 70은 최근 상승폭이 훨씬 커서 ‘사는 힘이 많이 쓰였다’는 뜻입니다. 슈퍼 RSI: 그 RSI를 다시 4봉 평균한 검정 가중선(노이즈↓)과, RSI 자체에 볼린저(20봉·±1.5σ)를 씌운 분홍/녹색 유동 밴드입니다. 고정 70/30 대신 ‘요즘 RSI가 얼마나 흩어졌는지’로 과열선을 움직입니다. 강한 추세에서는 밴드가 같이 올라가 너무 일찍 반대로 들어가는 일을 줄입니다.",
     howToFind:
       "보조 지표에서 RSI를 켭니다. 보라=기본 RSI, 검정=가중 RSI, 노랑=유동 중심, 분홍/녹색=움직이는 ‘너무 올랐다/내렸다’ 기준. 고정 70/30 점선도 참고합니다.",
     higherLabel: "너무 올랐다·상승 쪽",
@@ -97,6 +110,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "Stochastic (스토캐스틱)",
     summary:
       "최근 N봉 고·저 안에서 종가가 어디에 있는지를 0~100으로 보여 줍니다. 빠른 선(%K, 청록)은 반응이고, 느린 선(%D, 주황)은 빠른 선을 부드럽게 만든 선입니다. 80 근처=너무 올랐다, 20 근처=너무 내렸다 참고입니다.",
+    howBuilt:
+      "%K = (종가 − N봉 최저) / (N봉 최고 − N봉 최저) × 100. 종가가 최근 고에 붙으면 100, 저에 붙으면 0입니다. RSI가 ‘상승폭 vs 하락폭’인 반면, 스토캐는 ‘최근 박스 안 위치’입니다. 그래서 박스권에서 민감하고, 추세장에서는 80 위·20 아래에 오래 붙습니다. %D는 %K의 이동평균이라, %K가 %D를 위로 뚫으면 위치가 자기 평균보다 빠르게 올라간 것=매수 쪽으로 봅니다.",
     howToFind:
       "사이드바에서 스토캐스틱을 켭니다. 청록=빠른 선, 주황=느린 선, 점선=80/50/20. 빠른 선이 느린 선을 위로 뚫으면 매수 힌트, 아래로 뚫으면 매도 힌트입니다. 이것만으로 매매하지 마세요.",
     higherLabel: "너무 올랐다·상승",
@@ -113,6 +128,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "Bollinger Bands (볼린저 밴드)",
     summary:
       "이동평균(중심선)과 표준편차로 상·하단 밴드를 그립니다. 변동성·과열·눌림을 보는 데 씁니다.",
+    howBuilt:
+      "중심=N봉 SMA(기본 20). 상·하단=중심 ± (표준편차×배수, 기본 2). 표준편차는 ‘종가가 평균에서 얼마나 흩어졌는지’라, 변동이 커지면 밴드가 벌어지고 잠잠하면 좁아집니다(스퀴즈). 정규분포 감각으로 약 95%가 ±2σ 안에 온다고 보고, 밴드 밖은 ‘평소보다 극단’이므로 과열·가속 또는 곧 되돌림 후보로 읽습니다. 방향은 밴드가 아니라 중심선 기울기·돌파 방향으로 봅니다.",
     higher:
       "밴드가 넓어지면 변동성 확대입니다. 가격이 상단 근처·밖이면 단기 과열 또는 상승 가속 후보로 봅니다.",
     lower:
@@ -125,6 +142,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "MFI (Money Flow Index)",
     summary:
       "거래량을 반영한 RSI입니다. 가격·거래량으로 자금 흐름을 0~100으로 보여 줍니다.",
+    howBuilt:
+      "대표가=(고+저+종)/3. 대표가가 전일보다 오르면 그날 자금=대표가×거래량을 양수(유입), 내리면 음수(유출)로 넣습니다. MFI=100−100/(1+양수합/음수합), 기간 기본 14. RSI는 가격 폭만 보지만 MFI는 거래량까지 곱하므로, ‘올랐는데 거래량이 없다’면 RSI보다 낮게 나옵니다. 80/20은 RSI 70/30과 같은 과열·침체 참고선입니다.",
     howToFind:
       "사이드바 보조 지표에서 MFI를 켜세요. 80/20 참고선이 있습니다. RSI와 같이 보면 가격만의 과열과 실제 자금 유입을 구분하기 쉽습니다.",
     higher:
@@ -139,6 +158,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "ATR (평균진폭)",
     summary:
       "최근 봉의 고저·갭을 반영한 변동성(진폭) 지표입니다. 손절·목표가 폭을 잡을 때 자주 씁니다.",
+    howBuilt:
+      "진폭(TR)=max(고−저, |고−전일종|, |저−전일종|). 갭이 있으면 몸통보다 큰 값이 됩니다. ATR은 그 TR의 N봉 평균(기본 14). 오르든 내리든 ‘얼마나 흔들렸는지’만 재므로 방향 신호가 아닙니다. 값이 크면 평소 흔들림이 커서 손절을 너무 붙이면 잘리고, 작으면 조용한 구간(스퀴즈)으로 봅니다.",
     higher:
       "ATR이 크면 변동성이 큽니다. 손절·목표를 더 넓게 잡아야 휩쓸릴 위험이 줄어듭니다.",
     lower:
@@ -151,6 +172,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "OBV (On-Balance Volume)",
     summary:
       "누적 균형 거래량입니다. 일반 거래량은 ‘에너지가 들어왔다’만 알려 주고 매수/매도 구분이 안 되지만, OBV는 종가↑면 거래량 가산·종가↓면 감산으로 힘의 방향을 보여 줍니다.",
+    howBuilt:
+      "오늘 종가>어제 종가면 OBV += 거래량, 종가<어제면 OBV −= 거래량, 같으면 그대로. 거래량 전부를 한쪽으로 몰아 넣는 누적 점수입니다. 우상향이면 상승일에 실린 거래량이 하락일보다 많았다(매수 누적)는 뜻입니다. 가격은 제자리인데 OBV만 오르면, 종가는 안 움직였어도 ‘상승 마감 + 거래량’이 쌓인 것이라 곧 분출 후보로 봅니다.",
     howToFind:
       "사이드바 보조 지표에서 OBV를 켜세요. 파란 선=OBV, 회색 점선=시그널(EMA). 패널 제목의 E%는 단기 OBV 기울기 강도(에너지)입니다. 절대 수치보다 우상향/우하향·가격과의 다이버전스가 핵심입니다. 기간 옵션이 거의 없는 단순 선 지표입니다.",
     higher:
@@ -165,6 +188,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "A/D (Accumulation/Distribution)",
     summary:
       "종가가 당일 고·저 어디에 있는지 비율×거래량을 누적한 매집/분산 지표입니다. Marc Chaikin이 OBV를 개량. OBV는 전일 종가 대비로 당일 거래량 전부를 ±하지만, A/D는 ((C−L)−(H−C))/(H−L)×V로 배분합니다.",
+    howBuilt:
+      "종가위치(CLV)=(2×종가−고가−저가)/(고가−저가). 종가가 고가면 +1(그날 거래량 전부 매집), 저가면 −1(전부 분산), 한가운데면 0. 그날 흐름=CLV×거래량을 누적한 선이 A/D입니다. 우상향=종가가 봉 위쪽에 붙은 날의 거래량이 많다(매집). 가격은 내리는데 A/D가 오르면, 하락 봉이어도 종가가 저가에서 멀리 마감되며 물량이 쌓인다는 뜻이라 반등 후보로 봅니다. OBV와 달리 ‘전일보다 올랐는지’가 아니라 ‘그날 봉의 어디를 종가로 찍었는지’입니다.",
     howToFind:
       "보조 지표에서 A/D를 켭니다. 우상향=매집, 우하향=분산. 가격과 이격(다이버전스)이 핵심. 종가가 고가=전량 가산, 저가=전량 차감, 중간=(H+L)/2면 그날 0.",
     higher: "A/D 상승=거래량이 가격 상승과 동반 → 매집. 가격↓+A/D↑면 곧 반등 후보.",
@@ -176,6 +201,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "Chaikin Oscillator",
     summary:
       "단기 A/D EMA − 장기 A/D EMA(기본 3−10). 거래량이 가격에 선행한다는 전제로 A/D를 오실레이터화해 신호를 빠르게 냅니다.",
+    howBuilt:
+      "A/D는 위에서처럼 ‘종가가 봉 어디에 붙었는지×거래량’의 누적입니다. 차이킨=그 A/D의 단기 EMA(3) − 장기 EMA(10). 단기 선이 장기보다 위면(값>0) 최근 매집이 평소보다 빨라진 것이고, 아래면(값<0) 분산이 빨라진 것입니다. 0을 위로 넘으면 그 가속이 막 매수 쪽으로 바뀐 시점, 아래로 넘으면 매도 쪽으로 바뀐 시점으로 봅니다. 가격 교차가 아니라 자금흐름 교차라, A/D 선보다 꺾임이 빠릅니다.",
     howToFind:
       "보조 지표 Chaikin. 0선 상향/하향 돌파·가격과의 다이버전스. A/D 패널과 함께 보면 맥락이 잡힙니다.",
     higher: "0선 위·상향 돌파=매수 모멘텀. 상승 다이버전스=롱 후보.",
@@ -187,6 +214,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "Ease of Movement (EOM)",
     summary:
       "Richard Arms. 중간가 이동 ÷ (거래량/가격폭). 같은 거래량으로 가격이 잘 움직이면 값↑(이동 용이). EquiVolume과 짝으로 권장.",
+    howBuilt:
+      "중간가=(고+저)/2. 분자=오늘 중간가 − 어제 중간가(얼마나 이동했는지). 분모=거래량 / (고−저). 분모가 크면 ‘거래량은 많은데 봉이 짧다’=움직이기 힘든 날(뚱보). 분모가 작으면 적은 거래량으로도 봉이 길다(키다리). EOM=분자/분모. 양수면 위로 움직이기 쉬운 날, 음수면 아래로 움직이기 쉬운 날. 0선 상향은 ‘올리기 쉬운 힘’이 막 우세해졌다는 뜻입니다.",
     howToFind:
       "보조 지표 EOM. 실선=원시, 점선=SMA 스무스. 0선 돌파·EquiVolume 키다리/뚱보와 함께.",
     higher: "양수·0 상향=상승 방향 이동이 쉬움(추세 지속 힌트).",
@@ -198,6 +227,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "OBV Midpoint",
     summary:
       "표준 OBV는 종가 비교. Midpoint는 (고+저)/2 비교로 ±/감산. 종가 왜곡이 큰 날에 대안.",
+    howBuilt:
+      "오늘 중간가(고+저)/2가 어제보다 높으면 거래량을 더하고, 낮으면 뺍니다. 표준 OBV는 종가만 보므로, 아래꼬리로 저점을 찍고 종가만 올린 날에는 OBV가 ‘매수’로 잡힙니다. Mid는 그날 거래의 중심이 실제로 올라갔는지를 봅니다. 갭·종가 왜곡이 큰 날, 두 선이 갈리면 Mid 쪽이 일중 수급에 가깝습니다.",
     howToFind: "보조 지표 OBV Mid. 읽기법은 OBV와 동일(추세·다이버전스).",
     higher: "우상향=매수 누적.",
     lower: "우하향=매도 우위.",
@@ -208,6 +239,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "EquiVolume",
     summary:
       "Arms. 상자 높이=고−저, 넓이≈거래량. 키다리(좁고 김)=이동 용이·추세 지속, 정사각=보합, 뚱보=과다 물량(고점=공급·저점=매집). 캔들 횡축은 시간이지만 비율·봉색으로 형태를 표시합니다.",
+    howBuilt:
+      "상자 비율≈거래량 / (고−저). 최근 구간 중앙값보다 넓으면 뚱보(물량이 가격 이동에 비해 과다), 좁으면 키다리(적은 물량으로 크게 이동). 고점 뚱보는 ‘많이 팔아도 더 못 올린다’=공급, 저점 뚱보는 ‘많이 사도 더 못 내린다’=매집으로 읽는 이유입니다.",
     howToFind:
       "켜면 봉 테두리: 키다리=청록, 뚱보=주황, 정사각=기본. 아래 패널=상대 상자 비율. EOM과 함께.",
     higher: "키다리+추세 방향=지속. 저점 뚱보=매집 후보.",
@@ -219,6 +252,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "켈트너 채널 (Keltner Channel)",
     summary:
       "EMA 중심선 ± ATR 배수 밴드입니다. 볼린저보다 밴드 변화가 완만해 돌파 노이즈가 적습니다. OBV와 결합해 ‘진짜 돌파’를 확인하는 데 씁니다.",
+    howBuilt:
+      "중심=EMA(기본 20). 상·하=중심 ± ATR(기본 10)×배수(기본 2). 볼린저는 표준편차(종가 흩어짐)라 급등 때 밴드가 확 벌어지고, 켈트너는 진폭(ATR)이라 폭이 더 고릅니다. 종가가 상단 밖이면 ‘평소 흔들림보다 위로 더 갔다’는 뜻이라 추세 가속 후보로 보고, OBV가 같이 오르면 거래량이 그 가속을 받쳐 준다고 봅니다.",
     howToFind:
       "사이드바 보조 지표에서 켈트너를 켜면 가격 차트에 중심·상·하 밴드가 겹칩니다. 기본 EMA20 · ATR10 · mult 2. 상단 돌파+OBV↑→롱, 하단 이탈+OBV↓→숏. 복합 전략: 켈트너+CCI.",
     higher:
@@ -233,6 +268,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "WB 밴드 (넓은 볼린저)",
     summary:
       "기본 볼린저보다 긴 기간(기본 44)의 밴드입니다. 시가 기준으로 계산해 기본 BB(종가)와 겹쳐 ‘이중 터치(WB)’·원비 확인에 씁니다.",
+    howBuilt:
+      "계산은 볼린저와 같고(SMA ± 표준편차×2) 기간만 더 길고 가격은 시가를 씁니다. 짧은 밴드는 당일 노이즈에 잘 닿고, 긴 밴드는 ‘더 큰 변동 극단’에만 닿습니다. 둘을 동시에 찌르면 짧은 과열과 긴 과열이 겹친 것이라 변곡 후보로 봅니다.",
     howToFind:
       "보조 지표에서 WB(44)를 켜면 빨간 계열 상·중·하 밴드가 가격에 겹칩니다. 기본 BB와 함께 보고, 두 밴드 상단(또는 하단)을 동시에 찌르면 변동성 극단으로 봅니다.",
     higher:
@@ -247,6 +284,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "이격도 (Disparity)",
     summary:
       "종가가 SMA에서 얼마나 떨어져 있는지를 %로 봅니다. (종가/이평 − 1) × 100. 과열·과매도와 이격 다이버전스 확인용입니다.",
+    howBuilt:
+      "이격도=(종가 / SMA − 1) × 100. 0%면 이평과 같음, +면 이평보다 비쌈, −면 쌈. SMA가 ‘최근 평균’이므로 크게 양수면 평균에서 너무 달아난 과열, 크게 음수면 과매도로 읽습니다. 가격 고점은 높아지는데 이격 고점은 낮아지면, 오르긴 해도 이평과의 거리가 줄어드는 것=힘이 약해진 다이버전스입니다.",
     howToFind:
       "보조 지표에서 이격도를 켜면 차트 아래 패널에 0% 기준선과 함께 표시됩니다. 기본 SMA 20.",
     higher:
@@ -261,6 +300,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "VWAP (거래량 가중 평균가)",
     summary:
       "거래량 가중 평균 가격으로 자산의 ‘공정가치’와 돈의 흐름을 봅니다. (누적 가격×거래량)/누적 거래량. 중심선 + 표준편차 밴드로 지지·저항·과열 구간을 표시합니다.",
+    howBuilt:
+      "VWAP = Σ(대표가×거래량) / Σ거래량. 거래량이 실린 가격이 평균을 더 끌어당깁니다. 기관이 ‘평균 단가’로 보는 이유입니다. 가격이 VWAP 위면 그 평균보다 비싸게 체결 중(매수 우위·지지 후보), 아래면 싸게 체결 중(매도 우위·저항 후보). 밴드는 그 평균에서 얼마나 벗어났는지(표준편차)입니다.",
     howToFind:
       "사이드바 보조 지표에서 VWAP을 켜세요. 중심선=VWAP(기울기에 따라 녹/빨), 주황 밴드=±stdDev1(기본 2)·±stdDev2(기본 3). 상승: 가격이 중심선 위 + 우상향. 하락: 아래 + 우하향. 위면 지지·아래면 저항. 거래량→전략의 VWAP 눌림목·밴드·스키즈·추세선과 함께 보세요.",
     higher:
@@ -275,6 +316,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "포에버 VWAP",
     summary:
       "세션마다 리셋되지 않는 누적 VWAP입니다. 상승 구간은 주황, 하락은 보라로 표시하고, 기울기 전환 시 다이아몬드 신호를 줍니다. 앵커드 라인은 전환 시점부터 다시 누적합니다.",
+    howBuilt:
+      "계산은 VWAP과 같고(누적 대표가×거래량/누적 거래량), 일·주·월 창이 바뀌어도 0으로 리셋하지 않습니다. 기울기=지금 VWAP vs N봉 전 VWAP(기본 3). 음→양이 되면 누적 평균 단가가 다시 오르기 시작한 것=매수 쪽으로 힘이 바뀐 전환(주황 다이아몬드), 반대면 보라입니다. 앵커드는 그 전환봉부터 VWAP을 새로 쌓아 ‘그때 이후 평균’을 보여 줍니다.",
     howToFind:
       "사이드바 보조 지표에서 포에버 VWAP을 켜세요. 주 라인=누적 VWAP(추세 색), 회색 점선=앵커드 VWAP, 사각형 마커=기울기 전환. 전략「포에버 VWAP 전환」과 함께 쓰면 장대 캔들 진입 타점이 표시됩니다.",
     higher: "주황 구간·주황 다이아몬드 = 상승 전환. 가격이 선 위면 롱 우위.",
@@ -286,6 +329,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "ADX (Average Directional Index)",
     summary:
       "추세의 ‘강도’를 0~100으로 봅니다. +DI/−DI는 상승·하락 압력 방향입니다. ADX가 높아도 방향은 DI가 알려 줍니다.",
+    howBuilt:
+      "+DM=위쪽만 더 올라간 폭, −DM=아래쪽만 더 내려간 폭(한쪽만 칩니다). 각각을 ATR로 나눠 +DI/−DI를 만들고, DX=|+DI−(−DI)|/(+DI+−DI)×100, ADX는 DX의 이동평균입니다. ADX가 높다는 것은 ‘위·아래 압력의 차이가 크다’=한쪽으로 기울어 있다는 뜻이지, 위인지 아래인지는 아닙니다. 그래서 방향은 +DI>−DI면 상승, 반대면 하락으로 읽고, ADX만으로 롱/숏을 정하지 않습니다.",
     howToFind:
       "사이드바 보조 지표에서 ADX를 켜세요. 노란 ADX선, 초록 +DI, 빨강 −DI. 참고선 25 위를 추세장으로 보는 경우가 많습니다. 복합 전략: 슈퍼트렌드+ADX, PSAR+ADX(%B평균회귀는 ADX<20 필터).",
     higher:
@@ -300,6 +345,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "Parabolic SAR",
     summary:
       "추세 방향과 트레일링 스탑을 점으로 보여주는 지표입니다. 종가가 SAR 위면 상승, 아래면 하락으로 읽습니다.",
+    howBuilt:
+      "상승 구간에서는 점(SAR)이 가격 아래에서, 최근 저점을 향해 가속 인자(기본 0.02, 상한 0.2)만큼 매일 올라붙습니다. 새 고점이 나면 가속이 커져 점이 더 빨리 따라옵니다. 종가가 점 아래로 깨지면 ‘따라오던 손절이 맞았다’고 보고 방향을 뒤집습니다. 그래서 점은 추세 방향이자 트레일 손절입니다. 횡보에서는 고·저가 자주 바뀌어 뒤집힘이 잦습니다.",
     howToFind:
       "사이드바 보조 지표에서 Parabolic SAR을 켜면 가격 차트에 점선이 겹칩니다. SAR이 가격 아래로 뒤집히면 매수(바이), 위로 뒤집히면 매도(셀) 후보입니다. 복합 전략: PSAR+ADX.",
     higher:
@@ -314,6 +361,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "CCI (Commodity Channel Index)",
     summary:
       "가격이 통계적 평균에서 얼마나 벗어났는지 보는 오실레이터입니다. ±100을 과매수·과매도 참고로 씁니다.",
+    howBuilt:
+      "대표가 TP=(고+저+종)/3. CCI=(TP − TP의 SMA) / (0.015 × 평균편차). 분모의 0.015는 Lambert가 ‘대부분 ±100 안에 들어오도록’ 넣은 상수입니다. +100 위는 최근 평균보다 통계적으로 많이 위=과열 또는 강한 상승, −100 아래는 그 반대. 박스권에서는 ±100을 왕복 되돌림으로, 추세장에서는 한쪽에 오래 머무는 가속으로 읽습니다.",
     howToFind:
       "사이드바 보조 지표에서 CCI를 켜세요. +100/−100 참고선이 있습니다. 0선 위·아래와 ±100 돌파·이탈을 봅니다. 복합 전략: 켈트너+CCI, %B평균회귀.",
     higher:
@@ -328,6 +377,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "슈퍼트렌드 (Supertrend)",
     summary:
       "ATR 기반 트레일링 스탑으로 추세 방향을 보여 줍니다. TradingView에서 많이 쓰는 추세·손절 라인입니다.",
+    howBuilt:
+      "기본 밴드=중심가 ± ATR×배수(기본 10, ×3). 상승 중에는 하단 밴드만 올리고(내려가지 않음), 종가가 그걸 깨면 하락으로 뒤집혀 상단 밴드가 손절이 됩니다. ATR이 ‘평소 흔들림’이라, 배수 3이면 평소 진폭의 세 배를 허용한 뒤에야 추세가 끝났다고 보는 것입니다. 선이 가격 아래(초록)면 아직 그 손절을 안 깨서 상승, 위(빨강)면 하락입니다.",
     howToFind:
       "사이드바 보조 지표에서 슈퍼트렌드를 켜면 가격 차트에 선이 겹칩니다. 선이 가격 아래(초록)면 상승 추세, 위(빨강)면 하락 추세입니다. 선이 뒤집힐 때 추세 전환 후보입니다. 복합 전략: 슈퍼트렌드+ADX, OBV다이버전스+ST.",
     higher:
@@ -342,6 +393,8 @@ export const INDICATOR_HELP: Record<string, HelpContent> = {
     title: "일목균형표 (Ichimoku)",
     summary:
       "가격·시간으로 추세·지지/저항을 보는 지표입니다. 전환선·기준선·후행스팬·선행스팬1·2와 구름(양운/음운)으로 구성됩니다. 전략 엔트리는 최소 조건만 쓰고, 기준선 방향·구름 두께·꼬리 등은 같이 켤 지표로 확인합니다.",
+    howBuilt:
+      "전환=(9봉 고+저)/2, 기준=(26봉 고+저)/2 — 종가 평균이 아니라 ‘최근 고저 한가운데’라 지지·저항 감각이 납니다. 선행1=(전환+기준)/2, 선행2=(52봉 고+저)/2를 26봉 앞으로 밀어 구름을 만듭니다. 양운(선행1≥2)은 단기 중간이 장기 중간 위=상승 배열입니다. 후행스팬은 오늘 종가를 26봉 전에 겹쳐, 그때 가격을 종가가 이겼는지로 추세 확인을 합니다. 호전(전환이 기준을 상향)은 단기 중간이 중기 중간을 앞지른 골든크로스와 같은 논리입니다.",
     howToFind:
       "사이드바에서 일목균형표를 켜세요. 빨강=전환선(9, 단기), 파랑=기준선(26, 중기), 보라=후행스팬(종가 26봉 후행), 녹/주황=선행스팬1·2(26봉 선행). 선행1≥2이면 양운, 반대면 음운. 계산: 전환=(9고+9저)/2, 기준=(26고+26저)/2, 선행1=(전환+기준)/2, 선행2=(52고+52저)/2.",
     higherLabel: "상승 배열·양운",
@@ -360,6 +413,8 @@ export const PARAM_HELP: Record<string, HelpContent> = {
   "ma.period": {
     title: "Period (기간)",
     summary: "이동평균에 포함할 최근 봉의 개수입니다.",
+    howBuilt:
+      "SMA는 N개 종가를 더해 N으로 나눕니다. N이 크면 각 봉의 비중이 작아져 선이 느려집니다. EMA는 k=2/(N+1)로 오늘 종가 가중을 키웁니다.",
     higher:
       "값이 커질수록 선이 완만해지고 노이즈가 줄어듭니다. 추세는 느리게 따라가고, 단기 움직임에는 둔감해집니다.",
     lower:
@@ -375,6 +430,8 @@ export const PARAM_HELP: Record<string, HelpContent> = {
     title: "Period (기간)",
     summary:
       "RSI를 계산할 때 보는 최근 봉의 개수입니다. 기본값은 보통 14입니다. 일봉이면 최근 14일, 시간봉이면 최근 14시간을 반영합니다.",
+    howBuilt:
+      "기간 N의 평균 상승폭(AU)·하락폭(AD)으로 RSI=100−100/(1+AU/AD). N이 짧으면 AU/AD가 최근 몇 봉에만 의존해 출렁입니다.",
     higher:
       "기간이 길수록 RSI가 완만해지고 과매수·과매도 진입이 줄어듭니다. 신호가 늦어지지만 잡음이 적습니다.",
     lower:
@@ -404,12 +461,16 @@ export const PARAM_HELP: Record<string, HelpContent> = {
   "ichimoku.conversionPeriod": {
     title: "전환선 기간 (Tenkan)",
     summary: "최근 N봉 고·저 중간값입니다. 기본 9. 단기 추세선 역할입니다.",
+    howBuilt:
+      "(N봉 최고+최저)/2. 종가 평균이 아니라 최근 거래 범위의 한가운데라, 단기 균형·약한 지지/저항으로 읽습니다. 9는 호소다가 쓰던 한 주 반(6일 근무 기준) 감각입니다.",
     higher: "기간이 길수록 둔감해지고 신호가 늦습니다.",
     lower: "기간이 짧을수록 민감하지만 가짜 교차가 늘어납니다.",
   },
   "ichimoku.basePeriod": {
     title: "기준선 기간 (Kijun)",
     summary: "최근 N봉 고·저 중간값입니다. 기본 26. 중기 추세·지지/저항의 중심선입니다.",
+    howBuilt:
+      "(26봉 고+저)/2. 한 달 근무일(26) 감각의 중기 균형입니다. 전환선보다 느려 방향의 중심이 됩니다.",
     higher: "기간이 길수록 추세 방향이 안정적으로 보입니다.",
     lower: "기간이 짧을수록 기준선이 가격에 붙어 움직입니다.",
     tip: "기준선이 평평하면 최근 N봉 고저 변화가 거의 없는 상태입니다.",
@@ -417,6 +478,8 @@ export const PARAM_HELP: Record<string, HelpContent> = {
   "ichimoku.spanPeriod": {
     title: "선행스팬2 기간",
     summary: "최근 N봉 고·저 중간값으로 선행스팬2를 만듭니다. 기본 52. 장기 추세·구름 두께에 영향을 줍니다.",
+    howBuilt:
+      "(52봉 고+저)/2를 26봉 앞에 그립니다. 두 달 균형대라 구름의 느린 쪽(두께)이 됩니다.",
     higher: "기간이 길수록 구름이 완만하고 지지/저항이 두꺼워지기 쉽습니다.",
     lower: "기간이 짧을수록 구름이 민감하게 변합니다.",
   },
@@ -424,6 +487,8 @@ export const PARAM_HELP: Record<string, HelpContent> = {
     title: "선행·후행 이동 (Displacement)",
     summary:
       "선행스팬을 앞으로, 후행스팬(종가)을 뒤로 옮기는 봉 수입니다. 기본 26.",
+    howBuilt:
+      "구름을 26봉 미래에 그려 ‘앞으로의 균형대’로 보고, 오늘 종가를 26봉 전에 겹쳐 과거 가격을 이겼는지 확인합니다. 26은 기준선과 같은 한 달 감각입니다.",
     higher: "값이 크면 구름·후행 비교가 더 멀리 떨어져 보입니다.",
     lower: "값이 작으면 현재에 더 가깝게 겹칩니다.",
     tip: "표준 일목은 전환9·기준26·스팬52·이동26입니다.",
@@ -436,6 +501,8 @@ export const PARAM_HELP: Record<string, HelpContent> = {
     title: "Fast (단기 EMA)",
     summary:
       "MACD의 빠른 EMA 기간입니다. 기본 12. Slow보다 짧아야 합니다.",
+    howBuilt:
+      "MACD=EMA(fast)−EMA(slow). fast가 짧을수록 단기 평균이 가격에 붙어 차이가 커지고 교차가 빨라집니다.",
     higher:
       "Fast를 키우면(Slow에 가까워지면) MACD 선이 둔해지고 교차 신호가 줄어듭니다.",
     lower:
@@ -454,6 +521,8 @@ export const PARAM_HELP: Record<string, HelpContent> = {
     title: "Signal (시그널 선)",
     summary:
       "MACD 선을 다시 이동평균한 시그널입니다. 기본 9. MACD 움직임을 부드럽게 해 교차 기준이 됩니다.",
+    howBuilt:
+      "시그널=MACD의 EMA. Hist=MACD−시그널. 교차는 ‘차이 자체’가 자기 평균을 앞질렀다는 뜻입니다.",
     higher:
       "시그널이 완만해져 교차가 덜 나고, 확정된 모멘텀 변화에 가깝게 반응합니다.",
     lower:
@@ -464,6 +533,8 @@ export const PARAM_HELP: Record<string, HelpContent> = {
     title: "Period (%K 기간)",
     summary:
       "고·저 범위를 볼 봉 개수. 기본 14(앱). 교재 소파동·추천 랭스 5는 설정으로. (period,slowing,signal)의 첫 숫자.",
+    howBuilt:
+      "%K=(종가−N저)/(N고−N저)×100. N이 그 박스의 가로 폭입니다. 짧으면 좁은 박스 안 위치라 민감합니다.",
     higher: "반응 느려지고 교차가 줄며, 큰 추세·스윙(대파동 감각)에 맞춰집니다.",
     lower: "단기 민감·교차↑. 5는 소파동·선행 감각.",
   },
@@ -484,6 +555,8 @@ export const PARAM_HELP: Record<string, HelpContent> = {
   "bb.period": {
     title: "Period (기간)",
     summary: "중심선(중간 밴드) 이동평균과 표준편차를 계산하는 봉 개수입니다.",
+    howBuilt:
+      "같은 N으로 SMA와 σ를 만듭니다. N이 길면 ‘요즘 평균·흩어짐’이 더 긴 창이라 밴드가 느려집니다.",
     higher:
       "밴드가 완만해지고 폭 변화가 느려집니다. 큰 변동성 국면을 보는 데 유리합니다.",
     lower:
@@ -492,6 +565,8 @@ export const PARAM_HELP: Record<string, HelpContent> = {
   "bb.stdDev": {
     title: "Std Dev (표준편차 배수)",
     summary: "중심선에서 상·하단 밴드를 얼마나 멀리 둘지 정하는 배수입니다. 기본은 보통 2입니다.",
+    howBuilt:
+      "상·하단=SMA±k×σ. k=2면 정규분포 가정에서 약 95%가 밴드 안입니다. k를 키우면 ‘극단’이 더 드물어집니다.",
     higher:
       "밴드가 넓어집니다. 가격이 밴드 밖으로 나가는 일이 줄어들고, ‘극단’ 판정이 까다로워집니다.",
     lower:
@@ -500,18 +575,24 @@ export const PARAM_HELP: Record<string, HelpContent> = {
   "bbWide.period": {
     title: "WB Period",
     summary: "넓은 볼린저 중심선·표준편차 기간입니다. 기본 44.",
+    howBuilt:
+      "기본 BB(20)보다 긴 창의 SMA±σ입니다. 기본 밴드와 같이 닿을 때만 ‘이중 터치’로 더 극단이라고 봅니다.",
     higher: "밴드가 더 완만해지고 이중 터치가 드물어집니다.",
     lower: "기본 BB에 가까워져 이중 터치 필터 효과가 약해집니다.",
   },
   "bbWide.stdDev": {
     title: "WB Std Dev",
     summary: "넓은 밴드 폭 배수입니다. 기본 2.",
+    howBuilt:
+      "WB 상·하단=SMA44 ± k×σ. k가 크면 기본 BB와 동시에 닿는 일이 더 극단일 때만 납니다.",
     higher: "WB가 넓어져 동시 터치가 더 극단적일 때만 납니다.",
     lower: "WB가 좁아져 이중 터치가 잦아집니다.",
   },
   "disparity.period": {
     title: "이격도 SMA 기간",
     summary: "이격도 기준 이동평균 기간입니다. 기본 20.",
+    howBuilt:
+      "이격도%=(종가/SMA−1)×100. 종가가 평균에서 몇 % 떨어져 있는지만 남깁니다. 기간이 SMA 창입니다.",
     higher: "이격도가 완만해지고 과열 판정이 느려집니다.",
     lower: "이격도가 민감해져 과열·과매도 신호가 잦아집니다.",
   },
@@ -522,6 +603,8 @@ export const PARAM_HELP: Record<string, HelpContent> = {
   "mfi.period": {
     title: "Period (기간)",
     summary: "MFI를 계산할 때 보는 최근 봉의 개수입니다.",
+    howBuilt:
+      "대표가 TP 상승 날의 TP×거래량 vs 하락 날. RSI와 같으나 거래량을 곱합니다. N이 그 자금 흐름 창입니다.",
     higher:
       "값이 커질수록 MFI가 완만해지고 과매수·과매도 진입이 줄어듭니다.",
     lower:
@@ -530,6 +613,8 @@ export const PARAM_HELP: Record<string, HelpContent> = {
   "atr.period": {
     title: "Period (기간)",
     summary: "ATR(평균 진폭)을 계산할 때 쓰는 최근 봉의 개수입니다.",
+    howBuilt:
+      "TR=max(고−저, |고−전종|, |저−전종|). ATR은 TR의 평균. N이 길면 ‘평소 흔들림’이 완만해져 손절 폭이 덜 출렁입니다.",
     higher:
       "변동성 추정치가 완만해져 갑작스런 스파이크에 덜 흔들립니다. 손절 폭이 상대적으로 안정적입니다.",
     lower:
@@ -538,70 +623,108 @@ export const PARAM_HELP: Record<string, HelpContent> = {
   "obv.signalPeriod": {
     title: "Signal EMA",
     summary: "OBV에 씌우는 시그널선(EMA) 기간입니다. 패스트 OBV 추력 방향 필터.",
+    howBuilt:
+      "OBV 누적선을 다시 EMA합니다. OBV가 이 선 위면 최근 누적이 자기 평균보다 빠른 매수, 아래면 매도입니다.",
     higher: "시그널이 완만해져 교·이탈이 줄어듭니다.",
     lower: "시그널이 민감해져 교·이탈이 잦아집니다.",
   },
   "obv.energyLookback": {
     title: "Energy lookback",
     summary: "OBV 단기 기울기(에너지 %)를 볼 때 쓰는 봉 수입니다.",
+    howBuilt:
+      "지금 OBV − N봉 전 OBV의 절댓값을, 최근 구간 최대 변화량으로 나눠 0~100으로 만듭니다. 높을수록 짧은 구간에 거래량 누적이 급변한 것입니다.",
     higher: "에너지가 더 긴 구간의 변화를 반영합니다.",
     lower: "최근 급변에 에너지가 민감해집니다.",
   },
   "chaikin.fast": {
     title: "Fast EMA",
-    summary: "A/D 단기 EMA 기간. 차이킨 기본 3.",
+    summary:
+      "A/D 단기 EMA. Chaikin 원안·기본 3. MACD의 빠른 선과 같이, 최근 매집/분산 속도입니다.",
+    higher: "키우면(느린 선에 가까워지면) 0선 교차가 줄고 신호가 늦습니다.",
+    lower: "줄이면 단기 수급 노이즈에 더 민감해집니다.",
+    tip: "3과 10의 비율을 유지한 채 둘 다 키우면(예: 6·20) 선이 부드러워집니다.",
   },
   "chaikin.slow": {
     title: "Slow EMA",
-    summary: "A/D 장기 EMA 기간. 차이킨 기본 10.",
+    summary:
+      "A/D 장기 EMA. Chaikin 원안·기본 10. 중간 자금흐름 추세입니다. 차이킨=단기−이 값.",
+    higher: "키우면 장기 추세에 맞춰져 교차가 늦고 적습니다.",
+    lower: "줄이면(Fast에 가까워지면) 두 선의 차이가 작아져 교차가 잦아집니다.",
   },
   "eom.period": {
     title: "SMA Period",
-    summary: "EOM 스무스(SMA) 기간. 기본 14.",
+    summary:
+      "1봉 EOM을 평균 내는 기간입니다. 기본 14. Arms는 원시값 대신 이 스무스 선의 0선 교차로 봅니다.",
+    higher: "선이 완만해져 0선 교차가 줄어듭니다.",
+    lower: "최근 이동 용이성에 민감해져 교차가 잦아집니다.",
   },
   "eom.scale": {
     title: "Volume scale",
-    summary: "거래량 나눗수. 종목 거래량 단위에 맞게(기본 10000).",
+    summary:
+      "거래량을 나눠 상자비율을 읽기 쉬운 크기로 만드는 수입니다. 기본 10000(TTR 등과 동일). 거래량이 큰 종목은 값을 키워야 EOM이 한·두 자리로 남습니다.",
+    higher: "값을 키우면 EOM 절대값이 작아집니다(읽기만 달라지고 0선 방향은 같음).",
+    lower: "값을 줄이면 숫자가 커져 스케일이 과해질 수 있습니다.",
   },
   "equivolume.lookback": {
     title: "Lookback",
-    summary: "상자 비율 중앙값 비교 구간. 기본 20.",
+    summary:
+      "상자 비율(거래량/봉높이)을 최근 몇 봉 중앙값과 비교할지입니다. 기본 20. 키다리·뚱보 판정의 기준이 됩니다.",
+    higher: "더 긴 구간의 ‘보통 상자’와 비교합니다.",
+    lower: "최근 급변에 형태 분류가 민감해집니다.",
   },
   "keltner.emaPeriod": {
     title: "EMA Period",
     summary: "켈트너 중심선(EMA) 기간입니다. 기본 20.",
+    howBuilt:
+      "중심=EMA. 밴드는 이 선 ± ATR×배수라, 기간이 중심이 가격을 따라가는 속도입니다.",
+    higher: "중심이 느려져 밴드가 완만해집니다.",
+    lower: "중심이 가격에 붙어 돌파가 민감해집니다.",
   },
   "keltner.atrPeriod": {
     title: "ATR Period",
     summary: "밴드 폭에 쓰는 ATR 기간입니다. 기본 10.",
+    howBuilt:
+      "ATR이 ‘평소 봉 진폭’입니다. 기간이 짧으면 최근 급변에 밴드가 빨리 벌어집니다.",
+    higher: "밴드 폭이 완만해집니다.",
+    lower: "최근 변동에 폭이 민감해집니다.",
   },
   "keltner.multiplier": {
     title: "Multiplier",
     summary: "ATR에 곱하는 밴드 배수입니다. 기본 2.",
+    howBuilt:
+      "상·하단=EMA ± multiplier×ATR. 2면 평소 진폭의 두 배를 허용한 뒤 밖을 돌파로 봅니다.",
     higher: "밴드가 넓어져 돌파가 줄어듭니다.",
     lower: "밴드가 좁아져 돌파가 잦아집니다.",
   },
   "vwap.stdDev1": {
     title: "Band ×1 (표준편차)",
     summary: "안쪽 VWAP 밴드 배수입니다. 커리큘럼 기본 2 (약 95% 구간).",
+    howBuilt:
+      "VWAP 밴드=VWAP ± k×(거래량 가중 표준편차). k=2면 대략 95%가 안쪽 밴드 안에 머문다는 통계 감각입니다.",
     higher: "밴드가 넓어져 터치·반전 신호가 줄어듭니다.",
     lower: "밴드가 좁아져 신호가 잦아집니다.",
   },
   "vwap.stdDev2": {
     title: "Band ×2 (표준편차)",
     summary: "바깥 VWAP 밴드 배수입니다. 커리큘럼 기본 3.",
+    howBuilt:
+      "VWAP ± 3σ 근처는 안쪽(2σ)보다 더 드문 극단입니다. 터치 시 평균 단가에서 통계적으로 멀리 밀린 자리입니다.",
     higher: "더 극단적인 과열·과매도에서만 바깥 밴드에 닿습니다.",
     lower: "바깥 밴드 터치가 잦아집니다.",
   },
   "forever_vwap.slopeLookback": {
     title: "기울기 룩백",
     summary: "포에버 VWAP 추세·다이아몬드 판정에 쓰는 비교 봉 수입니다. 기본 3.",
+    howBuilt:
+      "지금 VWAP이 N봉 전보다 높으면 상승 기울기(+1), 낮으면 하락(−1). 부호가 바뀌는 봉이 다이아몬드·앵커 재시작입니다.",
     higher: "전환 신호가 줄고 늦어집니다.",
     lower: "전환 신호가 잦아지고 노이즈가 늘 수 있습니다.",
   },
   "adx.period": {
     title: "Period (기간)",
     summary: "ADX·+DI·−DI를 계산할 때 쓰는 최근 봉의 개수입니다. 기본 14.",
+    howBuilt:
+      "+DM/−DM을 ATR로 나눈 뒤 DX의 평균이 ADX입니다. N이 길면 ‘한쪽으로 기울어진 강도’가 느려집니다.",
     higher:
       "기간이 길수록 추세 강도 곡선이 부드럽고 반응이 느려집니다.",
     lower:
@@ -611,30 +734,40 @@ export const PARAM_HELP: Record<string, HelpContent> = {
   "psar.step": {
     title: "Step (가속 인자)",
     summary: "SAR이 가격을 따라가는 속도입니다. 기본 0.02.",
+    howBuilt:
+      "새 극값이 날 때마다 가속 인자가 step만큼 커져 SAR이 가격에 더 빨리 붙습니다. 클수록 손절이 타이트해져 뒤집힘이 잦습니다.",
     higher: "값이 클수록 SAR이 빨리 붙고 신호가 잦아집니다.",
     lower: "값이 작을수록 SAR이 느리게 움직여 신호가 줄어듭니다.",
   },
   "psar.max": {
     title: "Max (최대 가속)",
     summary: "가속 인자의 상한입니다. 기본 0.2.",
+    howBuilt:
+      "가속은 step씩 커지되 max를 넘지 않습니다. 상한이 크면 추세 말기에 SAR이 가격에 더 바짝 붙어 뒤집힘이 빨라집니다.",
     higher: "상한이 크면 추세 말기에 SAR이 더 공격적으로 따라붙습니다.",
     lower: "상한이 작으면 SAR이 상대적으로 멀리 머무릅니다.",
   },
   "cci.period": {
     title: "Period (기간)",
     summary: "CCI를 계산할 때 쓰는 최근 봉의 개수입니다. 기본 20.",
+    howBuilt:
+      "CCI=(TP−SMA(TP))/(0.015×평균편차). N이 TP 평균 창입니다. 0.015는 대부분 ±100 안에 들어오라고 넣은 상수입니다.",
     higher: "기간이 길수록 CCI가 완만해지고 신호가 줄어듭니다.",
     lower: "기간이 짧을수록 가격 이탈에 민감하게 반응합니다.",
   },
   "supertrend.atrPeriod": {
     title: "ATR Period",
     summary: "슈퍼트렌드에 쓰는 ATR 기간입니다. 기본 10.",
+    howBuilt:
+      "기본 밴드=중심가 ± ATR×배수. ATR 기간이 손절 폭의 ‘평소 진폭’ 창입니다.",
     higher: "ATR이 완만해져 선이 덜 흔들립니다.",
     lower: "최근 변동성에 민감해져 선이 자주 움직일 수 있습니다.",
   },
   "supertrend.multiplier": {
     title: "Multiplier (배수)",
     summary: "ATR에 곱하는 계수입니다. 기본 3.",
+    howBuilt:
+      "배수 3이면 평소 진폭의 세 배를 허용한 뒤에야 추세가 끝났다고 봅니다. 키우면 선이 멀어져 뒤집힘이 줄어듭니다.",
     higher: "선이 가격에서 멀어져 추세 전환 신호가 줄어듭니다.",
     lower: "선이 가까워져 신호가 잦아지고 휩쏘가 늘 수 있습니다.",
   },

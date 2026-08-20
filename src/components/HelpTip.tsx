@@ -66,6 +66,17 @@ export function HelpTip({ help, label }: Props) {
             {help.summary}
           </p>
 
+          {help.howBuilt && (
+            <div className="mt-5 rounded-md border border-border/80 bg-bg px-4 py-3">
+              <p className="text-sm font-semibold text-text-primary">
+                계산 · 왜 그렇게 보나
+              </p>
+              <p className="mt-1.5 text-sm leading-relaxed text-text-secondary">
+                {help.howBuilt}
+              </p>
+            </div>
+          )}
+
           {help.howToFind && (
             <div className="mt-5 rounded-md border border-border/80 bg-bg px-4 py-3">
               <p className="text-sm font-semibold text-text-primary">찾는 법</p>

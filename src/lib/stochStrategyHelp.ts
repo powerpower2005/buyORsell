@@ -8,6 +8,8 @@ export const STOCH_STRATEGY_HELP: Record<StochStrategyId, HelpContent> = {
   stoch_ma20_cross: {
     title: "스토캐스틱 + 20일 이평",
     summary: STOCH_STRATEGY_META.stoch_ma20_cross.description,
+    howBuilt:
+      "%K=(종가−N봉최저)/(N봉최고−최저)×100. %D는 %K의 평균. %K가 %D를 위로 뚫으면 최근 박스 안 위치가 자기 평균보다 빠르게 올라간 것입니다. SMA20 위 조건은 ‘최근 평균보다 비싼 강세’에서만 그 반등을 받겠다는 필터입니다.",
     howToFind:
       "사이드바에서 스토캐와 SMA20을 켭니다. 빠른 선(청록, %K)이 느린 선(주황, %D)을 위로 뚫고, 가격이 20일선 위에서 선 근처로 눌린 뒤면 매수. 20일선 아래에서 반등한 뒤 빠른 선이 느린 선을 아래로 뚫으면 매도. 이평이 엉키거나 횡보면 관망하세요.",
     ...LONG_SHORT,
@@ -26,6 +28,8 @@ export const STOCH_STRATEGY_HELP: Record<StochStrategyId, HelpContent> = {
   stoch_divergence: {
     title: "스토캐스틱 다이버전스",
     summary: STOCH_STRATEGY_META.stoch_divergence.description,
+    howBuilt:
+      "%K는 최근 N봉 고저 안 종가 위치입니다. 가격 저점은 낮아졌는데 %K 저점은 높아지면, 더 싼 저점이어도 그 박스 안에서는 종가가 저가에서 더 멀리 마감한 것=하락 압력이 약해진 것으로 봅니다.",
     howToFind:
       "주가는 더 낮은 저점을 찍었는데 스토캐 저점은 높아지면(상승 다이버전스) → 매수 후보. 확인으로 빠른 선이 느린 선을 위로 뚫을 때 신호가 납니다. 반대로 주가 고점은 더 높은데 스토캐 고점은 낮아지면(하락 다이버전스) → 매도 후보.",
     ...LONG_SHORT,
@@ -41,6 +45,8 @@ export const STOCH_STRATEGY_HELP: Record<StochStrategyId, HelpContent> = {
   stoch_sr_bounce: {
     title: "스토캐스틱 지지·저항",
     summary: STOCH_STRATEGY_META.stoch_sr_bounce.description,
+    howBuilt:
+      "지지는 이미 반응한 가격대, %K<20은 그 박스 안 종가가 바닥에 붙었다는 뜻입니다. 둘이 겹친 뒤 %K가 20을 위로 뚫으면 ‘싼 자리에서 위치가 다시 올라가기 시작’한 반등으로 봅니다.",
     howToFind:
       "지지선에 다시 닿았을 때 빠른 선이 20 아래에서 위로 올라오면 매수. 저항선에 다시 닿았을 때 빠른 선이 80 위에서 아래로 내려오면 매도. ‘너무 올랐다/내렸다’만 보지 말고, 지지·저항과 겹칠 때만 봅니다.",
     ...LONG_SHORT,
@@ -54,6 +60,8 @@ export const STOCH_STRATEGY_HELP: Record<StochStrategyId, HelpContent> = {
   stoch_triple_bottom: {
     title: "스토캐스틱 3중 바닥",
     summary: STOCH_STRATEGY_META.stoch_triple_bottom.description,
+    howBuilt:
+      "%K 저점이 세 번 높아진다는 것은, 최근 박스 안 종가 바닥이 점점 저가에서 멀어지고 있다는 뜻입니다. 그 뒤 %K가 %D를 위로 뚫으면 위치가 자기 평균보다 빠르게 올라가기 시작한 확인입니다.",
     howToFind:
       "스토캐 빠른 선의 저점이 세 번 높아진 뒤, 빠른 선이 느린 선을 위로 뚫으면 매수. 고점이 세 번 낮아진 뒤 아래로 뚫으면 매도(3중 천장). SMA20·거래량으로 가짜 바닥을 거르세요.",
     ...LONG_SHORT,

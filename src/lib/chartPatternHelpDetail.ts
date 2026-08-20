@@ -5,11 +5,17 @@ import type { HelpContent } from "./indicatorHelp";
 
 const BREAK = { higherLabel: "돌파 시", lowerLabel: "실패 시" } as const;
 
+/** 앱 공통: 완성 = 종가가 목선·경계를 넘는 첫 봉 (꼬리만으로는 미완성). */
+const CLOSE_COMPLETE =
+  "완성=이전 종가가 목선·경계 안(또는 아래/위)에 있다가 이번 종가가 그 선을 넘는 첫 봉. 꼬리만 뚫으면 미완성. 종가가 선을 넘으면 그 가격대를 지키던 쪽이 봉을 닫지 못한 것=교착이 한쪽 승리로 끝났다고 봅니다.";
+
 export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
   double_bottom: {
     title: "쌍바닥 (롱·반전)",
     summary:
       "하락 추세 끝의 상승 반전. 두 번 바닥(W) 후 목선 상향 돌파. 얕은 조정(수 %)에서도 나타날 수 있어 ATR 허용으로 탐지합니다.",
+    howBuilt:
+      "스윙 저점 두 개가 ATR 여유 안에서 비슷하고, 사이 최고=목선. " + CLOSE_COMPLETE + " 목표는 목선+(목선−저점) — 바닥에서 목선까지 높이를 위로 투영한 측정 목표가입니다.",
     howToFind:
       "스윙 저점 두 개가 비슷한 가격(ATR 허용), 사이 최고가=목선. 간격 대략 8~60봉. 완성=목선 종가 돌파(모양만으로는 미완성).",
     ...BREAK,
@@ -24,6 +30,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
     title: "쌍봉 (숏·반전)",
     summary:
       "상승 끝 M자 반전. 두 고점이 비슷하고 두 번째가 첫 고점을 크게 넘지 못할 때. 1차 고점 거래량 ≥ 2차이면 신뢰 힌트↑(하드 게이트 아님).",
+    howBuilt:
+      "스윙 고점 두 개 + 사이 최저=목선. " + CLOSE_COMPLETE + " 1차 고점 거래량≥2차는 ‘두 번째 도전 때 참여가 줄었다’는 힌트일 뿐 필수 조건은 아닙니다.",
     howToFind:
       "스윙 고점 두 개 + 사이 최저=목선. 완성=목선 종가 하향 이탈.",
     ...BREAK,
@@ -37,6 +45,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
     title: "컵앤핸들 / 역컵앤핸들",
     summary:
       "지속 패턴. 강세: U자 컵+얕은 핸들 후 상단 돌파 롱. 약세(역컵): 둥근 천장+얕은 핸들 후 하단 이탈 숏. 가파른 V·A자형은 제외.",
+    howBuilt:
+      "좌·우 림(비슷한 고/저) 사이 완만한 컵 + 얕은 핸들. 컵이 선행 추세의 절반을 넘거나 핸들이 컵의 1/3을 넘으면 걸러냅니다. " + CLOSE_COMPLETE,
     howToFind:
       "강세: 좌·우 림(비슷한 고점) 사이 중간의 컵 저점 + 우측 림 이후 얕은 핸들 저점. 약세: 좌·우 림(비슷한 저점) 사이 중간의 컵 고점 + 우측 림 이후 얕은 핸들 고점. 컵 깊이 > 선행 추세(림 앞 스윙)의 1/2 또는 핸들 > 컵 1/3이면 앱이 걸러냅니다. 완성=림/핸들 경계 종가 돌파·이탈.",
     ...BREAK,
@@ -50,6 +60,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
     title: "직사각형 (양방향·지속)",
     summary:
       "추세 중 수평 지지·저항 사이 횡보. 쌍바닥·쌍봉(반전)과 달리 이미 추세가 진행 중일 때 나타나며, 돌파 방향으로 추세 지속을 봅니다.",
+    howBuilt:
+      "고점 비슷한 저항·저점 비슷한 지지를 각 2회 이상 터치한 박스. 선행 추세가 있으면 그 방향 돌파만 지속으로 읽습니다. " + CLOSE_COMPLETE,
     howToFind:
       "고점이 비슷한 수평 저항·저점이 비슷한 수평 지지를 각각 2회 이상 터치. 선행 상승이면 강세 직사각형(상단 돌파), 선행 하락이면 약세(하단 이탈). 모양이 만들어졌다고 끝이 아니라 경계 종가 돌파·이탈이 완성입니다.",
     ...BREAK,
@@ -64,6 +76,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
     title: "헤드앤숄더 / 역헤드앤숄더 (반전)",
     summary:
       "H&S=상승 끝 하락 반전(분배). 역H&S=하락 끝 상승 반전. 왼어깨–머리–오른어깨 + 목선.",
+    howBuilt:
+      "가운데 고(머리)가 양 어깨보다 높고 어깨가 비슷. 어깨 사이 저점 두 개를 잇는 선이 목선(역H&S는 저점 3개로 대칭). " + CLOSE_COMPLETE + " 목표는 머리–목선 높이.",
     howToFind:
       "H&S: 가운데 고점(머리)이 가장 높고 양 어깨 비슷. 어깨 사이 저점 2개=목선. 역H&S는 저점 3개로 대칭. 완성=목선 종가 돌파·이탈.",
     ...BREAK,
@@ -78,6 +92,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
   triple_top: {
     title: "3중 천장 (숏·반전)",
     summary: "비슷한 고점 세 번 후 목선 하향 돌파. 이중 천장보다 지연·작은 되돌림이 잦음.",
+    howBuilt:
+      "스윙 고점 3개(사이 ≥약 7봉) + 아래 목선. 세 번 막아 낸 뒤 목선이 깨지면 매수세가 바닥났다고 봅니다. " + CLOSE_COMPLETE,
     howToFind:
       "스윙 고점 3개 + 아래 목선. 연속 고점 사이 **최소 ~7봉**. 완성=목선 종가 이탈. **돌파 봉에 바로 진입하지 말고** 다음 봉 확인(돌파 다음 봉 확인 진입) 권장.",
     ...BREAK,
@@ -91,6 +107,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
   triple_bottom: {
     title: "3중 바닥 (롱·반전)",
     summary: "비슷한 저점 세 번 후 목선 상향 돌파.",
+    howBuilt:
+      "스윙 저점 3개(사이 ≥약 7봉) + 위 목선. 세 번 받아 낸 뒤 목선이 종가로 열리면 매도세가 바닥났다고 봅니다. " + CLOSE_COMPLETE,
     howToFind:
       "스윙 저점 3개 + 위 목선. 연속 저점 사이 **최소 ~7봉**. 완성=목선 종가 돌파. **돌파 봉 진입 금지** → 다음 봉 확인 진입 권장.",
     ...BREAK,
@@ -105,6 +123,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
     title: "상승 쐐기 (전형 하락 반전)",
     summary:
       "우상향 수렴 쐐기. 전형은 하단 이탈 숏이지만 모양만으로 단정 금지. 강한 지지가 있으면 패턴이 무시될 수 있음.",
+    howBuilt:
+      "고·저가 둘 다 우상향인데 간격이 줄어듦(지지가 더 가파름). 사는 폭이 점점 좁아지는 소진으로 읽히는 경우가 많습니다. " + CLOSE_COMPLETE,
     howToFind:
       "고·저 모두 우상향·간격 축소(지지가 더 가파름). 완성=하단(또는 상단) 종가 돌파.",
     ...BREAK,
@@ -119,6 +139,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
     title: "하강 쐐기 (전형 상승 반전)",
     summary:
       "우하향 수렴 쐐기. 전형은 상단 돌파 롱. 목표는 저항·이전 고점까지도 가능.",
+    howBuilt:
+      "고·저가 둘 다 우하향·수렴(저항이 더 가파름). 파는 폭이 줄어드는 매도 소진으로 읽히는 경우가 많습니다. " + CLOSE_COMPLETE,
     howToFind:
       "고·저 모두 우하향·수렴(저항이 더 가파름). 완성=상단(또는 하단) 종가 돌파.",
     ...BREAK,
@@ -132,6 +154,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
     title: "상승 삼각형 (중립)",
     summary:
       "수평 저항 + 우상향 지지. 매수세가 강해 보이는 형태지만 **중립 패턴** — 상단 돌파·하단 이탈 모두 가능. 모양만으로 방향을 단정하지 마세요.",
+    howBuilt:
+      "비슷한 고점(수평 저항)을 두 번 이상, 저점은 높아짐. 매수가 저점을 올리지만 저항은 아직 안 깨진 교착입니다. 앱은 상·하단 종가 돌파를 모두 완성으로 칩니다. " + CLOSE_COMPLETE,
     howToFind:
       "고점이 비슷한 수평 저항을 두 번 이상 터치하고, 저점이 높아지는지 봅니다. 종가 라인 차트로 보면 삼각형이 더 잘 보입니다. 완성=상단 저항 또는 하단 지지의 종가 돌파·이탈. 돌파 다음 봉 확인·리테스트가 더 안전합니다.",
     ...BREAK,
@@ -146,6 +170,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
     title: "하락 삼각형 (중립)",
     summary:
       "수평 지지 + 우하향 저항. 매도세 강화로 읽히지만 **중립 패턴** — 하단 이탈·상단 돌파 모두 가능.",
+    howBuilt:
+      "비슷한 저점(수평 지지) + 낮아지는 고점. 매도가 고점을 내리지만 지지는 아직 안 깨진 교착입니다. 앱은 양방향 종가 돌파를 완성으로 칩니다. " + CLOSE_COMPLETE,
     howToFind:
       "저점이 비슷한 수평 지지를 반복하고, 고점이 낮아지는지 봅니다. 종가 라인으로 형태를 확인. 완성=지지 이탈 또는 저항 돌파(종가).",
     ...BREAK,
@@ -160,6 +186,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
     title: "대칭 삼각형 · 수축형 (지속)",
     summary:
       "고↓·저↑로 **폭이 좁아지는** 지속 패턴. 선행 추세가 있으면 그 방향 돌파만 탐지(직사각형과 동일). 확장형(메가폰)과 반대.",
+    howBuilt:
+      "우하향 저항·우상향 지지가 수렴. 변동이 줄며 힘이 모이는 구간이라, 선행 추세 방향 종가 돌파만 지속으로 표시합니다. " + CLOSE_COMPLETE,
     howToFind:
       "우하향 저항·우상향 지지가 수렴 + 선행 상승/하락. 종가 라인으로 수렴을 확인. 완성=선행 추세 방향의 경계 종가 돌파.",
     ...BREAK,
@@ -174,6 +202,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
     title: "대칭 삼각형 · 확장형 (중립)",
     summary:
       "고↑·저↓로 **폭이 벌어지는** 중립 패턴(메가폰). 반전 영상에도 나오지만 앱은 **neutral**. 변동성 커 손절이 중요.",
+    howBuilt:
+      "우상향 저항·우하향 지지가 벌어짐. 변동이 커지는 교착이라 스캘핑은 수동이고, 앱은 경계 종가 돌파만 신호입니다. " + CLOSE_COMPLETE,
     howToFind:
       "우상향 저항·우하향 지지가 벌어짐. 수축형과 반대. 앱은 경계 종가 돌파만 신호(구간 스캘핑은 수동).",
     ...BREAK,
@@ -188,6 +218,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
     title: "페넌트 (양방향·지속)",
     summary:
       "강한 깃대(폴) 직후 짧게 수렴하는 작은 삼각형 휴식. 대부분 깃대 방향으로 재개. 대칭 삼각형보다 짧고 깃대가 분명해야 합니다.",
+    howBuilt:
+      "급등·급락(폴) 뒤 짧은 삼각 수렴. 폴=강한 한 방향, 페넌트=그 힘을 소화하는 짧은 숨고르기라 대부분 폴 방향으로 재개한다고 봅니다. " + CLOSE_COMPLETE + " 목표≈폴의 80%.",
     howToFind:
       "급등·급락(폴) 뒤 고↓·저↑의 짧은 삼각 수렴. 완벽한 대칭이 아니어도 ATR 여유 안에서 인정. 앱은 상·하단 추세선 돌파를 완성으로 표시합니다.",
     ...BREAK,
@@ -202,6 +234,8 @@ export const CHART_PATTERN_HELP: Record<ChartPatternId, HelpContent> = {
     title: "폴앤플래그 · 깃발 (양방향·지속)",
     summary:
       "폴(큰 한 방향 움직임) 후 짧은 평행 채널(플래그) 조정. 추세 지속. 페넌트(수렴)와 달리 채널이 평행합니다. 패턴은 단순합니다.",
+    howBuilt:
+      "강한 폴 뒤 짧은 평행 채널(깊이≈폴의 1/2 이내). 페넌트와 달리 수렴이 아니라 기울어진 박스입니다. " + CLOSE_COMPLETE + " 목표≈폴의 80%.",
     howToFind:
       "강한 폴 뒤 짧은 평행 채널. 깊이는 폴의 약 1/2 이내. 책처럼 완벽하지 않아도 여유를 두고 판단. 앱은 채널 상·하단 종가 돌파를 완성으로 표시합니다.",
     ...BREAK,

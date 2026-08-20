@@ -183,7 +183,7 @@ export const VOLUME_STRATEGY_META: Record<
     label: "Chaikin zero cross",
     labelKo: "Chaikin 0선",
     description:
-      "차이킨 오실레이터가 0선을 위로 넘으면 매수 쪽 힘이, 아래로 넘으면 매도 쪽 힘이 강해졌다고 봅니다.",
+      "차이킨은 A/D(종가가 봉 어디에 붙었는지×거래량)의 단기 EMA − 장기 EMA입니다. 0선 위는 최근 매집이 평소보다 빨라진 것, 아래는 분산이 빨라진 것입니다. 위로 넘으면 매수 쪽 가속, 아래로 넘으면 매도 쪽 가속으로 봅니다.",
     markerBull: "CZ↑",
     markerBear: "CZ↓",
     typicalDirection: "neutral",
@@ -192,7 +192,7 @@ export const VOLUME_STRATEGY_META: Record<
     label: "Chaikin divergence",
     labelKo: "Chaikin 다이버전스",
     description:
-      "주가 고점은 올랐는데 차이킨 고점은 낮아지면 하락 전환, 주가 저점은 내렸는데 차이킨 저점은 높아지면 상승 전환을 봅니다.",
+      "주가와 차이킨이 어긋나면, 가격은 더 갔는데 매집/분산의 가속은 따라가지 못한 것입니다. 고점은 올랐는데 차이킨 고점은 낮아지면 하락 전환, 저점은 내렸는데 차이킨 저점은 높아지면 상승 전환을 봅니다.",
     markerBull: "CD↑",
     markerBear: "CD↓",
     typicalDirection: "neutral",
@@ -210,7 +210,7 @@ export const VOLUME_STRATEGY_META: Record<
     label: "EOM zero cross",
     labelKo: "EOM 0선",
     description:
-      "이동의 용이성(EOM) 스무스선이 0 위로 가면 오르기 쉬운 힘, 0 아래로 가면 내리기 쉬운 힘으로 봅니다.",
+      "EOM은 (중간가 이동) ÷ (거래량/봉폭)입니다. 같은 거래량으로 가격이 잘 움직이면 값이 큽니다. 스무스선이 0 위로 가면 오르기 쉬운 힘, 0 아래로 가면 내리기 쉬운 힘으로 봅니다.",
     markerBull: "EM↑",
     markerBear: "EM↓",
     typicalDirection: "neutral",

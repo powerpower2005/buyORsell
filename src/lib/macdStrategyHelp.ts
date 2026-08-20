@@ -8,6 +8,8 @@ export const MACD_STRATEGY_HELP: Record<MacdStrategyId, HelpContent> = {
   macd_signal_cross: {
     title: "시그널 선 크로스",
     summary: MACD_STRATEGY_META.macd_signal_cross.description,
+    howBuilt:
+      "MACD=EMA12−EMA26, 시그널=MACD의 EMA9. MACD가 시그널을 위로 뚫으면 단기·장기 이평 차이가 자기 평균보다 커지기 시작한 것=상승 모멘텀 가속입니다. 0선 위/아래는 이 전략의 진입 조건이 아닙니다.",
     howToFind:
       "파란 MACD 선이 노란 시그널을 아래에서 위로 뚫으면 매수, 위에서 아래로 뚫으면 매도입니다. 교차만 봅니다. 0선 위/아래는 참고 표시일 뿐, 진입 조건은 아닙니다.",
     ...LONG_SHORT,
@@ -22,6 +24,8 @@ export const MACD_STRATEGY_HELP: Record<MacdStrategyId, HelpContent> = {
   macd_zero_line: {
     title: "기준선(0선) 매매",
     summary: MACD_STRATEGY_META.macd_zero_line.description,
+    howBuilt:
+      "MACD가 0이면 단기 EMA와 장기 EMA가 같습니다. 0 위는 단기가 장기보다 높음(최근이 강함), 0 아래는 그 반대. 0을 위로 넘으면 단기 평균이 장기를 앞지르기 시작한 골든크로스와 같은 논리입니다.",
     howToFind:
       "MACD가 0을 위로 뚫거나, 뚫은 뒤 시그널 근처로 눌렸다가 다시 올라가면 매수. 0을 아래로 뚫거나, 뚫은 뒤 반등했다가 다시 내려가면 매도입니다.",
     ...LONG_SHORT,
@@ -35,6 +39,8 @@ export const MACD_STRATEGY_HELP: Record<MacdStrategyId, HelpContent> = {
   macd_rsi_confirm: {
     title: "과매수·과매도 확인 (MACD+RSI)",
     summary: MACD_STRATEGY_META.macd_rsi_confirm.description,
+    howBuilt:
+      "RSI가 30을 위로 탈출=최근 하락폭 우위가 깨짐. 그 직후 MACD가 시그널을 위로 뚫으면 단기 이평 차이도 자기 평균보다 빨라진 것이라, 침체 탈출+모멘텀 확인으로 묶습니다. 80/시그널 하향은 그 반대입니다.",
     howToFind:
       "RSI가 너무 내린 구간(30 이하)에서 빠져나온 뒤 MACD가 시그널을 위로 뚫으면 매수. RSI가 너무 오른 구간(80 이상)에서 빠진 뒤 MACD가 아래로 뚫으면 매도입니다.",
     ...LONG_SHORT,
@@ -46,6 +52,8 @@ export const MACD_STRATEGY_HELP: Record<MacdStrategyId, HelpContent> = {
   macd_divergence: {
     title: "MACD 다이버전스",
     summary: MACD_STRATEGY_META.macd_divergence.description,
+    howBuilt:
+      "MACD는 단기·장기 EMA 차이입니다. 가격 고점은 높아졌는데 MACD 고점은 낮아지면, 오르긴 해도 두 이평의 벌어짐(모멘텀)은 이전 고점 때보다 약해진 것입니다. 시그널 교차로 그 약화를 확인합니다.",
     howToFind:
       "주가와 MACD가 어긋난 뒤(가격은 더 낮은데 MACD는 덜 낮음 등), MACD·시그널이 교차하는 봉에 신호가 납니다.",
     ...LONG_SHORT,
@@ -57,6 +65,8 @@ export const MACD_STRATEGY_HELP: Record<MacdStrategyId, HelpContent> = {
   macd_trend_break: {
     title: "MACD 돌파 매매",
     summary: MACD_STRATEGY_META.macd_trend_break.description,
+    howBuilt:
+      "가격이 최근 고·저 구조를 깨는 것은 다우 전환입니다. MACD·시그널이 같은 방향이면 단기 이평 차이도 그 돌파를 따라간 것이라, 가격만 뚫고 모멘텀이 안 따라오는 가짜 돌파를 걸러 냅니다.",
     howToFind:
       "가격이 최근 하락(또는 상승) 고·저 구조를 깨는 동시에, MACD와 시그널도 같은 방향으로 맞춰질 때 신호가 납니다.",
     ...LONG_SHORT,
