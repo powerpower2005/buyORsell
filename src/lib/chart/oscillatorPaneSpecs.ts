@@ -5,17 +5,25 @@ import {
   AUX_INDICATOR_ORDER,
   type AuxIndicatorId,
 } from "@/lib/auxIndicatorStore";
-import { VOLUME_BAR } from "@/lib/chart/chartTheme";
+import { SERIES, VOLUME_BAR } from "@/lib/chart/chartTheme";
 
 export const OSC_PANE_HEIGHT = 120;
 export const OSC_MACD_PANE_HEIGHT = 140;
 export const VOLUME_PANE_HEIGHT = 100;
+
+export type OscPaneLegendItem = {
+  label: string;
+  color: string;
+  value?: string;
+};
 
 export type OscPaneSpec = {
   id: AuxIndicatorId;
   title: string;
   latest: string;
   height: number;
+  /** Per-series color key when the pane draws more than one line. */
+  legendItems?: OscPaneLegendItem[];
 };
 
 function fmt(value: number | null | undefined, digits = 2): string {
@@ -53,14 +61,64 @@ export function buildOscPaneSpecs(
       const out = indicators.indicators.rsi;
       if (!out?.series.rsi?.length) continue;
       const period = (cfg.params.period as number | undefined) ?? 14;
-      const w = out.latest.rsiWeighted;
+      const ob = cfg.overbought ?? 70;
+      const os = cfg.oversold ?? 30;
+      const legendItems: OscPaneLegendItem[] = [
+        {
+          label: `RSI(${period})`,
+          color: SERIES.purple,
+          value: fmt(out.latest.rsi),
+        },
+      ];
+      if (out.series.rsiWeighted?.length) {
+        legendItems.push({
+          label: "W 가중",
+          // slateDark is the line color but invisible as a chip on dark UI
+          color: SERIES.slate,
+          value: fmt(out.latest.rsiWeighted),
+        });
+      }
+      if (out.series.rsiMid?.length) {
+        legendItems.push({
+          label: "유동 중심",
+          color: SERIES.yellow,
+          value: fmt(out.latest.rsiMid),
+        });
+      }
+      if (out.series.rsiUpper?.length) {
+        legendItems.push({
+          label: "유동 상단",
+          color: SERIES.pink,
+          value: fmt(out.latest.rsiUpper),
+        });
+      }
+      if (out.series.rsiLower?.length) {
+        legendItems.push({
+          label: "유동 하단",
+          color: SERIES.teal,
+          value: fmt(out.latest.rsiLower),
+        });
+      }
+      const latestBits = [
+        fmt(out.latest.rsi),
+        out.latest.rsiWeighted != null
+          ? `W ${fmt(out.latest.rsiWeighted)}`
+          : null,
+        out.latest.rsiMid != null ? `중 ${fmt(out.latest.rsiMid)}` : null,
+        out.latest.rsiUpper != null ? `↑ ${fmt(out.latest.rsiUpper)}` : null,
+        out.latest.rsiLower != null ? `↓ ${fmt(out.latest.rsiLower)}` : null,
+      ].filter(Boolean);
+
+      legendItems.push(
+        { label: String(ob), color: SERIES.orange },
+        { label: String(os), color: SERIES.teal },
+      );
+
       panes.push({
         id,
-        title: `${meta.labelKo}(${period})`,
-        latest:
-          w != null
-            ? `${fmt(out.latest.rsi)} · W ${fmt(w)}`
-            : fmt(out.latest.rsi),
+        title: `${meta.labelKo}(${period}) · 슈퍼`,
+        latest: latestBits.join(" · "),
+        legendItems,
         height: OSC_PANE_HEIGHT,
       });
       continue;

@@ -5,6 +5,7 @@ import {
   fmtVolume,
   oscExtraHeight,
   VOLUME_PANE_HEIGHT,
+  type OscPaneSpec,
 } from "@/lib/chart/oscillatorPaneSpecs";
 import {
   computeVolumeAverages,
@@ -61,7 +62,12 @@ export function useChartPaneModel({
 
   /** Label content for secondary panes (tops measured from live pane DOM). */
   const secondaryPaneLabelMeta = useMemo(() => {
-    const labels: { key: string; title: string; detail?: string }[] = [];
+    const labels: {
+      key: string;
+      title: string;
+      detail?: string;
+      legendItems?: OscPaneSpec["legendItems"];
+    }[] = [];
     if (showVolume) {
       labels.push({
         key: "volume",
@@ -74,6 +80,7 @@ export function useChartPaneModel({
         key: pane.id,
         title: pane.title,
         detail: pane.latest,
+        legendItems: pane.legendItems,
       });
     }
     return labels;

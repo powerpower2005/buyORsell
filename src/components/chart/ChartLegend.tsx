@@ -88,14 +88,36 @@ export function ChartLegend({
               ))}
             </>
           )}
-          {oscPanes.map((pane) => (
-            <span
-              key={pane.id}
-              className="tabular-nums text-text-tertiary"
-            >
-              {pane.title} {pane.latest}
-            </span>
-          ))}
+          {oscPanes.map((pane) =>
+            pane.legendItems?.length ? (
+              <span
+                key={pane.id}
+                className="flex flex-wrap items-center gap-x-2 gap-y-1 text-text-tertiary"
+              >
+                <span className="text-text-secondary">{pane.title}</span>
+                {pane.legendItems.map((item) => (
+                  <span
+                    key={`${pane.id}-${item.label}`}
+                    className="flex items-center gap-1 tabular-nums"
+                  >
+                    <span
+                      className="inline-block h-0.5 w-3 rounded-sm"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    {item.label}
+                    {item.value != null ? ` ${item.value}` : ""}
+                  </span>
+                ))}
+              </span>
+            ) : (
+              <span
+                key={pane.id}
+                className="tabular-nums text-text-tertiary"
+              >
+                {pane.title} {pane.latest}
+              </span>
+            ),
+          )}
         </div>
       )}
 

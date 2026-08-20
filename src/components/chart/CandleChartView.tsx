@@ -25,7 +25,12 @@ export type CandleChartViewProps = {
     y: number;
     tip: MarkerTooltip;
   } | null;
-  secondaryPaneLabelMeta: { key: string; title: string; detail?: string }[];
+  secondaryPaneLabelMeta: {
+    key: string;
+    title: string;
+    detail?: string;
+    legendItems?: OscPaneSpec["legendItems"];
+  }[];
   paneLabelTops: Record<string, number>;
   overlayLegend: { label: string; color: string }[];
   showVolume: boolean;
@@ -99,22 +104,49 @@ export function CandleChartView({
           {secondaryPaneLabelMeta.map((label) => {
             const top = paneLabelTops[label.key];
             if (top == null) return null;
+            const tip =
+              label.legendItems?.length
+                ? `${label.title}: ${label.legendItems
+                    .map((it) =>
+                      it.value != null
+                        ? `${it.label} ${it.value}`
+                        : it.label,
+                    )
+                    .join(" · ")}`
+                : label.detail
+                  ? `${label.title} ${label.detail}`
+                  : label.title;
             return (
               <div
                 key={label.key}
-                className="pointer-events-none absolute left-2 z-[2] max-w-[min(100%,220px)] truncate rounded bg-black/50 px-1.5 py-0.5 text-[10px] font-medium text-text-primary backdrop-blur-[2px]"
+                className="pointer-events-none absolute left-2 z-[2] max-w-[min(100%,min(420px,90%))] rounded bg-black/50 px-1.5 py-0.5 text-[10px] font-medium text-text-primary backdrop-blur-[2px]"
                 style={{ top }}
-                title={
-                  label.detail
-                    ? `${label.title} ${label.detail}`
-                    : label.title
-                }
+                title={tip}
               >
                 <span>{label.title}</span>
-                {label.detail != null && label.detail !== "" && (
-                  <span className="ml-1.5 tabular-nums font-normal text-text-tertiary">
-                    {label.detail}
+                {label.legendItems?.length ? (
+                  <span className="ml-1.5 inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 font-normal text-text-tertiary">
+                    {label.legendItems.map((item) => (
+                      <span
+                        key={item.label}
+                        className="inline-flex items-center gap-0.5 tabular-nums"
+                      >
+                        <span
+                          className="inline-block h-0.5 w-2.5 rounded-sm"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        {item.label}
+                        {item.value != null ? ` ${item.value}` : ""}
+                      </span>
+                    ))}
                   </span>
+                ) : (
+                  label.detail != null &&
+                  label.detail !== "" && (
+                    <span className="ml-1.5 tabular-nums font-normal text-text-tertiary">
+                      {label.detail}
+                    </span>
+                  )
                 )}
               </div>
             );
