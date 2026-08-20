@@ -140,14 +140,6 @@ export function HomePage() {
     [catalog, timeframe],
   );
 
-  const catalogEntries = useMemo(
-    () =>
-      (catalog?.entries ?? [])
-        .filter((e) => e.timeframe === timeframe)
-        .sort((a, b) => b.fetchedAt.localeCompare(a.fetchedAt)),
-    [catalog, timeframe],
-  );
-
   const availableTimeframes = useMemo(
     () => (catalog && ticker ? timeframesForTicker(catalog, ticker) : []),
     [catalog, ticker],
