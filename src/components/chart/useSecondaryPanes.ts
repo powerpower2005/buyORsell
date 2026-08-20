@@ -483,31 +483,45 @@ export function useSecondaryPanes({
       }
 
       if (pane.id === "eom") {
-        const data = toLineData(out.eom?.series.eom);
-        const line = track(
-          refs,
-          "eom",
-          addPaneDataLine(chart, paneIndex, {
-            color: SERIES.teal,
-            lineWidth: 1,
-            includeLevels: [0],
-          }),
-        );
-        line.setData(data);
-        addRefs(chart, paneIndex, refs, timeExtent(data), [
-          { key: "eomZero", price: 0, color: "rgba(148, 163, 184, 0.55)" },
-        ]);
-        if (out.eom?.series.eomSmooth?.length) {
+        // Y-scale from smooth (+0); raw spikes must not blow the axis.
+        const smoothData = out.eom?.series.eomSmooth?.length
+          ? toLineData(out.eom.series.eomSmooth)
+          : [];
+        const rawData = toLineData(out.eom?.series.eom);
+        const scaleData = smoothData.length ? smoothData : rawData;
+
+        if (smoothData.length) {
           const smooth = track(
             refs,
             "eomSmooth",
             addPaneDataLine(chart, paneIndex, {
               color: SERIES.amber,
               lineWidth: 2,
+              includeLevels: [0],
             }),
           );
-          smooth.setData(toLineData(out.eom.series.eomSmooth));
+          smooth.setData(smoothData);
         }
+
+        if (rawData.length) {
+          const line = track(
+            refs,
+            "eom",
+            addPaneDataLine(chart, paneIndex, {
+              color: SERIES.teal,
+              lineWidth: 1,
+              // Smooth present → raw is visual only; else raw owns the scale.
+              ...(smoothData.length
+                ? { autoscale: false as const }
+                : { includeLevels: [0] as const }),
+            }),
+          );
+          line.setData(rawData);
+        }
+
+        addRefs(chart, paneIndex, refs, timeExtent(scaleData), [
+          { key: "eomZero", price: 0, color: "rgba(148, 163, 184, 0.55)" },
+        ]);
         return;
       }
 

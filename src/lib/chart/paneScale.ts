@@ -95,6 +95,11 @@ export type PaneLineOptions = {
   lineStyle?: LineStyle;
   /** OB/OS / zero / etc. — always kept inside the pane Y range. */
   includeLevels?: readonly number[];
+  /**
+   * When false, series is drawn but ignored by Y autoscale
+   * (e.g. noisy raw EOM under a smooth driver).
+   */
+  autoscale?: boolean;
 };
 
 /**
@@ -115,7 +120,10 @@ export function addPaneDataLine(
       lastValueVisible: false,
       priceLineVisible: false,
       crosshairMarkerVisible: false,
-      autoscaleInfoProvider: paddedDataAutoscale(0.12, opts.includeLevels ?? []),
+      autoscaleInfoProvider:
+        opts.autoscale === false
+          ? () => null
+          : paddedDataAutoscale(0.12, opts.includeLevels ?? []),
     },
     paneIndex,
   );
