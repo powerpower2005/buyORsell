@@ -5,14 +5,21 @@ import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
 import { getEffectiveIndicatorsConfig } from "@/lib/configStore";
 import { getTrendlineAlgoVersion } from "@/lib/trendlineStore";
 import {
-  RECENT_SIGNAL_WINDOW_BARS,
+  RECENT_SIGNAL_DISPLAY_OPTIONS,
+  RECENT_SIGNAL_SCAN_BARS,
+  RECENT_SIGNAL_TIMEFRAME,
+  filterHitsByDisplayBars,
+  getRecentSignalDisplayBars,
   recentHitsFromEvaluation,
+  recentSignalWindowLabel,
+  setRecentSignalDisplayBars,
+  type RecentSignalDisplayBars,
   type RecentStrategyHit,
 } from "@/lib/recentSignals";
 import { formatStrategyRecencyLabel } from "@/lib/strategyRecency";
 import { formatTickerLabel } from "@/lib/tickerNames";
 import { errorMessage } from "@/lib/errors";
-import type { IndexEntry, Timeframe } from "@/lib/types";
+import type { IndexEntry } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
 import { Card, SectionTitle } from "@/components/ui/Card";
 
@@ -48,26 +55,38 @@ function freshestBarsAgo(hits: RecentStrategyHit[]): number {
 
 export function RecentSignalsTab({
   entries,
-  timeframe,
   loadingIndex,
-  tickerHref = (ticker, tf) =>
-    `/browse?ticker=${encodeURIComponent(ticker)}&tf=${tf}`,
+  tickerHref = (ticker) =>
+    `/browse?ticker=${encodeURIComponent(ticker)}&tf=${RECENT_SIGNAL_TIMEFRAME}`,
   onTickerSelect,
 }: {
   entries: IndexEntry[];
-  timeframe: Timeframe;
   loadingIndex: boolean;
-  tickerHref?: (ticker: string, timeframe: Timeframe) => string;
+  tickerHref?: (ticker: string) => string;
   onTickerSelect?: (ticker: string) => void;
 }) {
+  const dailyEntries = useMemo(
+    () => entries.filter((e) => e.timeframe === RECENT_SIGNAL_TIMEFRAME),
+    [entries],
+  );
+
   const [selected, setSelected] = useState<string | null>(null);
   const [cache, setCache] = useState<Record<string, CachedSignals>>({});
   const [scanning, setScanning] = useState(false);
   const [scannedCount, setScannedCount] = useState(0);
+  const [displayBars, setDisplayBars] = useState<RecentSignalDisplayBars>(
+    () => getRecentSignalDisplayBars(),
+  );
+
+  const displayLabel = recentSignalWindowLabel(displayBars);
+
+  const onDisplayBarsChange = (n: number) => {
+    setDisplayBars(setRecentSignalDisplayBars(n));
+  };
 
   const entryKey = useMemo(
-    () => entries.map((e) => `${e.ticker}:${e.timeframe}`).join("|"),
-    [entries],
+    () => dailyEntries.map((e) => `${e.ticker}:${e.timeframe}`).join("|"),
+    [dailyEntries],
   );
 
   useEffect(() => {
@@ -75,7 +94,7 @@ export function RecentSignalsTab({
     setCache({});
     setScannedCount(0);
 
-    if (!entries.length) {
+    if (!dailyEntries.length) {
       setScanning(false);
       return;
     }
@@ -84,18 +103,15 @@ export function RecentSignalsTab({
     setScanning(true);
 
     void (async () => {
-      const results = await mapPool(entries, SCAN_CONCURRENCY, async (entry) => {
+      const results = await mapPool(dailyEntries, SCAN_CONCURRENCY, async (entry) => {
         try {
-          const quote = await loadQuote(
-            entry.ticker,
-            entry.timeframe as Timeframe,
-          );
+          const quote = await loadQuote(entry.ticker, RECENT_SIGNAL_TIMEFRAME);
           if (cancelled) {
             return { ticker: entry.ticker, hits: [] as RecentStrategyHit[] };
           }
           const evaluation = evaluateQuote(
             quote.ohlcv,
-            entry.timeframe as Timeframe,
+            RECENT_SIGNAL_TIMEFRAME,
             getEffectiveIndicatorsConfig(),
             { trendlineAlgo: getTrendlineAlgoVersion() },
           );
@@ -110,7 +126,7 @@ export function RecentSignalsTab({
             ticker: entry.ticker,
             hits: recentHitsFromEvaluation(
               evaluation,
-              RECENT_SIGNAL_WINDOW_BARS,
+              RECENT_SIGNAL_SCAN_BARS,
             ),
           };
         } catch (e) {
@@ -139,21 +155,32 @@ export function RecentSignalsTab({
     return () => {
       cancelled = true;
     };
-    // entryKey captures ticker:tf identity; entries is read from this render.
+    // entryKey captures ticker identity; dailyEntries is read from this render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entryKey]);
 
   const signalEntries = useMemo(() => {
-    return entries
-      .filter((e) => (cache[e.ticker]?.hits.length ?? 0) > 0)
+    return dailyEntries
+      .map((e) => ({
+        entry: e,
+        hits: filterHitsByDisplayBars(
+          cache[e.ticker]?.hits ?? [],
+          displayBars,
+        ),
+      }))
+      .filter((row) => row.hits.length > 0)
       .sort((a, b) => {
-        const hitsA = cache[a.ticker]!.hits;
-        const hitsB = cache[b.ticker]!.hits;
-        const ago = freshestBarsAgo(hitsA) - freshestBarsAgo(hitsB);
+        const ago = freshestBarsAgo(a.hits) - freshestBarsAgo(b.hits);
         if (ago !== 0) return ago;
-        return hitsB.length - hitsA.length;
+        return b.hits.length - a.hits.length;
       });
-  }, [entries, cache]);
+  }, [dailyEntries, cache, displayBars]);
+
+  const scannedHitCount = useMemo(
+    () =>
+      dailyEntries.reduce((n, e) => n + (cache[e.ticker]?.hits.length ?? 0), 0),
+    [dailyEntries, cache],
+  );
 
   const toggleTicker = (ticker: string) => {
     setSelected((cur) => (cur === ticker ? null : ticker));
@@ -161,22 +188,38 @@ export function RecentSignalsTab({
 
   return (
     <div className="space-y-4">
-      <Card className="space-y-2">
-        <SectionTitle>최근 {RECENT_SIGNAL_WINDOW_BARS}봉 시그널</SectionTitle>
+      <Card className="space-y-3">
+        <SectionTitle>최근 {displayLabel} 시그널</SectionTitle>
         <p className="text-sm text-text-secondary">
-          저장된 OHLCV 기준으로 최근 {RECENT_SIGNAL_WINDOW_BARS}봉에 매수·매도
-          시그널이 있는 종목만 표시합니다. 실시간 시세가 아닙니다.
+          저장된 일봉 OHLCV 기준으로 최근 {RECENT_SIGNAL_SCAN_BARS}일을 스캔해
+          두고, 선택한 기간의 매수·매도 시그널만 표시합니다. 실시간 시세가
+          아닙니다.
         </p>
+        <label className="flex flex-col gap-1 text-xs text-text-secondary">
+          <span className="font-medium">표시 기간</span>
+          <select
+            aria-label="표시 기간"
+            className="w-fit rounded border border-border bg-surface px-2 py-1.5 text-sm text-text-primary"
+            value={displayBars}
+            onChange={(e) => onDisplayBarsChange(Number(e.target.value))}
+          >
+            {RECENT_SIGNAL_DISPLAY_OPTIONS.map((n) => (
+              <option key={n} value={n}>
+                {recentSignalWindowLabel(n)}
+              </option>
+            ))}
+          </select>
+        </label>
       </Card>
 
       {loadingIndex ? (
         <Card>
           <p className="text-sm text-text-secondary">목록 로딩 중…</p>
         </Card>
-      ) : !entries.length ? (
+      ) : !dailyEntries.length ? (
         <Card>
           <p className="text-sm text-text-secondary">
-            {timeframe} 데이터가 없습니다.{" "}
+            일봉 데이터가 없습니다.{" "}
             <Link to="/" className="text-accent">
               홈
             </Link>
@@ -186,23 +229,23 @@ export function RecentSignalsTab({
       ) : scanning ? (
         <Card>
           <p className="text-sm text-text-secondary">
-            시그널 스캔 중… {scannedCount}/{entries.length}
+            시그널 스캔 중… {scannedCount}/{dailyEntries.length}
           </p>
         </Card>
       ) : !signalEntries.length ? (
         <Card>
           <p className="text-sm text-text-secondary">
-            최근 {RECENT_SIGNAL_WINDOW_BARS}봉에 매수·매도 시그널이 있는 종목이
-            없습니다.
+            {scannedHitCount > 0
+              ? `최근 ${displayLabel}에 매수·매도 시그널이 있는 종목이 없습니다. 기간을 늘려 보세요.`
+              : `최근 ${RECENT_SIGNAL_SCAN_BARS}일에 매수·매도 시그널이 있는 종목이 없습니다.`}
           </p>
         </Card>
       ) : (
         <ul className="space-y-2">
-          {signalEntries.map((entry) => {
+          {signalEntries.map(({ entry, hits }) => {
             const open = selected === entry.ticker;
-            const row = cache[entry.ticker]!;
-            const buy = row.hits.filter((h) => h.direction === "bullish").length;
-            const sell = row.hits.filter((h) => h.direction === "bearish").length;
+            const buy = hits.filter((h) => h.direction === "bullish").length;
+            const sell = hits.filter((h) => h.direction === "bearish").length;
             return (
               <li key={entry.ticker}>
                 <Card className="space-y-3">
@@ -221,7 +264,7 @@ export function RecentSignalsTab({
                       </span>
                     </button>
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="text-text-tertiary">{timeframe}</span>
+                      <span className="text-text-tertiary">일봉</span>
                       {onTickerSelect ? (
                         <button
                           type="button"
@@ -232,7 +275,7 @@ export function RecentSignalsTab({
                         </button>
                       ) : (
                         <Link
-                          to={tickerHref(entry.ticker, timeframe)}
+                          to={tickerHref(entry.ticker)}
                           className="text-accent no-underline hover:underline"
                         >
                           분석
@@ -243,7 +286,7 @@ export function RecentSignalsTab({
 
                   {open && (
                     <ul className="space-y-2">
-                      {row.hits.map((h) => (
+                      {hits.map((h) => (
                         <li
                           key={`${h.family}:${h.id}`}
                           className="flex flex-wrap items-center gap-2 text-sm"

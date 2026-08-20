@@ -412,11 +412,6 @@ export function BrowsePage() {
     setTimeframe(tf);
     const next = new URLSearchParams(params);
     next.set("tf", tf);
-    if (tab === "signals") {
-      next.set("tab", "signals");
-      setParams(next, { replace: true });
-      return;
-    }
     const sameTicker = selected
       ? index?.entries.find(
           (e) => e.ticker === selected.ticker && e.timeframe === tf,
@@ -473,19 +468,17 @@ export function BrowsePage() {
         ))}
       </div>
 
-      <Card className="space-y-4">
-        <SectionTitle>타임프레임</SectionTitle>
-        <TimeframeTabs value={timeframe} onChange={onTimeframeChange} />
-      </Card>
-
       {tab === "signals" ? (
         <RecentSignalsTab
-          entries={entries}
-          timeframe={timeframe}
+          entries={index?.entries ?? []}
           loadingIndex={!index && !indexError}
         />
       ) : (
         <>
+      <Card className="space-y-4">
+        <SectionTitle>타임프레임</SectionTitle>
+        <TimeframeTabs value={timeframe} onChange={onTimeframeChange} />
+      </Card>
       <WatchlistSidebar
         tickers={entries.map((e) => e.ticker)}
         active={selected?.ticker ?? ""}

@@ -465,29 +465,19 @@ export function HomePage() {
 
       {tab === "signals" ? (
         <>
-          <Card className="space-y-4">
-            <SectionTitle>타임프레임</SectionTitle>
-            <TimeframeTabs
-              value={timeframe}
-              onChange={(tf) => {
-                setTimeframe(tf);
-                syncUrl(ticker, tf, "signals");
-              }}
-            />
-          </Card>
           {catalogError && (
             <ErrorBanner title="종목 목록 로드 실패" message={catalogError} />
           )}
           <RecentSignalsTab
-            entries={catalogEntries}
-            timeframe={timeframe}
+            entries={catalog?.entries ?? []}
             loadingIndex={catalogLoading}
             onTickerSelect={(t) => {
               setInput(t);
               setTicker(t);
+              setTimeframe("1d");
               setScreen("results");
               setActionMode("analyze");
-              syncUrl(t, timeframe, "tickers");
+              syncUrl(t, "1d", "tickers");
             }}
           />
         </>
