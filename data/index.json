@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-19T14:42:13.783Z",
+  "updatedAt": "2026-08-20T01:49:15.642Z",
   "entries": [
     {
       "ticker": "000660:KRX",
@@ -241,6 +241,30 @@
       "fetchedAt": "2026-08-19T14:32:33.200Z",
       "lastBarDate": "2026-08-19",
       "barCount": 198
+    },
+    {
+      "ticker": "LITE:NASDAQ",
+      "timeframe": "1d",
+      "path": "data/LITE-NASDAQ/1d.json",
+      "fetchedAt": "2026-08-20T01:43:17.246Z",
+      "lastBarDate": "2026-08-19",
+      "barCount": 901
+    },
+    {
+      "ticker": "LITE:NASDAQ",
+      "timeframe": "1mo",
+      "path": "data/LITE-NASDAQ/1mo.json",
+      "fetchedAt": "2026-08-20T01:43:17.246Z",
+      "lastBarDate": "2026-08-19",
+      "barCount": 44
+    },
+    {
+      "ticker": "LITE:NASDAQ",
+      "timeframe": "1w",
+      "path": "data/LITE-NASDAQ/1w.json",
+      "fetchedAt": "2026-08-20T01:43:17.246Z",
+      "lastBarDate": "2026-08-19",
+      "barCount": 188
     },
     {
       "ticker": "MU:NASDAQ",
