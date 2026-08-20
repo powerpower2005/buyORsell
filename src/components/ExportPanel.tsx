@@ -33,10 +33,7 @@ export function ExportPanel({
   exportRootId = "export-root",
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const defaults = useMemo(
-    () => defaultYamlRange(quote.ohlcv, 20),
-    [quote.ohlcv],
-  );
+  const defaults = useMemo(() => defaultYamlRange(quote.ohlcv), [quote.ohlcv]);
   const [from, setFrom] = useState(defaults.from);
   const [to, setTo] = useState(defaults.to);
   const [copyStatus, setCopyStatus] = useState<string | null>(null);

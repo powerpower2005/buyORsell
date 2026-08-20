@@ -129,12 +129,15 @@ export function buildIndicatorYaml(
   });
 }
 
-/** Default export window: last `n` bars (inclusive). */
-export function defaultYamlRange(
-  bars: OHLCVBar[],
-  n = 20,
-): { from: string; to: string } {
+function addUtcDays(isoDate: string, days: number): string {
+  const d = new Date(`${isoDate}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Default export window: last bar as `to`, one calendar week earlier as `from`. */
+export function defaultYamlRange(bars: OHLCVBar[]): { from: string; to: string } {
   if (!bars.length) return { from: "", to: "" };
-  const slice = bars.slice(-Math.max(1, n));
-  return { from: slice[0].date, to: slice.at(-1)!.date };
+  const to = bars.at(-1)!.date;
+  return { from: addUtcDays(to, -7), to };
 }
