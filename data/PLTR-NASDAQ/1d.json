@@ -6,18 +6,74 @@
   "intervalSeconds": 86400,
   "source": "gf",
   "resolvedSymbol": "NASDAQ:PLTR",
-  "fetchedAt": "2026-08-20T14:41:33.569Z",
-  "lastBarDate": "2026-08-19",
-  "barCount": 740,
-  "checksum": "529db401",
+  "fetchedAt": "2026-08-21T03:12:07.745Z",
+  "lastBarDate": "2026-08-20",
+  "barCount": 748,
+  "checksum": "6605ccdb",
   "ohlcv": [
     {
-      "date": "2022-07-11",
-      "open": 9.98,
-      "high": 9.99,
-      "low": 9.53,
-      "close": 9.56,
-      "volume": 34049499
+      "date": "2022-07-12",
+      "open": 9.66,
+      "high": 9.96,
+      "low": 9.27,
+      "close": 9.49,
+      "volume": 42765812
+    },
+    {
+      "date": "2022-07-13",
+      "open": 9.22,
+      "high": 9.55,
+      "low": 9.05,
+      "close": 9.28,
+      "volume": 32461304
+    },
+    {
+      "date": "2022-07-14",
+      "open": 9.23,
+      "high": 9.28,
+      "low": 8.85,
+      "close": 8.9,
+      "volume": 26702065
+    },
+    {
+      "date": "2022-07-15",
+      "open": 9.01,
+      "high": 9.12,
+      "low": 8.65,
+      "close": 9.04,
+      "volume": 34918133
+    },
+    {
+      "date": "2022-07-18",
+      "open": 9.25,
+      "high": 9.45,
+      "low": 9.01,
+      "close": 9.03,
+      "volume": 32428356
+    },
+    {
+      "date": "2022-07-19",
+      "open": 9.15,
+      "high": 9.37,
+      "low": 8.89,
+      "close": 9.34,
+      "volume": 29033769
+    },
+    {
+      "date": "2022-07-20",
+      "open": 9.44,
+      "high": 10.2,
+      "low": 9.44,
+      "close": 10.11,
+      "volume": 40845162
+    },
+    {
+      "date": "2022-07-21",
+      "open": 10.37,
+      "high": 10.76,
+      "low": 10.22,
+      "close": 10.49,
+      "volume": 51691188
     },
     {
       "date": "2022-07-22",
@@ -5930,6 +5986,14 @@
       "low": 169.77,
       "close": 175.19,
       "volume": 36132642
+    },
+    {
+      "date": "2026-08-20",
+      "open": 175.88,
+      "high": 176.46,
+      "low": 172.03,
+      "close": 173.96,
+      "volume": 26741504
     }
   ]
 }
