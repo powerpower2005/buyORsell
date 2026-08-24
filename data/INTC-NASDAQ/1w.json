@@ -6,7 +6,7 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:INTC",
-  "fetchedAt": "2026-08-24T03:06:40.455Z",
+  "fetchedAt": "2026-08-24T09:48:06.333Z",
   "lastBarDate": "2026-08-21",
   "barCount": 188,
   "checksum": "9ba3f42",
