@@ -6,10 +6,10 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:NVDA",
-  "fetchedAt": "2026-08-21T14:38:11.710Z",
-  "lastBarDate": "2026-08-20",
+  "fetchedAt": "2026-08-24T03:10:37.067Z",
+  "lastBarDate": "2026-08-21",
   "barCount": 194,
-  "checksum": "75cab806",
+  "checksum": "13f4bd22",
   "ohlcv": [
     {
       "date": "2022-12-09",
@@ -1556,12 +1556,12 @@
       "volume": 500451479
     },
     {
-      "date": "2026-08-20",
+      "date": "2026-08-21",
       "open": 225.98,
       "high": 227.92,
-      "low": 215.66,
-      "close": 216.85,
-      "volume": 386061286
+      "low": 214.5,
+      "close": 214.72,
+      "volume": 484930586
     }
   ],
   "aggregatedFrom": "1d"
