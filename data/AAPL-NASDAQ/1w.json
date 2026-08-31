@@ -6,7 +6,7 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:AAPL",
-  "fetchedAt": "2026-08-31T07:59:11.844Z",
+  "fetchedAt": "2026-08-31T16:41:48.413Z",
   "lastBarDate": "2026-08-28",
   "barCount": 193,
   "checksum": "d793af91",
