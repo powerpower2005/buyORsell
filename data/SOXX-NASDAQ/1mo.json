@@ -6,10 +6,10 @@
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:SOXX",
-  "fetchedAt": "2026-08-31T16:58:38.164Z",
-  "lastBarDate": "2026-08-28",
+  "fetchedAt": "2026-09-01T07:28:31.252Z",
+  "lastBarDate": "2026-08-31",
   "barCount": 45,
-  "checksum": "9eabb0f3",
+  "checksum": "461bb720",
   "ohlcv": [
     {
       "date": "2022-12-30",
@@ -364,12 +364,12 @@
       "volume": 241208739
     },
     {
-      "date": "2026-08-28",
+      "date": "2026-08-31",
       "open": 491.92,
       "high": 566.02,
       "low": 485.71,
-      "close": 508.62,
-      "volume": 150475423
+      "close": 511.04,
+      "volume": 156722450
     }
   ],
   "aggregatedFrom": "1d"
