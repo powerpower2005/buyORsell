@@ -6,7 +6,7 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:LITE",
-  "fetchedAt": "2026-09-02T13:17:46.541Z",
+  "fetchedAt": "2026-09-02T17:46:51.432Z",
   "lastBarDate": "2026-09-01",
   "barCount": 190,
   "checksum": "d5916d17",
