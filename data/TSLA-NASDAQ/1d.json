@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "gf",
   "resolvedSymbol": "NASDAQ:TSLA",
-  "fetchedAt": "2026-09-01T17:49:16.564Z",
-  "lastBarDate": "2026-08-31",
-  "barCount": 932,
-  "checksum": "aa88d625",
+  "fetchedAt": "2026-09-02T07:02:53.165Z",
+  "lastBarDate": "2026-09-01",
+  "barCount": 933,
+  "checksum": "a2363357",
   "ohlcv": [
     {
       "date": "2022-12-12",
@@ -7213,7 +7213,7 @@
     },
     {
       "date": "2026-07-17",
-      "open": 381.78,
+      "open": 381.72,
       "high": 385.69,
       "low": 377.22,
       "close": 380.84,
@@ -7466,6 +7466,14 @@
       "low": 347.15,
       "close": 367.95,
       "volume": 61732258
+    },
+    {
+      "date": "2026-09-01",
+      "open": 360.9,
+      "high": 362.7,
+      "low": 352.96,
+      "close": 356.09,
+      "volume": 36193926
     }
   ]
 }
