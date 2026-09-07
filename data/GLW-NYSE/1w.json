@@ -6,7 +6,7 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NYSE:GLW",
-  "fetchedAt": "2026-09-07T06:59:40.999Z",
+  "fetchedAt": "2026-09-07T14:47:05.407Z",
   "lastBarDate": "2026-09-04",
   "barCount": 193,
   "checksum": "1038ce",
