@@ -6,7 +6,7 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NYSE:BE",
-  "fetchedAt": "2026-09-08T17:45:11.073Z",
+  "fetchedAt": "2026-09-09T06:59:25.108Z",
   "lastBarDate": "2026-09-04",
   "barCount": 190,
   "checksum": "a7fadc3c",
@@ -1461,7 +1461,7 @@
     },
     {
       "date": "2026-07-10",
-      "open": 280.92,
+      "open": 280.63,
       "high": 305.41,
       "low": 229.55,
       "close": 244.61,
