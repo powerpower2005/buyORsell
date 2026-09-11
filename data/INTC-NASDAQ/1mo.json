@@ -6,10 +6,10 @@
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:INTC",
-  "fetchedAt": "2026-09-10T17:32:43.418Z",
-  "lastBarDate": "2026-09-09",
+  "fetchedAt": "2026-09-11T07:02:27.544Z",
+  "lastBarDate": "2026-09-10",
   "barCount": 45,
-  "checksum": "e6377e15",
+  "checksum": "cbdd170f",
   "ohlcv": [
     {
       "date": "2023-01-31",
@@ -185,7 +185,7 @@
       "high": 23.82,
       "low": 21.47,
       "close": 21.52,
-      "volume": 1206042343
+      "volume": 1274452141
     },
     {
       "date": "2024-11-29",
@@ -364,12 +364,12 @@
       "volume": 2105721892
     },
     {
-      "date": "2026-09-09",
+      "date": "2026-09-10",
       "open": 86.84,
       "high": 106.69,
       "low": 85.72,
-      "close": 106.24,
-      "volume": 409990100
+      "close": 100.32,
+      "volume": 647146441
     }
   ],
   "aggregatedFrom": "1d"
