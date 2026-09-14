@@ -6,10 +6,10 @@
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
   "resolvedSymbol": "NYSE:VRT",
-  "fetchedAt": "2026-09-11T17:45:45.214Z",
-  "lastBarDate": "2026-09-10",
+  "fetchedAt": "2026-09-14T07:45:55.832Z",
+  "lastBarDate": "2026-09-11",
   "barCount": 46,
-  "checksum": "25a9c009",
+  "checksum": "801ab64d",
   "ohlcv": [
     {
       "date": "2022-12-30",
@@ -372,12 +372,12 @@
       "volume": 95287985
     },
     {
-      "date": "2026-09-10",
+      "date": "2026-09-11",
       "open": 255.22,
       "high": 295.34,
       "low": 244.77,
-      "close": 248.13,
-      "volume": 39476595
+      "close": 257.06,
+      "volume": 44250684
     }
   ],
   "aggregatedFrom": "1d"
