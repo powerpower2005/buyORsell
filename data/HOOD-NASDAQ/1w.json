@@ -6,7 +6,7 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:HOOD",
-  "fetchedAt": "2026-09-17T07:07:33.201Z",
+  "fetchedAt": "2026-09-17T14:06:55.203Z",
   "lastBarDate": "2026-09-16",
   "barCount": 196,
   "checksum": "ac61d55",
