@@ -6,7 +6,7 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "INDEXNASDAQ:NDX",
-  "fetchedAt": "2026-09-17T14:10:53.546Z",
+  "fetchedAt": "2026-09-17T18:07:02.960Z",
   "lastBarDate": "2026-09-16",
   "barCount": 198,
   "checksum": "fbc8b72c",
