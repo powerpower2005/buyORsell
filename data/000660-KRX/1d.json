@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "gf",
   "resolvedSymbol": "KRX:000660",
-  "fetchedAt": "2026-09-21T07:27:29.289Z",
-  "lastBarDate": "2026-09-18",
-  "barCount": 942,
-  "checksum": "722936b",
+  "fetchedAt": "2026-09-21T15:30:21.514Z",
+  "lastBarDate": "2026-09-21",
+  "barCount": 943,
+  "checksum": "cfa79b64",
   "ohlcv": [
     {
       "date": "2022-11-11",
@@ -7546,6 +7546,14 @@
       "low": 1805000,
       "close": 1857000,
       "volume": 4764077
+    },
+    {
+      "date": "2026-09-21",
+      "open": 1872000,
+      "high": 1888000,
+      "low": 1847000,
+      "close": 1868000,
+      "volume": 2755380
     }
   ]
 }
