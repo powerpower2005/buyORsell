@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "gf",
   "resolvedSymbol": "NASDAQ:LITE",
-  "fetchedAt": "2026-09-18T17:33:06.608Z",
-  "lastBarDate": "2026-09-17",
-  "barCount": 921,
-  "checksum": "9b33ef3d",
+  "fetchedAt": "2026-09-21T07:39:48.426Z",
+  "lastBarDate": "2026-09-18",
+  "barCount": 922,
+  "checksum": "dcf1b4fe",
   "ohlcv": [
     {
       "date": "2023-01-17",
@@ -3525,11 +3525,11 @@
     },
     {
       "date": "2024-10-15",
-      "open": 68.68,
-      "high": 69.4,
-      "low": 67.88,
-      "close": 69.23,
-      "volume": 696
+      "open": 69.4,
+      "high": 70.09,
+      "low": 66.3,
+      "close": 66.58,
+      "volume": 1667435
     },
     {
       "date": "2024-10-16",
@@ -6349,7 +6349,7 @@
     },
     {
       "date": "2026-03-16",
-      "open": 656,
+      "open": 655.99,
       "high": 672.99,
       "low": 607.27,
       "close": 624.84,
@@ -6501,7 +6501,7 @@
     },
     {
       "date": "2026-04-13",
-      "open": 889,
+      "open": 887.64,
       "high": 905.9,
       "low": 841.05,
       "close": 871.18,
@@ -7378,6 +7378,14 @@
       "low": 886.1,
       "close": 893.61,
       "volume": 4910750
+    },
+    {
+      "date": "2026-09-18",
+      "open": 915.66,
+      "high": 951.6,
+      "low": 896,
+      "close": 930.91,
+      "volume": 9269371
     }
   ]
 }
