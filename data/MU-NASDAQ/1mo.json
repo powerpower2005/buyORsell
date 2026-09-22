@@ -6,10 +6,10 @@
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:MU",
-  "fetchedAt": "2026-09-21T15:41:17.427Z",
-  "lastBarDate": "2026-09-18",
+  "fetchedAt": "2026-09-22T07:18:33.051Z",
+  "lastBarDate": "2026-09-21",
   "barCount": 46,
-  "checksum": "5118089e",
+  "checksum": "4ee1844d",
   "ohlcv": [
     {
       "date": "2022-12-30",
@@ -372,12 +372,12 @@
       "volume": 630675804
     },
     {
-      "date": "2026-09-18",
+      "date": "2026-09-21",
       "open": 941.13,
-      "high": 1042.4,
+      "high": 1064.49,
       "low": 902.6,
-      "close": 1015.8,
-      "volume": 332700350
+      "close": 1043.96,
+      "volume": 360874760
     }
   ],
   "aggregatedFrom": "1d"
