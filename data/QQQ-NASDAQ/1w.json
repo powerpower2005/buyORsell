@@ -6,7 +6,7 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:QQQ",
-  "fetchedAt": "2026-09-23T14:17:19.822Z",
+  "fetchedAt": "2026-09-23T18:33:53.971Z",
   "lastBarDate": "2026-09-22",
   "barCount": 197,
   "checksum": "bfbdeae7",
