@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "gf",
   "resolvedSymbol": "NASDAQ:TSLA",
-  "fetchedAt": "2026-10-01T08:26:37.936Z",
+  "fetchedAt": "2026-10-01T16:11:25.491Z",
   "lastBarDate": "2026-09-30",
   "barCount": 953,
   "checksum": "931db654",
