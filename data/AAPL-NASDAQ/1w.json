@@ -6,10 +6,10 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:AAPL",
-  "fetchedAt": "2026-09-30T15:30:43.745Z",
-  "lastBarDate": "2026-09-29",
+  "fetchedAt": "2026-10-01T08:07:39.697Z",
+  "lastBarDate": "2026-09-30",
   "barCount": 198,
-  "checksum": "f1b28e75",
+  "checksum": "2255687e",
   "ohlcv": [
     {
       "date": "2022-12-23",
@@ -774,10 +774,10 @@
     {
       "date": "2024-10-18",
       "open": 228.7,
-      "high": 237.49,
+      "high": 236.18,
       "low": 228.6,
       "close": 235,
-      "volume": 218140974
+      "volume": 154343987
     },
     {
       "date": "2024-10-25",
@@ -1588,12 +1588,12 @@
       "volume": 162105444
     },
     {
-      "date": "2026-09-29",
+      "date": "2026-09-30",
       "open": 340.37,
       "high": 342.99,
       "low": 328.7,
-      "close": 329.4,
-      "volume": 71298886
+      "close": 333.02,
+      "volume": 121287444
     }
   ],
   "aggregatedFrom": "1d"
