@@ -6,7 +6,7 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:PLTR",
-  "fetchedAt": "2026-10-02T08:05:07.181Z",
+  "fetchedAt": "2026-10-02T15:28:56.104Z",
   "lastBarDate": "2026-10-01",
   "barCount": 172,
   "checksum": "8805232",
