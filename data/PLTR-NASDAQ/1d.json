@@ -6,34 +6,74 @@
   "intervalSeconds": 86400,
   "source": "gf",
   "resolvedSymbol": "NASDAQ:PLTR",
-  "fetchedAt": "2026-10-12T18:44:41.666Z",
-  "lastBarDate": "2026-10-09",
-  "barCount": 759,
-  "checksum": "e9e2c063",
+  "fetchedAt": "2026-10-13T09:02:55.593Z",
+  "lastBarDate": "2026-10-12",
+  "barCount": 765,
+  "checksum": "7822123a",
   "ohlcv": [
     {
-      "date": "2022-08-31",
-      "open": 7.95,
-      "high": 8,
-      "low": 7.7,
-      "close": 7.72,
-      "volume": 28691526
+      "date": "2022-09-06",
+      "open": 7.45,
+      "high": 7.46,
+      "low": 7.17,
+      "close": 7.28,
+      "volume": 30429420
     },
     {
-      "date": "2022-09-01",
-      "open": 7.61,
-      "high": 7.62,
-      "low": 7.22,
-      "close": 7.49,
-      "volume": 39079702
+      "date": "2022-09-07",
+      "open": 7.27,
+      "high": 7.43,
+      "low": 7.18,
+      "close": 7.39,
+      "volume": 30329957
     },
     {
-      "date": "2022-09-02",
-      "open": 7.67,
-      "high": 7.67,
-      "low": 7.35,
-      "close": 7.4,
-      "volume": 25965044
+      "date": "2022-09-08",
+      "open": 7.33,
+      "high": 7.53,
+      "low": 7.27,
+      "close": 7.53,
+      "volume": 26303595
+    },
+    {
+      "date": "2022-09-09",
+      "open": 7.68,
+      "high": 7.82,
+      "low": 7.64,
+      "close": 7.79,
+      "volume": 27860611
+    },
+    {
+      "date": "2022-09-12",
+      "open": 7.86,
+      "high": 8.03,
+      "low": 7.82,
+      "close": 8.01,
+      "volume": 30544819
+    },
+    {
+      "date": "2022-09-13",
+      "open": 7.63,
+      "high": 7.66,
+      "low": 7.45,
+      "close": 7.48,
+      "volume": 29770663
+    },
+    {
+      "date": "2022-09-14",
+      "open": 7.45,
+      "high": 7.63,
+      "low": 7.33,
+      "close": 7.63,
+      "volume": 29422539
+    },
+    {
+      "date": "2022-09-15",
+      "open": 7.47,
+      "high": 8.1,
+      "low": 7.45,
+      "close": 8.01,
+      "volume": 51700626
     },
     {
       "date": "2022-09-16",
@@ -6082,6 +6122,14 @@
       "low": 198.3,
       "close": 209.05,
       "volume": 37622537
+    },
+    {
+      "date": "2026-10-12",
+      "open": 208.9,
+      "high": 212.94,
+      "low": 206.05,
+      "close": 209,
+      "volume": 24308808
     }
   ]
 }

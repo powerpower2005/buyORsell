@@ -6,26 +6,18 @@
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:PLTR",
-  "fetchedAt": "2026-10-12T18:44:41.666Z",
-  "lastBarDate": "2026-10-09",
-  "barCount": 47,
-  "checksum": "9dade2ba",
+  "fetchedAt": "2026-10-13T09:02:55.593Z",
+  "lastBarDate": "2026-10-12",
+  "barCount": 46,
+  "checksum": "95b5d529",
   "ohlcv": [
     {
-      "date": "2022-08-31",
-      "open": 7.95,
-      "high": 8,
-      "low": 7.7,
-      "close": 7.72,
-      "volume": 28691526
-    },
-    {
       "date": "2022-09-23",
-      "open": 7.61,
-      "high": 8.07,
+      "open": 7.45,
+      "high": 8.1,
       "low": 7.13,
       "close": 7.4,
-      "volume": 286938803
+      "volume": 478256287
     },
     {
       "date": "2022-10-31",
@@ -380,12 +372,12 @@
       "volume": 527383153
     },
     {
-      "date": "2026-10-09",
+      "date": "2026-10-12",
       "open": 190.09,
-      "high": 209.58,
+      "high": 212.94,
       "low": 186.6,
-      "close": 209.05,
-      "volume": 166412381
+      "close": 209,
+      "volume": 190721189
     }
   ],
   "aggregatedFrom": "1d"
