@@ -6,10 +6,10 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "KRX:KOSPI",
-  "fetchedAt": "2026-10-13T08:56:34.817Z",
-  "lastBarDate": "2026-10-12",
+  "fetchedAt": "2026-10-13T16:45:41.922Z",
+  "lastBarDate": "2026-10-13",
   "barCount": 200,
-  "checksum": "3dbd0085",
+  "checksum": "dde2a958",
   "ohlcv": [
     {
       "date": "2022-12-23",
@@ -1604,12 +1604,12 @@
       "volume": 842329
     },
     {
-      "date": "2026-10-12",
+      "date": "2026-10-13",
       "open": 6482.62,
       "high": 6485.61,
-      "low": 6368.49,
-      "close": 6384.24,
-      "volume": 340621
+      "low": 5911.11,
+      "close": 6035.35,
+      "volume": 763713
     }
   ],
   "aggregatedFrom": "1d"
