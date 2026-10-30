@@ -6,7 +6,7 @@
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
   "resolvedSymbol": "NYSE:BE",
-  "fetchedAt": "2026-10-30T07:59:19.775Z",
+  "fetchedAt": "2026-10-30T15:29:34.496Z",
   "lastBarDate": "2026-10-29",
   "barCount": 46,
   "checksum": "9677e2ec",
