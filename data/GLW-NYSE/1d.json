@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "gf",
   "resolvedSymbol": "NYSE:GLW",
-  "fetchedAt": "2026-11-06T16:37:59.417Z",
-  "lastBarDate": "2026-11-05",
-  "barCount": 969,
-  "checksum": "1de40523",
+  "fetchedAt": "2026-11-09T09:03:07.908Z",
+  "lastBarDate": "2026-11-06",
+  "barCount": 970,
+  "checksum": "469734e8",
   "ohlcv": [
     {
       "date": "2022-12-27",
@@ -7762,6 +7762,14 @@
       "low": 101.83,
       "close": 103.43,
       "volume": 21517830
+    },
+    {
+      "date": "2026-11-06",
+      "open": 108.79,
+      "high": 110.5,
+      "low": 104.07,
+      "close": 106.13,
+      "volume": 11701346
     }
   ]
 }

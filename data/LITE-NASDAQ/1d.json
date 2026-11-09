@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "gf",
   "resolvedSymbol": "NASDAQ:LITE",
-  "fetchedAt": "2026-11-06T16:40:36.678Z",
-  "lastBarDate": "2026-11-05",
-  "barCount": 956,
-  "checksum": "a44ab6f4",
+  "fetchedAt": "2026-11-09T09:06:15.184Z",
+  "lastBarDate": "2026-11-06",
+  "barCount": 957,
+  "checksum": "a3971d72",
   "ohlcv": [
     {
       "date": "2023-01-17",
@@ -7658,6 +7658,14 @@
       "low": 506.69,
       "close": 509.7,
       "volume": 10037951
+    },
+    {
+      "date": "2026-11-06",
+      "open": 550.7,
+      "high": 559,
+      "low": 518.01,
+      "close": 538.59,
+      "volume": 5406033
     }
   ]
 }
