@@ -6,10 +6,10 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:QQQ",
-  "fetchedAt": "2026-11-11T17:03:54.354Z",
-  "lastBarDate": "2026-11-10",
+  "fetchedAt": "2026-11-12T09:20:01.778Z",
+  "lastBarDate": "2026-11-11",
   "barCount": 200,
-  "checksum": "a664eb83",
+  "checksum": "c588474",
   "ohlcv": [
     {
       "date": "2023-01-20",
@@ -1604,12 +1604,12 @@
       "volume": 356002782
     },
     {
-      "date": "2026-11-10",
+      "date": "2026-11-11",
       "open": 662.64,
-      "high": 682.48,
+      "high": 695.57,
       "low": 662.02,
-      "close": 674.76,
-      "volume": 93750736
+      "close": 690.38,
+      "volume": 138622505
     }
   ],
   "aggregatedFrom": "1d"

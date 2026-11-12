@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "gf",
   "resolvedSymbol": "NYSE:CRM",
-  "fetchedAt": "2026-11-11T16:53:22.818Z",
-  "lastBarDate": "2026-11-10",
-  "barCount": 963,
-  "checksum": "a7605da3",
+  "fetchedAt": "2026-11-12T09:08:57.172Z",
+  "lastBarDate": "2026-11-11",
+  "barCount": 964,
+  "checksum": "d89e96b8",
   "ohlcv": [
     {
       "date": "2023-01-10",
@@ -7714,6 +7714,14 @@
       "low": 208.88,
       "close": 213.48,
       "volume": 7877570
+    },
+    {
+      "date": "2026-11-11",
+      "open": 214.91,
+      "high": 218.23,
+      "low": 213.5,
+      "close": 218.01,
+      "volume": 6209706
     }
   ]
 }
