@@ -6,7 +6,7 @@
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
   "resolvedSymbol": "NASDAQ:NVDA",
-  "fetchedAt": "2026-11-12T09:15:10.529Z",
+  "fetchedAt": "2026-11-12T17:39:25.318Z",
   "lastBarDate": "2026-11-11",
   "barCount": 48,
   "checksum": "b7add522",
