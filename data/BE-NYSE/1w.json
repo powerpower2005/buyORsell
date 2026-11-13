@@ -6,10 +6,10 @@
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
   "resolvedSymbol": "NYSE:BE",
-  "fetchedAt": "2026-11-12T17:29:15.663Z",
-  "lastBarDate": "2026-11-11",
+  "fetchedAt": "2026-11-13T08:59:59.191Z",
+  "lastBarDate": "2026-11-12",
   "barCount": 200,
-  "checksum": "6484660f",
+  "checksum": "3bb82c65",
   "ohlcv": [
     {
       "date": "2023-01-20",
@@ -1604,12 +1604,12 @@
       "volume": 114585258
     },
     {
-      "date": "2026-11-11",
+      "date": "2026-11-12",
       "open": 182.24,
       "high": 217.85,
       "low": 180.5,
-      "close": 209.47,
-      "volume": 48941373
+      "close": 201.93,
+      "volume": 63382887
     }
   ],
   "aggregatedFrom": "1d"
