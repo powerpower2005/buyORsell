@@ -9,11 +9,12 @@
     "GoogleFinance:GOOGLEFINANCE",
     "GoogleSheets:sheets.googleapis.com",
     "Validation:query1.finance.yahoo.com",
+    "Validation:fchart.stock.naver.com",
     "YahooFinance:query1.finance.yahoo.com",
     "NaverFinance:fchart.stock.naver.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -23,7 +24,7 @@
     "after_sha256": "d80207cfd270a89ae7ef7b977f3d44079f0d0c014bb54a30106f8bb7b22500e0"
   },
   "resolvedSymbol": "KRX:KOSPI",
-  "fetchedAt": "2026-11-15T16:31:18.918Z",
+  "fetchedAt": "2026-11-15T17:21:35.331Z",
   "lastBarDate": "2026-11-13",
   "barCount": 200,
   "checksum": "b4af222d",

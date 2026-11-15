@@ -12,7 +12,7 @@
     "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -22,18 +22,34 @@
     "after_sha256": "6bf459b09ccf32c6f0ceb9c1e4e7bba94cb062941f7cfd1c8c2df313812d03e1"
   },
   "resolvedSymbol": "NASDAQ:AAPL",
-  "fetchedAt": "2026-11-15T16:29:43.541Z",
-  "lastBarDate": "2026-11-12",
-  "barCount": 48,
-  "checksum": "e78cd22a",
+  "fetchedAt": "2026-11-15T17:19:57.229Z",
+  "lastBarDate": "2026-11-13",
+  "barCount": 50,
+  "checksum": "98ccddca",
   "ohlcv": [
     {
+      "date": "2022-10-31",
+      "open": 142.54,
+      "high": 157.5,
+      "low": 134.37,
+      "close": 153.34,
+      "volume": 1518366480
+    },
+    {
+      "date": "2022-11-30",
+      "open": 155.08,
+      "high": 155.45,
+      "low": 134.38,
+      "close": 148.03,
+      "volume": 1724948219
+    },
+    {
       "date": "2022-12-30",
-      "open": 135.11,
-      "high": 136.81,
+      "open": 148.21,
+      "high": 150.92,
       "low": 125.87,
       "close": 129.93,
-      "volume": 691804567
+      "volume": 1675731304
     },
     {
       "date": "2023-01-31",
@@ -404,12 +420,12 @@
       "volume": 877798622
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 342.67,
-      "high": 359.37,
+      "high": 360.83,
       "low": 325.33,
-      "close": 354.88,
-      "volume": 482775788
+      "close": 356.27,
+      "volume": 522803256
     }
   ],
   "aggregatedFrom": "1d"

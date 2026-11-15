@@ -12,12 +12,12 @@
     "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "resolvedSymbol": "NASDAQ:QQQ",
-  "fetchedAt": "2026-11-15T16:32:55.020Z",
-  "lastBarDate": "2026-11-12",
+  "fetchedAt": "2026-11-15T17:23:14.033Z",
+  "lastBarDate": "2026-11-13",
   "barCount": 200,
-  "checksum": "5031f0c2",
+  "checksum": "67c078a9",
   "ohlcv": [
     {
       "date": "2023-01-20",
@@ -1612,12 +1612,12 @@
       "volume": 356002782
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 662.64,
       "high": 695.57,
       "low": 662.02,
-      "close": 688.17,
-      "volume": 175841968
+      "close": 679.89,
+      "volume": 217940597
     }
   ],
   "aggregatedFrom": "1d"

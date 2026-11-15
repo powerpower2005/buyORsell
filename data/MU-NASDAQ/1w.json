@@ -12,7 +12,7 @@
     "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -22,10 +22,10 @@
     "after_sha256": "f7521b3c3c926478c5f5d8e906a121cbd065d86677139c7501bc768f82f2aa67"
   },
   "resolvedSymbol": "NASDAQ:MU",
-  "fetchedAt": "2026-11-15T16:31:51.128Z",
-  "lastBarDate": "2026-11-12",
+  "fetchedAt": "2026-11-15T17:22:09.115Z",
+  "lastBarDate": "2026-11-13",
   "barCount": 200,
-  "checksum": "489cfd68",
+  "checksum": "fa0bfdb4",
   "ohlcv": [
     {
       "date": "2023-01-20",
@@ -1620,12 +1620,12 @@
       "volume": 209855335
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 703.18,
       "high": 827.58,
       "low": 689.65,
-      "close": 798.44,
-      "volume": 124943508
+      "close": 778.31,
+      "volume": 152864515
     }
   ],
   "aggregatedFrom": "1d"

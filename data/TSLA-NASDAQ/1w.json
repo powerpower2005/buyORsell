@@ -12,7 +12,7 @@
     "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -22,10 +22,10 @@
     "after_sha256": "c509e1ab1025e5e7165bd38d501f6c99e6abc6fa6f3944b5983e2e05187b35f1"
   },
   "resolvedSymbol": "NASDAQ:TSLA",
-  "fetchedAt": "2026-11-15T16:33:26.961Z",
-  "lastBarDate": "2026-11-12",
+  "fetchedAt": "2026-11-15T17:23:46.794Z",
+  "lastBarDate": "2026-11-13",
   "barCount": 200,
-  "checksum": "62a55af7",
+  "checksum": "39cdd129",
   "ohlcv": [
     {
       "date": "2023-01-20",
@@ -1620,12 +1620,12 @@
       "volume": 234000584
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 360.25,
-      "high": 401.22,
+      "high": 404.4,
       "low": 360.02,
-      "close": 397.45,
-      "volume": 117400221
+      "close": 390.22,
+      "volume": 149793186
     }
   ],
   "aggregatedFrom": "1d"

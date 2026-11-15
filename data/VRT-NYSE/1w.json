@@ -12,7 +12,7 @@
     "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -22,10 +22,10 @@
     "after_sha256": "f7883b85598e034c1fdb6b8641dd530925ae6f7a26e65889eb14781c881c2cda"
   },
   "resolvedSymbol": "NYSE:VRT",
-  "fetchedAt": "2026-11-15T16:33:43.449Z",
-  "lastBarDate": "2026-11-12",
+  "fetchedAt": "2026-11-15T17:24:02.962Z",
+  "lastBarDate": "2026-11-13",
   "barCount": 200,
-  "checksum": "1e0eb536",
+  "checksum": "6456e547",
   "ohlcv": [
     {
       "date": "2023-01-20",
@@ -1620,12 +1620,12 @@
       "volume": 53061980
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 189.02,
-      "high": 214.38,
+      "high": 214.49,
       "low": 188.01,
-      "close": 209.64,
-      "volume": 27206131
+      "close": 202.07,
+      "volume": 32643000
     }
   ],
   "aggregatedFrom": "1d"
