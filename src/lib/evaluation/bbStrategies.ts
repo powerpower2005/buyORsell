@@ -1,3 +1,4 @@
+import type { SignalTiming } from "./confirmedSignals";
 import type { IndicatorResults, OHLCVBar, SeriesPoint, TrendLabel } from "../types";
 import {
   BB_STRATEGY_META,
@@ -10,7 +11,7 @@ import {
 
 export type { BbStrategyId };
 
-export interface BbStrategyHit {
+export interface BbStrategyHit extends SignalTiming {
   id: BbStrategyId;
   label: string;
   date: string;

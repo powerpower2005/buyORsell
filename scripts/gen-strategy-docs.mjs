@@ -18,6 +18,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const docsRoot = path.join(root, "docs");
 const indRoot = path.join(docsRoot, "indicators");
 const stratRoot = path.join(docsRoot, "strategies");
+const versions = JSON.parse(fs.readFileSync(path.join(root, "config/analysis-versions.json"), "utf8"));
 
 function ensureDir(p) {
   fs.mkdirSync(p, { recursive: true });
@@ -1943,6 +1944,12 @@ function strategyDoc(family, s) {
 
 > Family: **${family.label}** (\`${family.id}\`) · [strategies INDEX](../INDEX.md) · [indicators](../../indicators/INDEX.md)
 
+## Version and timing
+
+Version **${versions.items[`${family.id}:${s.id}`].version}** · [이전 버전과 비교](../../versions.md)
+
+확정 신호는 \`evaluateQuote\`의 최초 관측 기록을 사용합니다. 다음 봉 시가부터 체결하며 미종결 거래는 성공률에서 제외합니다. 아래 조건은 저수준 탐지 조건입니다.
+
 ## Summary
 
 ${s.summary}
@@ -2149,7 +2156,7 @@ node scripts/gen-strategy-docs.mjs
 
 const INDICATORS_CHANGELOG_BOOTSTRAP = `# Indicators changelog
 
-Local-only (\`docs/\` gitignored). Newest first.
+Git-tracked changelog. Newest first.
 
 **Agents must append** whenever indicator code, catalog labels, params, or series change.
 Do not regenerate this file — \`gen-strategy-docs.mjs\` only creates it if missing.
@@ -2169,7 +2176,7 @@ Do not regenerate this file — \`gen-strategy-docs.mjs\` only creates it if mis
 
 const STRATEGIES_CHANGELOG_BOOTSTRAP = `# Strategies changelog
 
-Local-only (\`docs/\` gitignored). Newest first.
+Git-tracked changelog. Newest first.
 
 **Agents must append** whenever strategy detectors, meta, entry rules, or indicator deps change.
 Do not regenerate this file — \`gen-strategy-docs.mjs\` only creates it if missing.
@@ -2208,7 +2215,7 @@ alwaysApply: true
 
 # Strategy & indicator docs
 
-Local docs under \`docs/\` (**gitignored**). Also see repo root \`AGENTS.md\`.
+Generated local docs under \`docs/\`; versions.md and CHANGELOG.md files are Git-tracked. Also see repo root \`AGENTS.md\`.
 
 ## Agent entry
 
@@ -2256,6 +2263,21 @@ Skip only pure refactors with zero behavior/doc/label impact.
   fs.writeFileSync(rulePath, content, "utf8");
 }
 
+function writeVersionReport() {
+  const labels = Object.fromEntries(Object.entries(INDICATORS).map(([id, item]) => [`indicator:${id}`, item.nameKo]));
+  for (const family of families) for (const strategy of family.strategies) labels[`${family.id}:${strategy.id}`] = strategy.label;
+  for (const pattern of CANDLE_PATTERNS) labels[`candle:${pattern.id}`] = pattern.labelKo;
+  const chartMeta = fs.readFileSync(path.join(root, "src/lib/chartPatternMeta.ts"), "utf8");
+  for (const match of chartMeta.matchAll(/  (\w+): \{\s+label: "[^"]+",\s+labelKo: "([^"]+)"/g)) labels[`chart:${match[1]}`] = match[2];
+  const safe = (text) => String(text).replaceAll("|", "\\|").replaceAll("\n", " ");
+  const rows = Object.entries(versions.items).map(([key, item]) =>
+    `| \`${key}\` | ${safe(labels[key] ?? key.split(":")[1])} | ${item.baselineVersion} → ${item.version} | ${safe(item.previousBehavior)} | ${safe(item.change)} |`);
+  const file = path.join(docsRoot, "versions.md");
+  const doc = fs.readFileSync(file, "utf8");
+  const table = ["| ID | 이름 | 버전 | 이전 동작 | 현재 동작 |", "|---|---|---|---|---|", ...rows].join("\n");
+  fs.writeFileSync(file, doc.replace(/<!-- version-items:start -->[\s\S]*?<!-- version-items:end -->/, `<!-- version-items:start -->\n${table}\n<!-- version-items:end -->`), "utf8");
+}
+
 // --- main ---
 ensureDir(docsRoot);
 ensureDir(indRoot);
@@ -2276,6 +2298,7 @@ for (const family of families) {
   }
 }
 
+writeVersionReport();
 updateCursorRule();
 
 const count = families.reduce((n, f) => n + f.strategies.length, 0);

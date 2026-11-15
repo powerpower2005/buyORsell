@@ -1,3 +1,4 @@
+import type { SignalTiming } from "./confirmedSignals";
 import type { OHLCVBar, TrendLabel } from "../types";
 import type { ChartPatternResult } from "./chartPatterns";
 import {
@@ -12,7 +13,7 @@ import { levelsFromPattern } from "./riskReward";
 
 export type { PatternStrategyId };
 
-export interface PatternStrategyHit {
+export interface PatternStrategyHit extends SignalTiming {
   id: PatternStrategyId;
   label: string;
   date: string;
@@ -111,7 +112,7 @@ function makeHit(
     rewardRisk: null,
     rrMethod: "pattern",
   };
-  if (id === "fake_breakout") return base;
+  if (id === "fake_breakout") return { ...base, stopPrice: null, targetPrice: null };
   if (direction !== "bullish" && direction !== "bearish") return base;
   const levels = levelsFromPattern(
     entryPrice,
@@ -139,7 +140,7 @@ export function detectPatternStrategies(
   if (!bars.length || !patterns?.instances.length) return null;
 
   const hits: PatternStrategyHit[] = [];
-  const confirmed = patterns.instances.filter(
+  const confirmed = (patterns.allInstances ?? patterns.instances).filter(
     (inst) => inst.status === "confirmed" && inst.entryBar != null,
   );
 

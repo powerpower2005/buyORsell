@@ -1,3 +1,4 @@
+import { versionFor } from "@/lib/versions";
 import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { ColorSwatchPicker } from "@/components/ColorSwatchPicker";
@@ -782,7 +783,7 @@ function StrategyLeaf({
   void refreshTick;
   return (
     <Leaf
-      label={label}
+      label={`${label} · v${versionFor(family, id)}`}
       checked={checked}
       onChange={onChange}
       help={help}

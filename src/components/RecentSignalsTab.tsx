@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { loadQuote } from "@/lib/dataLoader";
-import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
+import { evaluateAsync } from "@/lib/evaluation/evaluateAsync";
 import { getEffectiveIndicatorsConfig } from "@/lib/configStore";
 import { getTrendlineAlgoVersion } from "@/lib/trendlineStore";
 import {
@@ -99,6 +99,7 @@ export function RecentSignalsTab({
       return;
     }
 
+    const controller = new AbortController();
     let cancelled = false;
     setScanning(true);
 
@@ -109,12 +110,12 @@ export function RecentSignalsTab({
           if (cancelled) {
             return { ticker: entry.ticker, hits: [] as RecentStrategyHit[] };
           }
-          const evaluation = evaluateQuote(
+          const evaluation = await evaluateAsync([
             quote.ohlcv,
             RECENT_SIGNAL_TIMEFRAME,
             getEffectiveIndicatorsConfig(),
-            { trendlineAlgo: getTrendlineAlgoVersion() },
-          );
+            { trendlineAlgo: getTrendlineAlgoVersion(), asOf: quote.fetchedAt },
+          ], controller.signal);
           if (evaluation.fatalError) {
             return {
               ticker: entry.ticker,
@@ -154,6 +155,7 @@ export function RecentSignalsTab({
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
     // entryKey captures ticker identity; dailyEntries is read from this render.
     // eslint-disable-next-line react-hooks/exhaustive-deps

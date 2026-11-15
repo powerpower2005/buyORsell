@@ -1,71 +1,70 @@
+import { RSI, SMA } from "technicalindicators";
+import {
+  simulateTrade,
+  executionOptions,
+  type ExecutionOptions,
+} from "./execution";
+import { EXECUTION_VERSION } from "../versions";
 import type { BacktestResult, BacktestTrade, OHLCVBar } from "../types";
 import type { IndicatorResults } from "../types";
 
 export interface StrategyRules {
   entry: string;
   exit: string;
+  rsiPeriod?: number;
+  horizon?: number;
+  feeBps?: number;
+  slippageBps?: number;
   stop_loss_pct?: number;
   take_profit_pct?: number;
 }
 
-function rsi(bars: OHLCVBar[], period: number, idx: number): number | null {
-  if (idx < period) return null;
-  const slice = bars.slice(0, idx + 1).map((b) => b.close);
-  let gains = 0;
-  let losses = 0;
-  for (let i = slice.length - period; i < slice.length; i++) {
-    const diff = slice[i] - slice[i - 1];
-    if (diff >= 0) gains += diff;
-    else losses -= diff;
-  }
-  if (losses === 0) return 100;
-  const rs = gains / losses;
-  return 100 - 100 / (1 + rs);
-}
-
-function smaAt(bars: OHLCVBar[], period: number, idx: number): number | null {
-  if (idx < period - 1) return null;
-  const slice = bars.slice(idx - period + 1, idx + 1);
-  return slice.reduce((s, b) => s + b.close, 0) / period;
-}
-
 function evalSimpleCondition(
   expr: string,
-  bars: OHLCVBar[],
-  idx: number,
+  rsiValue: number | null,
+  close: number,
+  sma50: number | null,
+  sma200: number | null,
 ): boolean {
-  const close = bars[idx].close;
-  const r = rsi(bars, 14, idx);
-  const s200 = smaAt(bars, 200, idx);
-  const s50 = smaAt(bars, 50, idx);
-
-  const parts = expr.toUpperCase().split(/\s+AND\s+/i);
-  return parts.every((part) => {
-    part = part.trim();
-    if (part.includes("RSI <")) {
-      const n = parseInt(part.match(/\d+/)?.[0] ?? "30", 10);
-      return r != null && r < n;
-    }
-    if (part.includes("RSI >")) {
-      const n = parseInt(part.match(/\d+/)?.[0] ?? "70", 10);
-      return r != null && r > n;
-    }
-    if (part.includes("CLOSE > SMA200") || part.includes("CLOSE > SMA 200")) {
-      return s200 != null && close > s200;
-    }
-    if (part.includes("CLOSE < SMA50") || part.includes("CLOSE < SMA 50")) {
-      return s50 != null && close < s50;
-    }
-    return false;
-  });
+  // Supported grammar is OR of AND groups; reject unknown text instead of silently ignoring it.
+  const groups = expr
+    .toUpperCase()
+    .split(/\s+OR\s+/)
+    .map((group) =>
+      group.split(/\s+AND\s+/).map((term) => {
+        const match =
+          /^(RSI|CLOSE)\s*(<|>)\s*(SMA\s*50|SMA\s*200|\d+(?:\.\d+)?)$/.exec(
+            term.trim(),
+          );
+        if (!match) throw new Error(`지원하지 않는 조건식: ${term}`);
+        const lhs = match[1] === "RSI" ? rsiValue : close;
+        const rhs =
+          match[3].replace(/\s/g, "") === "SMA50"
+            ? sma50
+            : match[3].replace(/\s/g, "") === "SMA200"
+              ? sma200
+              : Number(match[3]);
+        return (
+          lhs != null &&
+          rhs != null &&
+          (match[2] === "<" ? lhs < rhs : lhs > rhs)
+        );
+      }),
+    );
+  return groups.some((group) => group.every(Boolean));
 }
 
 /** Shared metrics from a closed trade list. */
-export function summarizeBacktestTrades(trades: BacktestTrade[]): BacktestResult {
+export function summarizeBacktestTrades(
+  trades: BacktestTrade[],
+  pendingReturns: number[] = [],
+): BacktestResult {
   let equity = 100;
   let peak = 100;
   let maxDd = 0;
   let wins = 0;
+  let losses = 0;
+  let breakeven = 0;
   let grossProfit = 0;
   let grossLoss = 0;
   let winSum = 0;
@@ -74,35 +73,44 @@ export function summarizeBacktestTrades(trades: BacktestTrade[]): BacktestResult
   let shortCount = 0;
 
   for (const t of trades) {
-    if (t.returnPct > 0) {
+    if (t.returnPct > 1e-10) {
       wins++;
-      grossProfit += t.returnPct;
+      grossProfit += (equity * t.returnPct) / 100;
       winSum += t.returnPct;
-    } else if (t.returnPct < 0) {
-      grossLoss += Math.abs(t.returnPct);
+    } else if (t.returnPct < -1e-10) {
+      losses++;
+      grossLoss += (equity * Math.abs(t.returnPct)) / 100;
       lossSum += t.returnPct;
     }
+    if (Math.abs(t.returnPct) < 1e-10) breakeven++;
     if (t.side === "long") longCount++;
     else if (t.side === "short") shortCount++;
 
+    for (const ret of t.equityReturns ?? [t.returnPct]) {
+      const marked = equity * (1 + ret / 100);
+      peak = Math.max(peak, marked);
+      maxDd = Math.max(maxDd, ((peak - marked) / peak) * 100);
+    }
     equity *= 1 + t.returnPct / 100;
     peak = Math.max(peak, equity);
     maxDd = Math.max(maxDd, ((peak - equity) / peak) * 100);
   }
 
+  for (const ret of pendingReturns) {
+    const marked = equity * (1 + ret / 100);
+    peak = Math.max(peak, marked);
+    maxDd = Math.max(maxDd, ((peak - marked) / peak) * 100);
+  }
   const n = trades.length;
-  const lossCount = n - wins;
+  const lossCount = losses;
   const avgReturn = n ? trades.reduce((s, t) => s + t.returnPct, 0) / n : 0;
   const avgWin = wins ? winSum / wins : 0;
   const avgLoss = lossCount ? lossSum / lossCount : 0;
   const profitFactor =
-    grossLoss > 0
-      ? grossProfit / grossLoss
-      : grossProfit > 0
-        ? Infinity
-        : 0;
+    grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? Infinity : 0;
 
   return {
+    breakevenCount: breakeven,
     totalReturnPct: Math.round((equity - 100) * 100) / 100,
     maxDrawdownPct: Math.round(maxDd * 100) / 100,
     winRate: n ? Math.round((wins / n) * 1000) / 10 : 0,
@@ -112,9 +120,7 @@ export function summarizeBacktestTrades(trades: BacktestTrade[]): BacktestResult
     avgWinPct: Math.round(avgWin * 100) / 100,
     avgLossPct: Math.round(avgLoss * 100) / 100,
     profitFactor:
-      profitFactor === Infinity
-        ? null
-        : Math.round(profitFactor * 100) / 100,
+      profitFactor === Infinity ? null : Math.round(profitFactor * 100) / 100,
     expectancyPct: Math.round(avgReturn * 100) / 100,
     longCount,
     shortCount,
@@ -128,65 +134,73 @@ export function runBacktest(
   rules: StrategyRules,
   _indicators?: IndicatorResults,
 ): BacktestResult {
+  const closes = bars.map((b) => b.close);
+  const rsiPeriod = rules.rsiPeriod ?? 14;
+  if (!Number.isInteger(rsiPeriod) || rsiPeriod < 2)
+    throw new Error("RSI 기간은 2 이상의 정수여야 합니다.");
+  const rsis = RSI.calculate({ values: closes, period: rsiPeriod });
+  const ma50 = SMA.calculate({ values: closes, period: 50 });
+  const ma200 = SMA.calculate({ values: closes, period: 200 });
+  const valueAt = (values: number[], index: number) =>
+    values[index - (bars.length - values.length)] ?? null;
+  const test = (expr: string, index: number) =>
+    evalSimpleCondition(
+      expr,
+      valueAt(rsis, index),
+      closes[index],
+      valueAt(ma50, index),
+      valueAt(ma200, index),
+    );
+  const cfg: ExecutionOptions = {
+    horizon: rules.horizon ?? 12,
+    stopLossPct: rules.stop_loss_pct ?? 1.5,
+    takeProfitPct: rules.take_profit_pct ?? 1.5,
+    feeBps: rules.feeBps ?? 0,
+    slippageBps: rules.slippageBps ?? 0,
+  };
+  executionOptions(cfg);
+  evalSimpleCondition(rules.entry, null, 0, null, null);
+  evalSimpleCondition(rules.exit, null, 0, null, null);
   const trades: BacktestTrade[] = [];
-  let position: {
-    entryIdx: number;
-    entryPrice: number;
-  } | null = null;
-
-  const stopPct = rules.stop_loss_pct ?? 0;
-  const takePct = rules.take_profit_pct ?? 0;
-
-  for (let i = 200; i < bars.length; i++) {
-    const price = bars[i].close;
-
-    if (position) {
-      const ret = ((price - position.entryPrice) / position.entryPrice) * 100;
-      const hitStop = stopPct > 0 && ret <= -stopPct;
-      const hitTake = takePct > 0 && ret >= takePct;
-      const exitSignal = evalSimpleCondition(rules.exit, bars, i);
-
-      if (hitStop || hitTake || exitSignal) {
-        trades.push({
-          entryDate: bars[position.entryIdx].date,
-          exitDate: bars[i].date,
-          entryPrice: position.entryPrice,
-          exitPrice: price,
-          returnPct: Math.round(ret * 100) / 100,
-          side: "long",
-          entryBarIndex: position.entryIdx,
-          exitBarIndex: i,
-          exitReason: hitStop ? "stop" : hitTake ? "take" : "signal",
-        });
-        position = null;
-      }
-    } else if (evalSimpleCondition(rules.entry, bars, i)) {
-      position = { entryIdx: i, entryPrice: price };
+  let pendingCount = 0;
+  let pendingReturns: number[] = [];
+  for (let i = 0; i < bars.length; i++) {
+    // Evaluate both expressions so malformed exit rules fail even with no entries.
+    test(rules.exit, i);
+    if (!test(rules.entry, i)) continue;
+    const outcome = simulateTrade(
+      bars,
+      { id: "formula", version: EXECUTION_VERSION, barIndex: i, direction: "bullish" },
+      cfg,
+      (at) => test(rules.exit, at),
+    );
+    if (outcome.status === "pending") {
+      pendingCount++;
+      pendingReturns = outcome.equityReturns ?? [];
+      break;
     }
+    if (outcome.status !== "closed") continue;
+    trades.push(outcome.trade);
+    i = outcome.trade.exitBarIndex! - 1;
   }
-
-  if (position) {
-    const price = bars.at(-1)!.close;
-    const ret = ((price - position.entryPrice) / position.entryPrice) * 100;
-    trades.push({
-      entryDate: bars[position.entryIdx].date,
-      exitDate: bars.at(-1)!.date,
-      entryPrice: position.entryPrice,
-      exitPrice: price,
-      returnPct: Math.round(ret * 100) / 100,
-      side: "long",
-      entryBarIndex: position.entryIdx,
-      exitBarIndex: bars.length - 1,
-      exitReason: "eod",
-    });
-  }
-
-  return summarizeBacktestTrades(trades);
+  return {
+    ...summarizeBacktestTrades(trades, pendingReturns),
+    pendingCount,
+    executionVersion: EXECUTION_VERSION,
+    assumptions: {
+      ...cfg,
+      rsiPeriod,
+      entryRule: rules.entry,
+      exitRule: rules.exit,
+      entry: "next-open",
+      drawdown: "close-mark-to-market",
+    },
+  };
 }
 
 export const DEFAULT_STRATEGY: StrategyRules = {
   entry: "RSI < 30 AND close > SMA200",
   exit: "RSI > 70 OR close < SMA50",
-  stop_loss_pct: 5,
-  take_profit_pct: 15,
+  stop_loss_pct: 1.5,
+  take_profit_pct: 1.5,
 };

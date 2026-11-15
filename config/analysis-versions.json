@@ -1,0 +1,901 @@
+{
+  "baselineCommit": "1acbf7cc5f33f93bc2e21589298a7c944dbca788",
+  "releasedOn": "2026-11-15",
+  "items": {
+    "indicator:sma": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:ema": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:rsi": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:macd": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:stoch": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:bb": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:bbWide": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:disparity": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:mfi": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:atr": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:obv": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:ad": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:chaikin": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:eom": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:obvMid": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:equivolume": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:keltner": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:vwap": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:forever_vwap": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:adx": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:psar": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:cci": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:supertrend": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:ichimoku": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:volume": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:volume_ma": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:pivots": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:support_resistance": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:trendlines": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:fibonacci": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:gann": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:chart_patterns": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:candle_patterns": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "indicator:atr_helper": {
+      "version": "1.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "계산식 버전 v1.0.0 유지. 분석 엔진 v2에서 확정 봉만 입력하고 실제 설정을 내보내기에 기록.",
+      "previousBehavior": "원래 계산식·기간 기본값. 마지막 입력 봉까지 계산."
+    },
+    "signal:golden_cross": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "확정된 마지막 봉에서 상태를 평가하고 개별 버전을 기록. 조건식은 유지.",
+      "previousBehavior": "마지막 입력 봉의 상태를 평가."
+    },
+    "signal:rsi_oversold": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "확정된 마지막 봉에서 상태를 평가하고 개별 버전을 기록. 조건식은 유지.",
+      "previousBehavior": "마지막 입력 봉의 상태를 평가."
+    },
+    "signal:rsi_overbought": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "확정된 마지막 봉에서 상태를 평가하고 개별 버전을 기록. 조건식은 유지.",
+      "previousBehavior": "마지막 입력 봉의 상태를 평가."
+    },
+    "signal:above_sma200": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "확정된 마지막 봉에서 상태를 평가하고 개별 버전을 기록. 조건식은 유지.",
+      "previousBehavior": "마지막 입력 봉의 상태를 평가."
+    },
+    "bb:band_sr": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "bb:band_breakout": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "bb:squeeze": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "bb:trend_follow": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "bb:divergence": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 피벗 발생 봉으로 거래를 소급하지 않음.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "classic:ma_golden_dead": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 전략 선택 백테스트에 누락되었던 classic 연결 추가.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "classic:high_52w_break": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 전략 선택 백테스트에 누락되었던 classic 연결 추가.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "classic:sma200_support": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 전략 선택 백테스트에 누락되었던 classic 연결 추가.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "classic:fib_wave_pullback": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 전략 선택 백테스트에 누락되었던 classic 연결 추가.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "classic:gann_zone": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 전략 선택 백테스트에 누락되었던 classic 연결 추가.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "combo:st_adx": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "combo:kc_cci": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "combo:vwap_flow": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "combo:pctb_mean_reversion": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "combo:psar_adx": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "combo:obv_div_st": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "ichimoku:ichi_tk_cross": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "ichimoku:ichi_chikou_cross": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "ichimoku:ichi_kumo_twist": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "ichimoku:ichi_price_kumo_break": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "ichimoku:ichi_trend_turn": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "ichimoku:ichi_breakout": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "ichimoku:ichi_kumo_retest": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "ichimoku:ichi_kumo_sr": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "macd:macd_signal_cross": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "macd:macd_zero_line": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "macd:macd_rsi_confirm": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "macd:macd_divergence": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 피벗 발생 봉으로 거래를 소급하지 않음.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "macd:macd_trend_break": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "pattern:breakout_entry": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 표시용으로 추린 도형 대신 전체 후보에서 신호 생성. 확정 당시 손절·목표를 고정.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "pattern:breakout_confirm_entry": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 표시용으로 추린 도형 대신 전체 후보에서 신호 생성. 확정 당시 손절·목표를 고정.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "pattern:retest_entry": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 표시용으로 추린 도형 대신 전체 후보에서 신호 생성. 확정 당시 손절·목표를 고정.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "pattern:volume_breakout": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 표시용으로 추린 도형 대신 전체 후보에서 신호 생성. 확정 당시 손절·목표를 고정.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "pattern:triple_confirm": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 표시용으로 추린 도형 대신 전체 후보에서 신호 생성. 확정 당시 손절·목표를 고정.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "pattern:fake_breakout": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "확정 시점을 기록하는 경고로만 유지. 손절·목표 제거, 승률·백테스트·합의 집계에서 제외.",
+      "previousBehavior": "경고를 방향성 진입으로 취급할 수 있었음"
+    },
+    "pattern:trap_entry": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 표시용으로 추린 도형 대신 전체 후보에서 신호 생성. 확정 당시 손절·목표를 고정.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "rsi:rsi_classic_obos": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "rsi:super_rsi_obos": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "rsi:super_rsi_squeeze_mid": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "rsi:rsi_divergence": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 피벗 발생 봉으로 거래를 소급하지 않음.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "rsi:double_rsi_cross": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "stoch:stoch_ma20_cross": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "stoch:stoch_divergence": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 피벗 발생 봉으로 거래를 소급하지 않음.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "stoch:stoch_sr_bounce": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "stoch:stoch_triple_bottom": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:heatmap_volume": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:volume_fight": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:vsa": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:vwap_pullback": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:vwap_band_reversal": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:vwap_switching": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:vwap_ema_squeeze": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:vwap_trendline": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:forever_vwap_flip": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:failed_breakout_short": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:obv_divergence": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 피벗 발생 봉으로 거래를 소급하지 않음.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:obv_keltner": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:obv_fast_thrust": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:ad_divergence": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 피벗 발생 봉으로 거래를 소급하지 않음.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:chaikin_zero": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:chaikin_divergence": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지. 피벗 발생 봉으로 거래를 소급하지 않음.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:equivolume_oversquare": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "volume:eom_zero": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "매 봉까지의 데이터만 재계산해 최초 확정 시점을 고정. 다음 시가 체결·완료 표본 기준 적용. 탐지 조건·임계값은 유지.",
+      "previousBehavior": "최종 데이터로 감지한 원래 봉을 신호 날짜로 사용. 신호 통계와 백테스트 체결 규칙 상이."
+    },
+    "candle:doji": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:dragonfly_doji": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:gravestone_doji": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:spinning_top": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:hammer": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:inverted_hammer": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:shooting_star": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:hanging_man": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:bullish_engulfing": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:bearish_engulfing": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:bullish_harami": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:bearish_harami": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:piercing": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:dark_cloud_cover": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:tweezers_bottom": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:tweezers_top": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:bullish_marubozu": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:bearish_marubozu": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:bullish_kicker": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:bearish_kicker": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:morning_star": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:evening_star": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:three_white_soldiers": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:three_black_crows": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:rising_three_methods": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "candle:falling_three_methods": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "캔들 조건 유지. 확정 봉에서 처음 감지한 이벤트를 보존하고 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "캔들 감지 봉 종가 기준 성과."
+    },
+    "chart:double_bottom": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:double_top": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:cup_and_handle": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:head_and_shoulders": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:triple_top": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:triple_bottom": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:rising_wedge": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:falling_wedge": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:ascending_triangle": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:descending_triangle": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:symmetrical_triangle": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:broadening_triangle": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:pennant": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:flag": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "chart:rectangle": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "각 시점의 데이터에서 처음 감지한 확정 이벤트를 보존. 전체 후보를 통계로 보내고 표시용 24개 제한과 분리. 다음 시가 체결·완료 표본 기준 적용.",
+      "previousBehavior": "최종 데이터로 감지한 과거 진입점, 점수·중복 필터 후 최대 24개 도형으로 통계."
+    },
+    "engine:swing_structure": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "피벗 P의 오른쪽 n봉이 확인된 P+n 시점을 기록. 구조 전환 이벤트를 확정 시점으로 이동.",
+      "previousBehavior": "피벗 위치와 구조 전환 감지 시점이 구분되지 않음"
+    },
+    "engine:elliott_waves": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "파동 계산식과 과거 도형을 유지하고 현재 관측 시점 observedAt을 기록. 거래 신호·성과 표본에는 미포함.",
+      "previousBehavior": "과거 파동 꼭짓점이 언제 인식됐는지 표시 없음"
+    },
+    "engine:strategy_confluence": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "최초 확정 봉 기준으로 합의를 집계. fake_breakout 경고는 합의에서 제외.",
+      "previousBehavior": "원래 피벗·돌파 봉 기준 합의 집계"
+    },
+    "engine:risk_reward": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "확정 시점으로 이동한 신호를 사용. RR 오버레이는 참고 도형이며 실제 체결·성과는 공통 체결 엔진이 담당.",
+      "previousBehavior": "과거에 배치된 신호의 위치·가격으로 참고 RR 표시"
+    },
+    "engine:scoring": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "확정 봉과 호출자가 전달한 점수 설정으로 계산·기록. 점수 공식·가중치 기본값은 유지.",
+      "previousBehavior": "마지막 입력 봉 및 실행 환경에서 읽은 설정으로 점수 계산"
+    },
+    "engine:execution": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "다음 봉 시가 진입·OHLC 손절/목표·갭 시가·동시 접촉 손절 우선. 비용·미종결·복리 금액 PF·보유 중 종가 낙폭 반영. 수식 OR와 Wilder RSI 수정.",
+      "previousBehavior": "당일 종가 진입, 수식·플레이북별 체결 규칙 차이, OR 누락"
+    },
+    "engine:signal_statistics": {
+      "version": "2.0.0",
+      "baselineVersion": "1.0.0",
+      "change": "다음 시가 이후 완료 거래만 승률 분모에 포함. 대기·본전·롱/숏 별도 집계. 기본 12봉, ±1.5%, 비용 0, 신호별 독립 관찰.",
+      "previousBehavior": "신호 봉 종가 기준, 관찰기간 부족 표본 포함 가능, 본전을 손실로 집계"
+    }
+  },
+  "versionPolicy": "v1.0.0은 baselineCommit 코드에 부여한 비교 기준이며 기존 배포 태그가 아니다. 지표 수식 버전과 신호/실행 버전을 분리한다."
+}

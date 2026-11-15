@@ -1,3 +1,4 @@
+import type { SignalTiming } from "./confirmedSignals";
 import { RSI } from "technicalindicators";
 
 import type { IndicatorResults, OHLCVBar, SeriesPoint, TrendLabel } from "../types";
@@ -12,7 +13,7 @@ import {
 
 export type { RsiStrategyId };
 
-export interface RsiStrategyHit {
+export interface RsiStrategyHit extends SignalTiming {
   id: RsiStrategyId;
   label: string;
   date: string;

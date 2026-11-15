@@ -1,3 +1,4 @@
+import type { SignalTiming } from "./confirmedSignals";
 import type { IndicatorResults, OHLCVBar, SeriesPoint, TrendLabel } from "../types";
 import {
   COMBO_STRATEGY_META,
@@ -10,7 +11,7 @@ import {
 
 export type { ComboStrategyId };
 
-export interface ComboStrategyHit {
+export interface ComboStrategyHit extends SignalTiming {
   id: ComboStrategyId;
   label: string;
   date: string;

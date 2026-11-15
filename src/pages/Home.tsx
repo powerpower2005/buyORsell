@@ -42,7 +42,7 @@ import {
   timeframesForTicker,
 } from "@/lib/dataLoader";
 import { validateFreshness as checkFresh } from "@/lib/validation";
-import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
+import { useQuoteEvaluation } from "@/lib/useQuoteEvaluation";
 import {
   getEffectiveIndicatorsConfig,
   getIndicatorConfig,
@@ -347,15 +347,9 @@ export function HomePage() {
     [configTick],
   );
 
-  const evaluation = useMemo(
-    () =>
-      quote
-        ? evaluateQuote(quote.ohlcv, timeframe, indicatorConfig, {
-            trendlineAlgo,
-          })
-        : null,
-    [quote, timeframe, indicatorConfig, trendlineAlgo],
-  );
+  const evaluation = useQuoteEvaluation(quote, timeframe, indicatorConfig, trendlineAlgo);
+  useEffect(() => { setBacktest(undefined); }, [quote, indicatorConfig, trendlineAlgo]);
+
 
   const strategyConfluences = useMemo(
     () => (evaluation ? confluencesFromEvaluation(evaluation) : []),

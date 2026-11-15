@@ -21,6 +21,7 @@ export interface ElliottPivot {
 }
 
 export interface ElliottWavePattern {
+  observedAt?: string;
   id: string;
   /** impulse = 1–5, corrective = A–C */
   kind: "impulse" | "corrective";
@@ -501,6 +502,7 @@ export function detectElliottWaves(
   const bestCorrective = patterns
     .filter((p) => p.kind === "corrective")
     .sort((a, b) => b.score - a.score)[0];
+  for (const pattern of patterns) pattern.observedAt = bars.at(-1)?.date;
   const primary = [bestImpulse, bestCorrective].filter(
     (p): p is ElliottWavePattern => p != null,
   );

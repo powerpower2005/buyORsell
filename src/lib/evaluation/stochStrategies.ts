@@ -1,3 +1,4 @@
+import type { SignalTiming } from "./confirmedSignals";
 import type {
   IndicatorResults,
   OHLCVBar,
@@ -16,7 +17,7 @@ import {
 
 export type { StochStrategyId };
 
-export interface StochStrategyHit {
+export interface StochStrategyHit extends SignalTiming {
   id: StochStrategyId;
   label: string;
   date: string;

@@ -24,7 +24,7 @@ interface Props {
   journalTick: number;
   onJournalChange: () => void;
   onPatternVisibilityChange: () => void;
-  onBacktestResult: (r: BacktestResult) => void;
+  onBacktestResult: (r: BacktestResult | undefined) => void;
   /** When set, Export panel is included under 기록·도구 (Home). */
   exportQuote?: QuoteFile | null;
   backtest?: BacktestResult;
@@ -161,6 +161,7 @@ export function AnalysisDetailSections({
               score={evaluation.score ?? undefined}
               patterns={evaluation.patterns ?? undefined}
               backtest={backtest}
+              provenance={evaluation.provenance}
             />
           )}
         </div>

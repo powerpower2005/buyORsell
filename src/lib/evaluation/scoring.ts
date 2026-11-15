@@ -368,11 +368,12 @@ export function computeScore(
   bars: OHLCVBar[],
   _indicatorResults: IndicatorResults,
   presetKey: string,
+  config = getEffectiveScoringConfig(),
 ): ScoreResult {
   // Score rules compute their own series from OHLCV; chart indicator config is ignored.
   requireNonEmptyArray(bars, "OHLCV bars for scoring");
 
-  const presets = getEffectiveScoringConfig().presets as Record<
+  const presets = config.presets as Record<
     string,
     ScoringPreset
   >;
@@ -471,9 +472,9 @@ export function computeScore(
 
 
 
-export function presetForTimeframe(tf: string): string {
+export function presetForTimeframe(tf: string, config = getEffectiveScoringConfig()): string {
 
-  const presets = getEffectiveScoringConfig().presets as Record<
+  const presets = config.presets as Record<
     string,
     ScoringPreset
   >;

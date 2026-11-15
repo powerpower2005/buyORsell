@@ -1,3 +1,4 @@
+import type { SignalTiming } from "./confirmedSignals";
 import type { IndicatorResults, OHLCVBar, SeriesPoint, TrendLabel } from "../types";
 import {
   MACD_STRATEGY_META,
@@ -10,7 +11,7 @@ import {
 
 export type { MacdStrategyId };
 
-export interface MacdStrategyHit {
+export interface MacdStrategyHit extends SignalTiming {
   id: MacdStrategyId;
   label: string;
   date: string;

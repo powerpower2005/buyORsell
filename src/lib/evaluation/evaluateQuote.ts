@@ -1,4 +1,22 @@
-import type { OHLCVBar, IndicatorResults, ScoreResult, Timeframe } from "../types";
+import {
+  closedBars,
+  recordConfirmedHits,
+  type ReplayHit,
+} from "./confirmedSignals";
+import {
+  scoreSignalHits,
+  type ScoreableHit,
+  type SignalStatsMap,
+} from "./signalFollowThrough";
+import { ANALYSIS_VERSIONS, versionFor } from "../versions";
+
+import { getEffectiveScoringConfig } from "../configStore";
+import type {
+  OHLCVBar,
+  IndicatorResults,
+  ScoreResult,
+  Timeframe,
+} from "../types";
 import type { IndicatorsConfig } from "./types";
 import type { CandlePatternResult } from "./candlePatterns";
 import type { VolumeMaSnapshot } from "./volumeMa";
@@ -33,22 +51,13 @@ import {
 } from "./trendlines";
 import { detectTrendlinesV2 } from "./trendlinesV2";
 import { getTrendlineAlgoVersion } from "../trendlineStore";
-import {
-  detectBbStrategies,
-  type BbStrategyResult,
-} from "./bbStrategies";
-import {
-  detectChartPatterns,
-  type ChartPatternResult,
-} from "./chartPatterns";
+import { detectBbStrategies, type BbStrategyResult } from "./bbStrategies";
+import { detectChartPatterns, type ChartPatternResult } from "./chartPatterns";
 import {
   detectPatternStrategies,
   type PatternStrategyResult,
 } from "./patternStrategies";
-import {
-  detectRsiStrategies,
-  type RsiStrategyResult,
-} from "./rsiStrategies";
+import { detectRsiStrategies, type RsiStrategyResult } from "./rsiStrategies";
 import {
   detectIchimokuStrategies,
   type IchimokuStrategyResult,
@@ -73,11 +82,8 @@ import {
   detectClassicStrategies,
   type ClassicStrategyResult,
 } from "./classicStrategies";
-import {
-  detectElliottWaves,
-  type ElliottWaveResult,
-} from "./elliottWaves";
-import { getIndicatorConfig } from "../configStore";
+import { detectElliottWaves, type ElliottWaveResult } from "./elliottWaves";
+
 import {
   EMPTY_SIGNAL_STATS,
   type SignalStatsBundle,
@@ -109,14 +115,12 @@ export interface QuoteEvaluation {
   fatalError: string | null;
   /** Bars actually used after lookback / maxBars / cadence cleanup. */
   bars: OHLCVBar[];
+  provenance?: Record<string, unknown>;
 }
 
 const EMPTY_INDICATORS: IndicatorResults = { indicators: {}, signals: [] };
 
-function absorbError(
-  err: unknown,
-  warnings: string[],
-): string | null {
+function absorbError(err: unknown, warnings: string[]): string | null {
   if (isOhlcQualityError(err)) return errorMessage(err);
   if (isInsufficientDataError(err)) {
     warnings.push(errorMessage(err));
@@ -145,15 +149,18 @@ function prepareBars(
   return out;
 }
 
-export function evaluateQuote(
+function evaluateSnapshot(
   bars: OHLCVBar[],
   timeframe: Timeframe,
   indicatorConfig: IndicatorsConfig,
-  options?: { trendlineAlgo?: TrendlineAlgoVersion },
+  options?: {
+    trendlineAlgo?: TrendlineAlgoVersion;
+    scoringConfig?: ReturnType<typeof getEffectiveScoringConfig>;
+  },
 ): QuoteEvaluation {
   const warnings: string[] = [];
   let fatalError: string | null = null;
-  const prepared = prepareBars(bars, timeframe, warnings);
+  const prepared = bars;
 
   if (!prepared.length) {
     return {
@@ -199,7 +206,12 @@ export function evaluateQuote(
   let score: ScoreResult | null = null;
   if (!fatalError) {
     try {
-      score = computeScore(prepared, indicators, presetForTimeframe(timeframe));
+      score = computeScore(
+        prepared,
+        indicators,
+        presetForTimeframe(timeframe, options?.scoringConfig),
+        options?.scoringConfig,
+      );
       if (score.skippedRules?.length) warnings.push(...score.skippedRules);
     } catch (err) {
       const fatal = absorbError(err, warnings);
@@ -245,8 +257,7 @@ export function evaluateQuote(
   let trendlines: TrendlineResult | null = null;
   if (!fatalError) {
     try {
-      const algo =
-        options?.trendlineAlgo ?? getTrendlineAlgoVersion();
+      const algo = options?.trendlineAlgo ?? getTrendlineAlgoVersion();
       trendlines =
         algo === "v2"
           ? detectTrendlinesV2(prepared)
@@ -293,7 +304,9 @@ export function evaluateQuote(
   let rsiStrategies: RsiStrategyResult | null = null;
   if (!fatalError) {
     try {
-      const rsiCfg = getIndicatorConfig("rsi");
+      const rsiCfg = indicatorConfig.indicators.find(
+        (item) => item.id === "rsi",
+      );
       rsiStrategies = detectRsiStrategies(prepared, indicators, {
         overbought: (rsiCfg?.overbought as number | undefined) ?? 70,
         oversold: (rsiCfg?.oversold as number | undefined) ?? 30,
@@ -308,11 +321,7 @@ export function evaluateQuote(
   let macdStrategies: MacdStrategyResult | null = null;
   if (!fatalError) {
     try {
-      macdStrategies = detectMacdStrategies(
-        prepared,
-        indicators,
-        fullLookback,
-      );
+      macdStrategies = detectMacdStrategies(prepared, indicators, fullLookback);
     } catch (err) {
       const fatal = absorbError(err, warnings);
       if (fatal) fatalError = fatal;
@@ -322,7 +331,9 @@ export function evaluateQuote(
   let stochStrategies: StochStrategyResult | null = null;
   if (!fatalError) {
     try {
-      const stochCfg = getIndicatorConfig("stoch");
+      const stochCfg = indicatorConfig.indicators.find(
+        (item) => item.id === "stoch",
+      );
       stochStrategies = detectStochStrategies(
         prepared,
         indicators,
@@ -342,7 +353,9 @@ export function evaluateQuote(
   let ichimokuStrategies: IchimokuStrategyResult | null = null;
   if (!fatalError) {
     try {
-      const ichiCfg = getIndicatorConfig("ichimoku");
+      const ichiCfg = indicatorConfig.indicators.find(
+        (item) => item.id === "ichimoku",
+      );
       ichimokuStrategies = detectIchimokuStrategies(prepared, indicators, {
         displacement:
           (ichiCfg?.params.displacement as number | undefined) ?? 26,
@@ -444,4 +457,99 @@ export function evaluateQuote(
     fatalError,
     bars: prepared,
   };
+}
+
+const REPLAY_FAMILIES = [
+  ["patterns", "candle", "candlePattern"],
+  ["classicalPatterns", "chart", "chartPattern"],
+  ["bbStrategies", "bb", "bbStrategy"],
+  ["classicStrategies", "classic", "classicStrategy"],
+  ["ichimokuStrategies", "ichimoku", "ichimokuStrategy"],
+  ["volumeStrategies", "volume", "volumeStrategy"],
+  ["rsiStrategies", "rsi", "rsiStrategy"],
+  ["macdStrategies", "macd", "macdStrategy"],
+  ["stochStrategies", "stoch", "stochStrategy"],
+  ["patternStrategies", "pattern", "patternStrategy"],
+  ["comboStrategies", "combo", "comboStrategy"],
+] as const;
+
+type ReplayBag = {
+  signals?: ReplayHit[];
+  recent: ReplayHit[];
+  onLatestBar: ReplayHit[];
+  stats: SignalStatsMap;
+};
+
+export function evaluateQuote(
+  bars: OHLCVBar[],
+  timeframe: Timeframe,
+  indicatorConfig: IndicatorsConfig,
+  options?: {
+    trendlineAlgo?: TrendlineAlgoVersion;
+    asOf?: string;
+    scoringConfig?: ReturnType<typeof getEffectiveScoringConfig>;
+  },
+): QuoteEvaluation {
+  const warnings: string[] = [];
+  const prepared = prepareBars(bars, timeframe, warnings);
+  const asOf = options?.asOf ?? new Date().toISOString();
+  const complete = closedBars(prepared, timeframe, asOf);
+  const seen = REPLAY_FAMILIES.map(() => new Set<string>());
+  const events: ReplayHit[][] = REPLAY_FAMILIES.map(() => []);
+  let result = evaluateSnapshot([], timeframe, indicatorConfig, options);
+  for (let end = 1; end <= complete.length; end++) {
+    const prefix = complete.slice(0, end);
+    result = evaluateSnapshot(prefix, timeframe, indicatorConfig, options);
+    if (result.fatalError) continue;
+    REPLAY_FAMILIES.forEach(([key, namespace], index) => {
+      const bag = result[key] as ReplayBag | null;
+      if (!bag) return;
+      recordConfirmedHits(
+        bag.signals ?? bag.recent,
+        prefix,
+        namespace,
+        seen[index],
+        events[index],
+      );
+    });
+  }
+  REPLAY_FAMILIES.forEach(([key, , statsKey], index) => {
+    const bag = result[key] as ReplayBag | null;
+    if (!bag) return;
+    bag.signals = events[index];
+    bag.recent = events[index];
+    bag.onLatestBar = events[index].filter(
+      (hit) => hit.barIndex === complete.length - 1,
+    );
+    bag.stats = scoreSignalHits(complete, events[index] as ScoreableHit[]);
+    result.signalStats[statsKey] = bag.stats;
+  });
+  if (complete.length < prepared.length)
+    warnings.push(
+      `미완성 봉 ${prepared.length - complete.length}개를 확정 신호·성과 계산에서 제외했습니다.`,
+    );
+  result.warnings.push(...warnings);
+  for (const output of Object.values(result.indicators.indicators))
+    output.version = versionFor("indicator", output.id);
+  for (const signal of result.indicators.signals) {
+    signal.version = versionFor("signal", signal.id);
+    signal.confirmedBarIndex = complete.length - 1;
+    signal.confirmedDate = complete.at(-1)?.date;
+  }
+  const dataText = JSON.stringify(complete);
+  let dataHash = 2166136261;
+  for (let i = 0; i < dataText.length; i++)
+    dataHash = Math.imul(dataHash ^ dataText.charCodeAt(i), 16777619) >>> 0;
+  result.provenance = {
+    dataFingerprint: `fnv1a32:${dataHash.toString(16)}`,
+    versions: ANALYSIS_VERSIONS,
+    indicatorConfig,
+    timeframe,
+    asOf,
+    scoringConfig: options?.scoringConfig ?? getEffectiveScoringConfig(),
+    firstBar: complete[0]?.date,
+    lastBar: complete.at(-1)?.date,
+    trendlineAlgo: options?.trendlineAlgo ?? getTrendlineAlgoVersion(),
+  };
+  return result;
 }

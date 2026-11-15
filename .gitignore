@@ -1,7 +1,14 @@
 node_modules/
 dist/
 artifacts/
-docs/
+docs/*
+!docs/versions.md
+!docs/indicators/
+docs/indicators/*
+!docs/indicators/CHANGELOG.md
+!docs/strategies/
+docs/strategies/*
+!docs/strategies/CHANGELOG.md
 *.tsbuildinfo
 README.md
 .env

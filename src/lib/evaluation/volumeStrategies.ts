@@ -1,3 +1,4 @@
+import type { SignalTiming } from "./confirmedSignals";
 import { EMA, PSAR, SMA } from "technicalindicators";
 
 import type { IndicatorResults, OHLCVBar, SeriesPoint, TrendLabel } from "../types";
@@ -17,7 +18,7 @@ import {
 
 export type { VolumeStrategyId };
 
-export interface VolumeStrategyHit {
+export interface VolumeStrategyHit extends SignalTiming {
   id: VolumeStrategyId;
   label: string;
   date: string;

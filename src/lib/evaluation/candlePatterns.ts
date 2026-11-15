@@ -1,3 +1,4 @@
+import type { SignalTiming } from "./confirmedSignals";
 import type { OHLCVBar, TrendLabel } from "../types";
 import patternConfig from "../../../config/candle-patterns.json";
 import { patternLabel } from "../candlePatternMeta";
@@ -36,7 +37,7 @@ export type CandlePatternId =
   | "rising_three_methods"
   | "falling_three_methods";
 
-export interface CandlePatternHit {
+export interface CandlePatternHit extends SignalTiming {
   id: CandlePatternId;
   label: string;
   date: string;

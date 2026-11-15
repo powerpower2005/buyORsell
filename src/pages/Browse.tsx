@@ -15,7 +15,7 @@ import {
   buildChartPatternRecencyMap,
 } from "@/lib/patternRecency";
 import { validateFreshness } from "@/lib/validation";
-import { evaluateQuote } from "@/lib/evaluation/evaluateQuote";
+import { useQuoteEvaluation } from "@/lib/useQuoteEvaluation";
 import {
   getEffectiveIndicatorsConfig,
   getIndicatorConfig,
@@ -307,24 +307,9 @@ export function BrowsePage() {
     [configTick],
   );
 
-  const evaluation = useMemo(
-    () =>
-      quote && selected
-        ? evaluateQuote(
-            quote.ohlcv,
-            selected.timeframe as Timeframe,
-            indicatorConfig,
-            { trendlineAlgo },
-          )
-        : null,
-    [
-      quote,
-      selected?.ticker,
-      selected?.timeframe,
-      indicatorConfig,
-      trendlineAlgo,
-    ],
-  );
+  const evaluation = useQuoteEvaluation(quote, (selected?.timeframe as Timeframe) ?? "1d", indicatorConfig, trendlineAlgo);
+  useEffect(() => { setBacktest(undefined); }, [quote, indicatorConfig, trendlineAlgo]);
+
 
   const strategyConfluences = useMemo(
     () => (evaluation ? confluencesFromEvaluation(evaluation) : []),

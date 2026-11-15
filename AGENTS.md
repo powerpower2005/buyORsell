@@ -2,7 +2,7 @@
 
 ## Strategy & indicator docs
 
-Local docs live under `docs/` (gitignored). Entry points:
+Local docs live under `docs/`. `versions.md` and both changelogs are tracked; other generated docs are gitignored. Entry points:
 
 1. `docs/indicators/INDEX.md` — indicator labels
 2. `docs/indicators/candle_patterns/` — candlestick patterns (not a strategy family)
@@ -46,3 +46,13 @@ Example:
 Skip only pure mechanical refactors with no behavior, label, or rule change.
 
 `gen-strategy-docs.mjs` creates missing `CHANGELOG.md` files once and never regenerates their content.
+
+
+## Per-item versions
+
+- Before changing an indicator, state signal, strategy, candle or chart pattern, check its entry in `config/analysis-versions.json`.
+- A change to values, event conditions, availability time or execution semantics requires a major version. Additive options preserving defaults use minor; presentation-only corrections use patch.
+- Record the affected IDs, previous behavior, current behavior and verification in `docs/versions.md` and the appropriate changelog.
+- Keep the first-observation replay in the normal evaluation path. Chart geometry may retain original pivot coordinates; entry events must use confirmation time.
+- Run `npm run test:evaluation` and `npm run build` after evaluation changes.
+- `docs/versions.md` and both changelogs are tracked. Other generated documents remain local.

@@ -1,3 +1,4 @@
+import type { SignalTiming } from "./confirmedSignals";
 import type {
   IndicatorResults,
   OHLCVBar,
@@ -16,7 +17,7 @@ import {
 
 export type { ClassicStrategyId };
 
-export interface ClassicStrategyHit {
+export interface ClassicStrategyHit extends SignalTiming {
   id: ClassicStrategyId;
   label: string;
   date: string;

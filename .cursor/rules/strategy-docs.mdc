@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Strategy & indicator docs
 
-Local docs under `docs/` (**gitignored**). Also see repo root `AGENTS.md`.
+Generated local docs under `docs/`; versions.md and CHANGELOG.md files are Git-tracked. Also see repo root `AGENTS.md`.
 
 ## Agent entry
 

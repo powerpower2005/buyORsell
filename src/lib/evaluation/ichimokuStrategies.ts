@@ -1,3 +1,4 @@
+import type { SignalTiming } from "./confirmedSignals";
 import type { IndicatorResults, OHLCVBar, SeriesPoint, TrendLabel } from "../types";
 import {
   ICHIMOKU_STRATEGY_META,
@@ -10,7 +11,7 @@ import {
 
 export type { IchimokuStrategyId };
 
-export interface IchimokuStrategyHit {
+export interface IchimokuStrategyHit extends SignalTiming {
   id: IchimokuStrategyId;
   label: string;
   date: string;

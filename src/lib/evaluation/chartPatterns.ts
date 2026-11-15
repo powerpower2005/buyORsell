@@ -1,3 +1,4 @@
+import type { SignalTiming } from "./confirmedSignals";
 import type { OHLCVBar, TrendLabel } from "../types";
 import {
   CHART_PATTERN_META,
@@ -51,7 +52,9 @@ export interface ChartPatternInstance {
   summary: string;
 }
 
-export interface ChartPatternHit {
+export interface ChartPatternHit extends SignalTiming {
+  stopPrice?: number | null;
+  targetPrice?: number | null;
   id: ChartPatternId;
   instanceKey: string;
   label: string;
@@ -66,6 +69,8 @@ export interface ChartPatternResult {
   leftRight: number;
   latestBarDate: string;
   instances: ChartPatternInstance[];
+  allInstances?: ChartPatternInstance[];
+  signals?: ChartPatternHit[];
   onLatestBar: ChartPatternHit[];
   recent: ChartPatternHit[];
   stats: SignalStatsMap;
@@ -131,6 +136,8 @@ function makeHit(inst: ChartPatternInstance, bars: OHLCVBar[]): ChartPatternHit 
     barIndex: inst.entryBar,
     direction: inst.direction,
     summary: inst.summary,
+    stopPrice: inst.stopPrice,
+    targetPrice: inst.targetPrice,
   };
 }
 
@@ -1842,10 +1849,11 @@ export function detectChartPatterns(
     ...detectFlag(bars, lows, highs, atr),
   ].filter((inst) => inst.endBar >= start);
 
+  const allInstances = [...new Map(raw.map((inst) => [inst.key, inst])).values()];
   const instances = dedupeInstances(raw);
   const stats = scoreSignalHits(
     bars,
-    instances
+    allInstances
       .filter(
         (inst) =>
           inst.status === "confirmed" &&
@@ -1882,6 +1890,8 @@ export function detectChartPatterns(
     leftRight,
     latestBarDate: bars[lastIdx]?.date ?? "",
     instances,
+    allInstances,
+    signals: allInstances.map((inst) => makeHit(inst, bars)).filter((hit): hit is ChartPatternHit => hit != null),
     onLatestBar: hits.filter((h) => h.barIndex === lastIdx),
     recent: hits,
     stats,

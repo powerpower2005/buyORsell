@@ -2,6 +2,7 @@ export type Timeframe = "1d" | "1w" | "1mo";
 
 export interface OHLCVBar {
   date: string;
+  isComplete?: boolean;
   open: number;
   high: number;
   low: number;
@@ -57,6 +58,7 @@ export interface SeriesPoint {
 }
 
 export interface IndicatorOutput {
+  version?: string;
   id: string;
   series: Record<string, SeriesPoint[]>;
   latest: Record<string, number | null>;
@@ -69,6 +71,9 @@ export interface IndicatorResults {
 }
 
 export interface SignalResult {
+  confirmedBarIndex?: number;
+  confirmedDate?: string;
+  version?: string;
   id: string;
   label: string;
   active: boolean;
@@ -91,6 +96,10 @@ export interface ScoreResult {
 }
 
 export interface BacktestTrade {
+  signalDate?: string;
+  strategyVersion?: string;
+  executionVersion?: string;
+  equityReturns?: number[];
   entryDate: string;
   exitDate: string;
   entryPrice: number;
@@ -105,6 +114,11 @@ export interface BacktestTrade {
 }
 
 export interface BacktestResult {
+  executionVersion?: string;
+  breakevenCount?: number;
+  pendingCount?: number;
+  skippedConflicts?: number;
+  assumptions?: Record<string, unknown>;
   totalReturnPct: number;
   maxDrawdownPct: number;
   winRate: number;

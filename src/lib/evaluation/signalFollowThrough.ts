@@ -1,9 +1,15 @@
+import { simulateTrade } from "./execution";
+import type { SignalTiming } from "./confirmedSignals";
 import type { OHLCVBar, TrendLabel } from "../types";
 
 export interface SignalStat {
   samples: number;
   wins: number;
   ratePct: number | null;
+  pending?: number;
+  losses?: number;
+  breakeven?: number;
+  byDirection?: Partial<Record<TrendLabel, { samples: number; wins: number }>>;
 }
 
 export type SignalStatsMap = Record<string, SignalStat>;
@@ -37,10 +43,8 @@ export const EMPTY_SIGNAL_STATS: SignalStatsBundle = {
 };
 
 const MIN_SAMPLES = 3;
-const DEFAULT_HORIZON = 12;
-const DEFAULT_MOVE_PCT = 0.015;
 
-export interface ScoreableHit {
+export interface ScoreableHit extends SignalTiming {
   id: string;
   barIndex: number;
   direction: TrendLabel;
@@ -58,73 +62,51 @@ export function resolveFollowThrough(
   bars: OHLCVBar[],
   hit: ScoreableHit,
 ): "win" | "loss" | null {
-  if (hit.direction !== "bullish" && hit.direction !== "bearish") return null;
-  const i = hit.barIndex;
-  if (i < 0 || i >= bars.length - 1) return null;
-
-  const entry = bars[i]!.close;
-  if (!(entry > 0)) return null;
-
-  const horizon = hit.horizon ?? DEFAULT_HORIZON;
-  const end = Math.min(i + horizon, bars.length - 1);
-  if (end <= i) return null;
-
-  const bull = hit.direction === "bullish";
-  const target =
-    hit.targetPrice != null && Number.isFinite(hit.targetPrice)
-      ? hit.targetPrice
-      : entry * (bull ? 1 + DEFAULT_MOVE_PCT : 1 - DEFAULT_MOVE_PCT);
-  const stop =
-    hit.stopPrice != null && Number.isFinite(hit.stopPrice)
-      ? hit.stopPrice
-      : entry * (bull ? 1 - DEFAULT_MOVE_PCT : 1 + DEFAULT_MOVE_PCT);
-
-  for (let j = i + 1; j <= end; j++) {
-    const bar = bars[j]!;
-    if (bull) {
-      if (bar.low <= stop) return "loss";
-      if (bar.high >= target) return "win";
-    } else {
-      if (bar.high >= stop) return "loss";
-      if (bar.low <= target) return "win";
-    }
-  }
-
-  const lastClose = bars[end]!.close;
-  if (bull) {
-    if (lastClose > entry) return "win";
-    if (lastClose < entry) return "loss";
+  const outcome = simulateTrade(bars, hit, { horizon: hit.horizon ?? 12 });
+  if (outcome.status !== "closed" || Math.abs(outcome.trade.returnPct) < 1e-10)
     return null;
-  }
-  if (lastClose < entry) return "win";
-  if (lastClose > entry) return "loss";
-  return null;
+  return outcome.trade.returnPct > 0 ? "win" : "loss";
 }
 
 export function scoreSignalHits(
   bars: OHLCVBar[],
   hits: ScoreableHit[],
 ): SignalStatsMap {
-  const wins = new Map<string, number>();
-  const samples = new Map<string, number>();
-
-  for (const hit of hits) {
-    const outcome = resolveFollowThrough(bars, hit);
-    if (outcome == null) continue;
-    samples.set(hit.id, (samples.get(hit.id) ?? 0) + 1);
-    if (outcome === "win") {
-      wins.set(hit.id, (wins.get(hit.id) ?? 0) + 1);
-    }
-  }
-
   const out: SignalStatsMap = {};
-  for (const [id, n] of samples) {
-    const w = wins.get(id) ?? 0;
-    out[id] = {
-      samples: n,
-      wins: w,
-      ratePct: n >= MIN_SAMPLES ? Math.round((w / n) * 100) : null,
-    };
+  const seen = new Set<string>();
+  for (const hit of hits) {
+    if (hit.id === "fake_breakout" || hit.direction === "neutral") continue;
+    const key = `${hit.id}|${hit.confirmedBarIndex ?? hit.barIndex}|${hit.direction}|${hit.stopPrice}|${hit.targetPrice}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const outcome = simulateTrade(bars, hit, { horizon: hit.horizon ?? 12 });
+    if (outcome.status === "invalid") continue;
+    const stat = (out[hit.id] ??= {
+      samples: 0,
+      wins: 0,
+      ratePct: null,
+      pending: 0,
+      losses: 0,
+      breakeven: 0,
+      byDirection: {},
+    });
+    if (outcome.status === "pending") {
+      stat.pending!++;
+      continue;
+    }
+    const ret = outcome.trade.returnPct;
+    stat.samples++;
+    const side = (stat.byDirection![hit.direction] ??= { samples: 0, wins: 0 });
+    side.samples++;
+    if (ret > 1e-10) {
+      stat.wins++;
+      side.wins++;
+    } else if (ret < -1e-10) stat.losses!++;
+    else stat.breakeven!++;
+    stat.ratePct =
+      stat.samples >= MIN_SAMPLES
+        ? Math.round((stat.wins / stat.samples) * 100)
+        : null;
   }
   return out;
 }
@@ -134,10 +116,12 @@ export function formatSignalRate(stat: SignalStat | undefined): string | null {
   return `${stat.ratePct}%`;
 }
 
-export function signalRateTitle(stat: SignalStat | undefined): string | undefined {
-  if (!stat || stat.samples <= 0) return undefined;
+export function signalRateTitle(
+  stat: SignalStat | undefined,
+): string | undefined {
+  if (!stat) return undefined;
   if (stat.ratePct == null) {
-    return `표본 ${stat.samples}건 (표시는 ${MIN_SAMPLES}건 이상)`;
+    return `완료 표본 ${stat.samples}건 · 대기 ${stat.pending ?? 0}건 (표시는 ${MIN_SAMPLES}건 이상)`;
   }
-  return `이 종목 전 구간 · ${stat.samples}건 중 ${stat.wins}건이 목표·방향대로 진행`;
+  return `확정 후 다음 시가 · 비용 0 가정 · 완료 ${stat.samples}건 / 수익 ${stat.wins}건 / 대기 ${stat.pending ?? 0}건 · 롱 ${stat.byDirection?.bullish?.wins ?? 0}/${stat.byDirection?.bullish?.samples ?? 0} · 숏 ${stat.byDirection?.bearish?.wins ?? 0}/${stat.byDirection?.bearish?.samples ?? 0}`;
 }

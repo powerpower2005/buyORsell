@@ -92,6 +92,7 @@ function pushHits(
   const list = bag?.signals ?? bag?.recent;
   if (!list?.length) return;
   for (const h of list) {
+    if (h.id === "fake_breakout") continue;
     if (h.direction !== "bullish" && h.direction !== "bearish") continue;
     out.push({
       family,

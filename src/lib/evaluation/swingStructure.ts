@@ -12,6 +12,8 @@ export type VolumeBand = "light" | "normal" | "heavy" | "unknown";
 export type QualityGrade = "A" | "B" | "C" | "D" | "—";
 
 export interface SwingPoint {
+  confirmedBarIndex?: number;
+  confirmedDate?: string;
   date: string;
   barIndex: number;
   price: number;
@@ -21,6 +23,7 @@ export interface SwingPoint {
 }
 
 export interface StructureTransition {
+  originBarIndex?: number;
   date: string;
   barIndex: number;
   from: StructureRegime;
@@ -618,6 +621,8 @@ export function detectSwingStructure(
     }
 
     swings.push({
+      confirmedBarIndex: p.idx + n,
+      confirmedDate: bars[p.idx + n].date,
       date: bars[p.idx].date,
       barIndex: p.idx,
       price: p.price,
@@ -634,8 +639,9 @@ export function detectSwingStructure(
       next !== lastFirmRegime
     ) {
       transitions.push({
-        date: bars[p.idx].date,
-        barIndex: p.idx,
+        originBarIndex: p.idx,
+        date: bars[p.idx + n].date,
+        barIndex: p.idx + n,
         from: lastFirmRegime,
         to: next,
         triggerLabel: label,

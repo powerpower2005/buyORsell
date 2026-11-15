@@ -21,6 +21,7 @@ interface Props {
   score?: ScoreResult;
   patterns?: CandlePatternResult;
   backtest?: BacktestResult;
+  provenance?: Record<string, unknown>;
   exportRootId?: string;
 }
 
@@ -30,6 +31,7 @@ export function ExportPanel({
   score,
   patterns,
   backtest,
+  provenance,
   exportRootId = "export-root",
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
@@ -52,6 +54,7 @@ export function ExportPanel({
       signals: indicators.signals,
       candlePatterns: patterns,
       backtest,
+      provenance,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
