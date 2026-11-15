@@ -1,0 +1,561 @@
+{
+  "version": "1.0.0",
+  "verified_at": "2026-11-15T16:59:44.888Z",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com"
+  ],
+  "series": [
+    {
+      "ticker": "000660:KRX",
+      "start": "2022-11-11",
+      "end": "2026-11-13",
+      "stored_count": 978,
+      "stored_sha256": "b321dfbcd041ccea38489278d6b2e2d8f0852b1636737ac64b3306c9b7b2cef3",
+      "status": "verified",
+      "resolved_symbol": "KRX:000660",
+      "fetched_count": 978,
+      "fetched_sha256": "b321dfbcd041ccea38489278d6b2e2d8f0852b1636737ac64b3306c9b7b2cef3",
+      "integrity_verification": {
+        "checked": 978,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com",
+          "Validation:fchart.stock.naver.com"
+        ],
+        "domestic_fallback_dates": [
+          "2023-02-02",
+          "2023-02-09",
+          "2024-10-14",
+          "2025-09-19"
+        ],
+        "verified_at": "2026-11-15T17:00:03.416Z"
+      },
+      "provider_corrections": [],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "005930:KRX",
+      "start": "2022-11-11",
+      "end": "2026-11-13",
+      "stored_count": 978,
+      "stored_sha256": "9b23507da30583d01dc051d661929b5ee396029e15bca77bee8f5e3e181a224d",
+      "status": "verified",
+      "resolved_symbol": "KRX:005930",
+      "fetched_count": 978,
+      "fetched_sha256": "9b23507da30583d01dc051d661929b5ee396029e15bca77bee8f5e3e181a224d",
+      "integrity_verification": {
+        "checked": 978,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com",
+          "Validation:fchart.stock.naver.com"
+        ],
+        "domestic_fallback_dates": [
+          "2024-10-14",
+          "2025-09-19"
+        ],
+        "verified_at": "2026-11-15T17:00:21.206Z"
+      },
+      "provider_corrections": [],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "009150:KRX",
+      "start": "2022-11-21",
+      "end": "2026-11-13",
+      "stored_count": 972,
+      "stored_sha256": "836e1522909611f0d22861b5e73fb234e235350a8678cb4db69cc677fcd0822a",
+      "status": "verified",
+      "resolved_symbol": "KRX:009150",
+      "fetched_count": 972,
+      "fetched_sha256": "836e1522909611f0d22861b5e73fb234e235350a8678cb4db69cc677fcd0822a",
+      "integrity_verification": {
+        "checked": 972,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com",
+          "Validation:fchart.stock.naver.com"
+        ],
+        "domestic_fallback_dates": [
+          "2023-01-26",
+          "2023-02-01",
+          "2023-02-06",
+          "2025-09-19",
+          "2026-03-27"
+        ],
+        "verified_at": "2026-11-15T17:00:38.414Z"
+      },
+      "provider_corrections": [],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "010120:KRX",
+      "start": "2022-11-21",
+      "end": "2026-11-13",
+      "stored_count": 969,
+      "stored_sha256": "ce0693b968c31a574e840a1c84a300524e07fd23b445d352c77baeda0c971f55",
+      "status": "verified",
+      "resolved_symbol": "KRX:010120",
+      "fetched_count": 969,
+      "fetched_sha256": "ce0693b968c31a574e840a1c84a300524e07fd23b445d352c77baeda0c971f55",
+      "integrity_verification": {
+        "checked": 969,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com",
+          "Validation:fchart.stock.naver.com"
+        ],
+        "domestic_fallback_dates": [
+          "2024-01-15",
+          "2024-10-14",
+          "2024-11-07",
+          "2025-09-19"
+        ],
+        "verified_at": "2026-11-15T17:00:56.032Z"
+      },
+      "provider_corrections": [
+        "universe-v2-010120-KRX-2024-11-07",
+        "universe-v1-010120-KRX-2023-01-20",
+        "universe-v1-010120-KRX-2026-06-22"
+      ],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "AAPL:NASDAQ",
+      "start": "2022-12-19",
+      "end": "2026-11-12",
+      "stored_count": 979,
+      "stored_sha256": "6bf459b09ccf32c6f0ceb9c1e4e7bba94cb062941f7cfd1c8c2df313812d03e1",
+      "status": "verified",
+      "resolved_symbol": "NASDAQ:AAPL",
+      "fetched_count": 979,
+      "fetched_sha256": "6bf459b09ccf32c6f0ceb9c1e4e7bba94cb062941f7cfd1c8c2df313812d03e1",
+      "integrity_verification": {
+        "checked": 979,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:01:12.225Z"
+      },
+      "provider_corrections": [
+        "universe-v1-AAPL-NASDAQ-2024-10-15",
+        "universe-v1-AAPL-NASDAQ-2025-05-22"
+      ],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "BE:NYSE",
+      "start": "2023-01-20",
+      "end": "2026-11-12",
+      "stored_count": 958,
+      "stored_sha256": "5b63894d05af3c760b0645a1042b40476b18a6294e9e5dc8263212d430ae77b3",
+      "status": "verified",
+      "resolved_symbol": "NYSE:BE",
+      "fetched_count": 958,
+      "fetched_sha256": "5b63894d05af3c760b0645a1042b40476b18a6294e9e5dc8263212d430ae77b3",
+      "integrity_verification": {
+        "checked": 958,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:01:28.308Z"
+      },
+      "provider_corrections": [
+        "universe-v1-BE-NYSE-2025-05-22"
+      ],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "CRM:NYSE",
+      "start": "2023-01-10",
+      "end": "2026-11-12",
+      "stored_count": 965,
+      "stored_sha256": "cf6630d24529c1a4fc184c9d8ef1ad3f1aae5e0a7ff748f8562043fde06028e5",
+      "status": "verified",
+      "resolved_symbol": "NYSE:CRM",
+      "fetched_count": 965,
+      "fetched_sha256": "cf6630d24529c1a4fc184c9d8ef1ad3f1aae5e0a7ff748f8562043fde06028e5",
+      "integrity_verification": {
+        "checked": 965,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:01:44.519Z"
+      },
+      "provider_corrections": [],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "GLW:NYSE",
+      "start": "2022-12-27",
+      "end": "2026-11-12",
+      "stored_count": 974,
+      "stored_sha256": "b9c2e5f6b57d8baa1d3ef7452da953032bd13f62daea2d22cdb3ff7661f93f9e",
+      "status": "verified",
+      "resolved_symbol": "NYSE:GLW",
+      "fetched_count": 974,
+      "fetched_sha256": "b9c2e5f6b57d8baa1d3ef7452da953032bd13f62daea2d22cdb3ff7661f93f9e",
+      "integrity_verification": {
+        "checked": 974,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:02:00.650Z"
+      },
+      "provider_corrections": [],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "HOOD:NASDAQ",
+      "start": "2022-12-20",
+      "end": "2026-11-12",
+      "stored_count": 978,
+      "stored_sha256": "96cdf16369da222a4ca12b0fc32ddff14522cb6e59dd31c3a0bda039c19d9d5d",
+      "status": "verified",
+      "resolved_symbol": "NASDAQ:HOOD",
+      "fetched_count": 978,
+      "fetched_sha256": "96cdf16369da222a4ca12b0fc32ddff14522cb6e59dd31c3a0bda039c19d9d5d",
+      "integrity_verification": {
+        "checked": 978,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:02:16.802Z"
+      },
+      "provider_corrections": [],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "INTC:NASDAQ",
+      "start": "2023-01-17",
+      "end": "2026-11-12",
+      "stored_count": 961,
+      "stored_sha256": "bb429ad746a51aba47026e86ca85233eac4ec9e56a711dc681594c5d76096f1a",
+      "status": "verified",
+      "resolved_symbol": "NASDAQ:INTC",
+      "fetched_count": 961,
+      "fetched_sha256": "bb429ad746a51aba47026e86ca85233eac4ec9e56a711dc681594c5d76096f1a",
+      "integrity_verification": {
+        "checked": 961,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:02:32.931Z"
+      },
+      "provider_corrections": [
+        "universe-v1-INTC-NASDAQ-2025-05-22"
+      ],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "KOSPI:KRX",
+      "start": "2022-11-11",
+      "end": "2026-11-13",
+      "stored_count": 978,
+      "stored_sha256": "d80207cfd270a89ae7ef7b977f3d44079f0d0c014bb54a30106f8bb7b22500e0",
+      "status": "verified",
+      "resolved_symbol": "KRX:KOSPI",
+      "fetched_count": 978,
+      "fetched_sha256": "d80207cfd270a89ae7ef7b977f3d44079f0d0c014bb54a30106f8bb7b22500e0",
+      "integrity_verification": {
+        "checked": 978,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com",
+          "Validation:fchart.stock.naver.com"
+        ],
+        "domestic_fallback_dates": [
+          "2024-09-12",
+          "2026-06-29"
+        ],
+        "verified_at": "2026-11-15T17:02:50.331Z"
+      },
+      "provider_corrections": [
+        "universe-v1-KOSPI-KRX-2025-04-10",
+        "universe-v1-KOSPI-KRX-2026-06-11"
+      ],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "LITE:NASDAQ",
+      "start": "2023-01-17",
+      "end": "2026-11-12",
+      "stored_count": 961,
+      "stored_sha256": "ab34b6025825ebc4cd576c2c81618b6860779f9b49cbdf53156d136eb5c5dfe3",
+      "status": "verified",
+      "resolved_symbol": "NASDAQ:LITE",
+      "fetched_count": 961,
+      "fetched_sha256": "ab34b6025825ebc4cd576c2c81618b6860779f9b49cbdf53156d136eb5c5dfe3",
+      "integrity_verification": {
+        "checked": 961,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:03:06.416Z"
+      },
+      "provider_corrections": [
+        "universe-v1-LITE-NASDAQ-2025-05-22"
+      ],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "MU:NASDAQ",
+      "start": "2022-12-19",
+      "end": "2026-11-12",
+      "stored_count": 979,
+      "stored_sha256": "f7521b3c3c926478c5f5d8e906a121cbd065d86677139c7501bc768f82f2aa67",
+      "status": "verified",
+      "resolved_symbol": "NASDAQ:MU",
+      "fetched_count": 979,
+      "fetched_sha256": "f7521b3c3c926478c5f5d8e906a121cbd065d86677139c7501bc768f82f2aa67",
+      "integrity_verification": {
+        "checked": 979,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:03:22.560Z"
+      },
+      "provider_corrections": [
+        "universe-v1-MU-NASDAQ-2025-05-22"
+      ],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "NDX:INDEXNASDAQ",
+      "start": "2022-12-09",
+      "end": "2026-11-12",
+      "stored_count": 985,
+      "stored_sha256": "26b553361724d8a172773df6e85f5f4ca45d842b71b397d5d2c4a7bfc4699c0f",
+      "status": "verified",
+      "resolved_symbol": "INDEXNASDAQ:NDX",
+      "fetched_count": 985,
+      "fetched_sha256": "26b553361724d8a172773df6e85f5f4ca45d842b71b397d5d2c4a7bfc4699c0f",
+      "integrity_verification": {
+        "checked": 985,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:03:38.712Z"
+      },
+      "provider_corrections": [
+        "universe-v1-NDX-INDEXNASDAQ-2022-12-22",
+        "universe-v1-NDX-INDEXNASDAQ-2024-01-24"
+      ],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "NVDA:NASDAQ",
+      "start": "2022-12-09",
+      "end": "2026-11-12",
+      "stored_count": 985,
+      "stored_sha256": "1a5416edec11da3a69d14d09dad9c8e20097882021ed000a18c826ab5d3e85a6",
+      "status": "verified",
+      "resolved_symbol": "NASDAQ:NVDA",
+      "fetched_count": 985,
+      "fetched_sha256": "1a5416edec11da3a69d14d09dad9c8e20097882021ed000a18c826ab5d3e85a6",
+      "integrity_verification": {
+        "checked": 985,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:03:54.861Z"
+      },
+      "provider_corrections": [
+        "universe-v1-NVDA-NASDAQ-2025-05-22"
+      ],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "PLTR:NASDAQ",
+      "start": "2022-10-04",
+      "end": "2026-11-12",
+      "stored_count": 1032,
+      "stored_sha256": "46e5537563a06744e780dc59a831edcf481ccd5d7159e6783e6cdb46afe54955",
+      "status": "verified",
+      "resolved_symbol": "NASDAQ:PLTR",
+      "fetched_count": 1032,
+      "fetched_sha256": "46e5537563a06744e780dc59a831edcf481ccd5d7159e6783e6cdb46afe54955",
+      "integrity_verification": {
+        "checked": 1032,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:04:14.923Z"
+      },
+      "provider_corrections": [],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "QQQ:NASDAQ",
+      "start": "2022-12-20",
+      "end": "2026-11-12",
+      "stored_count": 978,
+      "stored_sha256": "df45ffd5f44d73f229575b30fe63e6181245e59a929da927e0fd2a88b9a4396a",
+      "status": "verified",
+      "resolved_symbol": "NASDAQ:QQQ",
+      "fetched_count": 978,
+      "fetched_sha256": "df45ffd5f44d73f229575b30fe63e6181245e59a929da927e0fd2a88b9a4396a",
+      "integrity_verification": {
+        "checked": 978,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:04:30.829Z"
+      },
+      "provider_corrections": [
+        "universe-v1-QQQ-NASDAQ-2024-10-15"
+      ],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "SOXX:NASDAQ",
+      "start": "2022-12-12",
+      "end": "2026-11-12",
+      "stored_count": 984,
+      "stored_sha256": "11f062e7da22bb8dbaa840f7a1464fd6ade2248907e3fc4ef4588d6902d6714c",
+      "status": "verified",
+      "resolved_symbol": "NASDAQ:SOXX",
+      "fetched_count": 984,
+      "fetched_sha256": "11f062e7da22bb8dbaa840f7a1464fd6ade2248907e3fc4ef4588d6902d6714c",
+      "integrity_verification": {
+        "checked": 984,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:04:47.097Z"
+      },
+      "provider_corrections": [
+        "universe-v1-SOXX-NASDAQ-2024-03-07"
+      ],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "TSLA:NASDAQ",
+      "start": "2022-12-12",
+      "end": "2026-11-12",
+      "stored_count": 984,
+      "stored_sha256": "c509e1ab1025e5e7165bd38d501f6c99e6abc6fa6f3944b5983e2e05187b35f1",
+      "status": "verified",
+      "resolved_symbol": "NASDAQ:TSLA",
+      "fetched_count": 984,
+      "fetched_sha256": "c509e1ab1025e5e7165bd38d501f6c99e6abc6fa6f3944b5983e2e05187b35f1",
+      "integrity_verification": {
+        "checked": 984,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:05:03.127Z"
+      },
+      "provider_corrections": [
+        "universe-v1-TSLA-NASDAQ-2025-05-22"
+      ],
+      "removed": [],
+      "added": [],
+      "changed": []
+    },
+    {
+      "ticker": "VRT:NYSE",
+      "start": "2022-12-20",
+      "end": "2026-11-12",
+      "stored_count": 978,
+      "stored_sha256": "f7883b85598e034c1fdb6b8641dd530925ae6f7a26e65889eb14781c881c2cda",
+      "status": "verified",
+      "resolved_symbol": "NYSE:VRT",
+      "fetched_count": 978,
+      "fetched_sha256": "f7883b85598e034c1fdb6b8641dd530925ae6f7a26e65889eb14781c881c2cda",
+      "integrity_verification": {
+        "checked": 978,
+        "unavailable": [],
+        "reviewed_disagreements": [],
+        "source_tags": [
+          "Validation:query1.finance.yahoo.com"
+        ],
+        "verified_at": "2026-11-15T17:05:19.132Z"
+      },
+      "provider_corrections": [
+        "universe-v1-VRT-NYSE-2025-05-22"
+      ],
+      "removed": [],
+      "added": [],
+      "changed": []
+    }
+  ],
+  "run_url": "https://github.com/powerpower2005/buyORsell/actions/runs/43738533313",
+  "summary": {
+    "series": 20,
+    "bars": 19556,
+    "different": 0,
+    "unverified": 0,
+    "fallback": 17
+  }
+}
