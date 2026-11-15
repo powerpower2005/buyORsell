@@ -26,6 +26,10 @@ on:
         description: "Fail audit if any active quote differs or cannot be verified"
         type: boolean
         default: false
+      batch_refresh:
+        description: "Run the same full-history batch as the schedule (ticker input ignored)"
+        type: boolean
+        default: false
   # Weekdays only (Mon–Fri UTC). Sat/Sun markets are closed — no auto refresh.
   # 02:00 / 09:00 / 14:00 UTC = 11:00 / 18:00 / 23:00 KST (GMT+9).
   schedule:
@@ -36,7 +40,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: fetch-${{ github.event.inputs.ticker || github.event.issue.number || 'batch' }}
+  group: fetch-quote-${{ inputs.audit_universe && 'audit' || inputs.verify_soxx_recovery && 'verification' || 'data' }}
   cancel-in-progress: false
 
 jobs:
@@ -90,6 +94,7 @@ jobs:
   fetch:
     if: "!inputs.verify_soxx_recovery && !inputs.audit_universe"
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -108,6 +113,7 @@ jobs:
           COMMENT_BODY: ${{ github.event.comment.body }}
           INPUT_TICKER: ${{ github.event.inputs.ticker }}
           INPUT_TF: ${{ github.event.inputs.timeframe }}
+          BATCH_REFRESH: ${{ inputs.batch_refresh }}
         run: |
           node <<'NODE'
           const fs = require('fs');
@@ -164,7 +170,7 @@ jobs:
             };
           }
 
-          if (event === 'schedule') {
+          if (event === 'schedule' || process.env.BATCH_REFRESH === 'true') {
             skip();
           }
 
@@ -275,16 +281,16 @@ jobs:
           console.log(md);
           NODE
 
-      - name: Scheduled stale refresh
+      - name: Full-history batch audit and recovery
         id: cron_refresh
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' || inputs.batch_refresh
         env:
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: node scripts/scheduled-stale-refresh.mjs
 
       - name: Upload fetch report
-        if: always() && (github.event_name == 'schedule' || steps.parse.outputs.skip == 'false')
+        if: always() && (github.event_name == 'schedule' || inputs.batch_refresh || steps.parse.outputs.skip == 'false')
         uses: actions/upload-artifact@v4
         with:
           name: fetch-run-report
@@ -295,11 +301,13 @@ jobs:
           if-no-files-found: ignore
 
       - name: Commit data
-        if: steps.parse.outputs.skip == 'false' || github.event_name == 'schedule'
+        if: success() && (steps.parse.outputs.skip == 'false' || github.event_name == 'schedule' || inputs.batch_refresh)
+        env:
+          BATCH_REFRESH: ${{ inputs.batch_refresh }}
         run: |
           npm run validate-data
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            MSG="data: scheduled stale refresh [GoogleFinance:GOOGLEFINANCE] [Validation:query1.finance.yahoo.com]"
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "$BATCH_REFRESH" = "true" ]; then
+            MSG="data: full-history batch audit [GoogleFinance:GOOGLEFINANCE] [Validation:query1.finance.yahoo.com] [Validation:fchart.stock.naver.com]"
           else
             MSG="data: update ${{ steps.parse.outputs.ticker }} ${{ steps.parse.outputs.timeframe }} [GoogleFinance:GOOGLEFINANCE] [Validation:query1.finance.yahoo.com]"
           fi
