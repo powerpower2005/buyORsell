@@ -81,3 +81,5 @@ Actions **Fetch Quote**의 `verify_soxx_recovery=true`, ticker=`SOXX:NASDAQ`는 
 수동으로 같은 배치를 실행하려면 Fetch Quote에서 ticker=`ALL`, `batch_refresh=true`를 선택합니다. `audit_universe` 및 `verify_soxx_recovery`는 false로 둡니다. 기존 읽기 전용 감사와 구분되는 실제 수집·복구·커밋 경로입니다. 보고서는 `fetch-run-report` artifact와 Actions Summary에 기록됩니다.
 
 버전: `batch_audit` 미버전 v1 → **2.0.0**, `history_refresh` **2.0.0 → 2.1.0**. Sheets 수집기/독립 검증 버전 3.1.0, 지표·시그널·추적 공식과 버전은 유지합니다.
+
+실제 배치 검증: [2026-11-16 실행](https://github.com/powerpower2005/buyORsell/actions/runs/43740333116)에서 20개 종목 전부 통과, 실패 0, 과거 날짜 보충 889개(보관 기간 앞부분 확장 포함), 새 거래일 봉 15개, 기존 봉 정정 0개를 확인했습니다. 검증 후 배치 데이터 커밋 `96de61d`가 생성됐습니다. 파일 누락·중간 거래일 누락·실패 시 커밋 금지는 26개 회귀 테스트에서 검증했습니다.
