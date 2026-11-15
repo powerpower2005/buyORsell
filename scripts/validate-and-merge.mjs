@@ -14,6 +14,7 @@ import {
   buildAggregatedQuote,
 } from "./lib/aggregate-ohlcv.mjs";
 import { financeSymbolCandidates } from "./lib/finance-symbol.mjs";
+import { historyRefreshOptions, assertHistoryCoverage } from "./lib/history-refresh.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -471,7 +472,9 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
     timeframe,
   });
 
-  const incoming = await fetchQuote(ticker, timeframe);
+  const refreshRange = historyRefreshOptions(existing, tfConfig);
+  const incoming = await fetchQuote(ticker, timeframe, refreshRange);
+  if (existing?.ohlcv?.length) assertHistoryCoverage(existing.ohlcv, incoming.ohlcv, refreshRange);
   // Drop weekly leading stretch from the fetch itself before merge/assert.
   incoming.ohlcv = dropLeadingWrongCadence(incoming.ohlcv, timeframe);
   assertBarsMatchTimeframe(

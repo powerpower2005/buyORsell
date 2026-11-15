@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-15T15:55:46.839Z",
+  "updatedAt": "2026-11-15T16:04:08.753Z",
   "entries": [
     {
       "ticker": "000660:KRX",
@@ -438,7 +438,7 @@
       "ticker": "SOXX:NASDAQ",
       "timeframe": "1d",
       "path": "data/SOXX-NASDAQ/1d.json",
-      "fetchedAt": "2026-11-13T17:10:25.560Z",
+      "fetchedAt": "2026-11-15T15:58:44.704Z",
       "lastBarDate": "2026-11-12",
       "barCount": 984
     },
@@ -494,7 +494,7 @@
       "ticker": "SOXX:NASDAQ",
       "timeframe": "1w",
       "path": "data/SOXX-NASDAQ/1w.json",
-      "fetchedAt": "2026-11-13T17:10:25.560Z",
+      "fetchedAt": "2026-11-15T15:58:44.704Z",
       "lastBarDate": "2026-11-12",
       "barCount": 200
     },
@@ -502,7 +502,7 @@
       "ticker": "SOXX:NASDAQ",
       "timeframe": "1mo",
       "path": "data/SOXX-NASDAQ/1mo.json",
-      "fetchedAt": "2026-11-13T17:10:25.560Z",
+      "fetchedAt": "2026-11-15T15:58:44.704Z",
       "lastBarDate": "2026-11-12",
       "barCount": 48
     }

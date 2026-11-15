@@ -4,6 +4,7 @@ import { fetchBarsInIsolatedSheet, allFormula } from '../lib/sheets-bars.mjs';
 import { assertFetchedBars } from '../lib/quote-quality.mjs';
 import { parseGoogFinanceAllTable } from '../lib/goog-finance-parse.mjs';
 import { mergeOhlcv } from '../validate-and-merge.mjs';
+import { historyRefreshOptions, assertHistoryCoverage } from '../lib/history-refresh.mjs';
 
 const cfg={formulaSep:',',poll:{initialWaitSec:0,attempts:2,sleepSec:0,fast:{maxSpanDays:14,initialWaitSec:0,attempts:2,sleepSec:0},medium:{maxSpanDays:90,initialWaitSec:0,attempts:2,sleepSec:0}}};
 const header=['Date','Open','High','Low','Close','Volume'];
@@ -61,4 +62,13 @@ test('long history receives enough grid rows and semicolon formulas are consiste
 });
 test('non-finite prices and impossible dates are rejected',()=>{
   for(const bar of [{date:'2026-02-30',open:1,high:2,low:1,close:2},{date:'2026-06-18',open:Infinity,high:2,low:1,close:2}]) assert.throws(()=>assertFetchedBars([bar]),/Invalid/);
+});
+test('refresh reaches the oldest retained bar instead of a fixed two-year window',()=>{
+  const existing={ohlcv:[{date:'2022-12-12'},{date:'2026-11-12'}]};
+  const range=historyRefreshOptions(existing,{sheetsLookbackDays:1500},new Date('2026-11-16'));
+  assert.equal(range.start,'2022-12-12');assert.equal(range.end,'2026-11-16');
+  const bounded=historyRefreshOptions({ohlcv:[{date:'2000-01-01'}]},{sheetsLookbackDays:1500},new Date('2026-11-16'));
+  assert.equal((Date.parse(range.end)-Date.parse(bounded.start))/86400000,1500);
+  assert.throws(()=>assertHistoryCoverage(existing.ohlcv,[{date:'2026-11-12'}],range),/missing 1/);
+  assert.doesNotThrow(()=>assertHistoryCoverage(existing.ohlcv,existing.ohlcv,range));
 });

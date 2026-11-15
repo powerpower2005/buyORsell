@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { aggregateWeekly, aggregateMonthly } from '../lib/aggregate-ohlcv.mjs';
 import { repairSoxx, HOLIDAYS, REPAIR_ID } from '../repair-soxx-history.mjs';
+import { digest } from '../repair-soxx-history.mjs';
+import { reconcileProvider } from '../reconcile-soxx-provider.mjs';
 const b=(date,close=100)=>({date,open:close,high:close+1,low:close-1,close,volume:123});
 const foreign=HOLIDAYS.map(date=>b(date,100000));
 const good=[b('2024-08-30'),b('2026-11-12')];
@@ -27,4 +29,13 @@ test('committed SOXX history has no verified foreign holidays and derived bars m
     const expected=aggregate(daily.ohlcv).slice(-config[tf].maxBars);
     assert.deepEqual(read(`data/SOXX-NASDAQ/${tf}.json`).ohlcv,expected);
   }
+});
+test('provider reconciliation accepts reviewed split basis without locally inventing prices',()=>{
+  const fresh={ticker:'SOXX:NASDAQ',timeframe:'1d',source:'google_sheets_googfinance',resolvedSymbol:'NASDAQ:SOXX',collection_version:'2.0.0',ohlcv:[b('2024-11-08',100),b('2026-11-12',100)]};
+  const old=structuredClone(fresh);old.data_recovery={id:REPAIR_ID,after_sha256:'old'};
+  for(const field of ['open','high','low','close'])old.ohlcv[0][field]*=3;
+  const r=reconcileProvider(old,fresh,{fetched_sha256:digest(fresh.ohlcv)});
+  assert.equal(r.changes.length,1);assert.deepEqual(r.quote.ohlcv,fresh.ohlcv);
+  const missing=structuredClone(fresh);missing.ohlcv.pop();assert.throws(()=>reconcileProvider(old,missing,{fetched_sha256:digest(missing.ohlcv)}),/dates/);
+  old.ohlcv[0].close+=10;assert.throws(()=>reconcileProvider(old,fresh,{fetched_sha256:digest(fresh.ohlcv)}),/Unreviewed/);
 });
