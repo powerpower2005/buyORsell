@@ -22,7 +22,7 @@ async function main() {
       const quote=await fetchQuote(stored.ticker,'1d',{start:entry.start,end:entry.end,symbolCandidates:[stored.ticker.split(':').reverse().join(':')],onObservation:bars=>fs.writeFileSync(`${out}/${slug}.observation.json`,JSON.stringify(bars,null,2)+'\n'),auditSingleAttempt:true});
       fs.writeFileSync(`${out}/${slug}.json`,JSON.stringify(quote,null,2)+'\n');
       Object.assign(entry,{status:'verified',resolved_symbol:quote.resolvedSymbol,fetched_count:quote.barCount,fetched_sha256:digest(quote.ohlcv),integrity_verification:quote.integrity_verification,provider_corrections:quote.provider_corrections??[],...compareBars(stored.ohlcv,quote.ohlcv)});
-    } catch(error) {entry.status='provider_error'; entry.reason=['Invalid OHLC price bounds','GOOGLEFINANCE returned no parseable OHLCV rows','Invalid OHLCV volume'].includes(error.message)?error.message:'Provider request failed; no replacement accepted';}
+    } catch(error) {entry.status='provider_error'; entry.reason=/^(Invalid OHLC|GOOGLEFINANCE returned no parseable|Independent |Reviewed |Missing trading|Cross-symbol|Unreviewed price|Resolved symbol|Quote count)/.test(error.message)?error.message:'Provider request failed; no replacement accepted';}
     report.series.push(entry); fs.writeFileSync(`${out}/report.json`,JSON.stringify(report,null,2)+'\n');
     console.log(JSON.stringify({ticker:entry.ticker,status:entry.status,changed:entry.changed?.length,removed:entry.removed?.length,added:entry.added?.length,reason:entry.reason}));
   }

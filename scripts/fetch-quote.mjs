@@ -7,7 +7,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { fetchBarsWithSymbolCandidates } from "./lib/sheets-bars.mjs";
-import { assertCollectible, assertQuoteIntegrity, readDailyQuotes } from './lib/universe-integrity.mjs';
+import { assertCollectible, assertQuoteIntegrity, readDailyQuotes, integrityPolicy } from './lib/universe-integrity.mjs';
 import { verifyIndependent } from './lib/independent-prices.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -144,6 +144,7 @@ export async function fetchQuote(ticker, timeframe = "1d", options = {}) {
   quote.integrity_verification=await verifyIndependent(ticker,ohlcv);
   quote.source_tags.push(...quote.integrity_verification.source_tags);
   if(corrections.length){quote.provider_corrections=corrections;quote.source_tags.push('YahooFinance:query1.finance.yahoo.com');}
+  if(corrections.length){const p=integrityPolicy();if([...p.providerCorrections,...(p.providerAdditions??[])].some(c=>corrections.includes(c.id)&&c.sources.some(s=>s.includes('fchart.stock.naver.com'))))quote.source_tags.push('NaverFinance:fchart.stock.naver.com');}
   return quote;
 }
 
