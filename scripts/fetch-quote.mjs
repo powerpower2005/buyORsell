@@ -132,7 +132,7 @@ export async function fetchQuote(ticker, timeframe = "1d", options = {}) {
     intervalSeconds: tfConfig.intervalSeconds,
     source: "google_sheets_googfinance",
     source_tags: ["GoogleFinance:GOOGLEFINANCE", "GoogleSheets:sheets.googleapis.com"],
-    collection_version: "3.0.0",
+    collection_version: "3.1.0",
     resolvedSymbol: symbol,
     fetchedAt: new Date().toISOString(),
     lastBarDate: last.date,

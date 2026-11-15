@@ -3863,8 +3863,8 @@
       "date": "2024-11-07",
       "open": 30220,
       "high": 31760,
-      "low": 29740,
-      "close": 29740,
+      "low": 29760,
+      "close": 31640,
       "volume": 469664
     },
     {
@@ -7764,39 +7764,50 @@
       "volume": 467845
     }
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "source_tags": [
     "GoogleFinance:GOOGLEFINANCE",
     "GoogleSheets:sheets.googleapis.com",
     "Validation:query1.finance.yahoo.com",
     "YahooFinance:query1.finance.yahoo.com",
-    "NaverFinance:fchart.stock.naver.com"
+    "NaverFinance:fchart.stock.naver.com",
+    "Validation:fchart.stock.naver.com"
   ],
   "integrity_verification": {
-    "checked": 965,
-    "unavailable": [
+    "checked": 969,
+    "unavailable": [],
+    "reviewed_disagreements": [],
+    "source_tags": [
+      "Validation:query1.finance.yahoo.com",
+      "Validation:fchart.stock.naver.com"
+    ],
+    "domestic_fallback_dates": [
       "2024-01-15",
       "2024-10-14",
       "2024-11-07",
       "2025-09-19"
     ],
-    "reviewed_disagreements": [],
-    "source_tags": [
-      "Validation:query1.finance.yahoo.com"
-    ],
-    "verified_at": "2026-11-15T16:38:45.774Z",
-    "independent_fetched_at": "2026-11-15T16:29:15.622Z"
+    "verified_at": "2026-11-15T16:57:40.514Z"
   },
   "provider_corrections": [
     "universe-v1-010120-KRX-2023-01-20",
-    "universe-v1-010120-KRX-2026-06-22"
+    "universe-v1-010120-KRX-2026-06-22",
+    "universe-v2-010120-KRX-2024-11-07"
   ],
   "data_recovery": {
-    "id": "universe-history-2026-11-16-v1",
-    "version": "1.0.0",
-    "audit": "data-repairs/2026-11-16-universe.json",
-    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
-    "before_sha256": "e74af656da9e690c384e822457efe3aa6b6889ba4bb5418db5504c4a038b10db",
-    "after_sha256": "d78f04f745e8c5cf99ecce5950b36724fb39fa35ff80bd1a91264def83fe3c4e"
+    "id": "universe-history-2026-11-16-v2",
+    "version": "1.1.0",
+    "audit": "data-repairs/2026-11-16-domestic-supplement.json",
+    "provider_reconciled_at": "2026-11-15T16:57:40.514Z",
+    "before_sha256": "d78f04f745e8c5cf99ecce5950b36724fb39fa35ff80bd1a91264def83fe3c4e",
+    "after_sha256": "ce0693b968c31a574e840a1c84a300524e07fd23b445d352c77baeda0c971f55",
+    "previous": {
+      "id": "universe-history-2026-11-16-v1",
+      "version": "1.0.0",
+      "audit": "data-repairs/2026-11-16-universe.json",
+      "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+      "before_sha256": "e74af656da9e690c384e822457efe3aa6b6889ba4bb5418db5504c4a038b10db",
+      "after_sha256": "d78f04f745e8c5cf99ecce5950b36724fb39fa35ff80bd1a91264def83fe3c4e"
+    }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "quarantined": {
     "CRD:NTYSE": {
       "reason": "Invalid exchange and all 484 OHLCV rows copied from 000660:KRX; retain existing exclusion, do not infer replacement."
@@ -393,6 +393,30 @@
         "https://query1.finance.yahoo.com/v8/finance/chart/%5ENDX?period1=1670544000&period2=1794528000&interval=1d&events=splits"
       ],
       "independent_fetched_at": "2026-11-15T16:29:17.404Z"
+    },
+    {
+      "id": "universe-v2-010120-KRX-2024-11-07",
+      "symbol": "KRX:010120",
+      "before": {
+        "date": "2024-11-07",
+        "open": 30220,
+        "high": 31760,
+        "low": 29740,
+        "close": 29740,
+        "volume": 469664
+      },
+      "after": {
+        "date": "2024-11-07",
+        "open": 30220,
+        "high": 31760,
+        "low": 29760,
+        "close": 31640,
+        "volume": 469664
+      },
+      "reason": "Yahoo close falls below its session low and cannot validate Google. Naver supplies valid complete OHLC; preserve original-session volume (Naver 2348320 split-adjusted / official 5 = Google 469664).",
+      "sources": [
+        "https://fchart.stock.naver.com/sise.nhn?symbol=010120&timeframe=day&count=1500&requestType=0"
+      ]
     }
   ],
   "providerAdditions": [

@@ -1,0 +1,416 @@
+{
+  "version": "1.1.0",
+  "id": "universe-history-2026-11-16-v2",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "YahooFinance:query1.finance.yahoo.com",
+    "NaverFinance:fchart.stock.naver.com"
+  ],
+  "initial_secondary_gaps": 17,
+  "corroborated_without_change": 16,
+  "extra_correction": {
+    "id": "universe-v2-010120-KRX-2024-11-07",
+    "symbol": "KRX:010120",
+    "before": {
+      "date": "2024-11-07",
+      "open": 30220,
+      "high": 31760,
+      "low": 29740,
+      "close": 29740,
+      "volume": 469664
+    },
+    "after": {
+      "date": "2024-11-07",
+      "open": 30220,
+      "high": 31760,
+      "low": 29760,
+      "close": 31640,
+      "volume": 469664
+    },
+    "reason": "Yahoo close falls below its session low and cannot validate Google. Naver supplies valid complete OHLC; preserve original-session volume (Naver 2348320 split-adjusted / official 5 = Google 469664).",
+    "sources": [
+      "https://fchart.stock.naver.com/sise.nhn?symbol=010120&timeframe=day&count=1500&requestType=0"
+    ]
+  },
+  "before_sha256": "d78f04f745e8c5cf99ecce5950b36724fb39fa35ff80bd1a91264def83fe3c4e",
+  "after_sha256": "ce0693b968c31a574e840a1c84a300524e07fd23b445d352c77baeda0c971f55",
+  "fetchedAt_preserved": "2026-11-15T16:29:27.397Z",
+  "verified_at": "2026-11-15T16:57:40.514Z",
+  "evidence": [
+    {
+      "ticker": "000660:KRX",
+      "url": "https://fchart.stock.naver.com/sise.nhn?symbol=000660&timeframe=day&count=1500&requestType=0",
+      "checked_at": "2026-11-15T16:54:32.851Z",
+      "dates": [
+        {
+          "date": "2023-02-02",
+          "stored": {
+            "date": "2023-02-02",
+            "open": 94900,
+            "high": 94900,
+            "low": 92700,
+            "close": 93400,
+            "volume": 4350607
+          },
+          "reference": {
+            "date": "2023-02-02",
+            "open": 94900,
+            "high": 94900,
+            "low": 92700,
+            "close": 93400,
+            "volume": 4350607
+          },
+          "price_match": true
+        },
+        {
+          "date": "2023-02-09",
+          "stored": {
+            "date": "2023-02-09",
+            "open": 94800,
+            "high": 94800,
+            "low": 92600,
+            "close": 94400,
+            "volume": 2726568
+          },
+          "reference": {
+            "date": "2023-02-09",
+            "open": 94800,
+            "high": 94800,
+            "low": 92600,
+            "close": 94400,
+            "volume": 2726568
+          },
+          "price_match": true
+        },
+        {
+          "date": "2024-10-14",
+          "stored": {
+            "date": "2024-10-14",
+            "open": 186900,
+            "high": 192300,
+            "low": 186900,
+            "close": 187500,
+            "volume": 3309274
+          },
+          "reference": {
+            "date": "2024-10-14",
+            "open": 186900,
+            "high": 192300,
+            "low": 186900,
+            "close": 187500,
+            "volume": 3309274
+          },
+          "price_match": true
+        },
+        {
+          "date": "2025-09-19",
+          "stored": {
+            "date": "2025-09-19",
+            "open": 351500,
+            "high": 360000,
+            "low": 348000,
+            "close": 353000,
+            "volume": 4385543
+          },
+          "reference": {
+            "date": "2025-09-19",
+            "open": 351500,
+            "high": 360000,
+            "low": 348000,
+            "close": 353000,
+            "volume": 4385543
+          },
+          "price_match": true
+        }
+      ]
+    },
+    {
+      "ticker": "005930:KRX",
+      "url": "https://fchart.stock.naver.com/sise.nhn?symbol=005930&timeframe=day&count=1500&requestType=0",
+      "checked_at": "2026-11-15T16:54:32.909Z",
+      "dates": [
+        {
+          "date": "2024-10-14",
+          "stored": {
+            "date": "2024-10-14",
+            "open": 59500,
+            "high": 61200,
+            "low": 59400,
+            "close": 60800,
+            "volume": 20886249
+          },
+          "reference": {
+            "date": "2024-10-14",
+            "open": 59500,
+            "high": 61200,
+            "low": 59400,
+            "close": 60800,
+            "volume": 20886249
+          },
+          "price_match": true
+        },
+        {
+          "date": "2025-09-19",
+          "stored": {
+            "date": "2025-09-19",
+            "open": 81100,
+            "high": 81200,
+            "low": 79600,
+            "close": 79700,
+            "volume": 20898386
+          },
+          "reference": {
+            "date": "2025-09-19",
+            "open": 81100,
+            "high": 81200,
+            "low": 79600,
+            "close": 79700,
+            "volume": 20898386
+          },
+          "price_match": true
+        }
+      ]
+    },
+    {
+      "ticker": "009150:KRX",
+      "url": "https://fchart.stock.naver.com/sise.nhn?symbol=009150&timeframe=day&count=1500&requestType=0",
+      "checked_at": "2026-11-15T16:54:32.835Z",
+      "dates": [
+        {
+          "date": "2023-01-26",
+          "stored": {
+            "date": "2023-01-26",
+            "open": 149900,
+            "high": 150500,
+            "low": 145400,
+            "close": 147000,
+            "volume": 721390
+          },
+          "reference": {
+            "date": "2023-01-26",
+            "open": 149900,
+            "high": 150500,
+            "low": 145400,
+            "close": 147000,
+            "volume": 721390
+          },
+          "price_match": true
+        },
+        {
+          "date": "2023-02-01",
+          "stored": {
+            "date": "2023-02-01",
+            "open": 143600,
+            "high": 144400,
+            "low": 141600,
+            "close": 144400,
+            "volume": 322685
+          },
+          "reference": {
+            "date": "2023-02-01",
+            "open": 143600,
+            "high": 144400,
+            "low": 141600,
+            "close": 144400,
+            "volume": 322685
+          },
+          "price_match": true
+        },
+        {
+          "date": "2023-02-06",
+          "stored": {
+            "date": "2023-02-06",
+            "open": 147400,
+            "high": 148500,
+            "low": 145600,
+            "close": 146000,
+            "volume": 508341
+          },
+          "reference": {
+            "date": "2023-02-06",
+            "open": 147400,
+            "high": 148500,
+            "low": 145600,
+            "close": 146000,
+            "volume": 508341
+          },
+          "price_match": true
+        },
+        {
+          "date": "2025-09-19",
+          "stored": {
+            "date": "2025-09-19",
+            "open": 194000,
+            "high": 197700,
+            "low": 192900,
+            "close": 197700,
+            "volume": 532083
+          },
+          "reference": {
+            "date": "2025-09-19",
+            "open": 194000,
+            "high": 197700,
+            "low": 192900,
+            "close": 197700,
+            "volume": 532083
+          },
+          "price_match": true
+        },
+        {
+          "date": "2026-03-27",
+          "stored": {
+            "date": "2026-03-27",
+            "open": 436500,
+            "high": 438500,
+            "low": 418000,
+            "close": 434000,
+            "volume": 700060
+          },
+          "reference": {
+            "date": "2026-03-27",
+            "open": 436500,
+            "high": 438500,
+            "low": 418000,
+            "close": 434000,
+            "volume": 700060
+          },
+          "price_match": true
+        }
+      ]
+    },
+    {
+      "ticker": "010120:KRX",
+      "url": "https://fchart.stock.naver.com/sise.nhn?symbol=010120&timeframe=day&count=1500&requestType=0",
+      "checked_at": "2026-11-15T16:54:32.823Z",
+      "dates": [
+        {
+          "date": "2024-01-15",
+          "stored": {
+            "date": "2024-01-15",
+            "open": 13740,
+            "high": 13840,
+            "low": 13460,
+            "close": 13500,
+            "volume": 156269
+          },
+          "reference": {
+            "date": "2024-01-15",
+            "open": 13740,
+            "high": 13840,
+            "low": 13460,
+            "close": 13500,
+            "volume": 781345
+          },
+          "price_match": true
+        },
+        {
+          "date": "2024-10-14",
+          "stored": {
+            "date": "2024-10-14",
+            "open": 31640,
+            "high": 34200,
+            "low": 31640,
+            "close": 33800,
+            "volume": 632875
+          },
+          "reference": {
+            "date": "2024-10-14",
+            "open": 31640,
+            "high": 34200,
+            "low": 31640,
+            "close": 33800,
+            "volume": 3164375
+          },
+          "price_match": true
+        },
+        {
+          "date": "2024-11-07",
+          "stored": {
+            "date": "2024-11-07",
+            "open": 30220,
+            "high": 31760,
+            "low": 29740,
+            "close": 29740,
+            "volume": 469664
+          },
+          "reference": {
+            "date": "2024-11-07",
+            "open": 30220,
+            "high": 31760,
+            "low": 29760,
+            "close": 31640,
+            "volume": 2348320
+          },
+          "price_match": false
+        },
+        {
+          "date": "2025-09-19",
+          "stored": {
+            "date": "2025-09-19",
+            "open": 60400,
+            "high": 60800,
+            "low": 59200,
+            "close": 59200,
+            "volume": 162029
+          },
+          "reference": {
+            "date": "2025-09-19",
+            "open": 60400,
+            "high": 60800,
+            "low": 59200,
+            "close": 59200,
+            "volume": 810145
+          },
+          "price_match": true
+        }
+      ]
+    },
+    {
+      "ticker": "KOSPI:KRX",
+      "url": "https://fchart.stock.naver.com/sise.nhn?symbol=KOSPI&timeframe=day&count=1500&requestType=0",
+      "checked_at": "2026-11-15T16:54:32.844Z",
+      "dates": [
+        {
+          "date": "2024-09-12",
+          "stored": {
+            "date": "2024-09-12",
+            "open": 2547.5,
+            "high": 2572.09,
+            "low": 2537.87,
+            "close": 2572.09,
+            "volume": 340479
+          },
+          "reference": {
+            "date": "2024-09-12",
+            "open": 2547.5,
+            "high": 2572.09,
+            "low": 2537.87,
+            "close": 2572.09,
+            "volume": 340479
+          },
+          "price_match": true
+        },
+        {
+          "date": "2026-06-29",
+          "stored": {
+            "date": "2026-06-29",
+            "open": 8334.28,
+            "high": 8525.53,
+            "low": 8127.99,
+            "close": 8394.65,
+            "volume": 371223
+          },
+          "reference": {
+            "date": "2026-06-29",
+            "open": 8334.28,
+            "high": 8525.53,
+            "low": 8127.99,
+            "close": 8394.65,
+            "volume": 371223
+          },
+          "price_match": true
+        }
+      ]
+    }
+  ]
+}
