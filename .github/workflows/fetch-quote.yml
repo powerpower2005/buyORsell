@@ -14,6 +14,10 @@ on:
         description: "Timeframe"
         required: false
         default: "1d"
+      verify_soxx_recovery:
+        description: "Read-only provider verification of repaired SOXX history; no data commit"
+        type: boolean
+        default: false
   # Weekdays only (Mon–Fri UTC). Sat/Sun markets are closed — no auto refresh.
   # 02:00 / 09:00 / 14:00 UTC = 11:00 / 18:00 / 23:00 KST (GMT+9).
   schedule:
@@ -28,7 +32,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  verify-soxx:
+    if: github.event_name == 'workflow_dispatch' && inputs.verify_soxx_recovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci --no-audit --no-fund
+      - name: Verify recovered history against isolated GOOGLEFINANCE request
+        env:
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/verify-soxx-recovery.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: soxx-provider-verification
+          path: artifacts/soxx-provider-*.json
+          if-no-files-found: ignore
   fetch:
+    if: "!inputs.verify_soxx_recovery"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

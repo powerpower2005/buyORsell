@@ -1,0 +1,168 @@
+{
+  "id": "soxx-foreign-holiday-bars-2026-11-16",
+  "version": "1.0.0",
+  "repaired_at": "2026-11-15T15:53:52.377Z",
+  "audit_path": "data-repairs/2026-11-16.json",
+  "before_sha256": "f791a0f8f978d2834ca1f431ab1a77608c7d14ba01e5a56e006b3cf01c04b5e3",
+  "after_sha256": "c6bc90468f3ed99754b65b53fe1bbfd7fece3b060fbe2c933a39aff5afe5e050",
+  "ticker": "SOXX:NASDAQ",
+  "source_commit": "8e19ef6f682218312637b911259f0a0aa30f2966",
+  "source_tags": [
+    "GoogleFinance:google.com/finance",
+    "Audit:cross-symbol-OHLCV",
+    "Calendar:Nasdaq",
+    "Calendar:NYSE"
+  ],
+  "evidence_ticker": "009150:KRX",
+  "evidence_sha256": "836e1522909611f0d22861b5e73fb234e235350a8678cb4db69cc677fcd0822a",
+  "calendar_sources": [
+    "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx",
+    "https://www.nasdaq.com/docs/2025/02/18/0018-25_2025%20Holiday%20%26%20Trading%20Hours_v02.pdf",
+    "https://www.nasdaq.com/press-release/nasdaq-announces-closure-its-us-markets-honor-national-day-mourning-former-president",
+    "https://www.nasdaqtrader.com/Trader.aspx?id=Calendar"
+  ],
+  "removed_bars": [
+    {
+      "date": "2024-09-02",
+      "open": 142800,
+      "high": 145900,
+      "low": 141000,
+      "close": 145200,
+      "volume": 323305
+    },
+    {
+      "date": "2024-11-28",
+      "open": 111700,
+      "high": 112600,
+      "low": 110500,
+      "close": 112000,
+      "volume": 176515
+    },
+    {
+      "date": "2025-01-09",
+      "open": 131500,
+      "high": 133400,
+      "low": 129200,
+      "close": 129200,
+      "volume": 459274
+    },
+    {
+      "date": "2025-01-20",
+      "open": 128600,
+      "high": 128700,
+      "low": 126300,
+      "close": 126600,
+      "volume": 201645
+    },
+    {
+      "date": "2025-02-17",
+      "open": 149700,
+      "high": 149800,
+      "low": 145400,
+      "close": 147400,
+      "volume": 272783
+    },
+    {
+      "date": "2025-04-18",
+      "open": 121500,
+      "high": 121900,
+      "low": 120400,
+      "close": 121000,
+      "volume": 149144
+    },
+    {
+      "date": "2025-05-26",
+      "open": 116900,
+      "high": 121400,
+      "low": 116200,
+      "close": 121100,
+      "volume": 190038
+    },
+    {
+      "date": "2025-06-19",
+      "open": 134300,
+      "high": 134600,
+      "low": 129800,
+      "close": 130300,
+      "volume": 433979
+    },
+    {
+      "date": "2025-07-04",
+      "open": 141500,
+      "high": 141700,
+      "low": 138200,
+      "close": 138600,
+      "volume": 335510
+    },
+    {
+      "date": "2025-09-01",
+      "open": 158800,
+      "high": 166600,
+      "low": 158000,
+      "close": 162200,
+      "volume": 443088
+    },
+    {
+      "date": "2025-11-27",
+      "open": 252500,
+      "high": 259250,
+      "low": 250000,
+      "close": 255000,
+      "volume": 531577
+    },
+    {
+      "date": "2026-01-19",
+      "open": 288000,
+      "high": 295500,
+      "low": 286000,
+      "close": 292000,
+      "volume": 454162
+    },
+    {
+      "date": "2026-04-03",
+      "open": 440000,
+      "high": 462500,
+      "low": 432500,
+      "close": 456000,
+      "volume": 831535
+    },
+    {
+      "date": "2026-06-19",
+      "open": 2280000,
+      "high": 2417000,
+      "low": 2169000,
+      "close": 2270000,
+      "volume": 1728303
+    },
+    {
+      "date": "2026-07-03",
+      "open": 1896000,
+      "high": 1989000,
+      "low": 1734000,
+      "close": 1989000,
+      "volume": 1180205
+    }
+  ],
+  "before_count": 999,
+  "after_count": 984,
+  "unchanged_remaining_bars": true,
+  "preserved_fetched_at": "2026-11-13T17:10:25.560Z",
+  "derived": [
+    {
+      "timeframe": "1w",
+      "before_count": 200,
+      "after_count": 200,
+      "before_sha256": "d7f90f2321b8f74226a4ad45d8275e4b3e5c6e60213ed621ff376090bf5ee798",
+      "after_sha256": "1721240c9bacd06341ec3a36953fcb3755412d0580495c51fb388253ce9318af",
+      "changed_bars": 15
+    },
+    {
+      "timeframe": "1mo",
+      "before_count": 48,
+      "after_count": 48,
+      "before_sha256": "9fff80b83be174ba0fde08c9e9bf5b792533f5283834c7a32dd355121d01ae8b",
+      "after_sha256": "eb429a5257982cb41872ea75a1933a430b177a964774a39cc55867240b5e3512",
+      "changed_bars": 14
+    }
+  ]
+}

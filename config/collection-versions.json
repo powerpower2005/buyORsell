@@ -1,0 +1,7 @@
+{
+  "releasedOn": "2026-11-16",
+  "items": {
+    "sheets_fetch": {"version":"2.0.0","previous":"1.0.0 (unversioned)","change":"Replace shared scratch cell with request-isolated worksheets; atomic allocation/formula, requested-range and OHLC validation, actual Sheets provenance."},
+    "soxx_recovery": {"version":"1.0.0","previous":null,"change":"Remove verified foreign-symbol holiday bars with before/after evidence; regenerate weekly/monthly data without inventing prices or changing fetchedAt."}
+  }
+}
