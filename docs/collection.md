@@ -62,4 +62,6 @@ CI `Collection integrity`는 요청 경쟁 재현·격리·실패 정리·범위
 
 Actions **Fetch Quote**의 `verify_soxx_recovery=true`, ticker=`SOXX:NASDAQ`는 기존 기간 전체를 `NASDAQ:SOXX`로 새 격리 요청하여 복구 결과와 대조합니다. `data/`나 GitHub 브랜치는 변경하지 않으며, 출처·기간·개수·해시·차이 날짜만 담은 검증 보고서와 공급자 quote를 artifact로 남깁니다. 불일치 시 실패하며 추적 복귀 전에 검토해야 합니다. 자격증명은 기존 Actions Secrets를 사용합니다.
 
+2026-11-16 검증 결과: 수집·복구 테스트 12개와 전체 데이터 스키마 검사가 통과했습니다. [별도의 두 번째 공급자 요청](https://github.com/powerpower2005/buyORsell/actions/runs/43733462054)에서 984개 날짜·OHLCV가 모두 일치했고, SHA-256도 동일했습니다. 영구 보관한 [검증 보고서](../data-repairs/2026-11-16.provider-verification.json)에서 확인할 수 있습니다. 기존 stocker 추적식의 Wilder ATR(14)은 476.8299 → 8.3966으로 바뀌었습니다. 이는 데이터 정정 결과이며 추적 배수를 조정한 결과가 아닙니다.
+
 일반 병합을 무조건 전체 교체로 바꾸지는 않았습니다. 제공자가 일부 자료만 반환하는 상황에서 정상 과거 이력을 삭제할 수 있기 때문입니다. 복구는 증거를 가진 별도 절차로 수행합니다.
