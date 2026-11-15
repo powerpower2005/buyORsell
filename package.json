@@ -14,6 +14,7 @@
     "test:fetch": "node scripts/validate-and-merge.mjs NVDA:NASDAQ 1d",
     "aggregate:1w": "node scripts/aggregate-weekly-from-daily.mjs",
     "test:stale-refresh": "node scripts/test-stale-refresh.mjs",
+    "test:collection": "node --test scripts/tests/*.test.mjs",
     "test:evaluation": "node scripts/test-evaluation.mjs"
   },
   "dependencies": {

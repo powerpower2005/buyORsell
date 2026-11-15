@@ -1,0 +1,21 @@
+name: Collection integrity
+on:
+  pull_request:
+    paths: ['scripts/**', 'config/**', 'data/SOXX-NASDAQ/**', 'data-repairs/**', '.github/workflows/collection-tests.yml', '.github/workflows/fetch-quote.yml', 'package.json']
+  push:
+    branches: [main]
+    paths: ['scripts/**', 'config/**', 'data/SOXX-NASDAQ/**', 'data-repairs/**', '.github/workflows/collection-tests.yml', '.github/workflows/fetch-quote.yml', 'package.json']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test:collection
+      - run: npm run test:stale-refresh
+      - run: npm run validate-data

@@ -56,3 +56,12 @@ Skip only pure mechanical refactors with no behavior, label, or rule change.
 - Keep the first-observation replay in the normal evaluation path. Chart geometry may retain original pivot coordinates; entry events must use confirmation time.
 - Run `npm run test:evaluation` and `npm run build` after evaluation changes.
 - `docs/versions.md` and both changelogs are tracked. Other generated documents remain local.
+
+## Quote collection and recovery
+
+- GOOGLEFINANCE bar requests must own a fresh temporary worksheet; do not reuse a shared scratch cell or rely on workflow concurrency groups for spreadsheet isolation. Clean up only an acknowledged, owned worksheet.
+- Validate request date bounds, unique ordered dates, finite values and OHLC bounds before merge. Do not silently accept partially malformed provider tables.
+- On refresh, request the entire retained history and require coverage of stored dates in that range. A recent-only refresh can mix pre/post-split price bases. Never locally infer split scaling or volume corrections from a ratio alone.
+- A normal merge is additive, not proof that absent dates should be deleted. Historical removal needs explicit evidence, before/after hashes and regenerated aggregates. Preserve fetchedAt for local repairs; a repair is not a new provider fetch.
+- Collection/recovery versions and behavior are in `config/collection-versions.json` and `docs/collection.md`. Do not bump indicator/strategy versions for unchanged formulas after source data repair.
+- Run `npm run test:collection`, `npm run test:stale-refresh` and `npm run validate-data` for collection changes. The SOXX read-only provider check uses Actions secrets and never commits data or prints credentials.

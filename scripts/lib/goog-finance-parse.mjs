@@ -18,7 +18,7 @@ function parseNum(raw, { allowZero = false } = {}) {
   const s = String(raw).trim();
   if (ERROR_TOKENS.has(s)) return null;
   const v = Number(s.replace(/,/g, ""));
-  if (Number.isNaN(v)) return null;
+  if (!Number.isFinite(v)) return null;
   if (allowZero) {
     if (v < 0) return null;
   } else if (v <= 0) {
@@ -31,7 +31,7 @@ function parseNum(raw, { allowZero = false } = {}) {
  * Parse GOOGLEFINANCE(..., "all", ...) spill table.
  * Ported from Hedge scripts/common/bars_sheets.py
  */
-export function parseGoogFinanceAllTable(rows) {
+export function parseGoogFinanceAllTable(rows, { strict = false } = {}) {
   if (!rows?.length) return [];
 
   const out = [];
@@ -44,15 +44,20 @@ export function parseGoogFinanceAllTable(rows) {
     const d = parseDateCell(dRaw);
     if (!d) {
       if (i === 0 && String(dRaw).trim().toLowerCase() === "date") continue;
+      if (strict && i > 0 && cells.some(c => String(c ?? '').trim())) throw new Error('Unparseable OHLCV row');
       continue;
     }
     const o = parseNum(oRaw);
     const h = parseNum(hRaw);
     const l = parseNum(lRaw);
     const c = parseNum(cRaw);
-    if (o == null || h == null || l == null || c == null) continue;
+    if (o == null || h == null || l == null || c == null) {
+      if (strict) throw new Error('Unparseable OHLCV price');
+      continue;
+    }
     const bar = { date: d, open: o, high: h, low: l, close: c };
     const vol = parseNum(vRaw, { allowZero: true });
+    if (strict && vol == null && String(vRaw ?? '').trim()) throw new Error('Unparseable OHLCV volume');
     if (vol != null) bar.volume = vol;
     out.push(bar);
   }

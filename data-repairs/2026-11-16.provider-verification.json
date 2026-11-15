@@ -1,0 +1,21 @@
+{
+  "verified_at": "2026-11-15T16:05:42.634Z",
+  "repair_id": "soxx-foreign-holiday-bars-2026-11-16",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com"
+  ],
+  "collection_version": "2.0.0",
+  "resolved_symbol": "NASDAQ:SOXX",
+  "start": "2022-12-12",
+  "end": "2026-11-12",
+  "stored_count": 984,
+  "fetched_count": 984,
+  "stored_sha256": "d729037403157a98a3571fe5f4f6fa60e800ffef355d4cad2341f039938449e7",
+  "fetched_sha256": "d729037403157a98a3571fe5f4f6fa60e800ffef355d4cad2341f039938449e7",
+  "different_dates": [],
+  "extra_dates": [],
+  "closed_session_dates": [],
+  "match": true,
+  "run_url": "https://github.com/powerpower2005/buyORsell/actions/runs/43733462054"
+}
