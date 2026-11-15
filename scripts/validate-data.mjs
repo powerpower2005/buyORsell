@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
+import {checkUniverse} from './check-universe-integrity.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -69,4 +70,5 @@ if (fs.existsSync(tickerNamesPath)) {
   checkFile(tickerNamesPath, validateTickerNames, "ticker-names");
 }
 
+try {checkUniverse(ROOT);} catch(error) {console.error(error.message);failed=true;}
 process.exit(failed ? 1 : 0);

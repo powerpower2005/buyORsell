@@ -4,9 +4,9 @@
   "window": "2Y",
   "schemaVersion": 1,
   "intervalSeconds": 86400,
-  "source": "gf",
+  "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:LITE",
-  "fetchedAt": "2026-11-13T17:02:23.039Z",
+  "fetchedAt": "2026-11-15T16:31:35.206Z",
   "lastBarDate": "2026-11-12",
   "barCount": 961,
   "checksum": "30b07770",
@@ -4725,11 +4725,11 @@
     },
     {
       "date": "2025-05-22",
-      "open": 76.93,
-      "high": 78.49,
-      "low": 75.18,
-      "close": 75.95,
-      "volume": 1404
+      "open": 75.7,
+      "high": 76.9,
+      "low": 75.29,
+      "close": 75.88,
+      "volume": 1237100
     },
     {
       "date": "2025-05-23",
@@ -7699,5 +7699,33 @@
       "close": 624.65,
       "volume": 4482700
     }
-  ]
+  ],
+  "collection_version": "3.0.0",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com"
+  ],
+  "integrity_verification": {
+    "checked": 961,
+    "unavailable": [],
+    "reviewed_disagreements": [],
+    "source_tags": [
+      "Validation:query1.finance.yahoo.com"
+    ],
+    "verified_at": "2026-11-15T16:38:45.774Z",
+    "independent_fetched_at": "2026-11-15T16:29:17.081Z"
+  },
+  "provider_corrections": [
+    "universe-v1-LITE-NASDAQ-2025-05-22"
+  ],
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "7efdf2ba55c8f092a0af19519116ff5a508d3c5760913cdc4a34dbf75080d068",
+    "after_sha256": "ab34b6025825ebc4cd576c2c81618b6860779f9b49cbdf53156d136eb5c5dfe3"
+  }
 }

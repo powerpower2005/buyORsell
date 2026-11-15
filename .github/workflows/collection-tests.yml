@@ -1,10 +1,10 @@
 name: Collection integrity
 on:
   pull_request:
-    paths: ['scripts/**', 'config/**', 'data/SOXX-NASDAQ/**', 'data-repairs/**', '.github/workflows/collection-tests.yml', '.github/workflows/fetch-quote.yml', 'package.json']
+    paths: ['scripts/**', 'config/**', 'data/**', 'data-repairs/**', '.github/workflows/collection-tests.yml', '.github/workflows/fetch-quote.yml', 'package.json']
   push:
     branches: [main]
-    paths: ['scripts/**', 'config/**', 'data/SOXX-NASDAQ/**', 'data-repairs/**', '.github/workflows/collection-tests.yml', '.github/workflows/fetch-quote.yml', 'package.json']
+    paths: ['scripts/**', 'config/**', 'data/**', 'data-repairs/**', '.github/workflows/collection-tests.yml', '.github/workflows/fetch-quote.yml', 'package.json']
 permissions:
   contents: read
 jobs:

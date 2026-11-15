@@ -22,6 +22,10 @@ on:
         description: "Read-only complete history audit; invalid observations are artifacts only"
         type: boolean
         default: false
+      audit_require_match:
+        description: "Fail audit if any active quote differs or cannot be verified"
+        type: boolean
+        default: false
   # Weekdays only (Mon–Fri UTC). Sat/Sun markets are closed — no auto refresh.
   # 02:00 / 09:00 / 14:00 UTC = 11:00 / 18:00 / 23:00 KST (GMT+9).
   schedule:
@@ -50,6 +54,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: Audit all stored history against isolated provider requests
         env:
+          AUDIT_REQUIRE_MATCH: ${{ inputs.audit_require_match }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: node scripts/audit-provider-history.mjs
@@ -292,10 +297,11 @@ jobs:
       - name: Commit data
         if: steps.parse.outputs.skip == 'false' || github.event_name == 'schedule'
         run: |
+          npm run validate-data
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            MSG="data: scheduled stale refresh"
+            MSG="data: scheduled stale refresh [GoogleFinance:GOOGLEFINANCE] [Validation:query1.finance.yahoo.com]"
           else
-            MSG="data: update ${{ steps.parse.outputs.ticker }} ${{ steps.parse.outputs.timeframe }}"
+            MSG="data: update ${{ steps.parse.outputs.ticker }} ${{ steps.parse.outputs.timeframe }} [GoogleFinance:GOOGLEFINANCE] [Validation:query1.finance.yahoo.com]"
           fi
           # Sync onto origin before commit; merge shared catalog JSON on retry.
           bash scripts/git-commit-push-data.sh "$MSG" data/

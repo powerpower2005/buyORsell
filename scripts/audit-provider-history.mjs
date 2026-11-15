@@ -21,10 +21,11 @@ async function main() {
     else try {
       const quote=await fetchQuote(stored.ticker,'1d',{start:entry.start,end:entry.end,symbolCandidates:[stored.ticker.split(':').reverse().join(':')],onObservation:bars=>fs.writeFileSync(`${out}/${slug}.observation.json`,JSON.stringify(bars,null,2)+'\n'),auditSingleAttempt:true});
       fs.writeFileSync(`${out}/${slug}.json`,JSON.stringify(quote,null,2)+'\n');
-      Object.assign(entry,{status:'verified',resolved_symbol:quote.resolvedSymbol,fetched_count:quote.barCount,fetched_sha256:digest(quote.ohlcv),...compareBars(stored.ohlcv,quote.ohlcv)});
+      Object.assign(entry,{status:'verified',resolved_symbol:quote.resolvedSymbol,fetched_count:quote.barCount,fetched_sha256:digest(quote.ohlcv),integrity_verification:quote.integrity_verification,provider_corrections:quote.provider_corrections??[],...compareBars(stored.ohlcv,quote.ohlcv)});
     } catch(error) {entry.status='provider_error'; entry.reason=['Invalid OHLC price bounds','GOOGLEFINANCE returned no parseable OHLCV rows','Invalid OHLCV volume'].includes(error.message)?error.message:'Provider request failed; no replacement accepted';}
     report.series.push(entry); fs.writeFileSync(`${out}/report.json`,JSON.stringify(report,null,2)+'\n');
     console.log(JSON.stringify({ticker:entry.ticker,status:entry.status,changed:entry.changed?.length,removed:entry.removed?.length,added:entry.added?.length,reason:entry.reason}));
   }
+  if(process.env.AUDIT_REQUIRE_MATCH==='true'&&report.series.some(s=>s.status!=='verified'||s.changed.length||s.added.length||s.removed.length))throw new Error('Universe provider verification differs or is incomplete');
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===path.resolve('scripts/audit-provider-history.mjs')) main().catch(()=>{console.error('Universe provider audit failed');process.exitCode=1;});

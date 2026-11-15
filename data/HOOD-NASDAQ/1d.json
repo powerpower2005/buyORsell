@@ -4,9 +4,9 @@
   "window": "2Y",
   "schemaVersion": 1,
   "intervalSeconds": 86400,
-  "source": "gf",
+  "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:HOOD",
-  "fetchedAt": "2026-11-13T17:00:33.933Z",
+  "fetchedAt": "2026-11-15T16:30:47.207Z",
   "lastBarDate": "2026-11-12",
   "barCount": 978,
   "checksum": "88134b2f",
@@ -3661,11 +3661,11 @@
     },
     {
       "date": "2024-10-15",
-      "open": 26.9,
-      "high": 27.14,
-      "low": 26.16,
-      "close": 27,
-      "volume": 229684
+      "open": 27.14,
+      "high": 27.33,
+      "low": 25.91,
+      "close": 26.8,
+      "volume": 16466537
     },
     {
       "date": "2024-10-16",
@@ -7835,5 +7835,30 @@
       "close": 81.35,
       "volume": 13070063
     }
-  ]
+  ],
+  "collection_version": "3.0.0",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com"
+  ],
+  "integrity_verification": {
+    "checked": 978,
+    "unavailable": [],
+    "reviewed_disagreements": [],
+    "source_tags": [
+      "Validation:query1.finance.yahoo.com"
+    ],
+    "verified_at": "2026-11-15T16:38:45.774Z",
+    "independent_fetched_at": "2026-11-15T16:29:16.447Z"
+  },
+  "provider_corrections": [],
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "4ff1adbf28935a9259ace20a471239719b9dd6ee92e4ffd5039c70cff61f9e41",
+    "after_sha256": "96cdf16369da222a4ca12b0fc32ddff14522cb6e59dd31c3a0bda039c19d9d5d"
+  }
 }

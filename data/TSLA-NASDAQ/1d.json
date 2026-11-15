@@ -4,9 +4,9 @@
   "window": "2Y",
   "schemaVersion": 1,
   "intervalSeconds": 86400,
-  "source": "gf",
+  "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:TSLA",
-  "fetchedAt": "2026-11-13T17:11:12.257Z",
+  "fetchedAt": "2026-11-15T16:33:26.961Z",
   "lastBarDate": "2026-11-12",
   "barCount": 984,
   "checksum": "2aa7eb5b",
@@ -4909,11 +4909,11 @@
     },
     {
       "date": "2025-05-22",
-      "open": 344.43,
-      "high": 347.35,
-      "low": 332.2,
-      "close": 334.62,
-      "volume": 5462213
+      "open": 331.9,
+      "high": 347.27,
+      "low": 331.39,
+      "close": 341.04,
+      "volume": 97113400
     },
     {
       "date": "2025-05-23",
@@ -7213,7 +7213,7 @@
     },
     {
       "date": "2026-07-17",
-      "open": 381.78,
+      "open": 381.72,
       "high": 385.69,
       "low": 377.22,
       "close": 380.84,
@@ -7883,5 +7883,33 @@
       "close": 397.45,
       "volume": 29186256
     }
-  ]
+  ],
+  "collection_version": "3.0.0",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com"
+  ],
+  "integrity_verification": {
+    "checked": 984,
+    "unavailable": [],
+    "reviewed_disagreements": [],
+    "source_tags": [
+      "Validation:query1.finance.yahoo.com"
+    ],
+    "verified_at": "2026-11-15T16:38:45.774Z",
+    "independent_fetched_at": "2026-11-15T16:29:18.233Z"
+  },
+  "provider_corrections": [
+    "universe-v1-TSLA-NASDAQ-2025-05-22"
+  ],
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "fece772652fe11ecb30c0518652111d354a10375b154fec9cc8469ba7de93162",
+    "after_sha256": "c509e1ab1025e5e7165bd38d501f6c99e6abc6fa6f3944b5983e2e05187b35f1"
+  }
 }

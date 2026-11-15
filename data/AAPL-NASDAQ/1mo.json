@@ -5,8 +5,24 @@
   "schemaVersion": 1,
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com",
+    "Aggregation:1d"
+  ],
+  "collection_version": "3.0.0",
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "87866bde0a9bb67246fc04fad3d7350afa47d08a8687ddc3f9ae0cb9ecbd8ef8",
+    "after_sha256": "6bf459b09ccf32c6f0ceb9c1e4e7bba94cb062941f7cfd1c8c2df313812d03e1"
+  },
   "resolvedSymbol": "NASDAQ:AAPL",
-  "fetchedAt": "2026-11-13T16:53:49.860Z",
+  "fetchedAt": "2026-11-15T16:29:43.541Z",
   "lastBarDate": "2026-11-12",
   "barCount": 48,
   "checksum": "e78cd22a",
@@ -190,10 +206,10 @@
     {
       "date": "2024-10-31",
       "open": 229.52,
-      "high": 236.85,
+      "high": 237.49,
       "low": 221.33,
       "close": 225.91,
-      "volume": 867038974
+      "volume": 930835994
     },
     {
       "date": "2024-11-29",
@@ -249,7 +265,7 @@
       "high": 214.56,
       "low": 193.25,
       "close": 200.85,
-      "volume": 1150683583
+      "volume": 1195889549
     },
     {
       "date": "2025-06-30",

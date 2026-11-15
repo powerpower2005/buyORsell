@@ -4,9 +4,9 @@
   "window": "2Y",
   "schemaVersion": 1,
   "intervalSeconds": 86400,
-  "source": "gf",
+  "source": "google_sheets_googfinance",
   "resolvedSymbol": "NYSE:GLW",
-  "fetchedAt": "2026-11-13T16:59:47.311Z",
+  "fetchedAt": "2026-11-15T16:30:31.320Z",
   "lastBarDate": "2026-11-12",
   "barCount": 974,
   "checksum": "fb45376b",
@@ -6429,7 +6429,7 @@
     },
     {
       "date": "2026-03-11",
-      "open": 133.67,
+      "open": 133.59,
       "high": 135.33,
       "low": 129.2,
       "close": 131.76,
@@ -7803,5 +7803,30 @@
       "close": 119.5,
       "volume": 7402133
     }
-  ]
+  ],
+  "collection_version": "3.0.0",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com"
+  ],
+  "integrity_verification": {
+    "checked": 974,
+    "unavailable": [],
+    "reviewed_disagreements": [],
+    "source_tags": [
+      "Validation:query1.finance.yahoo.com"
+    ],
+    "verified_at": "2026-11-15T16:38:45.774Z",
+    "independent_fetched_at": "2026-11-15T16:29:16.302Z"
+  },
+  "provider_corrections": [],
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "5c8dcbfbc099bfe6b66a97116149e4fea20084bdd3efd9faf78ebad17c847a19",
+    "after_sha256": "b9c2e5f6b57d8baa1d3ef7452da953032bd13f62daea2d22cdb3ff7661f93f9e"
+  }
 }

@@ -1,0 +1,492 @@
+{
+  "version": "1.0.0",
+  "quarantined": {
+    "CRD:NTYSE": {
+      "reason": "Invalid exchange and all 484 OHLCV rows copied from 000660:KRX; retain existing exclusion, do not infer replacement."
+    }
+  },
+  "maxUnreviewedCloseChange": 0.4,
+  "reviewedMoves": [
+    {
+      "ticker": "BE:NYSE",
+      "sha256": "0ee8001be2672f91c52355b7066dfc5021c9643655b7f7343ff2ff5b9404bceb",
+      "reason": "Genuine +59.19% session, independently corroborated; AEP procurement announcement",
+      "source": "https://investor.bloomenergy.com/press-releases/press-release-details/2024/Bloom-Energy-Announces-Gigawatt-Fuel-Cell-Procurement-Agreement-with-AEP-to-Power-AI-Data-Centers/default.aspx"
+    }
+  ],
+  "independentPriceTolerance": 0.02,
+  "independentExceptions": [],
+  "providerCorrections": [
+    {
+      "id": "universe-v1-SOXX-NASDAQ-2024-03-07",
+      "symbol": "NASDAQ:SOXX",
+      "before": {
+        "date": "2024-03-07",
+        "open": 232.79,
+        "high": 238.71,
+        "low": 232.65,
+        "close": 237.75,
+        "volume": 4799639
+      },
+      "after": {
+        "date": "2024-03-07",
+        "open": 77.6,
+        "high": 79.57,
+        "low": 77.55,
+        "close": 79.25,
+        "volume": 4799639
+      },
+      "reason": "2024-03-07 isolated 3x price-basis error: copy independent split-adjusted OHLC; preserve GOOGLEFINANCE historical session volume",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/SOXX?period1=1670803200&period2=1794528000&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:18.083Z"
+    },
+    {
+      "id": "universe-v1-NDX-INDEXNASDAQ-2024-01-24",
+      "symbol": "INDEXNASDAQ:NDX",
+      "before": {
+        "date": "2024-01-24",
+        "open": 17404.21,
+        "high": 17665.26,
+        "low": 17481.97,
+        "close": 17499.3,
+        "volume": 0
+      },
+      "after": {
+        "date": "2024-01-24",
+        "open": 17562.32,
+        "high": 17665.26,
+        "low": 17481.97,
+        "close": 17499.3,
+        "volume": 0
+      },
+      "reason": "Open below session low; independent provider supplies valid open; retain index volume convention",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/%5ENDX?period1=1670544000&period2=1794528000&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:17.404Z"
+    },
+    {
+      "id": "universe-v1-AAPL-NASDAQ-2024-10-15",
+      "symbol": "NASDAQ:AAPL",
+      "before": {
+        "date": "2024-10-15",
+        "open": 228.7,
+        "high": 231.73,
+        "low": 228.6,
+        "close": 231.3,
+        "volume": 954380
+      },
+      "after": {
+        "date": "2024-10-15",
+        "open": 233.61,
+        "high": 237.49,
+        "low": 232.37,
+        "close": 233.85,
+        "volume": 64751400
+      },
+      "reason": "Replace incomplete historical provider snapshot with independently retrieved full-session OHLCV",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/AAPL?period1=1671408000&period2=1794528000&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:15.807Z"
+    },
+    {
+      "id": "universe-v1-AAPL-NASDAQ-2025-05-22",
+      "symbol": "NASDAQ:AAPL",
+      "before": {
+        "date": "2025-05-22",
+        "open": 205.17,
+        "high": 207.04,
+        "low": 200.71,
+        "close": 202.09,
+        "volume": 1536434
+      },
+      "after": {
+        "date": "2025-05-22",
+        "open": 200.71,
+        "high": 202.75,
+        "low": 199.7,
+        "close": 201.36,
+        "volume": 46742400
+      },
+      "reason": "Replace incomplete historical provider snapshot with independently retrieved full-session OHLCV",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/AAPL?period1=1671408000&period2=1794528000&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:15.807Z"
+    },
+    {
+      "id": "universe-v1-QQQ-NASDAQ-2024-10-15",
+      "symbol": "NASDAQ:QQQ",
+      "before": {
+        "date": "2024-10-15",
+        "open": 495.77,
+        "high": 498.83,
+        "low": 495.26,
+        "close": 497.5,
+        "volume": 437901
+      },
+      "after": {
+        "date": "2024-10-15",
+        "open": 497.83,
+        "high": 498.5,
+        "low": 488.68,
+        "close": 490.85,
+        "volume": 34784506
+      },
+      "reason": "Fresh Google response regressed to partial snapshot; retain stored complete session corroborated by Yahoo",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/QQQ?period1=1671494400&period2=1794528000&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:17.872Z"
+    },
+    {
+      "id": "universe-v1-BE-NYSE-2025-05-22",
+      "symbol": "NYSE:BE",
+      "before": {
+        "date": "2025-05-22",
+        "open": 18.74,
+        "high": 18.94,
+        "low": 18.08,
+        "close": 18.21,
+        "volume": 165525
+      },
+      "after": {
+        "date": "2025-05-22",
+        "open": 17.68,
+        "high": 18.39,
+        "low": 17.01,
+        "close": 18.37,
+        "volume": 4648500
+      },
+      "reason": "Replace incomplete historical provider snapshot with independently retrieved full-session OHLCV",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/BE?period1=1674172800&period2=1794528000&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:15.953Z"
+    },
+    {
+      "id": "universe-v1-INTC-NASDAQ-2025-05-22",
+      "symbol": "NASDAQ:INTC",
+      "before": {
+        "date": "2025-05-22",
+        "open": 21.19,
+        "high": 21.63,
+        "low": 20.59,
+        "close": 20.69,
+        "volume": 1347701
+      },
+      "after": {
+        "date": "2025-05-22",
+        "open": 20.73,
+        "high": 20.9,
+        "low": 20.51,
+        "close": 20.55,
+        "volume": 56077500
+      },
+      "reason": "Replace incomplete historical provider snapshot with independently retrieved full-session OHLCV",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/INTC?period1=1673913600&period2=1794528000&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:16.614Z"
+    },
+    {
+      "id": "universe-v1-LITE-NASDAQ-2025-05-22",
+      "symbol": "NASDAQ:LITE",
+      "before": {
+        "date": "2025-05-22",
+        "open": 76.93,
+        "high": 78.49,
+        "low": 75.18,
+        "close": 75.95,
+        "volume": 1404
+      },
+      "after": {
+        "date": "2025-05-22",
+        "open": 75.7,
+        "high": 76.9,
+        "low": 75.29,
+        "close": 75.88,
+        "volume": 1237100
+      },
+      "reason": "Replace incomplete historical provider snapshot with independently retrieved full-session OHLCV",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/LITE?period1=1673913600&period2=1794528000&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:17.081Z"
+    },
+    {
+      "id": "universe-v1-MU-NASDAQ-2025-05-22",
+      "symbol": "NASDAQ:MU",
+      "before": {
+        "date": "2025-05-22",
+        "open": 97.16,
+        "high": 98.82,
+        "low": 95.26,
+        "close": 95.84,
+        "volume": 172975
+      },
+      "after": {
+        "date": "2025-05-22",
+        "open": 95.41,
+        "high": 97.22,
+        "low": 94.37,
+        "close": 94.83,
+        "volume": 13245200
+      },
+      "reason": "Replace incomplete historical provider snapshot with independently retrieved full-session OHLCV",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/MU?period1=1671408000&period2=1794528000&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:17.261Z"
+    },
+    {
+      "id": "universe-v1-NVDA-NASDAQ-2025-05-22",
+      "symbol": "NASDAQ:NVDA",
+      "before": {
+        "date": "2025-05-22",
+        "open": 133.06,
+        "high": 137.4,
+        "low": 130.59,
+        "close": 131.8,
+        "volume": 7196599
+      },
+      "after": {
+        "date": "2025-05-22",
+        "open": 132.23,
+        "high": 134.25,
+        "low": 131.55,
+        "close": 132.83,
+        "volume": 187344000
+      },
+      "reason": "Replace incomplete historical provider snapshot with independently retrieved full-session OHLCV",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/NVDA?period1=1670544000&period2=1794528000&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:17.558Z"
+    },
+    {
+      "id": "universe-v1-TSLA-NASDAQ-2025-05-22",
+      "symbol": "NASDAQ:TSLA",
+      "before": {
+        "date": "2025-05-22",
+        "open": 344.43,
+        "high": 347.35,
+        "low": 332.2,
+        "close": 334.62,
+        "volume": 5462213
+      },
+      "after": {
+        "date": "2025-05-22",
+        "open": 331.9,
+        "high": 347.27,
+        "low": 331.39,
+        "close": 341.04,
+        "volume": 97113400
+      },
+      "reason": "Replace incomplete historical provider snapshot with independently retrieved full-session OHLCV",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/TSLA?period1=1670803200&period2=1794528000&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:18.233Z"
+    },
+    {
+      "id": "universe-v1-VRT-NYSE-2025-05-22",
+      "symbol": "NYSE:VRT",
+      "before": {
+        "date": "2025-05-22",
+        "open": 104.29,
+        "high": 107,
+        "low": 102.57,
+        "close": 103.61,
+        "volume": 88752
+      },
+      "after": {
+        "date": "2025-05-22",
+        "open": 102.7,
+        "high": 105.29,
+        "low": 101.11,
+        "close": 104.2,
+        "volume": 3800000
+      },
+      "reason": "Replace incomplete historical provider snapshot with independently retrieved full-session OHLCV",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/VRT?period1=1671494400&period2=1794528000&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:18.388Z"
+    },
+    {
+      "id": "universe-v1-KOSPI-KRX-2025-04-10",
+      "symbol": "KRX:KOSPI",
+      "before": {
+        "date": "2025-04-10",
+        "open": 2329.99,
+        "high": 2445.06,
+        "low": 2284.72,
+        "close": 2445.06,
+        "volume": 670388
+      },
+      "after": {
+        "date": "2025-04-10",
+        "open": 2395.13,
+        "high": 2445.06,
+        "low": 2391.39,
+        "close": 2445.06,
+        "volume": 670388
+      },
+      "reason": "Google open/range disagrees with matching Naver and Yahoo index prices",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/%5EKS11?period1=1668124800&period2=1794614400&interval=1d&events=splits",
+        "https://fchart.stock.naver.com/sise.nhn?symbol=KOSPI&timeframe=day&count=1500&requestType=0"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:16.933Z"
+    },
+    {
+      "id": "universe-v1-KOSPI-KRX-2026-06-11",
+      "symbol": "KRX:KOSPI",
+      "before": {
+        "date": "2026-06-11",
+        "open": 7703.61,
+        "high": 7799.41,
+        "low": 7535,
+        "close": 7763.95,
+        "volume": 478730
+      },
+      "after": {
+        "date": "2026-06-11",
+        "open": 7509.62,
+        "high": 7800.62,
+        "low": 7394.46,
+        "close": 7763.95,
+        "volume": 478730
+      },
+      "reason": "Google open/range disagrees with matching Naver and Yahoo index prices",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/%5EKS11?period1=1668124800&period2=1794614400&interval=1d&events=splits",
+        "https://fchart.stock.naver.com/sise.nhn?symbol=KOSPI&timeframe=day&count=1500&requestType=0"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:16.933Z"
+    },
+    {
+      "id": "universe-v1-NDX-INDEXNASDAQ-2022-12-22",
+      "symbol": "INDEXNASDAQ:NDX",
+      "before": {
+        "date": "2022-12-22",
+        "open": 11235.88,
+        "high": 11114.23,
+        "low": 10784.02,
+        "close": 10956.14,
+        "volume": 0
+      },
+      "after": {
+        "date": "2022-12-22",
+        "open": 11099.36,
+        "high": 11114.23,
+        "low": 10784.02,
+        "close": 10956.14,
+        "volume": 0
+      },
+      "reason": "Fresh Google response regressed to previous close above session high; independent valid opening price",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/%5ENDX?period1=1670544000&period2=1794528000&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-15T16:29:17.404Z"
+    }
+  ],
+  "providerAdditions": [
+    {
+      "id": "universe-v1-010120-KRX-2023-01-20",
+      "symbol": "KRX:010120",
+      "bar": {
+        "date": "2023-01-20",
+        "open": 10220,
+        "high": 10300,
+        "low": 10160,
+        "close": 10260,
+        "volume": 83514
+      },
+      "anchors": [
+        {
+          "date": "2023-01-19",
+          "open": 10160,
+          "high": 10320,
+          "low": 10140,
+          "close": 10240,
+          "volume": 74390
+        },
+        {
+          "date": "2023-01-25",
+          "open": 10360,
+          "high": 10400,
+          "low": 10140,
+          "close": 10360,
+          "volume": 100472
+        }
+      ],
+      "reason": "Trading session missing from Google, matching Naver and Yahoo prices. Pre-2026-04-13 volume converted from split-adjusted shares to original session shares using documented 5:1 split.",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/010120.KS?period1=1668988800&period2=1794614400&interval=1d&events=splits",
+        "https://fchart.stock.naver.com/sise.nhn?symbol=010120&timeframe=day&count=1500&requestType=0",
+        "https://www.ls-electric.com/ko/company/invest/data/%EC%A3%BC%EC%8B%9D%EB%B6%84%ED%95%A0%EA%B3%B5%EA%B3%A0_260326.pdf"
+      ]
+    },
+    {
+      "id": "universe-v1-010120-KRX-2026-06-22",
+      "symbol": "KRX:010120",
+      "bar": {
+        "date": "2026-06-22",
+        "open": 254500,
+        "high": 258500,
+        "low": 244500,
+        "close": 245000,
+        "volume": 787229
+      },
+      "anchors": [
+        {
+          "date": "2026-06-19",
+          "open": 254000,
+          "high": 276500,
+          "low": 244000,
+          "close": 259000,
+          "volume": 2760452
+        },
+        {
+          "date": "2026-06-23",
+          "open": 251000,
+          "high": 266500,
+          "low": 230500,
+          "close": 232500,
+          "volume": 1569759
+        }
+      ],
+      "reason": "Trading session missing from Google, matching Naver and Yahoo prices. Pre-2026-04-13 volume converted from split-adjusted shares to original session shares using documented 5:1 split.",
+      "sources": [
+        "https://query1.finance.yahoo.com/v8/finance/chart/010120.KS?period1=1668988800&period2=1794614400&interval=1d&events=splits",
+        "https://fchart.stock.naver.com/sise.nhn?symbol=010120&timeframe=day&count=1500&requestType=0",
+        "https://www.ls-electric.com/ko/company/invest/data/%EC%A3%BC%EC%8B%9D%EB%B6%84%ED%95%A0%EA%B3%B5%EA%B3%A0_260326.pdf"
+      ]
+    }
+  ],
+  "nonTradingDates": [
+    {
+      "ticker": "010120:KRX",
+      "date": "2026-04-08",
+      "reason": "Official 5:1 split trading suspension",
+      "source": "https://www.ls-electric.com/ko/company/invest/data/%EC%A3%BC%EC%8B%9D%EB%B6%84%ED%95%A0%EA%B3%B5%EA%B3%A0_260326.pdf"
+    },
+    {
+      "ticker": "010120:KRX",
+      "date": "2026-04-09",
+      "reason": "Official 5:1 split trading suspension",
+      "source": "https://www.ls-electric.com/ko/company/invest/data/%EC%A3%BC%EC%8B%9D%EB%B6%84%ED%95%A0%EA%B3%B5%EA%B3%A0_260326.pdf"
+    },
+    {
+      "ticker": "010120:KRX",
+      "date": "2026-04-10",
+      "reason": "Official 5:1 split trading suspension",
+      "source": "https://www.ls-electric.com/ko/company/invest/data/%EC%A3%BC%EC%8B%9D%EB%B6%84%ED%95%A0%EA%B3%B5%EA%B3%A0_260326.pdf"
+    }
+  ]
+}

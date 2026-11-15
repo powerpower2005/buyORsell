@@ -2,6 +2,7 @@ import { randomInt, randomUUID } from 'node:crypto';
 import { parseGoogFinanceAllTable } from './goog-finance-parse.mjs';
 import { getSheetsApi, requireEnv } from './sheets-client.mjs';
 import { assertFetchedBars } from './quote-quality.mjs';
+import { applyReviewedCorrections } from './reviewed-corrections.mjs';
 
 const sleep = ms => new Promise(resolve=>setTimeout(resolve,ms));
 
@@ -20,7 +21,7 @@ function pollTiming(spanDays,cfg) {
 /** Each request, including retries/backfill, owns a fresh worksheet. Concurrent
  * workflows or other repositories cannot overwrite a shared calculation cell.
  */
-export async function fetchBarsInIsolatedSheet({sheets,spreadsheetId,cfg,symbol,start,end,sleepImpl=sleep,onObservation}) {
+export async function fetchBarsInIsolatedSheet({sheets,spreadsheetId,cfg,symbol,start,end,sleepImpl=sleep,onObservation,onCorrections}) {
   if (!Number.isFinite(start?.getTime())||!Number.isFinite(end?.getTime())) throw new Error('Invalid fetch date range');
   if(start>end) return [];
   const spanDays=Math.floor((end-start)/86400000);
@@ -45,8 +46,10 @@ export async function fetchBarsInIsolatedSheet({sheets,spreadsheetId,cfg,symbol,
       try {
         const bars=parseGoogFinanceAllTable(response.data.valueRanges?.[0]?.values??[],{strict:true});
         onObservation?.(bars);
-        assertFetchedBars(bars,{start,end});
-        return bars;
+        const corrected=applyReviewedCorrections(bars,symbol,undefined,{start,end});
+        assertFetchedBars(corrected.bars,{start,end});
+        onCorrections?.(corrected.applied);
+        return corrected.bars;
       } catch(error) {
         lastError=error;
         if(attempt<timing.attempts) await sleepImpl(timing.sleepSec*1000);
@@ -65,7 +68,7 @@ export async function fetchBarsInIsolatedSheet({sheets,spreadsheetId,cfg,symbol,
 
 export async function fetchBarsGoogleFinance(root,cfg,symbol,start,end,options={}) {
   if(start>end) return [];
-  return fetchBarsInIsolatedSheet({sheets:await getSheetsApi(root),spreadsheetId:requireEnv('GOOGLE_SHEET_ID'),cfg,symbol,start,end,onObservation:options.onObservation});
+  return fetchBarsInIsolatedSheet({sheets:await getSheetsApi(root),spreadsheetId:requireEnv('GOOGLE_SHEET_ID'),cfg,symbol,start,end,onObservation:options.onObservation,onCorrections:options.onCorrections});
 }
 
 export async function fetchBarsWithSymbolCandidates(root,cfg,candidates,start,end,options={}) {

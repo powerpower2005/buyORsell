@@ -5,8 +5,24 @@
   "schemaVersion": 1,
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com",
+    "Aggregation:1d"
+  ],
+  "collection_version": "3.0.0",
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "fece772652fe11ecb30c0518652111d354a10375b154fec9cc8469ba7de93162",
+    "after_sha256": "c509e1ab1025e5e7165bd38d501f6c99e6abc6fa6f3944b5983e2e05187b35f1"
+  },
   "resolvedSymbol": "NASDAQ:TSLA",
-  "fetchedAt": "2026-11-13T17:11:12.257Z",
+  "fetchedAt": "2026-11-15T16:33:26.961Z",
   "lastBarDate": "2026-11-12",
   "barCount": 200,
   "checksum": "62a55af7",
@@ -991,9 +1007,9 @@
       "date": "2025-05-23",
       "open": 336.3,
       "high": 354.99,
-      "low": 332.2,
+      "low": 331.39,
       "close": 339.34,
-      "volume": 413057276
+      "volume": 504708463
     },
     {
       "date": "2025-05-30",

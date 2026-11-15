@@ -5,8 +5,24 @@
   "schemaVersion": 1,
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com",
+    "Aggregation:1d"
+  ],
+  "collection_version": "3.0.0",
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "efa2622d6875bcb5bd1cad3e7a013f628c5e136f08e53870838d8d2fd8ea93ce",
+    "after_sha256": "bb429ad746a51aba47026e86ca85233eac4ec9e56a711dc681594c5d76096f1a"
+  },
   "resolvedSymbol": "NASDAQ:INTC",
-  "fetchedAt": "2026-11-13T17:01:20.693Z",
+  "fetchedAt": "2026-11-15T16:31:03.072Z",
   "lastBarDate": "2026-11-12",
   "barCount": 47,
   "checksum": "6dc635a0",
@@ -185,7 +201,7 @@
       "high": 23.82,
       "low": 21.47,
       "close": 21.52,
-      "volume": 1206042343
+      "volume": 1274452141
     },
     {
       "date": "2024-11-29",
@@ -241,7 +257,7 @@
       "high": 22.88,
       "low": 19.31,
       "close": 19.55,
-      "volume": 1343145903
+      "volume": 1397875702
     },
     {
       "date": "2025-06-30",

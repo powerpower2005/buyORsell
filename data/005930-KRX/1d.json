@@ -4,9 +4,9 @@
   "window": "2Y",
   "schemaVersion": 1,
   "intervalSeconds": 86400,
-  "source": "gf",
+  "source": "google_sheets_googfinance",
   "resolvedSymbol": "KRX:005930",
-  "fetchedAt": "2026-11-13T16:52:31.897Z",
+  "fetchedAt": "2026-11-15T16:28:55.395Z",
   "lastBarDate": "2026-11-13",
   "barCount": 978,
   "checksum": "c8e154c0",
@@ -7835,5 +7835,25 @@
       "close": 206000,
       "volume": 12829515
     }
-  ]
+  ],
+  "collection_version": "3.0.0",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com"
+  ],
+  "integrity_verification": {
+    "checked": 976,
+    "unavailable": [
+      "2024-10-14",
+      "2025-09-19"
+    ],
+    "reviewed_disagreements": [],
+    "source_tags": [
+      "Validation:query1.finance.yahoo.com"
+    ],
+    "verified_at": "2026-11-15T16:38:45.774Z",
+    "independent_fetched_at": "2026-11-15T16:29:15.273Z"
+  },
+  "provider_corrections": []
 }

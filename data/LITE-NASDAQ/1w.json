@@ -5,8 +5,24 @@
   "schemaVersion": 1,
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com",
+    "Aggregation:1d"
+  ],
+  "collection_version": "3.0.0",
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "7efdf2ba55c8f092a0af19519116ff5a508d3c5760913cdc4a34dbf75080d068",
+    "after_sha256": "ab34b6025825ebc4cd576c2c81618b6860779f9b49cbdf53156d136eb5c5dfe3"
+  },
   "resolvedSymbol": "NASDAQ:LITE",
-  "fetchedAt": "2026-11-13T17:02:23.039Z",
+  "fetchedAt": "2026-11-15T16:31:35.206Z",
   "lastBarDate": "2026-11-12",
   "barCount": 200,
   "checksum": "1f330b66",
@@ -993,7 +1009,7 @@
       "high": 78.49,
       "low": 73.59,
       "close": 75.77,
-      "volume": 5060250
+      "volume": 6295946
     },
     {
       "date": "2025-05-30",

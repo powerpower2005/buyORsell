@@ -4,9 +4,9 @@
   "window": "2Y",
   "schemaVersion": 1,
   "intervalSeconds": 86400,
-  "source": "gf",
+  "source": "google_sheets_googfinance",
   "resolvedSymbol": "KRX:KOSPI",
-  "fetchedAt": "2026-11-13T17:01:36.254Z",
+  "fetchedAt": "2026-11-15T16:31:18.918Z",
   "lastBarDate": "2026-11-13",
   "barCount": 978,
   "checksum": "af70855d",
@@ -4725,9 +4725,9 @@
     },
     {
       "date": "2025-04-10",
-      "open": 2329.99,
+      "open": 2395.13,
       "high": 2445.06,
-      "low": 2284.72,
+      "low": 2391.39,
       "close": 2445.06,
       "volume": 670388
     },
@@ -6989,9 +6989,9 @@
     },
     {
       "date": "2026-06-11",
-      "open": 7703.61,
-      "high": 7799.41,
-      "low": 7535,
+      "open": 7509.62,
+      "high": 7800.62,
+      "low": 7394.46,
       "close": 7763.95,
       "volume": 478730
     },
@@ -7835,5 +7835,38 @@
       "close": 5290.53,
       "volume": 247829
     }
-  ]
+  ],
+  "collection_version": "3.0.0",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com",
+    "NaverFinance:fchart.stock.naver.com"
+  ],
+  "integrity_verification": {
+    "checked": 976,
+    "unavailable": [
+      "2024-09-12",
+      "2026-06-29"
+    ],
+    "reviewed_disagreements": [],
+    "source_tags": [
+      "Validation:query1.finance.yahoo.com"
+    ],
+    "verified_at": "2026-11-15T16:38:45.774Z",
+    "independent_fetched_at": "2026-11-15T16:29:16.933Z"
+  },
+  "provider_corrections": [
+    "universe-v1-KOSPI-KRX-2025-04-10",
+    "universe-v1-KOSPI-KRX-2026-06-11"
+  ],
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "4616fcfc7a549f7831f89094761f1e269c5f6aa3b0350db7c3ac804b1285d887",
+    "after_sha256": "d80207cfd270a89ae7ef7b977f3d44079f0d0c014bb54a30106f8bb7b22500e0"
+  }
 }
