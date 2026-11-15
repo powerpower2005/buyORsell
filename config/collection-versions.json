@@ -2,9 +2,9 @@
   "releasedOn": "2026-11-16",
   "items": {
     "sheets_fetch": {
-      "version": "3.0.0",
-      "previous": "2.0.0",
-      "change": "Exact exchange identity; reviewed provider corrections; independent price and trading-date verification before accepting any collection."
+      "version": "3.1.0",
+      "previous": "3.0.0",
+      "change": "When Yahoo reference rows are invalid or missing, verify Korean prices against identified Naver history; require full valid reference coverage."
     },
     "history_refresh": {
       "version": "2.0.0",
@@ -17,14 +17,14 @@
       "change": "Remove verified foreign holiday bars, then reconcile all retained SOXX prices with an isolated provider snapshot; preserve both repair stages and regenerate aggregates."
     },
     "universe_integrity": {
-      "version": "1.0.0",
-      "previous": null,
-      "change": "Cross-symbol fingerprints, price discontinuities, quarantine, all aggregate/index consistency and validation after remote data-merge retries."
+      "version": "1.1.0",
+      "previous": "1.0.0",
+      "change": "Close the 1% independent-reference gap allowance with domestic fallback and fail closed for any remaining unverified bar."
     },
     "universe_recovery": {
-      "version": "1.0.0",
-      "previous": null,
-      "change": "Full 21-instrument audit; repair verified missing/incorrect bars, quarantine invalid CRD identity and record per-series before/after hashes."
+      "version": "1.1.0",
+      "previous": "1.0.0",
+      "change": "Naver confirms 16 of 17 unverified domestic bars; correct LS ELECTRIC 2024-11-07 and preserve raw share-volume convention and prior audit lineage."
     }
   }
 }

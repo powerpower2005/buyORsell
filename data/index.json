@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-15T16:38:48.922Z",
+  "updatedAt": "2026-11-15T16:57:40.583Z",
   "entries": [
     {
       "ticker": "000660:KRX",
@@ -207,22 +207,6 @@
       "timeframe": "1mo",
       "path": "data/009150-KRX/1mo.json",
       "fetchedAt": "2026-11-15T16:29:11.528Z",
-      "lastBarDate": "2026-11-13",
-      "barCount": 49
-    },
-    {
-      "ticker": "010120:KRX",
-      "timeframe": "1w",
-      "path": "data/010120-KRX/1w.json",
-      "fetchedAt": "2026-11-15T16:29:27.397Z",
-      "lastBarDate": "2026-11-13",
-      "barCount": 200
-    },
-    {
-      "ticker": "010120:KRX",
-      "timeframe": "1mo",
-      "path": "data/010120-KRX/1mo.json",
-      "fetchedAt": "2026-11-15T16:29:27.397Z",
       "lastBarDate": "2026-11-13",
       "barCount": 49
     },
@@ -481,6 +465,22 @@
       "fetchedAt": "2026-11-15T16:33:43.449Z",
       "lastBarDate": "2026-11-12",
       "barCount": 48
+    },
+    {
+      "ticker": "010120:KRX",
+      "timeframe": "1w",
+      "path": "data/010120-KRX/1w.json",
+      "fetchedAt": "2026-11-15T16:29:27.397Z",
+      "lastBarDate": "2026-11-13",
+      "barCount": 200
+    },
+    {
+      "ticker": "010120:KRX",
+      "timeframe": "1mo",
+      "path": "data/010120-KRX/1mo.json",
+      "fetchedAt": "2026-11-15T16:29:27.397Z",
+      "lastBarDate": "2026-11-13",
+      "barCount": 49
     }
   ]
 }

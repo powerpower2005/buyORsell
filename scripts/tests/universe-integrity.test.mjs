@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {assertQuoteIntegrity,barsHash,crossSymbolMatches,integrityPolicy} from '../lib/universe-integrity.mjs';
 import {applyReviewedCorrections} from '../lib/reviewed-corrections.mjs';
-import {compareIndependent,parseIndependent,verifyIndependent} from '../lib/independent-prices.mjs';
+import {compareIndependent,parseIndependent,parseNaver,verifyIndependent} from '../lib/independent-prices.mjs';
 const bar=(date,c=100)=>({date,open:c,high:c+1,low:c-1,close:c,volume:100});
 const quote=(ticker,bars)=>({ticker,timeframe:'1d',resolvedSymbol:ticker.split(':').reverse().join(':'),ohlcv:bars,barCount:bars.length,lastBarDate:bars.at(-1).date});
 const policy={quarantined:{'CRD:NTYSE':{reason:'foreign data'}},reviewedMoves:[],maxUnreviewedCloseChange:.4,providerCorrections:[],providerAdditions:[],nonTradingDates:[],independentExceptions:[],independentPriceTolerance:.02};
@@ -42,9 +42,17 @@ test('independent checks reject hidden basis changes and missing trading session
 test('independent missing or malformed prices are reported, never used to rewrite history',()=>{
   const bars=Array.from({length:100},(_,i)=>bar(new Date(Date.UTC(2026,0,i+1)).toISOString().slice(0,10)));
   const ref=structuredClone(bars);ref[0].close=1000;
-  const result=compareIndependent('AAPL:NASDAQ',bars,ref,policy);assert.equal(result.checked,99);assert.deepEqual(result.unavailable,[bars[0].date]);
-  ref[1].open=null;assert.throws(()=>compareIndependent('AAPL:NASDAQ',bars,ref,policy),/coverage below/);
+  assert.throws(()=>compareIndependent('AAPL:NASDAQ',bars,ref,policy),/coverage incomplete/);
+  ref[1].open=null;assert.throws(()=>compareIndependent('AAPL:NASDAQ',bars,ref,policy),/coverage incomplete/);
   assert.throws(()=>parseIndependent({chart:{result:[{meta:{symbol:'OTHER'},timestamp:[1]}]}},'AAPL'),/identity/);
+});
+test('malformed Korean reference uses identified Naver data and blocks any remaining gap',async()=>{
+  const b=bar('2026-11-10'),yahoo={chart:{result:[{meta:{symbol:'000660.KS'},timestamp:[Date.parse(b.date)/1000],indicators:{quote:[{open:[100],high:[101],low:[99],close:[1000],volume:[100]}]}}]}};
+  const xml='<chartdata symbol="000660"><item data="20261110|100|101|99|100|100" /></chartdata>';
+  let calls=0;const fetchImpl=async url=>{calls++;return url.includes('yahoo.com')?{ok:true,json:async()=>yahoo}:{ok:true,text:async()=>xml};};
+  const result=await verifyIndependent('000660:KRX',[b],{policy,fetchImpl});assert.equal(calls,2);assert.equal(result.checked,1);assert.deepEqual(result.domestic_fallback_dates,[b.date]);assert.ok(result.source_tags.includes('Validation:fchart.stock.naver.com'));
+  assert.throws(()=>parseNaver(xml,'005930'),/identity/);
+  await assert.rejects(verifyIndependent('000660:KRX',[b],{policy,fetchImpl:async url=>url.includes('yahoo.com')?{ok:true,json:async()=>yahoo}:{ok:true,text:async()=>xml.replace('|100|101|99|100|','|100|101|99|1000|')}}),/coverage|No usable/);
 });
 test('independent network failures fail closed instead of silently blessing a quote',async()=>{
   await assert.rejects(verifyIndependent('AAPL:NASDAQ',[bar('2026-11-10')],{policy,fetchImpl:async()=>({ok:false,status:429})}),/unavailable/);
