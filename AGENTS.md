@@ -71,3 +71,5 @@ Skip only pure mechanical refactors with no behavior, label, or rule change.
 - Universe recovery details and provider limitations live in `docs/data-audit.md`. Changing source data does not change the unchanged indicator or signal formulas/versions. Consumers must baseline only affected series and retain existing tracking snapshots.
 
 - Collection v3.1 no longer permits an unverified 1% reference gap. For invalid/missing Korean Yahoo reference bars, use identified Naver history and require every collected bar to have a valid independent reference; otherwise stop. Keep the supplemental domestic audit and per-series recovery lineage.
+
+- Scheduled batches must audit each active daily series once even if the latest bar is fresh, regenerate derived timeframes, and report exact added/revised dates. Missing daily files require a same-instrument committed baseline to retain recovery lineage. If any series fails, report all failures and do not publish any data from that batch. Never fill a calendar day without verified provider evidence.

@@ -12,7 +12,7 @@
     "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -33,18 +33,34 @@
     }
   },
   "resolvedSymbol": "NASDAQ:SOXX",
-  "fetchedAt": "2026-11-15T16:33:10.916Z",
-  "lastBarDate": "2026-11-12",
-  "barCount": 48,
-  "checksum": "d367ec86",
+  "fetchedAt": "2026-11-15T17:23:30.235Z",
+  "lastBarDate": "2026-11-13",
+  "barCount": 50,
+  "checksum": "5d4d7178",
   "ohlcv": [
     {
+      "date": "2022-10-31",
+      "open": 37.37,
+      "high": 37.47,
+      "low": 31.98,
+      "close": 36.28,
+      "volume": 21514067
+    },
+    {
+      "date": "2022-11-30",
+      "open": 37,
+      "high": 43.4,
+      "low": 34.39,
+      "close": 43.11,
+      "volume": 25558994
+    },
+    {
       "date": "2022-12-30",
-      "open": 41.41,
+      "open": 43.37,
       "high": 44.33,
       "low": 37.35,
       "close": 38.66,
-      "volume": 14415487
+      "volume": 20645255
     },
     {
       "date": "2023-01-31",
@@ -415,12 +431,12 @@
       "volume": 203149842
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 158.86,
       "high": 159.97,
       "low": 130.75,
-      "close": 154.99,
-      "volume": 349696694
+      "close": 149.3,
+      "volume": 397570724
     }
   ],
   "aggregatedFrom": "1d"

@@ -12,7 +12,7 @@
     "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -22,10 +22,10 @@
     "after_sha256": "6bf459b09ccf32c6f0ceb9c1e4e7bba94cb062941f7cfd1c8c2df313812d03e1"
   },
   "resolvedSymbol": "NASDAQ:AAPL",
-  "fetchedAt": "2026-11-15T16:29:43.541Z",
-  "lastBarDate": "2026-11-12",
+  "fetchedAt": "2026-11-15T17:19:57.229Z",
+  "lastBarDate": "2026-11-13",
   "barCount": 200,
-  "checksum": "f71e7339",
+  "checksum": "2d631557",
   "ohlcv": [
     {
       "date": "2023-01-20",
@@ -1620,12 +1620,12 @@
       "volume": 337938219
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 345,
-      "high": 359.37,
+      "high": 360.83,
       "low": 344.78,
-      "close": 354.88,
-      "volume": 144837569
+      "close": 356.27,
+      "volume": 184865037
     }
   ],
   "aggregatedFrom": "1d"

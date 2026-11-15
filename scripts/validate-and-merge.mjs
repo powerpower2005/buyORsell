@@ -13,7 +13,7 @@ import {
   aggregateMonthly,
   buildAggregatedQuote,
 } from "./lib/aggregate-ohlcv.mjs";
-import { historyRefreshOptions, assertHistoryCoverage } from "./lib/history-refresh.mjs";
+import { historyRefreshOptions, batchHistoryOptions, committedHistory, assertHistoryCoverage } from "./lib/history-refresh.mjs";
 import { assertStoredQuote, assertCollectible } from './lib/universe-integrity.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -341,7 +341,7 @@ function withDailyAggregates(timeframe, result) {
   return result;
 }
 
-export async function runFetchPipeline({ ticker, timeframe, force = false }) {
+export async function runFetchPipeline({ ticker, timeframe, force = false, fullHistory = false }) {
   assertCollectible(ticker);
   const policy = loadJson("config/data-policy.json");
   const tfConfig = timeframeConfig(timeframe);
@@ -353,6 +353,7 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
       ticker,
       timeframe: sourceTf,
       force,
+      fullHistory,
     });
     const dailyQuote = sourceResult.quote;
     if (!dailyQuote?.ohlcv?.length) {
@@ -383,6 +384,7 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
   const rel = quotePath(ticker, timeframe);
   const full = path.join(ROOT, rel);
   let existing = null;
+  if(fullHistory&&!fs.existsSync(full))existing=committedHistory(ROOT,rel,ticker,timeframe);
   if (fs.existsSync(full)) {
     existing = JSON.parse(fs.readFileSync(full, "utf8"));
     if (!force) {
@@ -472,7 +474,7 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
     timeframe,
   });
 
-  const refreshRange = historyRefreshOptions(existing, tfConfig);
+  const refreshRange = fullHistory ? batchHistoryOptions(existing, tfConfig) : historyRefreshOptions(existing, tfConfig);
   const incoming = await fetchQuote(ticker, timeframe, refreshRange);
   if (existing?.ohlcv?.length) assertHistoryCoverage(existing.ohlcv, incoming.ohlcv, refreshRange);
   // Drop weekly leading stretch from the fetch itself before merge/assert.

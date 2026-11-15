@@ -12,7 +12,7 @@
     "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -22,18 +22,42 @@
     "after_sha256": "bb429ad746a51aba47026e86ca85233eac4ec9e56a711dc681594c5d76096f1a"
   },
   "resolvedSymbol": "NASDAQ:INTC",
-  "fetchedAt": "2026-11-15T16:31:03.072Z",
-  "lastBarDate": "2026-11-12",
-  "barCount": 47,
-  "checksum": "6dc635a0",
+  "fetchedAt": "2026-11-15T17:21:19.129Z",
+  "lastBarDate": "2026-11-13",
+  "barCount": 50,
+  "checksum": "e993ad56",
   "ohlcv": [
     {
+      "date": "2022-10-31",
+      "open": 26.17,
+      "high": 29.22,
+      "low": 24.59,
+      "close": 28.43,
+      "volume": 830457631
+    },
+    {
+      "date": "2022-11-30",
+      "open": 28.8,
+      "high": 31.34,
+      "low": 27.17,
+      "close": 30.07,
+      "volume": 788939892
+    },
+    {
+      "date": "2022-12-30",
+      "open": 30.24,
+      "high": 30.48,
+      "low": 25.35,
+      "close": 26.43,
+      "volume": 758549634
+    },
+    {
       "date": "2023-01-31",
-      "open": 30.18,
+      "open": 27.05,
       "high": 30.49,
-      "low": 26.78,
+      "low": 26.37,
       "close": 28.26,
-      "volume": 555326381
+      "volume": 840843151
     },
     {
       "date": "2023-02-28",
@@ -396,12 +420,12 @@
       "volume": 2526569831
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 65.4,
       "high": 65.72,
       "low": 51.51,
-      "close": 61.2,
-      "volume": 1475830452
+      "close": 59.66,
+      "volume": 1578404752
     }
   ],
   "aggregatedFrom": "1d"

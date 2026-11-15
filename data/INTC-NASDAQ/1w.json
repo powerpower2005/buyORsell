@@ -12,7 +12,7 @@
     "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -22,10 +22,10 @@
     "after_sha256": "bb429ad746a51aba47026e86ca85233eac4ec9e56a711dc681594c5d76096f1a"
   },
   "resolvedSymbol": "NASDAQ:INTC",
-  "fetchedAt": "2026-11-15T16:31:03.072Z",
-  "lastBarDate": "2026-11-12",
+  "fetchedAt": "2026-11-15T17:21:19.129Z",
+  "lastBarDate": "2026-11-13",
   "barCount": 200,
-  "checksum": "d2a5cbc6",
+  "checksum": "8216be8c",
   "ohlcv": [
     {
       "date": "2023-01-20",
@@ -1620,12 +1620,12 @@
       "volume": 1013723713
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 56.86,
       "high": 64.06,
       "low": 55.83,
-      "close": 61.2,
-      "volume": 462106739
+      "close": 59.66,
+      "volume": 564681039
     }
   ],
   "aggregatedFrom": "1d"

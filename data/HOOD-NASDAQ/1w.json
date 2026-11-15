@@ -11,7 +11,7 @@
     "Validation:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -21,10 +21,10 @@
     "after_sha256": "96cdf16369da222a4ca12b0fc32ddff14522cb6e59dd31c3a0bda039c19d9d5d"
   },
   "resolvedSymbol": "NASDAQ:HOOD",
-  "fetchedAt": "2026-11-15T16:30:47.207Z",
-  "lastBarDate": "2026-11-12",
+  "fetchedAt": "2026-11-15T17:21:02.660Z",
+  "lastBarDate": "2026-11-13",
   "barCount": 200,
-  "checksum": "ad94ff80",
+  "checksum": "219fa622",
   "ohlcv": [
     {
       "date": "2023-01-20",
@@ -1619,12 +1619,12 @@
       "volume": 102410003
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 80.88,
       "high": 86.15,
-      "low": 79.96,
-      "close": 81.35,
-      "volume": 56341736
+      "low": 76.61,
+      "close": 77.86,
+      "volume": 75106942
     }
   ],
   "aggregatedFrom": "1d"

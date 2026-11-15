@@ -9,22 +9,31 @@
     "GoogleFinance:GOOGLEFINANCE",
     "GoogleSheets:sheets.googleapis.com",
     "Validation:query1.finance.yahoo.com",
+    "Validation:fchart.stock.naver.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "resolvedSymbol": "KRX:000660",
-  "fetchedAt": "2026-11-15T16:28:36.865Z",
+  "fetchedAt": "2026-11-15T17:18:47.843Z",
   "lastBarDate": "2026-11-13",
-  "barCount": 49,
+  "barCount": 50,
   "checksum": "493eea90",
   "ohlcv": [
     {
+      "date": "2022-10-31",
+      "open": 89600,
+      "high": 96600,
+      "low": 82400,
+      "close": 82700,
+      "volume": 61392135
+    },
+    {
       "date": "2022-11-30",
-      "open": 95200,
+      "open": 82700,
       "high": 95300,
-      "low": 82000,
+      "low": 81400,
       "close": 85000,
-      "volume": 35342633
+      "volume": 59674968
     },
     {
       "date": "2022-12-29",

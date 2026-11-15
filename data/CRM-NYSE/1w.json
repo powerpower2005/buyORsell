@@ -11,12 +11,12 @@
     "Validation:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "resolvedSymbol": "NYSE:CRM",
-  "fetchedAt": "2026-11-15T16:30:15.411Z",
-  "lastBarDate": "2026-11-12",
+  "fetchedAt": "2026-11-15T17:20:29.928Z",
+  "lastBarDate": "2026-11-13",
   "barCount": 200,
-  "checksum": "9f7d9a53",
+  "checksum": "8ae03df",
   "ohlcv": [
     {
       "date": "2023-01-20",
@@ -1611,12 +1611,12 @@
       "volume": 34736685
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 214.75,
-      "high": 219.35,
+      "high": 220,
       "low": 208.88,
-      "close": 217.57,
-      "volume": 24395606
+      "close": 217.84,
+      "volume": 29445020
     }
   ],
   "aggregatedFrom": "1d"

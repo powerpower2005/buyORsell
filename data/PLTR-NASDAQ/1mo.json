@@ -11,7 +11,7 @@
     "Validation:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -21,18 +21,18 @@
     "after_sha256": "46e5537563a06744e780dc59a831edcf481ccd5d7159e6783e6cdb46afe54955"
   },
   "resolvedSymbol": "NASDAQ:PLTR",
-  "fetchedAt": "2026-11-15T16:32:39.161Z",
-  "lastBarDate": "2026-11-12",
+  "fetchedAt": "2026-11-15T17:22:57.751Z",
+  "lastBarDate": "2026-11-13",
   "barCount": 50,
-  "checksum": "c65ded0b",
+  "checksum": "e5b94085",
   "ohlcv": [
     {
       "date": "2022-10-31",
-      "open": 8.48,
+      "open": 8.26,
       "high": 9.05,
       "low": 7.53,
       "close": 8.79,
-      "volume": 629280045
+      "volume": 592966701
     },
     {
       "date": "2022-11-30",
@@ -419,12 +419,12 @@
       "volume": 496969527
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 186.52,
       "high": 187.55,
       "low": 152.6,
-      "close": 171.58,
-      "volume": 271663399
+      "close": 167.99,
+      "volume": 286896819
     }
   ],
   "aggregatedFrom": "1d"

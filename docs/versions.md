@@ -225,3 +225,7 @@ sheets_fetch 2.0.0 → 3.0.0, universe_integrity/universe_recovery 1.0.0. 21개 
 ## 2026-11-16 — 국내 보조 검증 완결 3.1.0
 
 sheets_fetch 3.0.0 → 3.1.0, universe_integrity/universe_recovery 1.0.0 → 1.1.0. Yahoo 미검증 국내 17봉을 Naver로 대조해 16봉 정상 확인, LS ELECTRIC 2024-11-07 한 봉 추가 복구. 미검증 1% 허용을 제거하고 국내 보조 공급자로 전 봉 검증을 요구한다. 누적 15개 종목 21봉 수정 및 260일 복구.
+
+## 2026-11-16 — collection-v3.2.0 배치 누락 검사
+
+`batch_audit` 2.0.0: 신선한 종목 건너뛰기 → 매 배치 전체 일봉 이력 강제 검사, 종목별 중복 조회 제거, 누락 파일/집계 복구, 전체 검사 성공 후에만 커밋. `history_refresh` 2.0.0 → 2.1.0: 보관 기간 앞부분 검사 및 커밋 메타데이터 복구 경로 추가. [운영 흐름](collection.md).

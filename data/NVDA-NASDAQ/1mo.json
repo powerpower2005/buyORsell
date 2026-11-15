@@ -12,7 +12,7 @@
     "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -22,18 +22,34 @@
     "after_sha256": "1a5416edec11da3a69d14d09dad9c8e20097882021ed000a18c826ab5d3e85a6"
   },
   "resolvedSymbol": "NASDAQ:NVDA",
-  "fetchedAt": "2026-11-15T16:32:22.943Z",
-  "lastBarDate": "2026-11-12",
-  "barCount": 48,
-  "checksum": "5dbb5570",
+  "fetchedAt": "2026-11-15T17:22:41.579Z",
+  "lastBarDate": "2026-11-13",
+  "barCount": 50,
+  "checksum": "824353e0",
   "ohlcv": [
     {
+      "date": "2022-10-31",
+      "open": 12.51,
+      "high": 13.85,
+      "low": 10.81,
+      "close": 13.5,
+      "volume": 1026891011
+    },
+    {
+      "date": "2022-11-30",
+      "open": 13.81,
+      "high": 17,
+      "low": 12.96,
+      "close": 16.92,
+      "volume": 1060101416
+    },
+    {
       "date": "2022-12-30",
-      "open": 17.16,
+      "open": 17,
       "high": 18.79,
       "low": 13.88,
       "close": 14.61,
-      "volume": 651099350
+      "volume": 894615121
     },
     {
       "date": "2023-01-31",
@@ -404,12 +420,12 @@
       "volume": 2255136214
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 207.53,
       "high": 209.98,
       "low": 148.8,
-      "close": 166.19,
-      "volume": 2825503935
+      "close": 162.85,
+      "volume": 3191300487
     }
   ],
   "aggregatedFrom": "1d"

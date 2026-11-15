@@ -11,7 +11,7 @@
     "Validation:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -21,10 +21,10 @@
     "after_sha256": "b9c2e5f6b57d8baa1d3ef7452da953032bd13f62daea2d22cdb3ff7661f93f9e"
   },
   "resolvedSymbol": "NYSE:GLW",
-  "fetchedAt": "2026-11-15T16:30:31.320Z",
-  "lastBarDate": "2026-11-12",
+  "fetchedAt": "2026-11-15T17:20:46.309Z",
+  "lastBarDate": "2026-11-13",
   "barCount": 200,
-  "checksum": "31aaa22a",
+  "checksum": "982d38a1",
   "ohlcv": [
     {
       "date": "2023-01-20",
@@ -1619,12 +1619,12 @@
       "volume": 66058619
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 108.01,
       "high": 123.87,
       "low": 107.91,
-      "close": 119.5,
-      "volume": 34660911
+      "close": 114.08,
+      "volume": 41531282
     }
   ],
   "aggregatedFrom": "1d"

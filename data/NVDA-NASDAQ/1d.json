@@ -6,11 +6,363 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:NVDA",
-  "fetchedAt": "2026-11-15T16:32:22.943Z",
-  "lastBarDate": "2026-11-12",
-  "barCount": 985,
-  "checksum": "c9ac5806",
+  "fetchedAt": "2026-11-15T17:22:41.579Z",
+  "lastBarDate": "2026-11-13",
+  "barCount": 1030,
+  "checksum": "1c23b296",
   "ohlcv": [
+    {
+      "date": "2022-10-07",
+      "open": 12.51,
+      "high": 12.67,
+      "low": 12.02,
+      "close": 12.08,
+      "volume": 67247816
+    },
+    {
+      "date": "2022-10-10",
+      "open": 12.04,
+      "high": 12.12,
+      "low": 11.41,
+      "close": 11.67,
+      "volume": 69869925
+    },
+    {
+      "date": "2022-10-11",
+      "open": 11.56,
+      "high": 11.85,
+      "low": 11.28,
+      "close": 11.59,
+      "volume": 66748163
+    },
+    {
+      "date": "2022-10-12",
+      "open": 11.58,
+      "high": 11.74,
+      "low": 11.35,
+      "close": 11.5,
+      "volume": 49259019
+    },
+    {
+      "date": "2022-10-13",
+      "open": 10.97,
+      "high": 12.08,
+      "low": 10.81,
+      "close": 11.96,
+      "volume": 85010301
+    },
+    {
+      "date": "2022-10-14",
+      "open": 12.06,
+      "high": 12.11,
+      "low": 11.2,
+      "close": 11.23,
+      "volume": 71343199
+    },
+    {
+      "date": "2022-10-17",
+      "open": 11.52,
+      "high": 11.95,
+      "low": 11.52,
+      "close": 11.89,
+      "volume": 58077417
+    },
+    {
+      "date": "2022-10-18",
+      "open": 12.34,
+      "high": 12.49,
+      "low": 11.62,
+      "close": 11.97,
+      "volume": 65936206
+    },
+    {
+      "date": "2022-10-19",
+      "open": 11.88,
+      "high": 12.35,
+      "low": 11.83,
+      "close": 12.05,
+      "volume": 52313061
+    },
+    {
+      "date": "2022-10-20",
+      "open": 12.11,
+      "high": 12.77,
+      "low": 12.11,
+      "close": 12.19,
+      "volume": 65239761
+    },
+    {
+      "date": "2022-10-21",
+      "open": 12.1,
+      "high": 12.5,
+      "low": 11.89,
+      "close": 12.47,
+      "volume": 60949441
+    },
+    {
+      "date": "2022-10-24",
+      "open": 12.51,
+      "high": 12.71,
+      "low": 12.06,
+      "close": 12.6,
+      "volume": 51745740
+    },
+    {
+      "date": "2022-10-25",
+      "open": 12.69,
+      "high": 13.3,
+      "low": 12.66,
+      "close": 13.26,
+      "volume": 50548233
+    },
+    {
+      "date": "2022-10-26",
+      "open": 12.87,
+      "high": 13.39,
+      "low": 12.71,
+      "close": 12.9,
+      "volume": 53553329
+    },
+    {
+      "date": "2022-10-27",
+      "open": 13.63,
+      "high": 13.84,
+      "low": 13.12,
+      "close": 13.18,
+      "volume": 58311308
+    },
+    {
+      "date": "2022-10-28",
+      "open": 13.1,
+      "high": 13.85,
+      "low": 13.06,
+      "close": 13.83,
+      "volume": 52103993
+    },
+    {
+      "date": "2022-10-31",
+      "open": 13.78,
+      "high": 13.84,
+      "low": 13.3,
+      "close": 13.5,
+      "volume": 48634099
+    },
+    {
+      "date": "2022-11-01",
+      "open": 13.81,
+      "high": 13.93,
+      "low": 13.52,
+      "close": 13.54,
+      "volume": 43281690
+    },
+    {
+      "date": "2022-11-02",
+      "open": 13.85,
+      "high": 14.21,
+      "low": 13.21,
+      "close": 13.22,
+      "volume": 67262784
+    },
+    {
+      "date": "2022-11-03",
+      "open": 13.04,
+      "high": 13.78,
+      "low": 12.96,
+      "close": 13.42,
+      "volume": 50006486
+    },
+    {
+      "date": "2022-11-04",
+      "open": 13.99,
+      "high": 14.23,
+      "low": 13.7,
+      "close": 14.16,
+      "volume": 61257591
+    },
+    {
+      "date": "2022-11-07",
+      "open": 14.23,
+      "high": 14.41,
+      "low": 13.95,
+      "close": 14.3,
+      "volume": 41006095
+    },
+    {
+      "date": "2022-11-08",
+      "open": 14.8,
+      "high": 14.89,
+      "low": 14.22,
+      "close": 14.6,
+      "volume": 59529199
+    },
+    {
+      "date": "2022-11-09",
+      "open": 14.16,
+      "high": 14.21,
+      "low": 13.76,
+      "close": 13.78,
+      "volume": 45441366
+    },
+    {
+      "date": "2022-11-10",
+      "open": 14.8,
+      "high": 15.77,
+      "low": 14.55,
+      "close": 15.75,
+      "volume": 70081925
+    },
+    {
+      "date": "2022-11-11",
+      "open": 15.81,
+      "high": 16.39,
+      "low": 15.48,
+      "close": 16.33,
+      "volume": 65548747
+    },
+    {
+      "date": "2022-11-14",
+      "open": 16.22,
+      "high": 16.54,
+      "low": 15.92,
+      "close": 16.3,
+      "volume": 52785245
+    },
+    {
+      "date": "2022-11-15",
+      "open": 16.72,
+      "high": 17,
+      "low": 16.38,
+      "close": 16.67,
+      "volume": 54587550
+    },
+    {
+      "date": "2022-11-16",
+      "open": 16.16,
+      "high": 16.36,
+      "low": 15.87,
+      "close": 15.91,
+      "volume": 64954684
+    },
+    {
+      "date": "2022-11-17",
+      "open": 15.72,
+      "high": 16.27,
+      "low": 15.54,
+      "close": 15.68,
+      "volume": 71089356
+    },
+    {
+      "date": "2022-11-18",
+      "open": 15.97,
+      "high": 16,
+      "low": 15.12,
+      "close": 15.41,
+      "volume": 49207165
+    },
+    {
+      "date": "2022-11-21",
+      "open": 15.15,
+      "high": 15.48,
+      "low": 15.08,
+      "close": 15.32,
+      "volume": 40473931
+    },
+    {
+      "date": "2022-11-22",
+      "open": 15.33,
+      "high": 16.06,
+      "low": 15.12,
+      "close": 16.04,
+      "volume": 47286607
+    },
+    {
+      "date": "2022-11-23",
+      "open": 16.1,
+      "high": 16.53,
+      "low": 16.05,
+      "close": 16.52,
+      "volume": 42724093
+    },
+    {
+      "date": "2022-11-25",
+      "open": 16.32,
+      "high": 16.49,
+      "low": 16.17,
+      "close": 16.27,
+      "volume": 16793430
+    },
+    {
+      "date": "2022-11-28",
+      "open": 16.03,
+      "high": 16.36,
+      "low": 15.73,
+      "close": 15.83,
+      "volume": 30415201
+    },
+    {
+      "date": "2022-11-29",
+      "open": 15.83,
+      "high": 15.93,
+      "low": 15.52,
+      "close": 15.64,
+      "volume": 29838449
+    },
+    {
+      "date": "2022-11-30",
+      "open": 15.7,
+      "high": 16.93,
+      "low": 15.6,
+      "close": 16.92,
+      "volume": 56529822
+    },
+    {
+      "date": "2022-12-01",
+      "open": 17,
+      "high": 17.27,
+      "low": 16.64,
+      "close": 17.14,
+      "volume": 47097657
+    },
+    {
+      "date": "2022-12-02",
+      "open": 16.66,
+      "high": 16.93,
+      "low": 16.45,
+      "close": 16.88,
+      "volume": 37138858
+    },
+    {
+      "date": "2022-12-05",
+      "open": 16.68,
+      "high": 17,
+      "low": 16.47,
+      "close": 16.61,
+      "volume": 35225517
+    },
+    {
+      "date": "2022-12-06",
+      "open": 16.53,
+      "high": 16.57,
+      "low": 15.82,
+      "close": 15.99,
+      "volume": 35269427
+    },
+    {
+      "date": "2022-12-07",
+      "open": 15.77,
+      "high": 16.19,
+      "low": 15.67,
+      "close": 16.12,
+      "volume": 37238758
+    },
+    {
+      "date": "2022-12-08",
+      "open": 16.27,
+      "high": 17.18,
+      "low": 15.96,
+      "close": 17.17,
+      "volume": 51545554
+    },
     {
       "date": "2022-12-09",
       "open": 17.16,
@@ -7890,9 +8242,17 @@
       "low": 148.8,
       "close": 166.19,
       "volume": 747707648
+    },
+    {
+      "date": "2026-11-13",
+      "open": 169.91,
+      "high": 170,
+      "low": 158.39,
+      "close": 162.85,
+      "volume": 365796552
     }
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "source_tags": [
     "GoogleFinance:GOOGLEFINANCE",
     "GoogleSheets:sheets.googleapis.com",
@@ -7900,14 +8260,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 985,
+    "checked": 1030,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-15T16:38:45.774Z",
-    "independent_fetched_at": "2026-11-15T16:29:17.558Z"
+    "verified_at": "2026-11-15T17:22:41.699Z"
   },
   "provider_corrections": [
     "universe-v1-NVDA-NASDAQ-2025-05-22"

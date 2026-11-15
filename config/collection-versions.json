@@ -7,9 +7,9 @@
       "change": "When Yahoo reference rows are invalid or missing, verify Korean prices against identified Naver history; require full valid reference coverage."
     },
     "history_refresh": {
-      "version": "2.0.0",
-      "previous": "1.0.0 (unversioned)",
-      "change": "Refresh all retained dates instead of only the recent 730 days; reject missing stored dates before merging to prevent mixed adjustment bases."
+      "version": "2.1.0",
+      "previous": "2.0.0",
+      "change": "Add explicit full-history batch mode covering the configured retention window and every stored date, with committed metadata recovery for missing daily files. Manual refresh default is unchanged."
     },
     "soxx_recovery": {
       "version": "1.0.0",
@@ -25,6 +25,11 @@
       "version": "1.1.0",
       "previous": "1.0.0",
       "change": "Naver confirms 16 of 17 unverified domestic bars; correct LS ELECTRIC 2024-11-07 and preserve raw share-volume convention and prior audit lineage."
+    },
+    "batch_audit": {
+      "version": "2.0.0",
+      "previous": "1.0.0 (unversioned)",
+      "change": "Every scheduled batch verifies each active daily series once regardless of freshness; requests the full retention period, restores missing committed files and aggregates, reports historical/new/revised dates and fails the entire publication on any error."
     }
   }
 }

@@ -1,246 +1,64 @@
 #!/usr/bin/env node
-/**
- * Cron entry: scan index, refresh stale quotes, write a run report +
- * GitHub Actions Job Summary (GITHUB_STEP_SUMMARY).
- */
-
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import {
-  runFetchPipeline,
-  validateFreshness,
-} from "./validate-and-merge.mjs";
-import { tickerToSlug } from "./fetch-quote.mjs";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
-
-function loadJson(rel) {
-  return JSON.parse(fs.readFileSync(path.join(ROOT, rel), "utf8"));
-}
-
-function quoteRel(ticker, timeframe) {
-  return `data/${tickerToSlug(ticker)}/${timeframe}.json`;
-}
-
-function readQuote(ticker, timeframe) {
-  const rel = quoteRel(ticker, timeframe);
-  const full = path.join(ROOT, rel);
-  if (!fs.existsSync(full)) return null;
-  return JSON.parse(fs.readFileSync(full, "utf8"));
-}
-
-function mdEscape(s) {
-  return String(s ?? "").replace(/\|/g, "\\|");
-}
-
-function buildMarkdown(report) {
-  const lines = [];
-  lines.push(`# Fetch Quote — scheduled refresh`);
-  lines.push("");
-  lines.push(`- **When (UTC):** ${report.ranAt}`);
-  lines.push(`- **Index entries:** ${report.totals.scanned}`);
-  lines.push(`- **Already fresh (skipped):** ${report.totals.fresh}`);
-  lines.push(`- **Missing file:** ${report.totals.missing}`);
-  lines.push(`- **Stale → attempted:** ${report.totals.stale}`);
-  lines.push(`- **Fetched OK:** ${report.totals.fetchedOk}`);
-  lines.push(`- **Fetch failed:** ${report.totals.fetchedFail}`);
-  lines.push(`- **Bars changed:** ${report.totals.barsChanged}`);
-  lines.push("");
-
-  if (report.fresh.length) {
-    lines.push(`## Fresh (no fetch)`);
-    lines.push("");
-    lines.push(`| Ticker | TF | Last bar | Bars | Fetched at |`);
-    lines.push(`| --- | --- | --- | ---: | --- |`);
-    for (const r of report.fresh) {
-      lines.push(
-        `| ${mdEscape(r.ticker)} | ${mdEscape(r.timeframe)} | ${mdEscape(r.lastBarDate)} | ${r.barCount ?? "—"} | ${mdEscape(r.fetchedAt ?? "—")} |`,
-      );
-    }
-    lines.push("");
-  }
-
-  if (report.missing.length) {
-    lines.push(`## Missing data file`);
-    lines.push("");
-    for (const r of report.missing) {
-      lines.push(`- \`${r.ticker}\` (${r.timeframe}) — ${r.path}`);
-    }
-    lines.push("");
-  }
-
-  if (report.fetched.length) {
-    lines.push(`## Fetched`);
-    lines.push("");
-    lines.push(
-      `| Ticker | TF | Result | Reason | Last bar before → after | Bars | Derived |`,
-    );
-    lines.push(`| --- | --- | --- | --- | --- | ---: | --- |`);
-    for (const r of report.fetched) {
-      const last =
-        r.beforeLastBarDate || r.afterLastBarDate
-          ? `${r.beforeLastBarDate ?? "—"} → ${r.afterLastBarDate ?? "—"}`
-          : "—";
-      const derived = r.derived?.length
-        ? r.derived.map((d) => `${d.timeframe}:${d.barCount}`).join(", ")
-        : "—";
-      lines.push(
-        `| ${mdEscape(r.ticker)} | ${mdEscape(r.timeframe)} | ${mdEscape(r.action)} | ${mdEscape(r.reason ?? r.error ?? "")} | ${mdEscape(last)} | ${r.afterBarCount ?? "—"} | ${mdEscape(derived)} |`,
-      );
-    }
-    lines.push("");
-  }
-
-  if (!report.fetched.length && !report.missing.length) {
-    lines.push(`_Nothing to refresh — all indexed quotes were fresh._`);
-    lines.push("");
-  }
-
-  return lines.join("\n");
-}
-
-export async function runScheduledStaleRefresh() {
-  const indexPath = "data/index.json";
-  const report = {
-    ranAt: new Date().toISOString(),
-    mode: "schedule",
-    totals: {
-      scanned: 0,
-      fresh: 0,
-      missing: 0,
-      stale: 0,
-      fetchedOk: 0,
-      fetchedFail: 0,
-      barsChanged: 0,
-    },
-    fresh: [],
-    missing: [],
-    fetched: [],
+/** Every batch audits complete daily history, even when the latest bar is fresh. */
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {runFetchPipeline} from './validate-and-merge.mjs';
+import {integrityPolicy} from './lib/universe-integrity.mjs';
+const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
+const fields=['open','high','low','close','volume'];
+export function historyChanges(before,after) {
+  const old=new Map((before?.ohlcv??[]).map(b=>[b.date,b]));
+  const added=after.ohlcv.filter(b=>!old.has(b.date)).map(b=>b.date);
+  return {
+    historical_added_dates:before?added.filter(d=>d<=before.lastBarDate):[],
+    new_dates:before?added.filter(d=>d>before.lastBarDate):[],
+    revised_dates:after.ohlcv.filter(b=>old.has(b.date)&&fields.some(k=>old.get(b.date)[k]!==b[k])).map(b=>b.date),
   };
-
-  if (!fs.existsSync(path.join(ROOT, indexPath))) {
-    report.note = "data/index.json missing";
-    return report;
-  }
-
-  const index = loadJson(indexPath);
-  const policy = loadJson("config/data-policy.json");
-  const entries = index.entries ?? [];
-
-  for (const entry of entries) {
-    if (!entry.ticker || !entry.timeframe) continue;
-    report.totals.scanned += 1;
-    const rel = quoteRel(entry.ticker, entry.timeframe);
-    const before = readQuote(entry.ticker, entry.timeframe);
-
-    if (!before) {
-      report.totals.missing += 1;
-      report.missing.push({
-        ticker: entry.ticker,
-        timeframe: entry.timeframe,
-        path: rel,
-      });
-      continue;
-    }
-
-    const freshness = validateFreshness(before, policy, entry.timeframe);
-    if (freshness.status !== "stale") {
-      report.totals.fresh += 1;
-      report.fresh.push({
-        ticker: entry.ticker,
-        timeframe: entry.timeframe,
-        lastBarDate: before.lastBarDate,
-        barCount: before.barCount,
-        fetchedAt: before.fetchedAt,
-        reason: freshness.reason,
-      });
-      continue;
-    }
-
-    report.totals.stale += 1;
-    const row = {
-      ticker: entry.ticker,
-      timeframe: entry.timeframe,
-      staleReason: freshness.reason,
-      beforeLastBarDate: before.lastBarDate,
-      beforeBarCount: before.barCount,
-      beforeFetchedAt: before.fetchedAt,
-    };
-
-    console.log(
-      `Stale: ${entry.ticker} ${entry.timeframe} (${freshness.reason})`,
-    );
-
+}
+function safeReason(error){return /^(Invalid |Independent |Reviewed |Missing |Cross-symbol |Unreviewed |Resolved |Quote |Full-history |GOOGLEFINANCE returned|Quarantined |Unsupported |No bars)/.test(error.message)?error.message:'Collection or validation failed; no batch data committed';}
+export async function runScheduledStaleRefresh({root=ROOT,pipeline=runFetchPipeline,policy=integrityPolicy(root)}={}) {
+  const index=read(path.join(root,'data/index.json'));
+  if(!Array.isArray(index.entries)||!index.entries.length)throw new Error('Missing or empty data index');
+  const tickers=[...new Set(index.entries.map(e=>e.ticker))].sort();
+  const timeframes=read(path.join(root,'config/timeframes.json')).timeframes;
+  const tfs=['1d',...Object.entries(timeframes).filter(([,c])=>c.enabled&&c.aggregateFrom==='1d').map(([tf])=>tf)];
+  const report={version:'2.0.0',mode:'full-history-batch',ranAt:new Date().toISOString(),source_tags:[],totals:{scanned:0,checked:0,failed:0,excluded:0,restoredFiles:0,historicalAdded:0,newBars:0,revisedBars:0},series:[]};
+  for(const ticker of tickers){
+    if(policy.quarantined[ticker]){report.totals.excluded++;report.series.push({ticker,status:'excluded',reason:policy.quarantined[ticker].reason});continue;}
+    report.totals.scanned++;
+    const slug=ticker.replaceAll(':','-'),file=path.join(root,'data',slug,'1d.json');
+    const row={ticker,status:'checking',missing_files_before:tfs.filter(tf=>!fs.existsSync(path.join(root,'data',slug,`${tf}.json`)))};
     try {
-      const result = await runFetchPipeline({
-        ticker: entry.ticker,
-        timeframe: entry.timeframe,
-        force: false,
-      });
-      const after = result.quote ?? readQuote(entry.ticker, entry.timeframe);
-      row.action = result.action;
-      row.reason = result.reason ?? freshness.reason;
-      row.barsChanged = Boolean(result.barsChanged);
-      row.afterLastBarDate = after?.lastBarDate ?? null;
-      row.afterBarCount = after?.barCount ?? null;
-      row.afterFetchedAt = after?.fetchedAt ?? null;
-      row.derived = result.derived ?? [];
-      if (row.barsChanged) report.totals.barsChanged += 1;
-      report.totals.fetchedOk += 1;
-      report.fetched.push(row);
-      console.log(
-        `OK: ${entry.ticker} ${entry.timeframe} → ${row.action}` +
-          ` last ${row.beforeLastBarDate} → ${row.afterLastBarDate}`,
-      );
-    } catch (e) {
-      report.totals.fetchedFail += 1;
-      row.action = "error";
-      row.error = e instanceof Error ? e.message : String(e);
-      report.fetched.push(row);
-      console.error(`FAIL: ${entry.ticker} ${entry.timeframe}: ${row.error}`);
-    }
+      const before=fs.existsSync(file)?read(file):null;
+      const result=await pipeline({ticker,timeframe:'1d',force:true,fullHistory:true});
+      const quote=result.quote;
+      if(!quote?.ohlcv?.length)throw new Error('Missing verified daily result');
+      const remaining=tfs.filter(tf=>!fs.existsSync(path.join(root,'data',slug,`${tf}.json`)));
+      if(remaining.length)throw new Error('Missing regenerated files: '+remaining.join(', '));
+      Object.assign(row,{status:'verified',before_count:before?.barCount??0,after_count:quote.barCount,lastBarDate:quote.lastBarDate,...historyChanges(before,quote),source_tags:quote.source_tags??[],integrity_verification:quote.integrity_verification??null});
+      report.totals.checked++;report.totals.restoredFiles+=row.missing_files_before.length;
+      report.totals.historicalAdded+=row.historical_added_dates.length;report.totals.newBars+=row.new_dates.length;report.totals.revisedBars+=row.revised_dates.length;
+      report.source_tags.push(...row.source_tags);
+    } catch(error){row.status='failed';row.reason=safeReason(error);report.totals.failed++;}
+    report.series.push(row);
+    console.log(JSON.stringify({ticker,status:row.status,historicalAdded:row.historical_added_dates?.length,revised:row.revised_dates?.length,reason:row.reason}));
   }
-
+  report.source_tags=[...new Set(report.source_tags)];
+  report.complete=report.totals.scanned>0&&report.totals.failed===0;
   return report;
 }
-
-function writeOutputs(report) {
-  const outDir = path.join(ROOT, "artifacts");
-  fs.mkdirSync(outDir, { recursive: true });
-  const jsonPath = path.join(outDir, "fetch-run-report.json");
-  fs.writeFileSync(jsonPath, JSON.stringify(report, null, 2) + "\n");
-  console.log(`Wrote ${path.relative(ROOT, jsonPath)}`);
-
-  const md = buildMarkdown(report);
-  const mdPath = path.join(outDir, "fetch-run-report.md");
-  fs.writeFileSync(mdPath, md + "\n");
-  console.log(`Wrote ${path.relative(ROOT, mdPath)}`);
-
-  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
-  if (summaryPath) {
-    fs.appendFileSync(summaryPath, md + "\n");
-    console.log("Appended Job Summary");
-  } else {
-    console.log("\n----- fetch report -----\n" + md);
-  }
+export function buildMarkdown(report){
+  const esc=v=>String(v??'').replaceAll('|','\\|');
+  return ['# 전체 보관 이력 배치 검사','',`- 확인 시각(UTC): ${report.ranAt}`,`- 검사 ${report.totals.scanned}종목 / 통과 ${report.totals.checked} / 실패 ${report.totals.failed} / 격리 제외 ${report.totals.excluded}`,`- 과거 날짜 보충 ${report.totals.historicalAdded} / 신규 봉 ${report.totals.newBars} / 기존 봉 변경 ${report.totals.revisedBars} / 파일 복구 ${report.totals.restoredFiles}`,`- 출처: ${report.source_tags.map(t=>`[${t}]`).join(' ')}`,'',report.complete?'전체 검사 통과 후 최종 데이터 검증·커밋을 진행합니다.':'실패한 종목이 있어 이 배치의 데이터는 커밋하지 않습니다. 기존 원격 데이터를 유지합니다.','','| 종목 | 상태 | 과거 날짜 보충 | 신규 봉 | 변경 봉 | 복구 파일 | 사유 |','| --- | --- | ---: | ---: | ---: | --- | --- |',...report.series.map(r=>`| ${esc(r.ticker)} | ${r.status} | ${r.historical_added_dates?.length??0} | ${r.new_dates?.length??0} | ${r.revised_dates?.length??0} | ${esc(r.missing_files_before?.join(', '))} | ${esc(r.reason)} |`),'','과거 날짜 보충에는 보관 기간의 앞부분 확장도 포함합니다. 휴장일을 평일 달력으로 추정해 채우지 않습니다. 날짜별 결과는 JSON 보고서를 확인하세요.',''].join('\n');
 }
-
-async function main() {
-  const report = await runScheduledStaleRefresh();
-  writeOutputs(report);
-  // Do not fail the job on partial errors — summary + commit should still run.
-  if (report.totals.fetchedFail > 0) {
-    console.warn(
-      `Completed with ${report.totals.fetchedFail} fetch failure(s); see Job Summary.`,
-    );
-  }
+async function main(){
+  const report=await runScheduledStaleRefresh(),out=path.join(ROOT,'artifacts');fs.mkdirSync(out,{recursive:true});
+  fs.writeFileSync(path.join(out,'fetch-run-report.json'),JSON.stringify(report,null,2)+'\n');
+  const md=buildMarkdown(report);fs.writeFileSync(path.join(out,'fetch-run-report.md'),md);
+  if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,md);
+  console.log(JSON.stringify(report.totals));
+  if(!report.complete)process.exitCode=1;
 }
-
-if (process.argv[1]?.includes("scheduled-stale-refresh")) {
-  main().catch((e) => {
-    console.error(e);
-    process.exit(1);
-  });
-}
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))main().catch(()=>{console.error('Full-history batch failed before completion; no data commit permitted');process.exitCode=1;});

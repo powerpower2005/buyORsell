@@ -12,7 +12,7 @@
     "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -22,14 +22,30 @@
     "after_sha256": "26b553361724d8a172773df6e85f5f4ca45d842b71b397d5d2c4a7bfc4699c0f"
   },
   "resolvedSymbol": "INDEXNASDAQ:NDX",
-  "fetchedAt": "2026-11-15T16:28:19.958Z",
-  "lastBarDate": "2026-11-12",
-  "barCount": 48,
-  "checksum": "e3ada3cc",
+  "fetchedAt": "2026-11-15T17:22:25.336Z",
+  "lastBarDate": "2026-11-13",
+  "barCount": 50,
+  "checksum": "17ec9bde",
   "ohlcv": [
     {
+      "date": "2022-10-31",
+      "open": 11272.46,
+      "high": 11681.85,
+      "low": 10440.64,
+      "close": 11405.57,
+      "volume": 0
+    },
+    {
+      "date": "2022-11-30",
+      "open": 11571.53,
+      "high": 12031.34,
+      "low": 10632.39,
+      "close": 12030.06,
+      "volume": 0
+    },
+    {
       "date": "2022-12-30",
-      "open": 11594.38,
+      "open": 12030.24,
       "high": 12166.41,
       "low": 10671.19,
       "close": 10939.76,
@@ -404,11 +420,11 @@
       "volume": 0
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 28561.17,
       "high": 28829.66,
       "low": 26606.43,
-      "close": 28289.19,
+      "close": 27943.74,
       "volume": 0
     }
   ],

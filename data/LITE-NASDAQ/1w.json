@@ -12,7 +12,7 @@
     "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -22,10 +22,10 @@
     "after_sha256": "ab34b6025825ebc4cd576c2c81618b6860779f9b49cbdf53156d136eb5c5dfe3"
   },
   "resolvedSymbol": "NASDAQ:LITE",
-  "fetchedAt": "2026-11-15T16:31:35.206Z",
-  "lastBarDate": "2026-11-12",
+  "fetchedAt": "2026-11-15T17:21:52.902Z",
+  "lastBarDate": "2026-11-13",
   "barCount": 200,
-  "checksum": "1f330b66",
+  "checksum": "52f7a443",
   "ohlcv": [
     {
       "date": "2023-01-20",
@@ -1620,12 +1620,12 @@
       "volume": 47498637
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 547.92,
       "high": 678.67,
       "low": 545.01,
-      "close": 624.65,
-      "volume": 21786213
+      "close": 596.62,
+      "volume": 25449119
     }
   ],
   "aggregatedFrom": "1d"

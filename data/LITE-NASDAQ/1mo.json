@@ -12,7 +12,7 @@
     "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
@@ -22,18 +22,42 @@
     "after_sha256": "ab34b6025825ebc4cd576c2c81618b6860779f9b49cbdf53156d136eb5c5dfe3"
   },
   "resolvedSymbol": "NASDAQ:LITE",
-  "fetchedAt": "2026-11-15T16:31:35.206Z",
-  "lastBarDate": "2026-11-12",
-  "barCount": 47,
-  "checksum": "24e6bbb6",
+  "fetchedAt": "2026-11-15T17:21:52.902Z",
+  "lastBarDate": "2026-11-13",
+  "barCount": 50,
+  "checksum": "87412689",
   "ohlcv": [
     {
+      "date": "2022-10-31",
+      "open": 73.04,
+      "high": 75.06,
+      "low": 65.66,
+      "close": 74.45,
+      "volume": 12472360
+    },
+    {
+      "date": "2022-11-30",
+      "open": 75.31,
+      "high": 75.56,
+      "low": 52.12,
+      "close": 54.94,
+      "volume": 32008655
+    },
+    {
+      "date": "2022-12-30",
+      "open": 55,
+      "high": 56.82,
+      "low": 48.73,
+      "close": 52.17,
+      "volume": 20735239
+    },
+    {
       "date": "2023-01-31",
-      "open": 57.57,
+      "open": 52.27,
       "high": 61,
-      "low": 57.48,
+      "low": 52.18,
       "close": 60.18,
-      "volume": 7199307
+      "volume": 13326289
     },
     {
       "date": "2023-02-28",
@@ -396,12 +420,12 @@
       "volume": 116441094
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 802.55,
       "high": 802.55,
       "low": 506.69,
-      "close": 624.65,
-      "volume": 69284850
+      "close": 596.62,
+      "volume": 72947756
     }
   ],
   "aggregatedFrom": "1d"

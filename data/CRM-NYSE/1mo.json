@@ -11,20 +11,44 @@
     "Validation:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
-  "collection_version": "3.0.0",
+  "collection_version": "3.1.0",
   "resolvedSymbol": "NYSE:CRM",
-  "fetchedAt": "2026-11-15T16:30:15.411Z",
-  "lastBarDate": "2026-11-12",
-  "barCount": 47,
-  "checksum": "e85deaf0",
+  "fetchedAt": "2026-11-15T17:20:29.928Z",
+  "lastBarDate": "2026-11-13",
+  "barCount": 50,
+  "checksum": "1adfe7f7",
   "ohlcv": [
     {
+      "date": "2022-10-31",
+      "open": 151.8,
+      "high": 166.03,
+      "low": 137.59,
+      "close": 162.59,
+      "volume": 116873681
+    },
+    {
+      "date": "2022-11-30",
+      "open": 165,
+      "high": 165.7,
+      "low": 136.04,
+      "close": 160.25,
+      "volume": 158889683
+    },
+    {
+      "date": "2022-12-30",
+      "open": 147.55,
+      "high": 147.59,
+      "low": 126.34,
+      "close": 132.59,
+      "volume": 255577990
+    },
+    {
       "date": "2023-01-31",
-      "open": 145.81,
+      "open": 135.19,
       "high": 168.01,
-      "low": 143.16,
+      "low": 133.03,
       "close": 167.97,
-      "volume": 148117804
+      "volume": 201955671
     },
     {
       "date": "2023-02-28",
@@ -387,12 +411,12 @@
       "volume": 160076884
     },
     {
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "open": 229.75,
       "high": 234.36,
       "low": 208.88,
-      "close": 217.57,
-      "volume": 59132291
+      "close": 217.84,
+      "volume": 64181705
     }
   ],
   "aggregatedFrom": "1d"
