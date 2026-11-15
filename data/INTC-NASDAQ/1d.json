@@ -4,9 +4,9 @@
   "window": "2Y",
   "schemaVersion": 1,
   "intervalSeconds": 86400,
-  "source": "gf",
+  "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:INTC",
-  "fetchedAt": "2026-11-13T17:01:20.693Z",
+  "fetchedAt": "2026-11-15T16:31:03.072Z",
   "lastBarDate": "2026-11-12",
   "barCount": 961,
   "checksum": "90068445",
@@ -3525,11 +3525,11 @@
     },
     {
       "date": "2024-10-15",
-      "open": 23.58,
-      "high": 23.77,
-      "low": 23.27,
-      "close": 23.44,
-      "volume": 490758
+      "open": 23.41,
+      "high": 23.72,
+      "low": 22.47,
+      "close": 22.66,
+      "volume": 68900556
     },
     {
       "date": "2024-10-16",
@@ -4725,11 +4725,11 @@
     },
     {
       "date": "2025-05-22",
-      "open": 21.19,
-      "high": 21.63,
-      "low": 20.59,
-      "close": 20.69,
-      "volume": 1347701
+      "open": 20.73,
+      "high": 20.9,
+      "low": 20.51,
+      "close": 20.55,
+      "volume": 56077500
     },
     {
       "date": "2025-05-23",
@@ -7699,5 +7699,33 @@
       "close": 61.2,
       "volume": 80687539
     }
-  ]
+  ],
+  "collection_version": "3.0.0",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com"
+  ],
+  "integrity_verification": {
+    "checked": 961,
+    "unavailable": [],
+    "reviewed_disagreements": [],
+    "source_tags": [
+      "Validation:query1.finance.yahoo.com"
+    ],
+    "verified_at": "2026-11-15T16:38:45.774Z",
+    "independent_fetched_at": "2026-11-15T16:29:16.614Z"
+  },
+  "provider_corrections": [
+    "universe-v1-INTC-NASDAQ-2025-05-22"
+  ],
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "efa2622d6875bcb5bd1cad3e7a013f628c5e136f08e53870838d8d2fd8ea93ce",
+    "after_sha256": "bb429ad746a51aba47026e86ca85233eac4ec9e56a711dc681594c5d76096f1a"
+  }
 }

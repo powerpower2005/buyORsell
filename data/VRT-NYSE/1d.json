@@ -4,9 +4,9 @@
   "window": "2Y",
   "schemaVersion": 1,
   "intervalSeconds": 86400,
-  "source": "gf",
+  "source": "google_sheets_googfinance",
   "resolvedSymbol": "NYSE:VRT",
-  "fetchedAt": "2026-11-13T17:11:59.066Z",
+  "fetchedAt": "2026-11-15T16:33:43.449Z",
   "lastBarDate": "2026-11-12",
   "barCount": 978,
   "checksum": "d401d670",
@@ -4861,11 +4861,11 @@
     },
     {
       "date": "2025-05-22",
-      "open": 104.29,
-      "high": 107,
-      "low": 102.57,
-      "close": 103.61,
-      "volume": 88752
+      "open": 102.7,
+      "high": 105.29,
+      "low": 101.11,
+      "close": 104.2,
+      "volume": 3800000
     },
     {
       "date": "2025-05-23",
@@ -7835,5 +7835,33 @@
       "close": 209.64,
       "volume": 5854738
     }
-  ]
+  ],
+  "collection_version": "3.0.0",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com"
+  ],
+  "integrity_verification": {
+    "checked": 978,
+    "unavailable": [],
+    "reviewed_disagreements": [],
+    "source_tags": [
+      "Validation:query1.finance.yahoo.com"
+    ],
+    "verified_at": "2026-11-15T16:38:45.774Z",
+    "independent_fetched_at": "2026-11-15T16:29:18.388Z"
+  },
+  "provider_corrections": [
+    "universe-v1-VRT-NYSE-2025-05-22"
+  ],
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "7130b55f718d455452028db7058c5bef1f073acb33751cc53bb76caabc738145",
+    "after_sha256": "f7883b85598e034c1fdb6b8641dd530925ae6f7a26e65889eb14781c881c2cda"
+  }
 }

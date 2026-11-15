@@ -5,8 +5,25 @@
   "schemaVersion": 1,
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com",
+    "NaverFinance:fchart.stock.naver.com",
+    "Aggregation:1d"
+  ],
+  "collection_version": "3.0.0",
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "4616fcfc7a549f7831f89094761f1e269c5f6aa3b0350db7c3ac804b1285d887",
+    "after_sha256": "d80207cfd270a89ae7ef7b977f3d44079f0d0c014bb54a30106f8bb7b22500e0"
+  },
   "resolvedSymbol": "KRX:KOSPI",
-  "fetchedAt": "2026-11-13T17:01:36.254Z",
+  "fetchedAt": "2026-11-15T16:31:18.918Z",
   "lastBarDate": "2026-11-13",
   "barCount": 200,
   "checksum": "b4af222d",
@@ -1431,7 +1448,7 @@
       "date": "2026-06-12",
       "open": 8048.09,
       "high": 8434.4,
-      "low": 7442.73,
+      "low": 7394.46,
       "close": 8123.62,
       "volume": 2330381
     },

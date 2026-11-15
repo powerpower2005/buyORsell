@@ -4,9 +4,9 @@
   "window": "2Y",
   "schemaVersion": 1,
   "intervalSeconds": 86400,
-  "source": "gf",
+  "source": "google_sheets_googfinance",
   "resolvedSymbol": "INDEXNASDAQ:NDX",
-  "fetchedAt": "2026-11-13T17:03:56.576Z",
+  "fetchedAt": "2026-11-15T16:28:19.958Z",
   "lastBarDate": "2026-11-12",
   "barCount": 985,
   "checksum": "982f1adc",
@@ -2253,7 +2253,7 @@
     },
     {
       "date": "2024-01-24",
-      "open": 17404.21,
+      "open": 17562.32,
       "high": 17665.26,
       "low": 17481.97,
       "close": 17499.3,
@@ -5317,7 +5317,7 @@
     },
     {
       "date": "2025-08-05",
-      "open": 23188.61,
+      "open": 23235.32,
       "high": 23286.05,
       "low": 23008.14,
       "close": 23018.56,
@@ -7891,5 +7891,34 @@
       "close": 28289.19,
       "volume": 0
     }
-  ]
+  ],
+  "collection_version": "3.0.0",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com"
+  ],
+  "integrity_verification": {
+    "checked": 985,
+    "unavailable": [],
+    "reviewed_disagreements": [],
+    "source_tags": [
+      "Validation:query1.finance.yahoo.com"
+    ],
+    "verified_at": "2026-11-15T16:38:45.774Z",
+    "independent_fetched_at": "2026-11-15T16:29:17.404Z"
+  },
+  "provider_corrections": [
+    "universe-v1-NDX-INDEXNASDAQ-2022-12-22",
+    "universe-v1-NDX-INDEXNASDAQ-2024-01-24"
+  ],
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "9b74babf23e676dfb7c39fa911431b4bba777fe4dacd4be18a4887a52eaaf6b5",
+    "after_sha256": "26b553361724d8a172773df6e85f5f4ca45d842b71b397d5d2c4a7bfc4699c0f"
+  }
 }

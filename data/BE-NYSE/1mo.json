@@ -5,8 +5,24 @@
   "schemaVersion": 1,
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com",
+    "Aggregation:1d"
+  ],
+  "collection_version": "3.0.0",
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "96c84a3ebc428fccc419ac7b8b9f14921bd6ef734149577ea106829591b2eecd",
+    "after_sha256": "5b63894d05af3c760b0645a1042b40476b18a6294e9e5dc8263212d430ae77b3"
+  },
   "resolvedSymbol": "NYSE:BE",
-  "fetchedAt": "2026-11-13T16:54:36.486Z",
+  "fetchedAt": "2026-11-15T16:29:59.409Z",
   "lastBarDate": "2026-11-12",
   "barCount": 47,
   "checksum": "b60420e4",
@@ -241,7 +257,7 @@
       "high": 20.29,
       "low": 16.05,
       "close": 18.47,
-      "volume": 116024197
+      "volume": 120507172
     },
     {
       "date": "2025-06-30",
@@ -373,7 +389,7 @@
     },
     {
       "date": "2026-10-30",
-      "open": 284.62,
+      "open": 284.13,
       "high": 300.8,
       "low": 189,
       "close": 203.17,

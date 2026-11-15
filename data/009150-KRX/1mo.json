@@ -5,8 +5,15 @@
   "schemaVersion": 1,
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "Aggregation:1d"
+  ],
+  "collection_version": "3.0.0",
   "resolvedSymbol": "KRX:009150",
-  "fetchedAt": "2026-11-13T16:52:47.686Z",
+  "fetchedAt": "2026-11-15T16:29:11.528Z",
   "lastBarDate": "2026-11-13",
   "barCount": 49,
   "checksum": "476b2338",

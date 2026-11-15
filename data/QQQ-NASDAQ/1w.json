@@ -5,8 +5,16 @@
   "schemaVersion": 1,
   "intervalSeconds": 604800,
   "source": "aggregate:1d",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com",
+    "Aggregation:1d"
+  ],
+  "collection_version": "3.0.0",
   "resolvedSymbol": "NASDAQ:QQQ",
-  "fetchedAt": "2026-11-13T17:09:39.019Z",
+  "fetchedAt": "2026-11-15T16:32:55.020Z",
   "lastBarDate": "2026-11-12",
   "barCount": 200,
   "checksum": "5031f0c2",

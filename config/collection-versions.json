@@ -1,8 +1,30 @@
 {
   "releasedOn": "2026-11-16",
   "items": {
-    "sheets_fetch": {"version":"2.0.0","previous":"1.0.0 (unversioned)","change":"Replace shared scratch cell with request-isolated worksheets; atomic allocation/formula, requested-range and OHLC validation, actual Sheets provenance."},
-    "history_refresh": {"version":"2.0.0","previous":"1.0.0 (unversioned)","change":"Refresh all retained dates instead of only the recent 730 days; reject missing stored dates before merging to prevent mixed adjustment bases."},
-    "soxx_recovery": {"version":"1.0.0","previous":null,"change":"Remove verified foreign holiday bars, then reconcile all retained SOXX prices with an isolated provider snapshot; preserve both repair stages and regenerate aggregates."}
+    "sheets_fetch": {
+      "version": "3.0.0",
+      "previous": "2.0.0",
+      "change": "Exact exchange identity; reviewed provider corrections; independent price and trading-date verification before accepting any collection."
+    },
+    "history_refresh": {
+      "version": "2.0.0",
+      "previous": "1.0.0 (unversioned)",
+      "change": "Refresh all retained dates instead of only the recent 730 days; reject missing stored dates before merging to prevent mixed adjustment bases."
+    },
+    "soxx_recovery": {
+      "version": "1.0.0",
+      "previous": null,
+      "change": "Remove verified foreign holiday bars, then reconcile all retained SOXX prices with an isolated provider snapshot; preserve both repair stages and regenerate aggregates."
+    },
+    "universe_integrity": {
+      "version": "1.0.0",
+      "previous": null,
+      "change": "Cross-symbol fingerprints, price discontinuities, quarantine, all aggregate/index consistency and validation after remote data-merge retries."
+    },
+    "universe_recovery": {
+      "version": "1.0.0",
+      "previous": null,
+      "change": "Full 21-instrument audit; repair verified missing/incorrect bars, quarantine invalid CRD identity and record per-series before/after hashes."
+    }
   }
 }

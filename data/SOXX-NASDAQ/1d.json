@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:SOXX",
-  "fetchedAt": "2026-11-15T15:58:44.704Z",
+  "fetchedAt": "2026-11-15T16:33:10.916Z",
   "lastBarDate": "2026-11-12",
   "barCount": 984,
   "checksum": "a0b3b1a7",
@@ -2485,10 +2485,10 @@
     },
     {
       "date": "2024-03-07",
-      "open": 232.79,
-      "high": 238.71,
-      "low": 232.65,
-      "close": 237.75,
+      "open": 77.6,
+      "high": 79.57,
+      "low": 77.55,
+      "close": 79.25,
       "volume": 4799639
     },
     {
@@ -7885,19 +7885,42 @@
     }
   ],
   "data_recovery": {
-    "id": "soxx-foreign-holiday-bars-2026-11-16",
+    "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
-    "repaired_at": "2026-11-15T15:53:52.377Z",
-    "audit_path": "data-repairs/2026-11-16.json",
-    "before_sha256": "f791a0f8f978d2834ca1f431ab1a77608c7d14ba01e5a56e006b3cf01c04b5e3",
-    "after_sha256": "d729037403157a98a3571fe5f4f6fa60e800ffef355d4cad2341f039938449e7",
-    "holiday_stage_after_sha256": "c6bc90468f3ed99754b65b53fe1bbfd7fece3b060fbe2c933a39aff5afe5e050",
-    "provider_reconciled_at": "2026-11-15T16:04:08.722Z",
-    "provider_run_url": "https://github.com/powerpower2005/buyORsell/actions/runs/43732799696"
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "d729037403157a98a3571fe5f4f6fa60e800ffef355d4cad2341f039938449e7",
+    "after_sha256": "11f062e7da22bb8dbaa840f7a1464fd6ade2248907e3fc4ef4588d6902d6714c",
+    "previous": {
+      "id": "soxx-foreign-holiday-bars-2026-11-16",
+      "version": "1.0.0",
+      "repaired_at": "2026-11-15T15:53:52.377Z",
+      "audit_path": "data-repairs/2026-11-16.json",
+      "before_sha256": "f791a0f8f978d2834ca1f431ab1a77608c7d14ba01e5a56e006b3cf01c04b5e3",
+      "after_sha256": "d729037403157a98a3571fe5f4f6fa60e800ffef355d4cad2341f039938449e7",
+      "holiday_stage_after_sha256": "c6bc90468f3ed99754b65b53fe1bbfd7fece3b060fbe2c933a39aff5afe5e050",
+      "provider_reconciled_at": "2026-11-15T16:04:08.722Z",
+      "provider_run_url": "https://github.com/powerpower2005/buyORsell/actions/runs/43732799696"
+    }
   },
   "source_tags": [
     "GoogleFinance:GOOGLEFINANCE",
-    "GoogleSheets:sheets.googleapis.com"
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com"
   ],
-  "collection_version": "2.0.0"
+  "collection_version": "3.0.0",
+  "integrity_verification": {
+    "checked": 984,
+    "unavailable": [],
+    "reviewed_disagreements": [],
+    "source_tags": [
+      "Validation:query1.finance.yahoo.com"
+    ],
+    "verified_at": "2026-11-15T16:38:45.774Z",
+    "independent_fetched_at": "2026-11-15T16:29:18.083Z"
+  },
+  "provider_corrections": [
+    "universe-v1-SOXX-NASDAQ-2024-03-07"
+  ]
 }

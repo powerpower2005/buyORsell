@@ -98,6 +98,8 @@ for i in 1 2 3; do
       --out data/ticker-names.json
   fi
 
+  # Recheck the final merged catalog/data after every remote retry.
+  node "$ROOT/scripts/validate-data.mjs"
   git add -- "${PATHS[@]}"
   if git diff --staged --quiet; then
     echo "No changes to commit after sync"

@@ -4,6 +4,7 @@ artifacts/
 docs/*
 !docs/versions.md
 !docs/collection.md
+!docs/data-audit.md
 !docs/indicators/
 docs/indicators/*
 !docs/indicators/CHANGELOG.md

@@ -6,8 +6,9 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { financeSymbolCandidates } from "./lib/finance-symbol.mjs";
 import { fetchBarsWithSymbolCandidates } from "./lib/sheets-bars.mjs";
+import { assertCollectible, assertQuoteIntegrity, readDailyQuotes, integrityPolicy } from './lib/universe-integrity.mjs';
+import { verifyIndependent } from './lib/independent-prices.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -73,6 +74,7 @@ function toUtcDate(value) {
  * @param {{ start?: Date|string, end?: Date|string, symbolCandidates?: string[] }} [options]
  */
 export async function fetchQuote(ticker, timeframe = "1d", options = {}) {
+  assertCollectible(ticker);
   const timeframes = loadJson("config/timeframes.json").timeframes;
   const tfConfig = timeframes[timeframe];
   if (!tfConfig) throw new Error(`Unknown timeframe: ${timeframe}`);
@@ -84,22 +86,26 @@ export async function fetchQuote(ticker, timeframe = "1d", options = {}) {
   }
 
   const sheetsCfg = loadJson("config/sheets.json");
+  if(options.auditSingleAttempt) sheetsCfg.poll={...sheetsCfg.poll,attempts:1,fast:{...sheetsCfg.poll.fast,attempts:1},medium:{...sheetsCfg.poll.medium,attempts:1}};
   const candidates =
     options.symbolCandidates?.length > 0
       ? options.symbolCandidates
-      : financeSymbolCandidates(ticker);
+      : [ticker.split(':').reverse().join(':')];
+  if(candidates.some(s=>s!==ticker.split(':').reverse().join(':'))) throw new Error('Cross-exchange fallback requires explicit instrument review');
   const range =
     options.start != null && options.end != null
       ? { start: toUtcDate(options.start), end: toUtcDate(options.end) }
       : dateRangeForTimeframe(tfConfig);
   const { start, end } = range;
 
+  let corrections=[];
   const { symbol, bars } = await fetchBarsWithSymbolCandidates(
     ROOT,
     sheetsCfg,
     candidates,
     start,
     end,
+    {...options,onCorrections:ids=>{corrections=ids;}},
   );
 
   if (!bars.length) {
@@ -118,7 +124,7 @@ export async function fetchQuote(ticker, timeframe = "1d", options = {}) {
     .sort((a, b) => a.date.localeCompare(b.date));
 
   const last = ohlcv[ohlcv.length - 1];
-  return {
+  const quote = {
     ticker,
     timeframe,
     window: tfConfig.googleWindow,
@@ -126,7 +132,7 @@ export async function fetchQuote(ticker, timeframe = "1d", options = {}) {
     intervalSeconds: tfConfig.intervalSeconds,
     source: "google_sheets_googfinance",
     source_tags: ["GoogleFinance:GOOGLEFINANCE", "GoogleSheets:sheets.googleapis.com"],
-    collection_version: "2.0.0",
+    collection_version: "3.0.0",
     resolvedSymbol: symbol,
     fetchedAt: new Date().toISOString(),
     lastBarDate: last.date,
@@ -134,6 +140,12 @@ export async function fetchQuote(ticker, timeframe = "1d", options = {}) {
     checksum: hashLastBar(last),
     ohlcv,
   };
+  assertQuoteIntegrity(quote,readDailyQuotes());
+  quote.integrity_verification=await verifyIndependent(ticker,ohlcv);
+  quote.source_tags.push(...quote.integrity_verification.source_tags);
+  if(corrections.length){quote.provider_corrections=corrections;quote.source_tags.push('YahooFinance:query1.finance.yahoo.com');}
+  if(corrections.length){const p=integrityPolicy();if([...p.providerCorrections,...(p.providerAdditions??[])].some(c=>corrections.includes(c.id)&&c.sources.some(s=>s.includes('fchart.stock.naver.com'))))quote.source_tags.push('NaverFinance:fchart.stock.naver.com');}
+  return quote;
 }
 
 async function main() {

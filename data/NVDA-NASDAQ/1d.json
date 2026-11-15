@@ -4,9 +4,9 @@
   "window": "2Y",
   "schemaVersion": 1,
   "intervalSeconds": 86400,
-  "source": "gf",
+  "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:NVDA",
-  "fetchedAt": "2026-11-13T17:04:43.381Z",
+  "fetchedAt": "2026-11-15T16:32:22.943Z",
   "lastBarDate": "2026-11-12",
   "barCount": 985,
   "checksum": "c9ac5806",
@@ -4917,11 +4917,11 @@
     },
     {
       "date": "2025-05-22",
-      "open": 133.06,
-      "high": 137.4,
-      "low": 130.59,
-      "close": 131.8,
-      "volume": 7196599
+      "open": 132.23,
+      "high": 134.25,
+      "low": 131.55,
+      "close": 132.83,
+      "volume": 187344000
     },
     {
       "date": "2025-05-23",
@@ -7891,5 +7891,33 @@
       "close": 166.19,
       "volume": 747707648
     }
-  ]
+  ],
+  "collection_version": "3.0.0",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com"
+  ],
+  "integrity_verification": {
+    "checked": 985,
+    "unavailable": [],
+    "reviewed_disagreements": [],
+    "source_tags": [
+      "Validation:query1.finance.yahoo.com"
+    ],
+    "verified_at": "2026-11-15T16:38:45.774Z",
+    "independent_fetched_at": "2026-11-15T16:29:17.558Z"
+  },
+  "provider_corrections": [
+    "universe-v1-NVDA-NASDAQ-2025-05-22"
+  ],
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "596cf5dbb0f6ae2628d31fe249d5f5607321d504373fb4282029a9ef727bda01",
+    "after_sha256": "1a5416edec11da3a69d14d09dad9c8e20097882021ed000a18c826ab5d3e85a6"
+  }
 }

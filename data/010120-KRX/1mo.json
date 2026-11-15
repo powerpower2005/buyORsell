@@ -5,8 +5,25 @@
   "schemaVersion": 1,
   "intervalSeconds": 2592000,
   "source": "aggregate:1d",
+  "source_tags": [
+    "GoogleFinance:GOOGLEFINANCE",
+    "GoogleSheets:sheets.googleapis.com",
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com",
+    "NaverFinance:fchart.stock.naver.com",
+    "Aggregation:1d"
+  ],
+  "collection_version": "3.0.0",
+  "data_recovery": {
+    "id": "universe-history-2026-11-16-v1",
+    "version": "1.0.0",
+    "audit": "data-repairs/2026-11-16-universe.json",
+    "provider_reconciled_at": "2026-11-15T16:38:45.774Z",
+    "before_sha256": "e74af656da9e690c384e822457efe3aa6b6889ba4bb5418db5504c4a038b10db",
+    "after_sha256": "d78f04f745e8c5cf99ecce5950b36724fb39fa35ff80bd1a91264def83fe3c4e"
+  },
   "resolvedSymbol": "KRX:010120",
-  "fetchedAt": "2026-11-13T16:53:03.225Z",
+  "fetchedAt": "2026-11-15T16:29:27.397Z",
   "lastBarDate": "2026-11-13",
   "barCount": 49,
   "checksum": "b31e4d58",
@@ -33,7 +50,7 @@
       "high": 11380,
       "low": 9720,
       "close": 10660,
-      "volume": 2013318
+      "volume": 2096832
     },
     {
       "date": "2023-02-28",
@@ -361,7 +378,7 @@
       "high": 281500,
       "low": 196500,
       "close": 238000,
-      "volume": 22893305
+      "volume": 23680534
     },
     {
       "date": "2026-07-31",

@@ -13,8 +13,8 @@ import {
   aggregateMonthly,
   buildAggregatedQuote,
 } from "./lib/aggregate-ohlcv.mjs";
-import { financeSymbolCandidates } from "./lib/finance-symbol.mjs";
 import { historyRefreshOptions, assertHistoryCoverage } from "./lib/history-refresh.mjs";
+import { assertStoredQuote, assertCollectible } from './lib/universe-integrity.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -186,11 +186,7 @@ export async function backfillPastBars({
     return { ohlcv, rounds: 0, addedBars: 0, stoppedReason: "already_at_target" };
   }
 
-  const candidates = resolvedSymbol
-    ? [resolvedSymbol, ...financeSymbolCandidates(ticker)].filter(
-        (v, i, a) => v && a.indexOf(v) === i,
-      )
-    : undefined;
+  const candidates = [ticker.split(':').reverse().join(':')];
 
   let current = ohlcv;
   let rounds = 0;
@@ -222,6 +218,7 @@ export async function backfillPastBars({
         symbolCandidates: candidates,
       });
     } catch (e) {
+      if(!String(e?.message).includes('no parseable OHLCV rows')) throw e;
       console.warn(
         `[backfill] chunk empty/fail, step back: ${e instanceof Error ? e.message : e}`,
       );
@@ -273,6 +270,7 @@ export async function backfillPastBars({
 }
 
 function persistQuote({ ticker, timeframe, rel, quote }) {
+  assertStoredQuote(quote);
   writeJson(rel, quote);
   writeJson(statusPath(ticker, timeframe), {
     status: "ready",
@@ -344,6 +342,7 @@ function withDailyAggregates(timeframe, result) {
 }
 
 export async function runFetchPipeline({ ticker, timeframe, force = false }) {
+  assertCollectible(ticker);
   const policy = loadJson("config/data-policy.json");
   const tfConfig = timeframeConfig(timeframe);
 
@@ -387,6 +386,7 @@ export async function runFetchPipeline({ ticker, timeframe, force = false }) {
   if (fs.existsSync(full)) {
     existing = JSON.parse(fs.readFileSync(full, "utf8"));
     if (!force) {
+      assertStoredQuote(existing);
       const v = validateFreshness(existing, policy, timeframe);
       if (v.status === "fresh") {
         const cleaned = sanitizeBars(existing.ohlcv, timeframe);
