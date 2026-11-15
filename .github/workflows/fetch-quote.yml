@@ -18,6 +18,10 @@ on:
         description: "Read-only provider verification of repaired SOXX history; no data commit"
         type: boolean
         default: false
+      audit_universe:
+        description: "Read-only complete history audit; invalid observations are artifacts only"
+        type: boolean
+        default: false
   # Weekdays only (Mon–Fri UTC). Sat/Sun markets are closed — no auto refresh.
   # 02:00 / 09:00 / 14:00 UTC = 11:00 / 18:00 / 23:00 KST (GMT+9).
   schedule:
@@ -32,6 +36,29 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  audit-universe:
+    if: github.event_name == 'workflow_dispatch' && inputs.audit_universe
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci --no-audit --no-fund
+      - name: Audit all stored history against isolated provider requests
+        env:
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/audit-provider-history.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: universe-audit
+          path: artifacts/universe-audit/
+          if-no-files-found: error
   verify-soxx:
     if: github.event_name == 'workflow_dispatch' && inputs.verify_soxx_recovery
     runs-on: ubuntu-latest
@@ -56,7 +83,7 @@ jobs:
           path: artifacts/soxx-provider-*.json
           if-no-files-found: ignore
   fetch:
-    if: "!inputs.verify_soxx_recovery"
+    if: "!inputs.verify_soxx_recovery && !inputs.audit_universe"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

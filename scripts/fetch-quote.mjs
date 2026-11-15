@@ -84,6 +84,7 @@ export async function fetchQuote(ticker, timeframe = "1d", options = {}) {
   }
 
   const sheetsCfg = loadJson("config/sheets.json");
+  if(options.auditSingleAttempt) sheetsCfg.poll={...sheetsCfg.poll,attempts:1,fast:{...sheetsCfg.poll.fast,attempts:1},medium:{...sheetsCfg.poll.medium,attempts:1}};
   const candidates =
     options.symbolCandidates?.length > 0
       ? options.symbolCandidates
@@ -100,6 +101,7 @@ export async function fetchQuote(ticker, timeframe = "1d", options = {}) {
     candidates,
     start,
     end,
+    options,
   );
 
   if (!bars.length) {

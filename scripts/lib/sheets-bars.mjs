@@ -20,7 +20,7 @@ function pollTiming(spanDays,cfg) {
 /** Each request, including retries/backfill, owns a fresh worksheet. Concurrent
  * workflows or other repositories cannot overwrite a shared calculation cell.
  */
-export async function fetchBarsInIsolatedSheet({sheets,spreadsheetId,cfg,symbol,start,end,sleepImpl=sleep}) {
+export async function fetchBarsInIsolatedSheet({sheets,spreadsheetId,cfg,symbol,start,end,sleepImpl=sleep,onObservation}) {
   if (!Number.isFinite(start?.getTime())||!Number.isFinite(end?.getTime())) throw new Error('Invalid fetch date range');
   if(start>end) return [];
   const spanDays=Math.floor((end-start)/86400000);
@@ -44,6 +44,7 @@ export async function fetchBarsInIsolatedSheet({sheets,spreadsheetId,cfg,symbol,
       const response=await sheets.spreadsheets.values.batchGet({spreadsheetId,ranges:[`'${title}'!A1:F${rowCount}`],valueRenderOption:'UNFORMATTED_VALUE'});
       try {
         const bars=parseGoogFinanceAllTable(response.data.valueRanges?.[0]?.values??[],{strict:true});
+        onObservation?.(bars);
         assertFetchedBars(bars,{start,end});
         return bars;
       } catch(error) {
@@ -62,17 +63,17 @@ export async function fetchBarsInIsolatedSheet({sheets,spreadsheetId,cfg,symbol,
   }
 }
 
-export async function fetchBarsGoogleFinance(root,cfg,symbol,start,end) {
+export async function fetchBarsGoogleFinance(root,cfg,symbol,start,end,options={}) {
   if(start>end) return [];
-  return fetchBarsInIsolatedSheet({sheets:await getSheetsApi(root),spreadsheetId:requireEnv('GOOGLE_SHEET_ID'),cfg,symbol,start,end});
+  return fetchBarsInIsolatedSheet({sheets:await getSheetsApi(root),spreadsheetId:requireEnv('GOOGLE_SHEET_ID'),cfg,symbol,start,end,onObservation:options.onObservation});
 }
 
-export async function fetchBarsWithSymbolCandidates(root,cfg,candidates,start,end) {
+export async function fetchBarsWithSymbolCandidates(root,cfg,candidates,start,end,options={}) {
   if(!candidates.length) throw new Error('No GOOGLEFINANCE symbol candidates');
   let lastError;
   for(let i=0;i<candidates.length;i++) {
     const symbol=candidates[i];
-    try {return {symbol,bars:await fetchBarsGoogleFinance(root,cfg,symbol,start,end)};}
+    try {return {symbol,bars:await fetchBarsGoogleFinance(root,cfg,symbol,start,end,options)};}
     catch(error) {
       lastError=error;
       if(!String(error.message).includes('no parseable')||i+1>=candidates.length) throw error;
