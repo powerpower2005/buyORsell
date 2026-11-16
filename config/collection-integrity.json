@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.1.1",
   "quarantined": {
     "CRD:NTYSE": {
       "reason": "Invalid exchange and all 484 OHLCV rows copied from 000660:KRX; retain existing exclusion, do not infer replacement."
@@ -84,13 +84,16 @@
         "high": 237.49,
         "low": 232.37,
         "close": 233.85,
-        "volume": 64751400
+        "volume": 64751367
       },
-      "reason": "Replace incomplete historical provider snapshot with independently retrieved full-session OHLCV",
+      "reason": "Replace the reviewed incomplete snapshot with the re-collected Google full-session OHLCV. Quantellect matches all fields and Yahoo confirms OHLC with volume reported as 64,751,400 shares.",
       "sources": [
+        "https://github.com/powerpower2005/buyORsell/actions/runs/43862645641/artifacts/14223344552",
+        "https://query1.finance.yahoo.com/v8/finance/chart/AAPL?period1=1728950400&period2=1729036800&interval=1d&events=splits",
+        "https://www.quantellect.ai/us/stocks/nasdaq/aapl/price-history/2024-10",
         "https://query1.finance.yahoo.com/v8/finance/chart/AAPL?period1=1671408000&period2=1794528000&interval=1d&events=splits"
       ],
-      "independent_fetched_at": "2026-11-15T16:29:15.807Z"
+      "independent_fetched_at": "2026-11-16T12:07:05.730Z"
     },
     {
       "id": "universe-v1-AAPL-NASDAQ-2025-05-22",

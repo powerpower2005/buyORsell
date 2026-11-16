@@ -73,3 +73,9 @@ Yahoo로 검증하지 못한 17개 국내 봉을 식별자가 일치하는 Naver
 ### 최종 전 봉 검증 완료
 
 [수집 3.1.0 실제 전체 재조회](https://github.com/powerpower2005/buyORsell/actions/runs/43738533313)에서 20개 종목 19,556개 일봉이 최종 복구본과 정확히 일치했다. 국내 17봉은 Naver 보완 검증까지 완료하여 미검증 봉은 **0개**다. [최종 영구 검증 보고서](../data-repairs/2026-11-16-universe-v2-verification.json). 테스트 21개 및 전체 60개 데이터 파일 검사도 통과했다.
+
+## AAPL 2024-10-15 일봉 재확인 — 검사 정책 1.1.1
+
+2026-11-16 읽기 전용 재수집에서 GOOGLEFINANCE의 AAPL 일봉은 시가 233.61, 고가 237.49, 저가 232.37, 종가 233.85달러, 거래량 64,751,367주였다. Quantellect의 분할 조정 일봉은 다섯 값이 모두 일치했다. Yahoo Finance는 같은 가격과 거래량 64,751,400주를 반환했다. [GOOGLEFINANCE 관측 파일](https://github.com/powerpower2005/buyORsell/actions/runs/43862645641/artifacts/14223344552) · [Quantellect](https://www.quantellect.ai/us/stocks/nasdaq/aapl/price-history/2024-10) · [Yahoo Finance 원본](https://query1.finance.yahoo.com/v8/finance/chart/AAPL?period1=1728950400&period2=1729036800&interval=1d&events=splits)
+
+검사 정책은 다시 수집한 전체 거래일 봉을 그대로 사용한다. 기존 거래량 954,380주의 불완전한 봉과 OHLCV가 모두 일치할 때는 64,751,367주의 전체 거래일 봉으로 보정한다. 새로 달라진 원본은 재검토가 필요하다.
