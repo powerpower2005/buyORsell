@@ -27,9 +27,14 @@
       "change": "Naver confirms 16 of 17 unverified domestic bars; correct LS ELECTRIC 2024-11-07 and preserve raw share-volume convention and prior audit lineage."
     },
     "batch_audit": {
-      "version": "2.0.0",
-      "previous": "1.0.0 (unversioned)",
-      "change": "Every scheduled batch verifies each active daily series once regardless of freshness; requests the full retention period, restores missing committed files and aggregates, reports historical/new/revised dates and fails the entire publication on any error."
+      "version": "2.1.0",
+      "previous": "2.0.0",
+      "change": "Retain full-history checks and publication rules; add per-series reference dates, failure detection timestamps and batch completion time to the report."
+    },
+    "batch_notification": {
+      "version": "1.0.0",
+      "previous": null,
+      "change": "Send acknowledged batch results to dedicated operational log/error channels after fetch job completion. Success requires complete audit, final validation and GitHub persistence; failures report safe stage/date/KST/run context, without investment-channel fallback or ambiguous POST retries."
     }
   }
 }

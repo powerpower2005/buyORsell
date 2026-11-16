@@ -24,14 +24,15 @@ export async function runScheduledStaleRefresh({root=ROOT,pipeline=runFetchPipel
   const tickers=[...new Set(index.entries.map(e=>e.ticker))].sort();
   const timeframes=read(path.join(root,'config/timeframes.json')).timeframes;
   const tfs=['1d',...Object.entries(timeframes).filter(([,c])=>c.enabled&&c.aggregateFrom==='1d').map(([tf])=>tf)];
-  const report={version:'2.0.0',mode:'full-history-batch',ranAt:new Date().toISOString(),source_tags:[],totals:{scanned:0,checked:0,failed:0,excluded:0,restoredFiles:0,historicalAdded:0,newBars:0,revisedBars:0},series:[]};
+  const report={version:'2.1.0',mode:'full-history-batch',ranAt:new Date().toISOString(),source_tags:[],totals:{scanned:0,checked:0,failed:0,excluded:0,restoredFiles:0,historicalAdded:0,newBars:0,revisedBars:0},series:[]};
   for(const ticker of tickers){
     if(policy.quarantined[ticker]){report.totals.excluded++;report.series.push({ticker,status:'excluded',reason:policy.quarantined[ticker].reason});continue;}
     report.totals.scanned++;
     const slug=ticker.replaceAll(':','-'),file=path.join(root,'data',slug,'1d.json');
-    const row={ticker,status:'checking',missing_files_before:tfs.filter(tf=>!fs.existsSync(path.join(root,'data',slug,`${tf}.json`)))};
+    const row={ticker,status:'checking',referenceDate:index.entries.find(e=>e.ticker===ticker&&e.timeframe==='1d')?.lastBarDate??null,missing_files_before:tfs.filter(tf=>!fs.existsSync(path.join(root,'data',slug,`${tf}.json`)))};
     try {
       const before=fs.existsSync(file)?read(file):null;
+      row.referenceDate=before?.lastBarDate??row.referenceDate;
       const result=await pipeline({ticker,timeframe:'1d',force:true,fullHistory:true});
       const quote=result.quote;
       if(!quote?.ohlcv?.length)throw new Error('Missing verified daily result');
@@ -41,12 +42,13 @@ export async function runScheduledStaleRefresh({root=ROOT,pipeline=runFetchPipel
       report.totals.checked++;report.totals.restoredFiles+=row.missing_files_before.length;
       report.totals.historicalAdded+=row.historical_added_dates.length;report.totals.newBars+=row.new_dates.length;report.totals.revisedBars+=row.revised_dates.length;
       report.source_tags.push(...row.source_tags);
-    } catch(error){row.status='failed';row.reason=safeReason(error);report.totals.failed++;}
+    } catch(error){row.status='failed';row.reason=safeReason(error);row.failedAt=new Date().toISOString();report.totals.failed++;}
     report.series.push(row);
     console.log(JSON.stringify({ticker,status:row.status,historicalAdded:row.historical_added_dates?.length,revised:row.revised_dates?.length,reason:row.reason}));
   }
   report.source_tags=[...new Set(report.source_tags)];
   report.complete=report.totals.scanned>0&&report.totals.failed===0;
+  report.finishedAt=new Date().toISOString();
   return report;
 }
 export function buildMarkdown(report){
