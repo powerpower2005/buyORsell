@@ -27,6 +27,16 @@ test('exact reviewed fixes are idempotent and reject a changed adjustment basis'
   assert.deepEqual(applyReviewedCorrections([after],'NASDAQ:SOXX',p).applied,[]);
   assert.throws(()=>applyReviewedCorrections([bar(before.date,50)],'NASDAQ:SOXX',p),/no longer matches/);
 });
+test('AAPL full-session Google volume passes and the reviewed incomplete bar is corrected',()=>{
+  const ticker='NASDAQ:AAPL';
+  const complete={date:'2024-10-15',open:233.61,high:237.49,low:232.37,close:233.85,volume:64751367};
+  const partial={date:complete.date,open:228.7,high:231.73,low:228.6,close:231.3,volume:954380};
+  assert.deepEqual(applyReviewedCorrections([complete],ticker),{bars:[complete],applied:[]});
+  assert.deepEqual(applyReviewedCorrections([partial],ticker),{
+    bars:[complete],applied:['universe-v1-AAPL-NASDAQ-2024-10-15'],
+  });
+  assert.throws(()=>applyReviewedCorrections([{...complete,volume:complete.volume+1}],ticker),/no longer matches/);
+});
 test('missing-session insertion requires current neighbor evidence and respects request bounds',()=>{
   const a=bar('2026-11-09'),b=bar('2026-11-10'),c=bar('2026-11-11'),p={...policy,providerAdditions:[{symbol:'KRX:010120',id:'missing',bar:b,anchors:[a,c]}]};
   assert.deepEqual(applyReviewedCorrections([a,c],'KRX:010120',p).bars,[a,b,c]);
