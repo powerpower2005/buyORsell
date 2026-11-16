@@ -22,7 +22,7 @@
     "after_sha256": "6bf459b09ccf32c6f0ceb9c1e4e7bba94cb062941f7cfd1c8c2df313812d03e1"
   },
   "resolvedSymbol": "NASDAQ:AAPL",
-  "fetchedAt": "2026-11-15T17:19:57.229Z",
+  "fetchedAt": "2026-11-16T12:12:41.398Z",
   "lastBarDate": "2026-11-13",
   "barCount": 200,
   "checksum": "2d631557",
@@ -761,7 +761,7 @@
       "high": 237.49,
       "low": 228.6,
       "close": 235,
-      "volume": 218141007
+      "volume": 218140974
     },
     {
       "date": "2024-10-25",

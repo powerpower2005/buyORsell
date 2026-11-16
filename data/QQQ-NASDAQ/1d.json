@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:QQQ",
-  "fetchedAt": "2026-11-15T17:23:14.033Z",
+  "fetchedAt": "2026-11-16T12:15:59.180Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1030,
   "checksum": "e5a7f128",
@@ -8256,8 +8256,7 @@
   "source_tags": [
     "GoogleFinance:GOOGLEFINANCE",
     "GoogleSheets:sheets.googleapis.com",
-    "Validation:query1.finance.yahoo.com",
-    "YahooFinance:query1.finance.yahoo.com"
+    "Validation:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
     "checked": 1030,
@@ -8266,7 +8265,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-15T17:23:14.151Z"
+    "verified_at": "2026-11-16T12:15:59.321Z"
   },
   "provider_corrections": [
     "universe-v1-QQQ-NASDAQ-2024-10-15"

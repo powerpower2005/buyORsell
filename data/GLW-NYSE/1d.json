@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NYSE:GLW",
-  "fetchedAt": "2026-11-15T17:20:46.309Z",
+  "fetchedAt": "2026-11-16T12:13:30.555Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1030,
   "checksum": "a0bfe314",
@@ -6869,7 +6869,7 @@
     },
     {
       "date": "2026-03-11",
-      "open": 133.59,
+      "open": 133.67,
       "high": 135.33,
       "low": 129.2,
       "close": 131.76,
@@ -8029,7 +8029,7 @@
     },
     {
       "date": "2026-10-07",
-      "open": 162.6,
+      "open": 162.5,
       "high": 165.9,
       "low": 161.79,
       "close": 163.25,
@@ -8265,7 +8265,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-15T17:20:46.456Z"
+    "verified_at": "2026-11-16T12:13:30.702Z"
   },
   "provider_corrections": [],
   "data_recovery": {

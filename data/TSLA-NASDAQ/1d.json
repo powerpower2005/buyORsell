@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:TSLA",
-  "fetchedAt": "2026-11-15T17:23:46.794Z",
+  "fetchedAt": "2026-11-16T12:16:31.962Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1030,
   "checksum": "96ad9353",
@@ -7573,7 +7573,7 @@
     },
     {
       "date": "2026-07-17",
-      "open": 381.72,
+      "open": 381.78,
       "high": 385.69,
       "low": 377.22,
       "close": 380.84,
@@ -8266,7 +8266,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-15T17:23:46.907Z"
+    "verified_at": "2026-11-16T12:16:32.077Z"
   },
   "provider_corrections": [
     "universe-v1-TSLA-NASDAQ-2025-05-22"

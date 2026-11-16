@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:AAPL",
-  "fetchedAt": "2026-11-15T17:19:57.229Z",
+  "fetchedAt": "2026-11-16T12:12:41.398Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1030,
   "checksum": "545de20d",
@@ -4073,7 +4073,7 @@
       "high": 237.49,
       "low": 232.37,
       "close": 233.85,
-      "volume": 64751400
+      "volume": 64751367
     },
     {
       "date": "2024-10-16",
@@ -8266,10 +8266,9 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-15T17:19:57.369Z"
+    "verified_at": "2026-11-16T12:12:41.534Z"
   },
   "provider_corrections": [
-    "universe-v1-AAPL-NASDAQ-2024-10-15",
     "universe-v1-AAPL-NASDAQ-2025-05-22"
   ],
   "data_recovery": {

@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "KRX:KOSPI",
-  "fetchedAt": "2026-11-15T17:21:35.331Z",
+  "fetchedAt": "2026-11-16T12:14:20.177Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1002,
   "checksum": "af70855d",
@@ -8049,7 +8049,7 @@
       "2024-09-12",
       "2026-06-29"
     ],
-    "verified_at": "2026-11-15T17:21:36.571Z"
+    "verified_at": "2026-11-16T12:14:21.227Z"
   },
   "provider_corrections": [
     "universe-v1-KOSPI-KRX-2025-04-10",

@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:NVDA",
-  "fetchedAt": "2026-11-15T17:22:41.579Z",
+  "fetchedAt": "2026-11-16T12:15:26.708Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1030,
   "checksum": "1c23b296",
@@ -8266,7 +8266,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-15T17:22:41.699Z"
+    "verified_at": "2026-11-16T12:15:26.833Z"
   },
   "provider_corrections": [
     "universe-v1-NVDA-NASDAQ-2025-05-22"

@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:PLTR",
-  "fetchedAt": "2026-11-15T17:22:57.751Z",
+  "fetchedAt": "2026-11-16T12:15:42.946Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1032,
   "checksum": "d930c9a1",
@@ -8275,13 +8275,13 @@
     "Validation:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1033,
+    "checked": 1032,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-15T17:22:57.875Z"
+    "verified_at": "2026-11-16T12:15:43.074Z"
   },
   "provider_corrections": [],
   "data_recovery": {
