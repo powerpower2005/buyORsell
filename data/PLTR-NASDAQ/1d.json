@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:PLTR",
-  "fetchedAt": "2026-11-16T12:15:42.946Z",
+  "fetchedAt": "2026-11-16T19:09:03.012Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1032,
   "checksum": "d930c9a1",
@@ -8281,7 +8281,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-16T12:15:43.074Z"
+    "verified_at": "2026-11-16T19:09:03.266Z"
   },
   "provider_corrections": [],
   "data_recovery": {

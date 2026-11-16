@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:AAPL",
-  "fetchedAt": "2026-11-16T12:12:41.398Z",
+  "fetchedAt": "2026-11-16T19:06:06.630Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1030,
   "checksum": "545de20d",
@@ -8266,7 +8266,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-16T12:12:41.534Z"
+    "verified_at": "2026-11-16T19:06:07.128Z"
   },
   "provider_corrections": [
     "universe-v1-AAPL-NASDAQ-2025-05-22"

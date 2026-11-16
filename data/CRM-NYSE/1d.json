@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NYSE:CRM",
-  "fetchedAt": "2026-11-16T12:13:14.081Z",
+  "fetchedAt": "2026-11-16T19:06:38.736Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1030,
   "checksum": "8e1afac2",
@@ -8265,7 +8265,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-16T12:13:14.193Z"
+    "verified_at": "2026-11-16T19:06:38.939Z"
   },
   "provider_corrections": []
 }

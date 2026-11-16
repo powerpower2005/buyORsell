@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NYSE:GLW",
-  "fetchedAt": "2026-11-16T12:13:30.555Z",
+  "fetchedAt": "2026-11-16T19:06:54.673Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1030,
   "checksum": "a0bfe314",
@@ -8265,7 +8265,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-16T12:13:30.702Z"
+    "verified_at": "2026-11-16T19:06:54.891Z"
   },
   "provider_corrections": [],
   "data_recovery": {

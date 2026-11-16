@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:SOXX",
-  "fetchedAt": "2026-11-16T12:16:15.461Z",
+  "fetchedAt": "2026-11-16T19:09:34.963Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1030,
   "checksum": "96234783",
@@ -8285,7 +8285,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-16T12:16:15.588Z"
+    "verified_at": "2026-11-16T19:09:35.527Z"
   },
   "provider_corrections": [
     "universe-v1-SOXX-NASDAQ-2024-03-07"

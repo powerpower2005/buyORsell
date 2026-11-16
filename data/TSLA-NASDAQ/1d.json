@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:TSLA",
-  "fetchedAt": "2026-11-16T12:16:31.962Z",
+  "fetchedAt": "2026-11-16T19:09:51.231Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1030,
   "checksum": "96ad9353",
@@ -8266,7 +8266,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-16T12:16:32.077Z"
+    "verified_at": "2026-11-16T19:09:51.431Z"
   },
   "provider_corrections": [
     "universe-v1-TSLA-NASDAQ-2025-05-22"

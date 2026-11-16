@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:LITE",
-  "fetchedAt": "2026-11-16T12:14:37.384Z",
+  "fetchedAt": "2026-11-16T19:07:59.584Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1030,
   "checksum": "39c2df00",
@@ -8266,7 +8266,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-16T12:14:37.497Z"
+    "verified_at": "2026-11-16T19:07:59.828Z"
   },
   "provider_corrections": [
     "universe-v1-LITE-NASDAQ-2025-05-22"

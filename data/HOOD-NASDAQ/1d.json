@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:HOOD",
-  "fetchedAt": "2026-11-16T12:13:46.722Z",
+  "fetchedAt": "2026-11-16T19:07:10.670Z",
   "lastBarDate": "2026-11-13",
   "barCount": 1030,
   "checksum": "2f42fc31",
@@ -8265,7 +8265,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-16T12:13:46.847Z"
+    "verified_at": "2026-11-16T19:07:10.871Z"
   },
   "provider_corrections": [],
   "data_recovery": {
