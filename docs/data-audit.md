@@ -79,3 +79,9 @@ Yahoo로 검증하지 못한 17개 국내 봉을 식별자가 일치하는 Naver
 2026-11-16 읽기 전용 재수집에서 GOOGLEFINANCE의 AAPL 일봉은 시가 233.61, 고가 237.49, 저가 232.37, 종가 233.85달러, 거래량 64,751,367주였다. Quantellect의 분할 조정 일봉은 다섯 값이 모두 일치했다. Yahoo Finance는 같은 가격과 거래량 64,751,400주를 반환했다. [GOOGLEFINANCE 관측 파일](https://github.com/powerpower2005/buyORsell/actions/runs/43862645641/artifacts/14223344552) · [Quantellect](https://www.quantellect.ai/us/stocks/nasdaq/aapl/price-history/2024-10) · [Yahoo Finance 원본](https://query1.finance.yahoo.com/v8/finance/chart/AAPL?period1=1728950400&period2=1729036800&interval=1d&events=splits)
 
 검사 정책은 다시 수집한 전체 거래일 봉을 그대로 사용한다. 기존 거래량 954,380주의 불완전한 봉과 OHLCV가 모두 일치할 때는 64,751,367주의 전체 거래일 봉으로 보정한다. 새로 달라진 원본은 재검토가 필요하다.
+
+## NVDA 2024-10-15 전일 가격 반복 — 검사 정책 1.1.2
+
+2026-11-17 재조회에서 NVDA 10월 15일 행의 시가·고가·저가·종가는 10월 14일 가격과 모두 같았고 거래량은 8,137,379주였다. 앞선 전체 거래일 관측과 기존 저장 파일은 시가 137.87, 고가 138.57, 저가 128.74, 종가 131.60달러, 거래량 377,831,021주로 일치했다. Yahoo는 같은 OHLC와 거래량 377,831,000주를 확인했다. [실패 원본](https://github.com/powerpower2005/buyORsell/actions/runs/44094312999/artifacts/14333731991) · [정상 GOOGLEFINANCE 관측](https://github.com/powerpower2005/buyORsell/actions/runs/43862645641/artifacts/14223344552) · [Yahoo 독립 조회](https://query1.finance.yahoo.com/v8/finance/chart/NVDA?period1=1728950400&period2=1729036800&interval=1d&events=splits)
+
+잘못된 날짜·OHLCV와 정확히 일치할 때 검증된 GOOGLEFINANCE 정규장 행을 적용한다. 교정 뒤에도 전체 기간의 독립 가격·거래일 비교를 수행한다. 알 수 없는 원본 변형은 실패시킨다. 기존 게시 데이터의 해당 행이 이미 정규장 값이므로 이번 변경으로 저장된 과거 행을 재작성하거나 차트 시그널의 기준점을 다시 잡을 필요는 없다.

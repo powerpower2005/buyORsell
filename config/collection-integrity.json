@@ -246,6 +246,33 @@
       "independent_fetched_at": "2026-11-15T16:29:17.261Z"
     },
     {
+      "id": "nvda-nasdaq-2024-10-15-repeated-prior-session",
+      "symbol": "NASDAQ:NVDA",
+      "before": {
+        "date": "2024-10-15",
+        "open": 136.47,
+        "high": 139.6,
+        "low": 136.3,
+        "close": 138.07,
+        "volume": 8137379
+      },
+      "after": {
+        "date": "2024-10-15",
+        "open": 137.87,
+        "high": 138.57,
+        "low": 128.74,
+        "close": 131.6,
+        "volume": 377831021
+      },
+      "reason": "GOOGLEFINANCE repeated the prior session's OHLC on this dated row. Preserve the previously verified full-session GOOGLEFINANCE OHLCV, with the OHLC independently confirmed by Yahoo Finance.",
+      "sources": [
+        "https://github.com/powerpower2005/buyORsell/actions/runs/44094312999/artifacts/14333731991",
+        "https://github.com/powerpower2005/buyORsell/actions/runs/43862645641/artifacts/14223344552",
+        "https://query1.finance.yahoo.com/v8/finance/chart/NVDA?period1=1728950400&period2=1729036800&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-17T13:43:45.101Z"
+    },
+    {
       "id": "universe-v1-NVDA-NASDAQ-2025-05-22",
       "symbol": "NASDAQ:NVDA",
       "before": {
