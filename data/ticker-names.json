@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-30T14:17:28.677Z",
+  "updatedAt": "2026-11-17T12:53:09.000Z",
   "names": {
     "000660:KRX": "SK하이닉스",
     "005930:KRX": "삼성전자",
@@ -17,6 +17,19 @@
     "META:NASDAQ": "Meta",
     "NDX:INDEXNASDAQ": "나스닥100",
     "DJI:INDEXDJX": "다우존스",
-    "SPX:INDEXSP": "S&P 500"
+    "SPX:INDEXSP": "S&P 500",
+    "009150:KRX": "삼성전기",
+    "010120:KRX": "LS ELECTRIC",
+    "BE:NYSE": "Bloom Energy",
+    "CRM:NYSE": "Salesforce",
+    "GLW:NYSE": "Corning",
+    "HOOD:NASDAQ": "Robinhood Markets",
+    "INTC:NASDAQ": "Intel",
+    "LITE:NASDAQ": "Lumentum",
+    "MU:NASDAQ": "Micron Technology",
+    "PLTR:NASDAQ": "Palantir Technologies",
+    "QQQ:NASDAQ": "Invesco QQQ",
+    "SOXX:NASDAQ": "iShares Semiconductor ETF",
+    "VRT:NYSE": "Vertiv"
   }
 }
