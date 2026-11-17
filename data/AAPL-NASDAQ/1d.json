@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:AAPL",
-  "fetchedAt": "2026-11-17T16:20:24.386Z",
+  "fetchedAt": "2026-11-17T21:59:06.989Z",
   "lastBarDate": "2026-11-16",
   "barCount": 1030,
   "checksum": "feac560",
@@ -8260,13 +8260,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1031,
+    "checked": 1030,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-17T16:20:24.546Z"
+    "verified_at": "2026-11-17T21:59:07.187Z"
   },
   "provider_corrections": [
     "universe-v1-AAPL-NASDAQ-2025-05-22"

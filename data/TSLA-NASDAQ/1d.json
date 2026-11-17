@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:TSLA",
-  "fetchedAt": "2026-11-17T16:24:10.111Z",
+  "fetchedAt": "2026-11-17T22:02:51.282Z",
   "lastBarDate": "2026-11-16",
   "barCount": 1030,
   "checksum": "a84722f2",
@@ -8260,13 +8260,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1031,
+    "checked": 1030,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-17T16:24:10.237Z"
+    "verified_at": "2026-11-17T22:02:51.388Z"
   },
   "provider_corrections": [
     "universe-v1-TSLA-NASDAQ-2025-05-22"

@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:LITE",
-  "fetchedAt": "2026-11-17T16:22:17.732Z",
+  "fetchedAt": "2026-11-17T22:00:59.817Z",
   "lastBarDate": "2026-11-16",
   "barCount": 1030,
   "checksum": "cdd510e8",
@@ -8260,13 +8260,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1031,
+    "checked": 1030,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-17T16:22:17.873Z"
+    "verified_at": "2026-11-17T22:00:59.957Z"
   },
   "provider_corrections": [
     "universe-v1-LITE-NASDAQ-2025-05-22"

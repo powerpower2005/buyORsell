@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:SOXX",
-  "fetchedAt": "2026-11-17T16:23:54.049Z",
+  "fetchedAt": "2026-11-17T22:02:35.316Z",
   "lastBarDate": "2026-11-16",
   "barCount": 1030,
   "checksum": "c471b192",
@@ -8279,13 +8279,13 @@
   ],
   "collection_version": "3.1.0",
   "integrity_verification": {
-    "checked": 1031,
+    "checked": 1030,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-17T16:23:54.197Z"
+    "verified_at": "2026-11-17T22:02:35.523Z"
   },
   "provider_corrections": [
     "universe-v1-SOXX-NASDAQ-2024-03-07"

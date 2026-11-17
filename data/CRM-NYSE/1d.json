@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NYSE:CRM",
-  "fetchedAt": "2026-11-17T16:20:56.835Z",
+  "fetchedAt": "2026-11-17T21:59:38.932Z",
   "lastBarDate": "2026-11-16",
   "barCount": 1030,
   "checksum": "641b69bc",
@@ -8259,13 +8259,13 @@
     "Validation:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1031,
+    "checked": 1030,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-17T16:20:56.978Z"
+    "verified_at": "2026-11-17T21:59:39.063Z"
   },
   "provider_corrections": []
 }
