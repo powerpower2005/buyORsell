@@ -22,6 +22,35 @@ test('a missing daily file is attempted, quarantines excluded, failures visible 
   const calls=[];const result=await runScheduledStaleRefresh({root,policy,pipeline:async args=>{calls.push(args.ticker);if(args.ticker==='AAPL:NASDAQ')throw Error('Independent price coverage incomplete');const q=quote(args.ticker,['2026-11-12']);for(const tf of ['1d','1w','1mo'])write(`data/TSLA-NASDAQ/${tf}.json`,q);return {quote:q};}});
   assert.deepEqual(calls,['AAPL:NASDAQ','TSLA:NASDAQ']);assert.equal(result.complete,false);assert.equal(result.totals.failed,1);assert.equal(result.totals.checked,1);assert.equal(result.totals.excluded,1);assert.equal(result.totals.restoredFiles,3);assert.match(buildMarkdown(result),/커밋하지 않습니다/);
 });
+test('empty and mismatched provider responses require a fresh, fully verified batch request', async t => {
+  const {root,write}=fixture(t),ticker='NVDA:NASDAQ';
+  write('data/index.json',{entries:[{ticker,timeframe:'1d'}]});
+  const failures=['GOOGLEFINANCE returned no parseable OHLCV rows', 'Independent price/basis disagreement: NVDA:NASDAQ 2024-10-15'];
+  const args=[];
+  const result=await runScheduledStaleRefresh({root,policy,pipeline:async options=>{
+    args.push(options);
+    if (failures.length) throw new Error(failures.shift());
+    const verified=quote(ticker,['2026-11-16']);
+    for(const tf of ['1d','1w','1mo']) write(`data/NVDA-NASDAQ/${tf}.json`,verified);
+    return {quote:verified};
+  }});
+  assert.deepEqual(args, Array.from({length:3},()=>({ticker,timeframe:'1d',force:true,fullHistory:true})));
+  assert.equal(result.series[0].attempts,3);
+  assert.equal(result.complete,true);
+});
+test('persistent independent price disagreement leaves the batch uncommittable after the retry limit', async t => {
+  const {root,write}=fixture(t),ticker='NVDA:NASDAQ';
+  write('data/index.json',{entries:[{ticker,timeframe:'1d'}]});
+  const before=quote(ticker,['2026-11-13']);
+  write('data/NVDA-NASDAQ/1d.json',before);
+  const result=await runScheduledStaleRefresh({root,policy,pipeline:async()=>{
+    throw new Error('Independent price/basis disagreement: NVDA:NASDAQ 2024-10-15');
+  }});
+  assert.equal(result.series[0].attempts,3);
+  assert.equal(result.totals.checked,0);
+  assert.equal(result.complete,false);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root,'data/NVDA-NASDAQ/1d.json'),'utf8')),before);
+});
 test('non-trading dates are not invented and revisions are distinguished from added dates',()=>{
   const before=quote('AAPL:NASDAQ',['2026-11-06','2026-11-09']),after=structuredClone(before);after.ohlcv[1].volume++;
   assert.deepEqual(historyChanges(before,after),{historical_added_dates:[],new_dates:[],revised_dates:['2026-11-09']});
