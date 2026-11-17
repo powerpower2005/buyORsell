@@ -6,19 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:HOOD",
-  "fetchedAt": "2026-11-16T19:07:10.670Z",
-  "lastBarDate": "2026-11-13",
+  "fetchedAt": "2026-11-17T16:21:28.926Z",
+  "lastBarDate": "2026-11-16",
   "barCount": 1030,
-  "checksum": "2f42fc31",
+  "checksum": "ae516883",
   "ohlcv": [
-    {
-      "date": "2022-10-07",
-      "open": 10.91,
-      "high": 11.17,
-      "low": 10.65,
-      "close": 10.8,
-      "volume": 6673666
-    },
     {
       "date": "2022-10-10",
       "open": 10.82,
@@ -8250,6 +8242,14 @@
       "low": 76.61,
       "close": 77.86,
       "volume": 18765206
+    },
+    {
+      "date": "2026-11-16",
+      "open": 73.94,
+      "high": 75.55,
+      "low": 70.83,
+      "close": 72.06,
+      "volume": 27836886
     }
   ],
   "collection_version": "3.1.0",
@@ -8259,13 +8259,13 @@
     "Validation:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1030,
+    "checked": 1031,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-16T19:07:10.871Z"
+    "verified_at": "2026-11-17T16:21:29.054Z"
   },
   "provider_corrections": [],
   "data_recovery": {

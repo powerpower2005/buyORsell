@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "KRX:KOSPI",
-  "fetchedAt": "2026-11-17T05:54:23.908Z",
-  "lastBarDate": "2026-11-16",
-  "barCount": 1002,
-  "checksum": "fb9abe5d",
+  "fetchedAt": "2026-11-17T16:22:00.962Z",
+  "lastBarDate": "2026-11-17",
+  "barCount": 1003,
+  "checksum": "5716d036",
   "ohlcv": [
     {
       "date": "2022-10-11",
@@ -5829,8 +5829,8 @@
     },
     {
       "date": "2025-09-26",
-      "open": 3440.39,
-      "high": 3441.91,
+      "open": 3458.98,
+      "high": 3479.42,
       "low": 3365.73,
       "close": 3386.05,
       "volume": 399150
@@ -8026,6 +8026,14 @@
       "low": 5069.83,
       "close": 5100.5,
       "volume": 221296
+    },
+    {
+      "date": "2026-11-17",
+      "open": 5008.09,
+      "high": 5084.06,
+      "low": 4957,
+      "close": 4968.48,
+      "volume": 193978
     }
   ],
   "collection_version": "3.1.0",
@@ -8038,7 +8046,7 @@
     "NaverFinance:fchart.stock.naver.com"
   ],
   "integrity_verification": {
-    "checked": 1002,
+    "checked": 1003,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
@@ -8047,9 +8055,10 @@
     ],
     "domestic_fallback_dates": [
       "2024-09-12",
-      "2026-06-29"
+      "2026-06-29",
+      "2026-11-17"
     ],
-    "verified_at": "2026-11-17T05:54:25.849Z"
+    "verified_at": "2026-11-17T16:22:01.855Z"
   },
   "provider_corrections": [
     "universe-v1-KOSPI-KRX-2025-04-10",

@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "KRX:009150",
-  "fetchedAt": "2026-11-16T19:05:32.771Z",
-  "lastBarDate": "2026-11-16",
-  "barCount": 1002,
-  "checksum": "231a779b",
+  "fetchedAt": "2026-11-17T16:19:50.731Z",
+  "lastBarDate": "2026-11-17",
+  "barCount": 1003,
+  "checksum": "3f0036ca",
   "ohlcv": [
     {
       "date": "2022-10-11",
@@ -8026,6 +8026,14 @@
       "low": 778000,
       "close": 785000,
       "volume": 944328
+    },
+    {
+      "date": "2026-11-17",
+      "open": 761000,
+      "high": 790000,
+      "low": 746000,
+      "close": 754000,
+      "volume": 708435
     }
   ],
   "collection_version": "3.1.0",
@@ -8049,9 +8057,9 @@
       "2023-02-06",
       "2025-09-19",
       "2026-03-27",
-      "2026-11-16"
+      "2026-11-17"
     ],
-    "verified_at": "2026-11-16T19:05:33.916Z"
+    "verified_at": "2026-11-17T16:19:51.751Z"
   },
   "provider_corrections": []
 }

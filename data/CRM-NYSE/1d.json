@@ -6,19 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NYSE:CRM",
-  "fetchedAt": "2026-11-16T19:06:38.736Z",
-  "lastBarDate": "2026-11-13",
+  "fetchedAt": "2026-11-17T16:20:56.835Z",
+  "lastBarDate": "2026-11-16",
   "barCount": 1030,
-  "checksum": "8e1afac2",
+  "checksum": "641b69bc",
   "ohlcv": [
-    {
-      "date": "2022-10-07",
-      "open": 151.8,
-      "high": 153.17,
-      "low": 149.27,
-      "close": 150.29,
-      "volume": 5956733
-    },
     {
       "date": "2022-10-10",
       "open": 150.62,
@@ -4069,11 +4061,11 @@
     },
     {
       "date": "2024-10-15",
-      "open": 293.46,
-      "high": 293.58,
-      "low": 288,
-      "close": 288.35,
-      "volume": 3850782
+      "open": 289.92,
+      "high": 292.45,
+      "low": 288.25,
+      "close": 291.64,
+      "volume": 16811
     },
     {
       "date": "2024-10-16",
@@ -8250,6 +8242,14 @@
       "low": 215.58,
       "close": 217.84,
       "volume": 5049414
+    },
+    {
+      "date": "2026-11-16",
+      "open": 218.21,
+      "high": 219.2,
+      "low": 213.57,
+      "close": 214.83,
+      "volume": 5887757
     }
   ],
   "collection_version": "3.1.0",
@@ -8259,13 +8259,13 @@
     "Validation:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1030,
+    "checked": 1031,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-16T19:06:38.939Z"
+    "verified_at": "2026-11-17T16:20:56.978Z"
   },
   "provider_corrections": []
 }

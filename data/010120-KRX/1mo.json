@@ -32,10 +32,10 @@
     }
   },
   "resolvedSymbol": "KRX:010120",
-  "fetchedAt": "2026-11-16T19:05:49.652Z",
-  "lastBarDate": "2026-11-16",
+  "fetchedAt": "2026-11-17T16:20:07.638Z",
+  "lastBarDate": "2026-11-17",
   "barCount": 50,
-  "checksum": "f2472f11",
+  "checksum": "7ed209aa",
   "ohlcv": [
     {
       "date": "2022-10-31",
@@ -430,12 +430,12 @@
       "volume": 11891450
     },
     {
-      "date": "2026-11-16",
+      "date": "2026-11-17",
       "open": 144600,
       "high": 162000,
       "low": 110000,
-      "close": 118600,
-      "volume": 9337495
+      "close": 113600,
+      "volume": 9874056
     }
   ],
   "aggregatedFrom": "1d"

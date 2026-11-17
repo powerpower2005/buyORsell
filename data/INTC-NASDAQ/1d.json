@@ -6,19 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:INTC",
-  "fetchedAt": "2026-11-16T19:07:26.562Z",
-  "lastBarDate": "2026-11-13",
+  "fetchedAt": "2026-11-17T16:21:44.972Z",
+  "lastBarDate": "2026-11-16",
   "barCount": 1030,
-  "checksum": "4ac765e2",
+  "checksum": "dfea67c",
   "ohlcv": [
-    {
-      "date": "2022-10-07",
-      "open": 26.17,
-      "high": 26.28,
-      "low": 25.65,
-      "close": 25.72,
-      "volume": 57215513
-    },
     {
       "date": "2022-10-10",
       "open": 25.94,
@@ -8250,6 +8242,14 @@
       "low": 57,
       "close": 59.66,
       "volume": 102574300
+    },
+    {
+      "date": "2026-11-16",
+      "open": 56.71,
+      "high": 57.2,
+      "low": 54.89,
+      "close": 55.47,
+      "volume": 105966901
     }
   ],
   "collection_version": "3.1.0",
@@ -8260,13 +8260,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1030,
+    "checked": 1031,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-16T19:07:26.778Z"
+    "verified_at": "2026-11-17T16:21:45.135Z"
   },
   "provider_corrections": [
     "universe-v1-INTC-NASDAQ-2025-05-22"

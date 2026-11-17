@@ -6,19 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NYSE:BE",
-  "fetchedAt": "2026-11-16T19:06:22.834Z",
-  "lastBarDate": "2026-11-13",
+  "fetchedAt": "2026-11-17T16:20:40.366Z",
+  "lastBarDate": "2026-11-16",
   "barCount": 1030,
-  "checksum": "693c10ed",
+  "checksum": "3e86ff9",
   "ohlcv": [
-    {
-      "date": "2022-10-07",
-      "open": 18.36,
-      "high": 18.83,
-      "low": 17.77,
-      "close": 17.93,
-      "volume": 2884153
-    },
     {
       "date": "2022-10-10",
       "open": 17.93,
@@ -8250,6 +8242,14 @@
       "low": 183.89,
       "close": 191.99,
       "volume": 16033584
+    },
+    {
+      "date": "2026-11-16",
+      "open": 176.6,
+      "high": 183.2,
+      "low": 173.9,
+      "close": 177.28,
+      "volume": 12859673
     }
   ],
   "collection_version": "3.1.0",
@@ -8260,13 +8260,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1030,
+    "checked": 1031,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-16T19:06:23.016Z"
+    "verified_at": "2026-11-17T16:20:40.495Z"
   },
   "provider_corrections": [
     "universe-v1-BE-NYSE-2025-05-22"
