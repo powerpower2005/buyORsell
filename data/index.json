@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-16T19:10:07.607Z",
+  "updatedAt": "2026-11-17T05:54:25.898Z",
   "entries": [
     {
       "ticker": "000660:KRX",
@@ -246,7 +246,7 @@
       "ticker": "KOSPI:KRX",
       "timeframe": "1d",
       "path": "data/KOSPI-KRX/1d.json",
-      "fetchedAt": "2026-11-16T19:07:42.472Z",
+      "fetchedAt": "2026-11-17T05:54:23.908Z",
       "lastBarDate": "2026-11-16",
       "barCount": 1002
     },
@@ -254,7 +254,7 @@
       "ticker": "KOSPI:KRX",
       "timeframe": "1mo",
       "path": "data/KOSPI-KRX/1mo.json",
-      "fetchedAt": "2026-11-16T19:07:42.472Z",
+      "fetchedAt": "2026-11-17T05:54:23.908Z",
       "lastBarDate": "2026-11-16",
       "barCount": 50
     },
@@ -262,7 +262,7 @@
       "ticker": "KOSPI:KRX",
       "timeframe": "1w",
       "path": "data/KOSPI-KRX/1w.json",
-      "fetchedAt": "2026-11-16T19:07:42.472Z",
+      "fetchedAt": "2026-11-17T05:54:23.908Z",
       "lastBarDate": "2026-11-16",
       "barCount": 200
     },
