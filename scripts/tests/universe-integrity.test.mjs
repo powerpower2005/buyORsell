@@ -27,6 +27,18 @@ test('exact reviewed fixes are idempotent and reject a changed adjustment basis'
   assert.deepEqual(applyReviewedCorrections([after],'NASDAQ:SOXX',p).applied,[]);
   assert.throws(()=>applyReviewedCorrections([bar(before.date,50)],'NASDAQ:SOXX',p),/no longer matches/);
 });
+test('NVDA repeated prior-session prices are corrected only for the exact observed row', () => {
+  const complete={date:'2024-10-15',open:137.87,high:138.57,low:128.74,close:131.6,volume:377831021};
+  const repeated={date:complete.date,open:136.47,high:139.6,low:136.3,close:138.07,volume:8137379};
+  const symbol='NASDAQ:NVDA';
+  const independent={...complete,volume:377831000};
+  assert.throws(() => compareIndependent('NVDA:NASDAQ',[repeated],[independent]), /price\/basis disagreement/);
+  const corrected=applyReviewedCorrections([repeated],symbol);
+  assert.deepEqual(corrected,{bars:[complete],applied:['nvda-nasdaq-2024-10-15-repeated-prior-session']});
+  assert.equal(compareIndependent('NVDA:NASDAQ',corrected.bars,[independent]).checked,1);
+  assert.deepEqual(applyReviewedCorrections([complete],symbol),{bars:[complete],applied:[]});
+  assert.throws(() => applyReviewedCorrections([{...repeated,volume:repeated.volume+1}],symbol), /no longer matches/);
+});
 test('AAPL full-session Google volume passes and the reviewed incomplete bar is corrected',()=>{
   const ticker='NASDAQ:AAPL';
   const complete={date:'2024-10-15',open:233.61,high:237.49,low:232.37,close:233.85,volume:64751367};
