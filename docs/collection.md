@@ -78,6 +78,8 @@ Actions **Fetch Quote**의 `verify_soxx_recovery=true`, ticker=`SOXX:NASDAQ`는 
 
 보고서에 종목별 과거 날짜 보충(앞부분 확장 포함), 새 거래일, 기존 봉 정정, 복구 파일, 실패 사유를 남깁니다. 공급자에만 누락된 날짜는 가격을 추정해 채우지 않고 오류로 보고합니다. **한 종목이라도 검사에 실패하면 전체 배치를 실패시키고 데이터 커밋을 건너뛰어 기존 원격 데이터를 유지합니다.** 검사는 끝까지 진행하므로 여러 종목의 문제를 한 보고서에서 볼 수 있습니다. 최종 데이터·집계·인덱스 검증 및 원격 병합 후 재검증도 유지합니다. 데이터 변경 작업은 같은 Actions concurrency 그룹에서 직렬 실행합니다.
 
+`batch_audit` 2.0.1부터 GOOGLEFINANCE 표가 비어 있거나 독립 가격 비교가 불일치하면 해당 종목의 전체 기간을 새 임시 시트에서 다시 요청합니다. 최초 요청을 포함해 최대 세 번이며, 매번 같은 검증을 전부 통과해야 저장할 수 있습니다. 연속 실패 시 배치 전체의 데이터 커밋을 건너뜁니다.
+
 수동으로 같은 배치를 실행하려면 Fetch Quote에서 ticker=`ALL`, `batch_refresh=true`를 선택합니다. `audit_universe` 및 `verify_soxx_recovery`는 false로 둡니다. 기존 읽기 전용 감사와 구분되는 실제 수집·복구·커밋 경로입니다. 보고서는 `fetch-run-report` artifact와 Actions Summary에 기록됩니다.
 
 버전: `batch_audit` 미버전 v1 → **2.0.0**, `history_refresh` **2.0.0 → 2.1.0**. Sheets 수집기/독립 검증 버전 3.1.0, 지표·시그널·추적 공식과 버전은 유지합니다.

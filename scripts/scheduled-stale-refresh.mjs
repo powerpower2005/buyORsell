@@ -18,13 +18,27 @@ export function historyChanges(before,after) {
   };
 }
 function safeReason(error){return /^(Invalid |Independent |Reviewed |Missing |Cross-symbol |Unreviewed |Resolved |Quote |Full-history |GOOGLEFINANCE returned|Quarantined |Unsupported |No bars)/.test(error.message)?error.message:'Collection or validation failed; no batch data committed';}
+
+async function refreshDaily(pipeline, row) {
+  const retryable = /^(GOOGLEFINANCE returned no parseable OHLCV rows$|Independent price\/basis disagreement: )/;
+  for (let attempt = 1; ; attempt++) {
+    row.attempts = attempt;
+    try {
+      return await pipeline({ticker:row.ticker,timeframe:'1d',force:true,fullHistory:true});
+    } catch (error) {
+      // Each attempt refetches the entire range in a newly allocated sheet and independently verifies it.
+      if (attempt === 3 || !retryable.test(error.message)) throw error;
+    }
+  }
+}
+
 export async function runScheduledStaleRefresh({root=ROOT,pipeline=runFetchPipeline,policy=integrityPolicy(root)}={}) {
   const index=read(path.join(root,'data/index.json'));
   if(!Array.isArray(index.entries)||!index.entries.length)throw new Error('Missing or empty data index');
   const tickers=[...new Set(index.entries.map(e=>e.ticker))].sort();
   const timeframes=read(path.join(root,'config/timeframes.json')).timeframes;
   const tfs=['1d',...Object.entries(timeframes).filter(([,c])=>c.enabled&&c.aggregateFrom==='1d').map(([tf])=>tf)];
-  const report={version:'2.0.0',mode:'full-history-batch',ranAt:new Date().toISOString(),source_tags:[],totals:{scanned:0,checked:0,failed:0,excluded:0,restoredFiles:0,historicalAdded:0,newBars:0,revisedBars:0},series:[]};
+  const report={version:'2.0.1',mode:'full-history-batch',ranAt:new Date().toISOString(),source_tags:[],totals:{scanned:0,checked:0,failed:0,excluded:0,restoredFiles:0,historicalAdded:0,newBars:0,revisedBars:0},series:[]};
   for(const ticker of tickers){
     if(policy.quarantined[ticker]){report.totals.excluded++;report.series.push({ticker,status:'excluded',reason:policy.quarantined[ticker].reason});continue;}
     report.totals.scanned++;
@@ -32,7 +46,7 @@ export async function runScheduledStaleRefresh({root=ROOT,pipeline=runFetchPipel
     const row={ticker,status:'checking',missing_files_before:tfs.filter(tf=>!fs.existsSync(path.join(root,'data',slug,`${tf}.json`)))};
     try {
       const before=fs.existsSync(file)?read(file):null;
-      const result=await pipeline({ticker,timeframe:'1d',force:true,fullHistory:true});
+      const result=await refreshDaily(pipeline,row);
       const quote=result.quote;
       if(!quote?.ohlcv?.length)throw new Error('Missing verified daily result');
       const remaining=tfs.filter(tf=>!fs.existsSync(path.join(root,'data',slug,`${tf}.json`)));

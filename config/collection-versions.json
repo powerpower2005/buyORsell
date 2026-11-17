@@ -1,5 +1,5 @@
 {
-  "releasedOn": "2026-11-16",
+  "releasedOn": "2026-11-17",
   "items": {
     "sheets_fetch": {
       "version": "3.1.0",
@@ -27,9 +27,9 @@
       "change": "Naver confirms 16 of 17 unverified domestic bars; correct LS ELECTRIC 2024-11-07 and preserve raw share-volume convention and prior audit lineage."
     },
     "batch_audit": {
-      "version": "2.0.0",
-      "previous": "1.0.0 (unversioned)",
-      "change": "Every scheduled batch verifies each active daily series once regardless of freshness; requests the full retention period, restores missing committed files and aggregates, reports historical/new/revised dates and fails the entire publication on any error."
+      "version": "2.0.1",
+      "previous": "2.0.0",
+      "change": "Retry an empty GOOGLEFINANCE table or an independent price mismatch with a fresh full-history request, up to three attempts. Persistent validation failures still block publication."
     }
   }
 }
