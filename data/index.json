@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-17T05:55:48.706Z",
+  "updatedAt": "2026-11-17T13:18:51.390Z",
   "entries": [
     {
       "ticker": "000660:KRX",
@@ -30,24 +30,24 @@
       "ticker": "005930:KRX",
       "timeframe": "1d",
       "path": "data/005930-KRX/1d.json",
-      "fetchedAt": "2026-11-16T19:05:15.910Z",
-      "lastBarDate": "2026-11-16",
-      "barCount": 1002
+      "fetchedAt": "2026-11-17T13:18:49.474Z",
+      "lastBarDate": "2026-11-17",
+      "barCount": 1003
     },
     {
       "ticker": "005930:KRX",
       "timeframe": "1mo",
       "path": "data/005930-KRX/1mo.json",
-      "fetchedAt": "2026-11-16T19:05:15.910Z",
-      "lastBarDate": "2026-11-16",
+      "fetchedAt": "2026-11-17T13:18:49.474Z",
+      "lastBarDate": "2026-11-17",
       "barCount": 50
     },
     {
       "ticker": "005930:KRX",
       "timeframe": "1w",
       "path": "data/005930-KRX/1w.json",
-      "fetchedAt": "2026-11-16T19:05:15.910Z",
-      "lastBarDate": "2026-11-16",
+      "fetchedAt": "2026-11-17T13:18:49.474Z",
+      "lastBarDate": "2026-11-17",
       "barCount": 200
     },
     {
