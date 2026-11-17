@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-17T05:54:25.898Z",
+  "updatedAt": "2026-11-17T05:55:48.706Z",
   "entries": [
     {
       "ticker": "000660:KRX",
       "timeframe": "1d",
       "path": "data/000660-KRX/1d.json",
-      "fetchedAt": "2026-11-16T19:04:58.345Z",
+      "fetchedAt": "2026-11-17T05:55:46.963Z",
       "lastBarDate": "2026-11-16",
       "barCount": 1002
     },
@@ -14,7 +14,7 @@
       "ticker": "000660:KRX",
       "timeframe": "1mo",
       "path": "data/000660-KRX/1mo.json",
-      "fetchedAt": "2026-11-16T19:04:58.345Z",
+      "fetchedAt": "2026-11-17T05:55:46.963Z",
       "lastBarDate": "2026-11-16",
       "barCount": 50
     },
@@ -22,7 +22,7 @@
       "ticker": "000660:KRX",
       "timeframe": "1w",
       "path": "data/000660-KRX/1w.json",
-      "fetchedAt": "2026-11-16T19:04:58.345Z",
+      "fetchedAt": "2026-11-17T05:55:46.963Z",
       "lastBarDate": "2026-11-16",
       "barCount": 200
     },
