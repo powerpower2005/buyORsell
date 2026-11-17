@@ -95,14 +95,27 @@ jobs:
     if: "!inputs.verify_soxx_recovery && !inputs.audit_universe"
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    outputs:
+      checkout: ${{ steps.checkout.outcome }}
+      setup: ${{ steps.setup.outcome }}
+      install: ${{ steps.install.outcome }}
+      parse: ${{ steps.parse.outcome }}
+      audit: ${{ steps.cron_refresh.outcome }}
+      report: ${{ steps.report.outcome }}
+      validate: ${{ steps.validate.outcome }}
+      commit: ${{ steps.commit.outcome }}
+      data_commit: ${{ steps.commit.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
+        id: checkout
 
       - uses: actions/setup-node@v4
+        id: setup
         with:
           node-version: "20"
 
       - run: npm ci
+        id: install
 
       - name: Parse request
         id: parse
@@ -290,6 +303,7 @@ jobs:
         run: node scripts/scheduled-stale-refresh.mjs
 
       - name: Upload fetch report
+        id: report
         if: always() && (github.event_name == 'schedule' || inputs.batch_refresh || steps.parse.outputs.skip == 'false')
         uses: actions/upload-artifact@v4
         with:
@@ -300,12 +314,17 @@ jobs:
             artifacts/manual-fetch-result.json
           if-no-files-found: ignore
 
+      - name: Validate complete data before publication
+        id: validate
+        if: success() && (steps.parse.outputs.skip == 'false' || github.event_name == 'schedule' || inputs.batch_refresh)
+        run: npm run validate-data
+
       - name: Commit data
+        id: commit
         if: success() && (steps.parse.outputs.skip == 'false' || github.event_name == 'schedule' || inputs.batch_refresh)
         env:
           BATCH_REFRESH: ${{ inputs.batch_refresh }}
         run: |
-          npm run validate-data
           if [ "${{ github.event_name }}" = "schedule" ] || [ "$BATCH_REFRESH" = "true" ]; then
             MSG="data: full-history batch audit [GoogleFinance:GOOGLEFINANCE] [Validation:query1.finance.yahoo.com] [Validation:fchart.stock.naver.com]"
           else
@@ -313,6 +332,7 @@ jobs:
           fi
           # Sync onto origin before commit; merge shared catalog JSON on retry.
           bash scripts/git-commit-push-data.sh "$MSG" data/
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Comment on issue
         if: github.event_name == 'issues' && steps.parse.outputs.skip == 'false'
@@ -347,3 +367,50 @@ jobs:
               issue_number: context.issue.number,
               body: `✅ \`${ticker}\` (${tf}) fetch complete.`
             });
+
+  notify-batch:
+    needs: fetch
+    if: always() && (github.event_name == 'schedule' || inputs.batch_refresh) && needs.fetch.result != 'skipped'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Download batch evidence when available
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: fetch-run-report
+          path: artifacts/
+      - name: Send operational batch result
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_LOG_CHANNEL_ID: ${{ secrets.SLACK_LOG_CHANNEL_ID }}
+          SLACK_ERROR_CHANNEL_ID: ${{ secrets.SLACK_ERROR_CHANNEL_ID }}
+          BATCH_RESULT: ${{ needs.fetch.result }}
+          BATCH_CHECKOUT: ${{ needs.fetch.outputs.checkout }}
+          BATCH_SETUP: ${{ needs.fetch.outputs.setup }}
+          BATCH_INSTALL: ${{ needs.fetch.outputs.install }}
+          BATCH_PARSE: ${{ needs.fetch.outputs.parse }}
+          BATCH_AUDIT: ${{ needs.fetch.outputs.audit }}
+          BATCH_REPORT: ${{ needs.fetch.outputs.report }}
+          BATCH_VALIDATE: ${{ needs.fetch.outputs.validate }}
+          BATCH_COMMIT: ${{ needs.fetch.outputs.commit }}
+          DATA_COMMIT: ${{ needs.fetch.outputs.data_commit }}
+          REPORT_DOWNLOAD: ${{ steps.download.outcome }}
+        run: node scripts/notify-batch-result.mjs
+      - name: Preserve Slack acknowledgement
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch-notification-receipt
+          path: artifacts/batch-notification-receipt.json
+          if-no-files-found: ignore

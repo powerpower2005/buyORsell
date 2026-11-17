@@ -5,6 +5,7 @@ docs/*
 !docs/versions.md
 !docs/collection.md
 !docs/data-audit.md
+!docs/slack/
 !docs/indicators/
 docs/indicators/*
 !docs/indicators/CHANGELOG.md
@@ -13,6 +14,7 @@ docs/strategies/*
 !docs/strategies/CHANGELOG.md
 *.tsbuildinfo
 README.md
+!docs/slack/README.md
 .env
 .env.local
 config/service_account.json

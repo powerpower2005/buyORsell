@@ -16,11 +16,13 @@ test('fresh data with an internal hole is fetched once per ticker, then aggregat
   const result=await runScheduledStaleRefresh({root,policy,pipeline:async args=>{calls.push(args);for(const tf of ['1d','1w','1mo'])write(`data/AAPL-NASDAQ/${tf}.json`,after);return {quote:after};}});
   assert.deepEqual(calls,[{ticker,timeframe:'1d',force:true,fullHistory:true}]);assert.equal(result.totals.historicalAdded,1);assert.equal(result.totals.newBars,1);assert.equal(result.totals.restoredFiles,2);assert.equal(result.complete,true);
   assert.deepEqual(result.series[0].historical_added_dates,['2026-11-11']);
+  assert.equal(result.version,'2.1.0');assert.equal(result.series[0].referenceDate,'2026-11-12');assert.ok(Date.parse(result.finishedAt)>=Date.parse(result.ranAt));
 });
 test('a missing daily file is attempted, quarantines excluded, failures visible and batch not committable',async t=>{
   const {root,write}=fixture(t);write('data/index.json',{entries:[{ticker:'AAPL:NASDAQ',timeframe:'1d'},{ticker:'CRD:NTYSE',timeframe:'1d'},{ticker:'TSLA:NASDAQ',timeframe:'1mo'}]});
   const calls=[];const result=await runScheduledStaleRefresh({root,policy,pipeline:async args=>{calls.push(args.ticker);if(args.ticker==='AAPL:NASDAQ')throw Error('Independent price coverage incomplete');const q=quote(args.ticker,['2026-11-12']);for(const tf of ['1d','1w','1mo'])write(`data/TSLA-NASDAQ/${tf}.json`,q);return {quote:q};}});
   assert.deepEqual(calls,['AAPL:NASDAQ','TSLA:NASDAQ']);assert.equal(result.complete,false);assert.equal(result.totals.failed,1);assert.equal(result.totals.checked,1);assert.equal(result.totals.excluded,1);assert.equal(result.totals.restoredFiles,3);assert.match(buildMarkdown(result),/커밋하지 않습니다/);
+  assert.ok(Number.isFinite(Date.parse(result.series[0].failedAt)));assert.equal(result.series[0].referenceDate,null);
 });
 test('non-trading dates are not invented and revisions are distinguished from added dates',()=>{
   const before=quote('AAPL:NASDAQ',['2026-11-06','2026-11-09']),after=structuredClone(before);after.ohlcv[1].volume++;
