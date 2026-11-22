@@ -1,5 +1,5 @@
 {
-  "version": "1.1.1",
+  "version": "1.1.3",
   "quarantined": {
     "CRD:NTYSE": {
       "reason": "Invalid exchange and all 484 OHLCV rows copied from 000660:KRX; retain existing exclusion, do not infer replacement."
@@ -17,6 +17,59 @@
   "independentPriceTolerance": 0.02,
   "independentExceptions": [],
   "providerCorrections": [
+    {
+      "id": "ndx-indexnasdaq-2024-12-09-open-outside-range",
+      "symbol": "INDEXNASDAQ:NDX",
+      "before": {
+        "date": "2024-12-09",
+        "open": 21622.25,
+        "high": 21609.99,
+        "low": 21400.77,
+        "close": 21440.82,
+        "volume": 0
+      },
+      "after": {
+        "date": "2024-12-09",
+        "open": 21573.76,
+        "high": 21609.99,
+        "low": 21400.77,
+        "close": 21440.82,
+        "volume": 0
+      },
+      "reason": "The GOOGLEFINANCE open is above the session high. Yahoo confirms the stored open and the other prices. Retain the existing index volume convention.",
+      "sources": [
+        "https://github.com/powerpower2005/buyORsell/actions/runs/45021226816/artifacts/14753802120",
+        "https://query1.finance.yahoo.com/v8/finance/chart/%5ENDX?period1=1733702400&period2=1733788800&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-22"
+    },
+    {
+      "id": "mu-nasdaq-2024-10-15-repeated-prior-session",
+      "symbol": "NASDAQ:MU",
+      "before": {
+        "date": "2024-10-15",
+        "open": 107.81,
+        "high": 108.71,
+        "low": 106.8,
+        "close": 108.34,
+        "volume": 387803
+      },
+      "after": {
+        "date": "2024-10-15",
+        "open": 107.86,
+        "high": 109.49,
+        "low": 102.71,
+        "close": 104.32,
+        "volume": 23419132
+      },
+      "reason": "GOOGLEFINANCE repeated the prior session's OHLC with partial volume. Restore the stored full-session GOOGLEFINANCE bar independently confirmed by Yahoo on OHLC.",
+      "sources": [
+        "https://github.com/powerpower2005/buyORsell/actions/runs/45021079038/artifacts/14754455531",
+        "https://github.com/powerpower2005/buyORsell/blob/54c9f703d6082cf9e3d9a5308162530a835ebc79/data/MU-NASDAQ/1d.json",
+        "https://query1.finance.yahoo.com/v8/finance/chart/MU?period1=1728950400&period2=1729036800&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-22"
+    },
     {
       "id": "universe-v1-SOXX-NASDAQ-2024-03-07",
       "symbol": "NASDAQ:SOXX",

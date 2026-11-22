@@ -82,6 +82,16 @@ Actions **Fetch Quote**의 `verify_soxx_recovery=true`, ticker=`SOXX:NASDAQ`는 
 
 수동으로 같은 배치를 실행하려면 Fetch Quote에서 ticker=`ALL`, `batch_refresh=true`를 선택합니다. `audit_universe` 및 `verify_soxx_recovery`는 false로 둡니다. 기존 읽기 전용 감사와 구분되는 실제 수집·복구·커밋 경로입니다. 보고서는 `fetch-run-report` artifact와 Actions Summary에 기록됩니다.
 
+### 예약 수집 실패 복구
+
+`main`의 예약 **Fetch Quote** 첫 실행이 실패하거나 시간 초과되면 **Recover quote collection**이 동일한 전체 이력 수집 작업을 한 번 실행합니다. 실행 제목에 원래 실패한 실행 번호가 표시됩니다. 복구는 수집과 같은 동시성 그룹에서 직렬화되며 공급사 대조와 최종 데이터 검사를 통과한 전체 배치만 게시합니다.
+
+1. stocker의 종목 시그널 오류에 `Stale quote`가 있으면 buyORsell Actions에서 **Fetch Quote** 실패와 이어지는 **Recover quote collection**의 결과를 확인합니다.
+2. 복구도 실패하면 해당 실행의 `fetch-run-report`에서 실패 종목과 사유를 확인합니다. 같은 과거 봉에서 반복 실패하면 격리된 공급사 응답을 저장본 및 독립 가격과 대조합니다. 표본이 일치할 때에만 정확한 제공사 정정을 기록하고, `main`에서 **Recover quote collection → Run workflow**로 수동 복구합니다.
+3. 복구 실행에서 모든 활성 종목이 통과하고 데이터 커밋이 반영되면 stocker **Chart signal alerts**의 `dry-run`으로 갱신 데이터와 기존 추적 상태를 검증합니다.
+
+2026-11-22 복구에서는 NDX 2024-12-09의 시가 오류와 MU 2024-10-15의 전 거래일 가격 반복을 각각 정확히 관측된 행에 한해 정정합니다. 저장된 정상 봉의 가격은 독립 제공사와 일치했습니다. PLTR과 GLW의 같은 날짜는 재조회한 정상 봉이 저장본과 일치했습니다. [NDX·PLTR·GLW 전체 구간 진단](https://github.com/powerpower2005/buyORsell/actions/runs/45021226816), [MU 제공사 감사](https://github.com/powerpower2005/buyORsell/actions/runs/45021079038).
+
 버전: `batch_audit` 미버전 v1 → **2.0.0**, `history_refresh` **2.0.0 → 2.1.0**. Sheets 수집기/독립 검증 버전 3.1.0, 지표·시그널·추적 공식과 버전은 유지합니다.
 
 실제 배치 검증: [2026-11-16 실행](https://github.com/powerpower2005/buyORsell/actions/runs/43740333116)에서 20개 종목 전부 통과, 실패 0, 과거 날짜 보충 889개(보관 기간 앞부분 확장 포함), 새 거래일 봉 15개, 기존 봉 정정 0개를 확인했습니다. 검증 후 배치 데이터 커밋 `96de61d`가 생성됐습니다. 파일 누락·중간 거래일 누락·실패 시 커밋 금지는 26개 회귀 테스트에서 검증했습니다.

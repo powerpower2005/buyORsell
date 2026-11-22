@@ -49,6 +49,29 @@ test('AAPL full-session Google volume passes and the reviewed incomplete bar is 
   });
   assert.throws(()=>applyReviewedCorrections([{...complete,volume:complete.volume+1}],ticker),/no longer matches/);
 });
+test('reviewed NDX and MU rows keep the stored independently verified history', () => {
+  const corrections = [
+    {
+      ticker: 'NDX:INDEXNASDAQ',
+      before: {date:'2024-12-09',open:21622.25,high:21609.99,low:21400.77,close:21440.82,volume:0},
+      after: {date:'2024-12-09',open:21573.76,high:21609.99,low:21400.77,close:21440.82,volume:0},
+      id: 'ndx-indexnasdaq-2024-12-09-open-outside-range',
+    },
+    {
+      ticker: 'MU:NASDAQ',
+      before: {date:'2024-10-15',open:107.81,high:108.71,low:106.8,close:108.34,volume:387803},
+      after: {date:'2024-10-15',open:107.86,high:109.49,low:102.71,close:104.32,volume:23419132},
+      id: 'mu-nasdaq-2024-10-15-repeated-prior-session',
+    },
+  ];
+  for (const {ticker, before, after, id} of corrections) {
+    const symbol = ticker.split(':').reverse().join(':');
+    assert.deepEqual(applyReviewedCorrections([before],symbol), {bars:[after],applied:[id]});
+    assert.deepEqual(applyReviewedCorrections([after],symbol), {bars:[after],applied:[]});
+    assert.doesNotThrow(() => assertQuoteIntegrity(quote(ticker,[after])));
+    assert.throws(() => applyReviewedCorrections([{...before,open:before.open+1}],symbol), /no longer matches/);
+  }
+});
 test('missing-session insertion requires current neighbor evidence and respects request bounds',()=>{
   const a=bar('2026-11-09'),b=bar('2026-11-10'),c=bar('2026-11-11'),p={...policy,providerAdditions:[{symbol:'KRX:010120',id:'missing',bar:b,anchors:[a,c]}]};
   assert.deepEqual(applyReviewedCorrections([a,c],'KRX:010120',p).bars,[a,b,c]);

@@ -1,5 +1,5 @@
 {
-  "releasedOn": "2026-11-17",
+  "releasedOn": "2026-11-22",
   "items": {
     "sheets_fetch": {
       "version": "3.1.0",
@@ -17,9 +17,9 @@
       "change": "Remove verified foreign holiday bars, then reconcile all retained SOXX prices with an isolated provider snapshot; preserve both repair stages and regenerate aggregates."
     },
     "universe_integrity": {
-      "version": "1.1.2",
-      "previous": "1.1.1",
-      "change": "Correct the exact NVDA 2024-10-15 GOOGLEFINANCE row with repeated prior-session prices using the verified full-session bar."
+      "version": "1.1.3",
+      "previous": "1.1.2",
+      "change": "Correct exact GOOGLEFINANCE snapshots of the NDX 2024-12-09 out-of-range open and the MU 2024-10-15 repeat of prior-session prices using independently verified stored prices."
     },
     "universe_recovery": {
       "version": "1.1.0",
@@ -30,6 +30,11 @@
       "version": "2.0.1",
       "previous": "2.0.0",
       "change": "Retry an empty GOOGLEFINANCE table or an independent price mismatch with a fresh full-history request, up to three attempts. Persistent validation failures still block publication."
+    },
+    "batch_recovery": {
+      "version": "1.0.0",
+      "previous": null,
+      "change": "After the first failed scheduled main run, run the same full-history collection, validation and publication workflow once from main. Also allow a manual recovery from main."
     }
   }
 }

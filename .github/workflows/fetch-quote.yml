@@ -1,6 +1,17 @@
 name: Fetch Quote
 
 on:
+  workflow_call:
+    inputs:
+      batch_refresh:
+        description: "Run the scheduled full-history collection and validation"
+        type: boolean
+        required: true
+    secrets:
+      GOOGLE_SHEET_ID:
+        required: true
+      GOOGLE_SERVICE_ACCOUNT_JSON:
+        required: true
   issues:
     types: [opened, reopened]
   issue_comment:
