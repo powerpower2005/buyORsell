@@ -6,27 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:AAPL",
-  "fetchedAt": "2026-11-17T21:59:06.989Z",
-  "lastBarDate": "2026-11-16",
-  "barCount": 1030,
-  "checksum": "feac560",
+  "fetchedAt": "2026-11-22T12:32:39.101Z",
+  "lastBarDate": "2026-11-20",
+  "barCount": 1032,
+  "checksum": "a73a4800",
   "ohlcv": [
-    {
-      "date": "2022-10-10",
-      "open": 140.42,
-      "high": 141.89,
-      "low": 138.57,
-      "close": 140.42,
-      "volume": 74899002
-    },
-    {
-      "date": "2022-10-11",
-      "open": 139.9,
-      "high": 141.35,
-      "low": 138.22,
-      "close": 138.98,
-      "volume": 77033672
-    },
     {
       "date": "2022-10-12",
       "open": 139.13,
@@ -8250,6 +8234,38 @@
       "low": 351.31,
       "close": 352.78,
       "volume": 50292162
+    },
+    {
+      "date": "2026-11-17",
+      "open": 352.83,
+      "high": 355.36,
+      "low": 349.67,
+      "close": 351.91,
+      "volume": 37407537
+    },
+    {
+      "date": "2026-11-18",
+      "open": 351.94,
+      "high": 356.42,
+      "low": 351.47,
+      "close": 352.45,
+      "volume": 34209928
+    },
+    {
+      "date": "2026-11-19",
+      "open": 352.91,
+      "high": 355.28,
+      "low": 346.47,
+      "close": 349.21,
+      "volume": 40906860
+    },
+    {
+      "date": "2026-11-20",
+      "open": 352.87,
+      "high": 354.34,
+      "low": 340.56,
+      "close": 342.56,
+      "volume": 80692546
     }
   ],
   "collection_version": "3.1.0",
@@ -8260,13 +8276,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1030,
+    "checked": 1034,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-17T21:59:07.187Z"
+    "verified_at": "2026-11-22T12:32:39.254Z"
   },
   "provider_corrections": [
     "universe-v1-AAPL-NASDAQ-2025-05-22"

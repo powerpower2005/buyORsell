@@ -6,27 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:MU",
-  "fetchedAt": "2026-11-17T22:01:15.712Z",
-  "lastBarDate": "2026-11-16",
-  "barCount": 1030,
-  "checksum": "f2b37a8b",
+  "fetchedAt": "2026-11-22T12:34:48.438Z",
+  "lastBarDate": "2026-11-20",
+  "barCount": 1032,
+  "checksum": "33afbb04",
   "ohlcv": [
-    {
-      "date": "2022-10-10",
-      "open": 53.07,
-      "high": 53.13,
-      "low": 50.77,
-      "close": 51.38,
-      "volume": 17227359
-    },
-    {
-      "date": "2022-10-11",
-      "open": 50.64,
-      "high": 54.78,
-      "low": 50.33,
-      "close": 53.71,
-      "volume": 32813669
-    },
     {
       "date": "2022-10-12",
       "open": 53.6,
@@ -8250,6 +8234,38 @@
       "low": 716.38,
       "close": 719.02,
       "volume": 27126661
+    },
+    {
+      "date": "2026-11-17",
+      "open": 726.2,
+      "high": 726.99,
+      "low": 666.88,
+      "close": 712.42,
+      "volume": 33502563
+    },
+    {
+      "date": "2026-11-18",
+      "open": 718.5,
+      "high": 722.96,
+      "low": 687.33,
+      "close": 705.27,
+      "volume": 27515559
+    },
+    {
+      "date": "2026-11-19",
+      "open": 740.33,
+      "high": 760.01,
+      "low": 689.28,
+      "close": 690.44,
+      "volume": 35401477
+    },
+    {
+      "date": "2026-11-20",
+      "open": 665.46,
+      "high": 669,
+      "low": 585.25,
+      "close": 594.51,
+      "volume": 59423145
     }
   ],
   "collection_version": "3.1.0",
@@ -8260,15 +8276,16 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1030,
+    "checked": 1034,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-17T22:01:15.848Z"
+    "verified_at": "2026-11-22T12:34:48.586Z"
   },
   "provider_corrections": [
+    "mu-nasdaq-2024-10-15-repeated-prior-session",
     "universe-v1-MU-NASDAQ-2025-05-22"
   ],
   "data_recovery": {

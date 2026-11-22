@@ -6,27 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:NVDA",
-  "fetchedAt": "2026-11-17T22:01:47.398Z",
-  "lastBarDate": "2026-11-16",
-  "barCount": 1030,
-  "checksum": "d870c4e9",
+  "fetchedAt": "2026-11-22T12:35:20.555Z",
+  "lastBarDate": "2026-11-20",
+  "barCount": 1032,
+  "checksum": "3cdd913a",
   "ohlcv": [
-    {
-      "date": "2022-10-10",
-      "open": 12.04,
-      "high": 12.12,
-      "low": 11.41,
-      "close": 11.67,
-      "volume": 69869925
-    },
-    {
-      "date": "2022-10-11",
-      "open": 11.56,
-      "high": 11.85,
-      "low": 11.28,
-      "close": 11.59,
-      "volume": 66748163
-    },
     {
       "date": "2022-10-12",
       "open": 11.58,
@@ -8250,6 +8234,38 @@
       "low": 155.01,
       "close": 156.14,
       "volume": 333822062
+    },
+    {
+      "date": "2026-11-17",
+      "open": 156.9,
+      "high": 158.19,
+      "low": 150.33,
+      "close": 155.46,
+      "volume": 406985086
+    },
+    {
+      "date": "2026-11-18",
+      "open": 159.19,
+      "high": 159.7,
+      "low": 150.4,
+      "close": 150.96,
+      "volume": 349791393
+    },
+    {
+      "date": "2026-11-19",
+      "open": 152.92,
+      "high": 158.13,
+      "low": 145.71,
+      "close": 145.98,
+      "volume": 322940099
+    },
+    {
+      "date": "2026-11-20",
+      "open": 143.52,
+      "high": 143.73,
+      "low": 124.5,
+      "close": 125.53,
+      "volume": 633418433
     }
   ],
   "collection_version": "3.1.0",
@@ -8260,16 +8276,15 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1030,
+    "checked": 1034,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-17T22:01:47.534Z"
+    "verified_at": "2026-11-22T12:35:20.686Z"
   },
   "provider_corrections": [
-    "nvda-nasdaq-2024-10-15-repeated-prior-session",
     "universe-v1-NVDA-NASDAQ-2025-05-22"
   ],
   "data_recovery": {

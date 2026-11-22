@@ -6,27 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NYSE:CRM",
-  "fetchedAt": "2026-11-17T21:59:38.932Z",
-  "lastBarDate": "2026-11-16",
-  "barCount": 1030,
-  "checksum": "641b69bc",
+  "fetchedAt": "2026-11-22T12:33:11.193Z",
+  "lastBarDate": "2026-11-20",
+  "barCount": 1032,
+  "checksum": "e013fa1b",
   "ohlcv": [
-    {
-      "date": "2022-10-10",
-      "open": 150.62,
-      "high": 150.96,
-      "low": 144.58,
-      "close": 145.64,
-      "volume": 5497767
-    },
-    {
-      "date": "2022-10-11",
-      "open": 144.51,
-      "high": 144.97,
-      "low": 139.52,
-      "close": 142.57,
-      "volume": 7414980
-    },
     {
       "date": "2022-10-12",
       "open": 142.31,
@@ -4061,11 +4045,11 @@
     },
     {
       "date": "2024-10-15",
-      "open": 289.92,
-      "high": 292.45,
-      "low": 288.25,
-      "close": 291.64,
-      "volume": 16811
+      "open": 293.46,
+      "high": 293.58,
+      "low": 288,
+      "close": 288.35,
+      "volume": 3850782
     },
     {
       "date": "2024-10-16",
@@ -8250,6 +8234,38 @@
       "low": 213.57,
       "close": 214.83,
       "volume": 5887757
+    },
+    {
+      "date": "2026-11-17",
+      "open": 209.01,
+      "high": 211,
+      "low": 193.41,
+      "close": 194.52,
+      "volume": 13398306
+    },
+    {
+      "date": "2026-11-18",
+      "open": 193.07,
+      "high": 193.5,
+      "low": 186.45,
+      "close": 190.4,
+      "volume": 10192191
+    },
+    {
+      "date": "2026-11-19",
+      "open": 191.63,
+      "high": 195.39,
+      "low": 182.51,
+      "close": 183.31,
+      "volume": 7977841
+    },
+    {
+      "date": "2026-11-20",
+      "open": 183.31,
+      "high": 189.72,
+      "low": 179.92,
+      "close": 180.62,
+      "volume": 8721535
     }
   ],
   "collection_version": "3.1.0",
@@ -8259,13 +8275,13 @@
     "Validation:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1030,
+    "checked": 1034,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-17T21:59:39.063Z"
+    "verified_at": "2026-11-22T12:33:11.308Z"
   },
   "provider_corrections": []
 }
