@@ -41,10 +41,11 @@ on:
         description: "Run the same full-history batch as the schedule (ticker input ignored)"
         type: boolean
         default: false
-  # Weekdays only (Mon–Fri UTC). Sat/Sun markets are closed — no auto refresh.
-  # 02:00 / 09:00 / 14:00 UTC = 11:00 / 18:00 / 23:00 KST (GMT+9).
+  # Weekdays 11:00, 18:00 and 23:00 KST; Saturday 09:20 KST for US Friday bars.
+  # Saturday collection starts after the next UTC date required by chart signals.
   schedule:
     - cron: "0 2,9,14 * * 1-5"
+    - cron: "20 0 * * 6"
 
 permissions:
   contents: write

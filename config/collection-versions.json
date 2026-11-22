@@ -31,6 +31,11 @@
       "previous": "2.0.0",
       "change": "Retry an empty GOOGLEFINANCE table or an independent price mismatch with a fresh full-history request, up to three attempts. Persistent validation failures still block publication."
     },
+    "batch_schedule": {
+      "version": "1.0.0",
+      "previous": null,
+      "change": "Add a Saturday 09:20 Korea-time full-history run after the UTC date rollover so stocker can evaluate the US Friday daily bar on Saturday."
+    },
     "batch_recovery": {
       "version": "1.0.0",
       "previous": null,
