@@ -1,5 +1,5 @@
 {
-  "version": "1.1.3",
+  "version": "1.1.4",
   "quarantined": {
     "CRD:NTYSE": {
       "reason": "Invalid exchange and all 484 OHLCV rows copied from 000660:KRX; retain existing exclusion, do not infer replacement."
@@ -503,6 +503,43 @@
     }
   ],
   "providerAdditions": [
+    {
+      "id": "ndx-indexnasdaq-2025-09-25-retain-verified-session",
+      "symbol": "INDEXNASDAQ:NDX",
+      "bar": {
+        "date": "2025-09-25",
+        "open": 24321.73,
+        "high": 24460.66,
+        "low": 24186.37,
+        "close": 24397.31,
+        "volume": 0
+      },
+      "anchors": [
+        {
+          "date": "2025-09-24",
+          "open": 24648.97,
+          "high": 24650.42,
+          "low": 24388.59,
+          "close": 24503.57,
+          "volume": 0
+        },
+        {
+          "date": "2025-09-26",
+          "open": 24410.95,
+          "high": 24510.37,
+          "low": 24297.7,
+          "close": 24503.85,
+          "volume": 0
+        }
+      ],
+      "reason": "GOOGLEFINANCE skipped this session between matching neighboring bars. Keep the stored session with independently confirmed OHLC and the existing index volume convention.",
+      "sources": [
+        "https://github.com/powerpower2005/buyORsell/actions/runs/45022000224",
+        "https://github.com/powerpower2005/buyORsell/blob/54c9f703d6082cf9e3d9a5308162530a835ebc79/data/NDX-INDEXNASDAQ/1d.json",
+        "https://query1.finance.yahoo.com/v8/finance/chart/%5ENDX?period1=1758585600&period2=1759190400&interval=1d&events=splits",
+        "https://fred.stlouisfed.org/data/NASDAQ100"
+      ]
+    },
     {
       "id": "universe-v1-010120-KRX-2023-01-20",
       "symbol": "KRX:010120",

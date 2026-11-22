@@ -17,9 +17,9 @@
       "change": "Remove verified foreign holiday bars, then reconcile all retained SOXX prices with an isolated provider snapshot; preserve both repair stages and regenerate aggregates."
     },
     "universe_integrity": {
-      "version": "1.1.3",
-      "previous": "1.1.2",
-      "change": "Correct exact GOOGLEFINANCE snapshots of the NDX 2024-12-09 out-of-range open and the MU 2024-10-15 repeat of prior-session prices using independently verified stored prices."
+      "version": "1.1.4",
+      "previous": "1.1.3",
+      "change": "Retain the independently verified NDX 2025-09-25 session when GOOGLEFINANCE omits it and both adjacent bars match their recorded fingerprints."
     },
     "universe_recovery": {
       "version": "1.1.0",

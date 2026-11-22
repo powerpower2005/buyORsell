@@ -78,6 +78,16 @@ test('missing-session insertion requires current neighbor evidence and respects 
   assert.throws(()=>applyReviewedCorrections([{...a,close:100.5},c],'KRX:010120',p),/anchors/);
   assert.deepEqual(applyReviewedCorrections([c],'KRX:010120',p).bars,[c]);
 });
+test('retain the verified NDX session only with matching neighboring bars', () => {
+  const stored = JSON.parse(fs.readFileSync(new URL('../../data/NDX-INDEXNASDAQ/1d.json',import.meta.url)));
+  const dates = ['2025-09-24', '2025-09-25', '2025-09-26'];
+  const [previous, session, next] = dates.map(date => stored.ohlcv.find(bar => bar.date === date));
+  const result = applyReviewedCorrections([previous,next],stored.resolvedSymbol);
+  assert.deepEqual(result.bars,[previous,session,next]);
+  assert.deepEqual(result.applied,['ndx-indexnasdaq-2025-09-25-retain-verified-session']);
+  assert.deepEqual(applyReviewedCorrections([previous,session,next],stored.resolvedSymbol).applied,[]);
+  assert.throws(() => applyReviewedCorrections([{...previous,open:previous.open+1},next],stored.resolvedSymbol), /anchors/);
+});
 test('independent checks reject hidden basis changes and missing trading sessions, excluding documented suspensions',()=>{
   const a=bar('2026-11-09'),b=bar('2026-11-10'),c=bar('2026-11-11');
   assert.throws(()=>compareIndependent('AAPL:NASDAQ',[bar(a.date,200)],[a],policy),/basis disagreement/);

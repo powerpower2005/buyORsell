@@ -92,6 +92,8 @@ Actions **Fetch Quote**의 `verify_soxx_recovery=true`, ticker=`SOXX:NASDAQ`는 
 
 2026-11-22 복구에서는 NDX 2024-12-09의 시가 오류와 MU 2024-10-15의 전 거래일 가격 반복을 각각 정확히 관측된 행에 한해 정정합니다. 저장된 정상 봉의 가격은 독립 제공사와 일치했습니다. PLTR과 GLW의 같은 날짜는 재조회한 정상 봉이 저장본과 일치했습니다. [NDX·PLTR·GLW 전체 구간 진단](https://github.com/powerpower2005/buyORsell/actions/runs/45021226816), [MU 제공사 감사](https://github.com/powerpower2005/buyORsell/actions/runs/45021079038).
 
+첫 복구 실행은 NDX 2025-09-25 일봉이 공급사 응답에서 누락되어 게시를 차단했습니다. Yahoo의 OHLC와 Nasdaq의 종가가 기존 저장본과 일치함을 확인했습니다. 양옆 거래일의 전체 OHLCV가 검증된 값과 일치할 때에만 기존 일봉을 보존합니다. [첫 복구 실행](https://github.com/powerpower2005/buyORsell/actions/runs/45022000224), [Nasdaq 종가 자료](https://fred.stlouisfed.org/data/NASDAQ100).
+
 버전: `batch_audit` 미버전 v1 → **2.0.0**, `history_refresh` **2.0.0 → 2.1.0**. Sheets 수집기/독립 검증 버전 3.1.0, 지표·시그널·추적 공식과 버전은 유지합니다.
 
 실제 배치 검증: [2026-11-16 실행](https://github.com/powerpower2005/buyORsell/actions/runs/43740333116)에서 20개 종목 전부 통과, 실패 0, 과거 날짜 보충 889개(보관 기간 앞부분 확장 포함), 새 거래일 봉 15개, 기존 봉 정정 0개를 확인했습니다. 검증 후 배치 데이터 커밋 `96de61d`가 생성됐습니다. 파일 누락·중간 거래일 누락·실패 시 커밋 금지는 26개 회귀 테스트에서 검증했습니다.
