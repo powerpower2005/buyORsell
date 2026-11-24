@@ -9,23 +9,16 @@
     "GoogleFinance:GOOGLEFINANCE",
     "GoogleSheets:sheets.googleapis.com",
     "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com",
     "Aggregation:1d"
   ],
   "collection_version": "3.1.0",
   "resolvedSymbol": "NASDAQ:QQQ",
-  "fetchedAt": "2026-11-22T12:35:52.907Z",
-  "lastBarDate": "2026-11-20",
+  "fetchedAt": "2026-11-24T14:25:49.361Z",
+  "lastBarDate": "2026-11-23",
   "barCount": 200,
-  "checksum": "7bbc17bb",
+  "checksum": "23d50c5d",
   "ohlcv": [
-    {
-      "date": "2023-01-27",
-      "open": 283.54,
-      "high": 298.26,
-      "low": 281.18,
-      "close": 296.26,
-      "volume": 256585347
-    },
     {
       "date": "2023-02-03",
       "open": 292.93,
@@ -1617,6 +1610,14 @@
       "low": 606.23,
       "close": 608.45,
       "volume": 350635371
+    },
+    {
+      "date": "2026-11-23",
+      "open": 655.98,
+      "high": 657.53,
+      "low": 641.95,
+      "close": 651.03,
+      "volume": 85330835
     }
   ],
   "aggregatedFrom": "1d"

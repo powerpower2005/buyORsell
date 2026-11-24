@@ -6,35 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:QQQ",
-  "fetchedAt": "2026-11-22T12:35:52.907Z",
-  "lastBarDate": "2026-11-20",
-  "barCount": 1032,
-  "checksum": "2c438fd0",
+  "fetchedAt": "2026-11-24T14:25:49.361Z",
+  "lastBarDate": "2026-11-23",
+  "barCount": 1030,
+  "checksum": "23d50c5d",
   "ohlcv": [
-    {
-      "date": "2022-10-12",
-      "open": 263.4,
-      "high": 265.36,
-      "low": 261.95,
-      "close": 262.66,
-      "volume": 50580179
-    },
-    {
-      "date": "2022-10-13",
-      "open": 255.16,
-      "high": 270.17,
-      "low": 254.26,
-      "close": 268.82,
-      "volume": 112894068
-    },
-    {
-      "date": "2022-10-14",
-      "open": 271.2,
-      "high": 271.81,
-      "low": 260.14,
-      "close": 260.74,
-      "volume": 77244302
-    },
     {
       "date": "2022-10-17",
       "open": 266.84,
@@ -8266,22 +8242,31 @@
       "low": 606.23,
       "close": 608.45,
       "volume": 134753508
+    },
+    {
+      "date": "2026-11-23",
+      "open": 655.98,
+      "high": 657.53,
+      "low": 641.95,
+      "close": 651.03,
+      "volume": 85330835
     }
   ],
   "collection_version": "3.1.0",
   "source_tags": [
     "GoogleFinance:GOOGLEFINANCE",
     "GoogleSheets:sheets.googleapis.com",
-    "Validation:query1.finance.yahoo.com"
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1034,
+    "checked": 1033,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-22T12:35:53.037Z"
+    "verified_at": "2026-11-24T14:25:49.599Z"
   },
   "provider_corrections": [
     "universe-v1-QQQ-NASDAQ-2024-10-15"
