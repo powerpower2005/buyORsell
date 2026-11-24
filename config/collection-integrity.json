@@ -500,6 +500,114 @@
       "sources": [
         "https://fchart.stock.naver.com/sise.nhn?symbol=010120&timeframe=day&count=1500&requestType=0"
       ]
+    },
+    {
+      "id": "intc-nasdaq-2024-10-15-repeated-prior-session",
+      "symbol": "NASDAQ:INTC",
+      "before": {
+        "date": "2024-10-15",
+        "open": 23.58,
+        "high": 23.77,
+        "low": 23.27,
+        "close": 23.44,
+        "volume": 490758
+      },
+      "after": {
+        "date": "2024-10-15",
+        "open": 23.41,
+        "high": 23.72,
+        "low": 22.47,
+        "close": 22.66,
+        "volume": 68900556
+      },
+      "reason": "GOOGLEFINANCE repeated the prior session's OHLC with partial volume. Retain the stored full-session GOOGLEFINANCE OHLCV. Yahoo corroborates the prices within the collection tolerance.",
+      "sources": [
+        "https://github.com/powerpower2005/buyORsell/actions/runs/45411127033/artifacts/14927244780",
+        "https://github.com/powerpower2005/buyORsell/blob/884c439ce7bd5c2e2f31efb997c766ae2f7c3ec0/data/INTC-NASDAQ/1d.json",
+        "https://query1.finance.yahoo.com/v8/finance/chart/INTC?period1=1728950400&period2=1729036800&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-24"
+    },
+    {
+      "id": "lite-nasdaq-2024-10-15-repeated-prior-session",
+      "symbol": "NASDAQ:LITE",
+      "before": {
+        "date": "2024-10-15",
+        "open": 68.68,
+        "high": 69.4,
+        "low": 67.88,
+        "close": 69.23,
+        "volume": 696
+      },
+      "after": {
+        "date": "2024-10-15",
+        "open": 69.4,
+        "high": 70.09,
+        "low": 66.3,
+        "close": 66.58,
+        "volume": 1667435
+      },
+      "reason": "GOOGLEFINANCE repeated the prior session's OHLC with partial volume. Retain the stored full-session GOOGLEFINANCE OHLCV. Yahoo corroborates the prices within the collection tolerance.",
+      "sources": [
+        "https://github.com/powerpower2005/buyORsell/actions/runs/45411127033/artifacts/14927244780",
+        "https://github.com/powerpower2005/buyORsell/blob/884c439ce7bd5c2e2f31efb997c766ae2f7c3ec0/data/LITE-NASDAQ/1d.json",
+        "https://query1.finance.yahoo.com/v8/finance/chart/LITE?period1=1728950400&period2=1729036800&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-24"
+    },
+    {
+      "id": "ndx-indexnasdaq-2022-12-05-open-outside-range",
+      "symbol": "INDEXNASDAQ:NDX",
+      "before": {
+        "date": "2022-12-05",
+        "open": 11994.26,
+        "high": 11957.36,
+        "low": 11732.15,
+        "close": 11786.8,
+        "volume": 0
+      },
+      "after": {
+        "date": "2022-12-05",
+        "open": 11899.54,
+        "high": 11957.36,
+        "low": 11732.15,
+        "close": 11786.8,
+        "volume": 0
+      },
+      "reason": "GOOGLEFINANCE returned an opening price above the session high. Yahoo confirms the retained open and other prices. Preserve the index volume convention.",
+      "sources": [
+        "https://github.com/powerpower2005/buyORsell/actions/runs/45411127033/artifacts/14927244780",
+        "https://github.com/powerpower2005/buyORsell/blob/884c439ce7bd5c2e2f31efb997c766ae2f7c3ec0/data/NDX-INDEXNASDAQ/1d.json",
+        "https://query1.finance.yahoo.com/v8/finance/chart/%5ENDX?period1=1670198400&period2=1670284800&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-24"
+    },
+    {
+      "id": "pltr-nasdaq-2024-10-15-repeated-prior-session",
+      "symbol": "NASDAQ:PLTR",
+      "before": {
+        "date": "2024-10-15",
+        "open": 43.72,
+        "high": 44.39,
+        "low": 43.28,
+        "close": 43.4,
+        "volume": 673645
+      },
+      "after": {
+        "date": "2024-10-15",
+        "open": 43.48,
+        "high": 43.68,
+        "low": 41.52,
+        "close": 42.43,
+        "volume": 48296974
+      },
+      "reason": "GOOGLEFINANCE repeated the prior session's OHLC with partial volume. Retain the stored full-session GOOGLEFINANCE OHLCV. Yahoo corroborates the prices within the collection tolerance.",
+      "sources": [
+        "https://github.com/powerpower2005/buyORsell/actions/runs/45411127033/artifacts/14927244780",
+        "https://github.com/powerpower2005/buyORsell/blob/884c439ce7bd5c2e2f31efb997c766ae2f7c3ec0/data/PLTR-NASDAQ/1d.json",
+        "https://query1.finance.yahoo.com/v8/finance/chart/PLTR?period1=1728950400&period2=1729036800&interval=1d&events=splits"
+      ],
+      "independent_fetched_at": "2026-11-24"
     }
   ],
   "providerAdditions": [
