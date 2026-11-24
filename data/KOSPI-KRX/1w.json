@@ -24,19 +24,11 @@
     "after_sha256": "d80207cfd270a89ae7ef7b977f3d44079f0d0c014bb54a30106f8bb7b22500e0"
   },
   "resolvedSymbol": "KRX:KOSPI",
-  "fetchedAt": "2026-11-22T12:34:15.323Z",
-  "lastBarDate": "2026-11-20",
+  "fetchedAt": "2026-11-24T14:36:54.585Z",
+  "lastBarDate": "2026-11-24",
   "barCount": 200,
-  "checksum": "8e68ccf2",
+  "checksum": "24c26827",
   "ohlcv": [
-    {
-      "date": "2023-01-27",
-      "open": 2426.58,
-      "high": 2497.4,
-      "low": 2421.51,
-      "close": 2484.02,
-      "volume": 1546207
-    },
     {
       "date": "2023-02-03",
       "open": 2484.64,
@@ -1628,6 +1620,14 @@
       "low": 4831.69,
       "close": 4869.96,
       "volume": 1036788
+    },
+    {
+      "date": "2026-11-24",
+      "open": 4734.9,
+      "high": 5065.74,
+      "low": 4586.8,
+      "close": 5006.03,
+      "volume": 412711
     }
   ],
   "aggregatedFrom": "1d"

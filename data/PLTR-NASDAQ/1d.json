@@ -6,35 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:PLTR",
-  "fetchedAt": "2026-11-22T12:35:36.961Z",
-  "lastBarDate": "2026-11-20",
-  "barCount": 1032,
-  "checksum": "db746a4",
+  "fetchedAt": "2026-11-24T14:38:16.200Z",
+  "lastBarDate": "2026-11-23",
+  "barCount": 1030,
+  "checksum": "accf92a7",
   "ohlcv": [
-    {
-      "date": "2022-10-12",
-      "open": 8.06,
-      "high": 8.1,
-      "low": 7.82,
-      "close": 8.07,
-      "volume": 30201563
-    },
-    {
-      "date": "2022-10-13",
-      "open": 7.74,
-      "high": 8.2,
-      "low": 7.57,
-      "close": 8.08,
-      "volume": 36040853
-    },
-    {
-      "date": "2022-10-14",
-      "open": 8.23,
-      "high": 8.31,
-      "low": 7.53,
-      "close": 7.53,
-      "volume": 37484777
-    },
     {
       "date": "2022-10-17",
       "open": 7.71,
@@ -8266,24 +8242,35 @@
       "low": 142.28,
       "close": 143.49,
       "volume": 36629759
+    },
+    {
+      "date": "2026-11-23",
+      "open": 157.32,
+      "high": 161.19,
+      "low": 154.57,
+      "close": 159.36,
+      "volume": 32072088
     }
   ],
   "collection_version": "3.1.0",
   "source_tags": [
     "GoogleFinance:GOOGLEFINANCE",
     "GoogleSheets:sheets.googleapis.com",
-    "Validation:query1.finance.yahoo.com"
+    "Validation:query1.finance.yahoo.com",
+    "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1034,
+    "checked": 1033,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-22T12:35:37.068Z"
+    "verified_at": "2026-11-24T14:38:16.449Z"
   },
-  "provider_corrections": [],
+  "provider_corrections": [
+    "pltr-nasdaq-2024-10-15-repeated-prior-session"
+  ],
   "data_recovery": {
     "id": "universe-history-2026-11-16-v1",
     "version": "1.0.0",
