@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "INDEXNASDAQ:NDX",
-  "fetchedAt": "2026-11-24T14:37:44.088Z",
-  "lastBarDate": "2026-11-23",
-  "barCount": 1030,
-  "checksum": "65f36e04",
+  "fetchedAt": "2026-11-24T23:23:36.390Z",
+  "lastBarDate": "2026-11-24",
+  "barCount": 1031,
+  "checksum": "2a4f36a",
   "ohlcv": [
     {
       "date": "2022-10-17",
@@ -357,7 +357,7 @@
     },
     {
       "date": "2022-12-16",
-      "open": 11313.64,
+      "open": 11345.22,
       "high": 11383.39,
       "low": 11175.54,
       "close": 11243.72,
@@ -1045,7 +1045,7 @@
     },
     {
       "date": "2023-04-24",
-      "open": 13000.77,
+      "open": 12981.71,
       "high": 13044.23,
       "low": 12883.77,
       "close": 12969.76,
@@ -1341,7 +1341,7 @@
     },
     {
       "date": "2023-06-15",
-      "open": 15005.69,
+      "open": 14949.7,
       "high": 15246.62,
       "low": 14930.12,
       "close": 15185.48,
@@ -5621,7 +5621,7 @@
     },
     {
       "date": "2025-08-05",
-      "open": 23235.32,
+      "open": 23188.61,
       "high": 23286.05,
       "low": 23008.14,
       "close": 23018.56,
@@ -8250,6 +8250,14 @@
       "low": 26386.42,
       "close": 26746.1,
       "volume": 0
+    },
+    {
+      "date": "2026-11-24",
+      "open": 26298.14,
+      "high": 26433.6,
+      "low": 25935.47,
+      "close": 26214.17,
+      "volume": 0
     }
   ],
   "collection_version": "3.1.0",
@@ -8260,16 +8268,15 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1033,
+    "checked": 1031,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-24T14:37:44.321Z"
+    "verified_at": "2026-11-24T23:23:36.520Z"
   },
   "provider_corrections": [
-    "ndx-indexnasdaq-2022-12-05-open-outside-range",
     "universe-v1-NDX-INDEXNASDAQ-2024-01-24"
   ],
   "data_recovery": {

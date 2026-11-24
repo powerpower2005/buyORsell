@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NYSE:VRT",
-  "fetchedAt": "2026-11-24T14:39:20.624Z",
-  "lastBarDate": "2026-11-23",
-  "barCount": 1030,
-  "checksum": "3d7e64ff",
+  "fetchedAt": "2026-11-24T23:25:12.888Z",
+  "lastBarDate": "2026-11-24",
+  "barCount": 1031,
+  "checksum": "db4f9e63",
   "ohlcv": [
     {
       "date": "2022-10-17",
@@ -8250,6 +8250,14 @@
       "low": 182.95,
       "close": 186.35,
       "volume": 9716607
+    },
+    {
+      "date": "2026-11-24",
+      "open": 179.11,
+      "high": 180.53,
+      "low": 168.27,
+      "close": 173.82,
+      "volume": 5970355
     }
   ],
   "collection_version": "3.1.0",
@@ -8260,13 +8268,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1033,
+    "checked": 1031,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-24T14:39:20.938Z"
+    "verified_at": "2026-11-24T23:25:13.030Z"
   },
   "provider_corrections": [
     "universe-v1-VRT-NYSE-2025-05-22"

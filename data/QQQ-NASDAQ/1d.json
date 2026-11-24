@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:QQQ",
-  "fetchedAt": "2026-11-24T14:38:32.444Z",
-  "lastBarDate": "2026-11-23",
-  "barCount": 1030,
-  "checksum": "23d50c5d",
+  "fetchedAt": "2026-11-24T23:24:24.600Z",
+  "lastBarDate": "2026-11-24",
+  "barCount": 1031,
+  "checksum": "9e1fafbd",
   "ohlcv": [
     {
       "date": "2022-10-17",
@@ -8250,6 +8250,14 @@
       "low": 641.95,
       "close": 651.03,
       "volume": 85330835
+    },
+    {
+      "date": "2026-11-24",
+      "open": 640.04,
+      "high": 648,
+      "low": 631.15,
+      "close": 638.1,
+      "volume": 55589171
     }
   ],
   "collection_version": "3.1.0",
@@ -8260,13 +8268,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1033,
+    "checked": 1031,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-24T14:38:32.712Z"
+    "verified_at": "2026-11-24T23:24:24.750Z"
   },
   "provider_corrections": [
     "universe-v1-QQQ-NASDAQ-2024-10-15"

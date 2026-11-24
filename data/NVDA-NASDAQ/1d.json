@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:NVDA",
-  "fetchedAt": "2026-11-24T14:38:00.055Z",
-  "lastBarDate": "2026-11-23",
-  "barCount": 1030,
-  "checksum": "28c9f0ad",
+  "fetchedAt": "2026-11-24T23:23:52.514Z",
+  "lastBarDate": "2026-11-24",
+  "barCount": 1031,
+  "checksum": "ae2f1437",
   "ohlcv": [
     {
       "date": "2022-10-17",
@@ -8250,6 +8250,14 @@
       "low": 156.93,
       "close": 165.05,
       "volume": 782593289
+    },
+    {
+      "date": "2026-11-24",
+      "open": 159.1,
+      "high": 159.92,
+      "low": 150.5,
+      "close": 155.38,
+      "volume": 379281729
     }
   ],
   "collection_version": "3.1.0",
@@ -8260,13 +8268,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1033,
+    "checked": 1031,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-24T14:38:00.374Z"
+    "verified_at": "2026-11-24T23:23:52.666Z"
   },
   "provider_corrections": [
     "universe-v1-NVDA-NASDAQ-2025-05-22"
