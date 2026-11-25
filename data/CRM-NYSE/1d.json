@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NYSE:CRM",
-  "fetchedAt": "2026-11-24T23:21:41.709Z",
+  "fetchedAt": "2026-11-25T10:44:54.703Z",
   "lastBarDate": "2026-11-24",
   "barCount": 1031,
-  "checksum": "4e29c7bd",
+  "checksum": "51ac08a7",
   "ohlcv": [
     {
       "date": "2022-10-17",
@@ -8257,7 +8257,7 @@
       "high": 194.83,
       "low": 183.89,
       "close": 193.26,
-      "volume": 8320865
+      "volume": 8342074
     }
   ],
   "collection_version": "3.1.0",
@@ -8273,7 +8273,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-24T23:21:41.856Z"
+    "verified_at": "2026-11-25T10:44:54.817Z"
   },
   "provider_corrections": []
 }

@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "KRX:000660",
-  "fetchedAt": "2026-11-24T23:19:59.001Z",
+  "fetchedAt": "2026-11-25T10:43:14.568Z",
   "lastBarDate": "2026-11-24",
   "barCount": 1004,
   "checksum": "204117f1",
@@ -8065,7 +8065,7 @@
       "2024-10-14",
       "2025-09-19"
     ],
-    "verified_at": "2026-11-24T23:20:00.820Z"
+    "verified_at": "2026-11-25T10:43:16.287Z"
   },
   "provider_corrections": []
 }

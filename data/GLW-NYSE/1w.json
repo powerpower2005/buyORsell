@@ -21,10 +21,10 @@
     "after_sha256": "b9c2e5f6b57d8baa1d3ef7452da953032bd13f62daea2d22cdb3ff7661f93f9e"
   },
   "resolvedSymbol": "NYSE:GLW",
-  "fetchedAt": "2026-11-24T23:21:58.111Z",
+  "fetchedAt": "2026-11-25T10:45:10.520Z",
   "lastBarDate": "2026-11-24",
   "barCount": 200,
-  "checksum": "1a040c5a",
+  "checksum": "55d72d86",
   "ohlcv": [
     {
       "date": "2023-02-03",
@@ -1624,7 +1624,7 @@
       "high": 112,
       "low": 98.62,
       "close": 101.87,
-      "volume": 21853948
+      "volume": 21995385
     }
   ],
   "aggregatedFrom": "1d"

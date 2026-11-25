@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "INDEXNASDAQ:NDX",
-  "fetchedAt": "2026-11-24T23:23:36.390Z",
+  "fetchedAt": "2026-11-25T10:46:46.561Z",
   "lastBarDate": "2026-11-24",
   "barCount": 1031,
   "checksum": "2a4f36a",
@@ -8274,7 +8274,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-24T23:23:36.520Z"
+    "verified_at": "2026-11-25T10:46:46.689Z"
   },
   "provider_corrections": [
     "universe-v1-NDX-INDEXNASDAQ-2024-01-24"
