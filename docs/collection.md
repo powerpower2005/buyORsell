@@ -82,6 +82,8 @@ Actions **Fetch Quote**의 `verify_soxx_recovery=true`, ticker=`SOXX:NASDAQ`는 
 
 배치 보고 2.0.2는 GitHub Actions 검증 주석에 사전에 정의한 오류 코드와 확인된 종목·문제 일봉 날짜만 남깁니다. stocker는 이 주석을 사용해 최종 복구 실패를 Slack 오류 채널에 알립니다. [stocker 오류 알림 운영](https://github.com/powerpower2005/stocker/blob/main/docs/slack/quote-collection-errors.md).
 
+2026-11-26 배치 보고 2.0.3은 `Quote collection failure v2` 주석에 종목·오류 코드·거래일을 JSON 배열로 기록합니다. GitHub Actions가 중괄호를 마스킹해 두 차례 Slack 오류에서 종목과 날짜가 빠졌습니다. 마스킹을 재현한 회귀 테스트에서 같은 종목·오류 코드·거래일이 전달되는 것을 확인했습니다. [복구 실패 실행](https://github.com/powerpower2005/buyORsell/actions/runs/45800373720).
+
 수동으로 같은 배치를 실행하려면 Fetch Quote에서 ticker=`ALL`, `batch_refresh=true`를 선택합니다. `audit_universe` 및 `verify_soxx_recovery`는 false로 둡니다. 기존 읽기 전용 감사와 구분되는 실제 수집·복구·커밋 경로입니다. 보고서는 `fetch-run-report` artifact와 Actions Summary에 기록됩니다.
 
 ### 예약 수집 실패 복구

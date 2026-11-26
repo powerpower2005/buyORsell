@@ -1,5 +1,5 @@
 {
-  "version": "1.1.4",
+  "version": "1.1.6",
   "quarantined": {
     "CRD:NTYSE": {
       "reason": "Invalid exchange and all 484 OHLCV rows copied from 000660:KRX; retain existing exclusion, do not infer replacement."
@@ -17,6 +17,33 @@
   "independentPriceTolerance": 0.02,
   "independentExceptions": [],
   "providerCorrections": [
+    {
+      "id": "ndx-indexnasdaq-2023-07-25-open-outside-range",
+      "symbol": "INDEXNASDAQ:NDX",
+      "before": {
+        "date": "2023-07-25",
+        "open": 15448.02,
+        "high": 15622.69,
+        "low": 15482.04,
+        "close": 15561.42,
+        "volume": 0
+      },
+      "after": {
+        "date": "2023-07-25",
+        "open": 15483.06,
+        "high": 15622.69,
+        "low": 15482.04,
+        "close": 15561.42,
+        "volume": 0
+      },
+      "reason": "GOOGLEFINANCE repeated the prior close as the open, which falls below the session low. Yahoo confirms all four stored prices. Preserve the index volume convention.",
+      "sources": [
+        "https://github.com/powerpower2005/buyORsell/actions/runs/45810715210/artifacts/15113751019",
+        "https://query1.finance.yahoo.com/v8/finance/chart/%5ENDX?period1=1690243200&period2=1690329600&interval=1d&events=splits",
+        "https://fred.stlouisfed.org/data/NASDAQ100"
+      ],
+      "independent_fetched_at": "2026-11-26"
+    },
     {
       "id": "ndx-indexnasdaq-2024-12-09-open-outside-range",
       "symbol": "INDEXNASDAQ:NDX",

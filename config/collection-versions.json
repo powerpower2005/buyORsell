@@ -1,5 +1,5 @@
 {
-  "releasedOn": "2026-11-24",
+  "releasedOn": "2026-11-26",
   "items": {
     "sheets_fetch": {
       "version": "3.1.0",
@@ -17,9 +17,9 @@
       "change": "Remove verified foreign holiday bars, then reconcile all retained SOXX prices with an isolated provider snapshot; preserve both repair stages and regenerate aggregates."
     },
     "universe_integrity": {
-      "version": "1.1.5",
-      "previous": "1.1.4",
-      "change": "Correct four exact GOOGLEFINANCE observations confirmed by the 2026-11-24 audit and independent prices: INTC, LITE and PLTR on 2024-10-15, and the NDX open on 2022-12-05."
+      "version": "1.1.6",
+      "previous": "1.1.5",
+      "change": "Correct the exact 2023-07-25 NDX opening price error observed in the read-only GOOGLEFINANCE audit and confirmed against Yahoo and stored prices."
     },
     "universe_recovery": {
       "version": "1.1.0",
@@ -27,9 +27,9 @@
       "change": "Naver confirms 16 of 17 unverified domestic bars; correct LS ELECTRIC 2024-11-07 and preserve raw share-volume convention and prior audit lineage."
     },
     "batch_audit": {
-      "version": "2.0.2",
-      "previous": "2.0.1",
-      "change": "Publish only recognized failure codes, ticker identifiers and known historical bar dates as a GitHub Actions check annotation for the stocker error monitor."
+      "version": "2.0.3",
+      "previous": "2.0.2",
+      "change": "Publish the allowlisted ticker, failure code and historical bar date as brace-free JSON arrays in a v2 GitHub check annotation so secret masking does not hide them."
     },
     "batch_schedule": {
       "version": "1.0.0",

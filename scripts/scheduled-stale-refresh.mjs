@@ -38,7 +38,7 @@ export async function runScheduledStaleRefresh({root=ROOT,pipeline=runFetchPipel
   const tickers=[...new Set(index.entries.map(e=>e.ticker))].sort();
   const timeframes=read(path.join(root,'config/timeframes.json')).timeframes;
   const tfs=['1d',...Object.entries(timeframes).filter(([,c])=>c.enabled&&c.aggregateFrom==='1d').map(([tf])=>tf)];
-  const report={version:'2.0.2',mode:'full-history-batch',ranAt:new Date().toISOString(),source_tags:[],totals:{scanned:0,checked:0,failed:0,excluded:0,restoredFiles:0,historicalAdded:0,newBars:0,revisedBars:0},series:[]};
+  const report={version:'2.0.3',mode:'full-history-batch',ranAt:new Date().toISOString(),source_tags:[],totals:{scanned:0,checked:0,failed:0,excluded:0,restoredFiles:0,historicalAdded:0,newBars:0,revisedBars:0},series:[]};
   for(const ticker of tickers){
     if(policy.quarantined[ticker]){report.totals.excluded++;report.series.push({ticker,status:'excluded',reason:policy.quarantined[ticker].reason});continue;}
     report.totals.scanned++;
@@ -80,13 +80,14 @@ const failureCodes = [
 ];
 
 export function batchFailureAnnotation(report) {
+  // GitHub Actions secret masking can replace braces inside workflow commands.
   const failed = report.series.filter(row => row.status === 'failed').slice(0, 20).map(row => {
     const code = failureCodes.find(([match]) => match.test(row.reason))?.[1] ?? 'collection_or_validation';
     const ticker = /^[A-Z0-9.]+:[A-Z0-9]+$/.test(row.ticker) ? row.ticker : null;
     const date = /^\d{4}-\d{2}-\d{2}$/.test(row.error_date ?? '') ? row.error_date : null;
-    return { ticker, code, date };
+    return [ticker, code, date];
   });
-  return JSON.stringify({ failed, count: report.totals.failed });
+  return JSON.stringify(failed);
 }
 
 export function buildMarkdown(report){
@@ -101,7 +102,7 @@ async function main(){
   console.log(JSON.stringify(report.totals));
   if (!report.complete) {
     if (process.env.GITHUB_ACTIONS === 'true') {
-      console.error('::error title=Quote collection failure v1::' + batchFailureAnnotation(report));
+      console.error('::error title=Quote collection failure v2::' + batchFailureAnnotation(report));
     }
     process.exitCode = 1;
   }

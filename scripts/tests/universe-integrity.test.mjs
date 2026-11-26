@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import {assertQuoteIntegrity,barsHash,crossSymbolMatches,integrityPolicy} from '../lib/universe-integrity.mjs';
 import {applyReviewedCorrections} from '../lib/reviewed-corrections.mjs';
 import {compareIndependent,parseIndependent,parseNaver,verifyIndependent} from '../lib/independent-prices.mjs';
+import {assertFetchedBars} from '../lib/quote-quality.mjs';
 const bar=(date,c=100)=>({date,open:c,high:c+1,low:c-1,close:c,volume:100});
 const quote=(ticker,bars)=>({ticker,timeframe:'1d',resolvedSymbol:ticker.split(':').reverse().join(':'),ohlcv:bars,barCount:bars.length,lastBarDate:bars.at(-1).date});
 const policy={quarantined:{'CRD:NTYSE':{reason:'foreign data'}},reviewedMoves:[],maxUnreviewedCloseChange:.4,providerCorrections:[],providerAdditions:[],nonTradingDates:[],independentExceptions:[],independentPriceTolerance:.02};
@@ -71,6 +72,19 @@ test('reviewed NDX and MU rows keep the stored independently verified history', 
     assert.doesNotThrow(() => assertQuoteIntegrity(quote(ticker,[after])));
     assert.throws(() => applyReviewedCorrections([{...before,open:before.open+1}],symbol), /no longer matches/);
   }
+});
+test('NDX 2023-07-25 correction matches only the observed prior-close opening error', () => {
+  const raw = {date:'2023-07-25',open:15448.02,high:15622.69,low:15482.04,close:15561.42,volume:0};
+  const stored = JSON.parse(fs.readFileSync(new URL('../../data/NDX-INDEXNASDAQ/1d.json', import.meta.url)));
+  const expected = stored.ohlcv.find(bar => bar.date === raw.date);
+  const yahoo = {date:raw.date,open:15483.0595703125,high:15622.6904296875,low:15482.0400390625,close:15561.419921875,volume:3812470000};
+  assert.throws(() => assertFetchedBars([raw]), {message:'Invalid OHLC price bounds',barDate:raw.date});
+  const corrected = applyReviewedCorrections([raw], stored.resolvedSymbol);
+  assert.deepEqual(corrected, {bars:[expected],applied:['ndx-indexnasdaq-2023-07-25-open-outside-range']});
+  assert.doesNotThrow(() => assertFetchedBars(corrected.bars));
+  assert.equal(compareIndependent(stored.ticker, corrected.bars, [yahoo]).checked, 1);
+  assert.deepEqual(applyReviewedCorrections([expected], stored.resolvedSymbol), {bars:[expected],applied:[]});
+  assert.throws(() => applyReviewedCorrections([{...raw,open:15449}], stored.resolvedSymbol), /no longer matches/);
 });
 test('missing-session insertion requires current neighbor evidence and respects request bounds',()=>{
   const a=bar('2026-11-09'),b=bar('2026-11-10'),c=bar('2026-11-11'),p={...policy,providerAdditions:[{symbol:'KRX:010120',id:'missing',bar:b,anchors:[a,c]}]};

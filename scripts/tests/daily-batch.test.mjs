@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {runScheduledStaleRefresh,historyChanges,buildMarkdown} from '../scheduled-stale-refresh.mjs';
+import {runScheduledStaleRefresh,historyChanges,buildMarkdown,batchFailureAnnotation} from '../scheduled-stale-refresh.mjs';
 import {batchHistoryOptions,committedHistory} from '../lib/history-refresh.mjs';
 const bar=date=>({date,open:100,high:101,low:99,close:100,volume:123});
 const quote=(ticker,dates)=>({ticker,timeframe:'1d',ohlcv:dates.map(bar),barCount:dates.length,lastBarDate:dates.at(-1),source_tags:['GoogleFinance:GOOGLEFINANCE']});
@@ -54,6 +54,18 @@ test('persistent independent price disagreement leaves the batch uncommittable a
 test('non-trading dates are not invented and revisions are distinguished from added dates',()=>{
   const before=quote('AAPL:NASDAQ',['2026-11-06','2026-11-09']),after=structuredClone(before);after.ohlcv[1].volume++;
   assert.deepEqual(historyChanges(before,after),{historical_added_dates:[],new_dates:[],revised_dates:['2026-11-09']});
+});
+test('failure annotations retain only structured values when GitHub masks braces', () => {
+  const message = batchFailureAnnotation({series: [
+    {ticker: 'NDX:INDEXNASDAQ', status: 'failed', reason: 'Invalid OHLC price bounds', error_date: '2023-07-25'},
+    {ticker: '<@other>', status: 'failed', reason: 'unrecognized raw error', error_date: 'raw error'},
+    {ticker: 'AAPL:NASDAQ', status: 'verified'},
+  ]});
+  const masked = message.replace(/[{}]/g, '***');
+  assert.deepEqual(JSON.parse(masked), [
+    ['NDX:INDEXNASDAQ', 'ohlc_bounds', '2023-07-25'],
+    [null, 'collection_or_validation', null],
+  ]);
 });
 test('batch range covers the full retention window and every already-retained split basis',()=>{
   const now=new Date('2026-11-16'),config={sheetsLookbackDays:1500};
