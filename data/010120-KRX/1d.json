@@ -6,19 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "KRX:010120",
-  "fetchedAt": "2026-11-26T11:35:58.978Z",
-  "lastBarDate": "2026-11-25",
+  "fetchedAt": "2026-11-26T22:43:03.068Z",
+  "lastBarDate": "2026-11-26",
   "barCount": 1002,
-  "checksum": "e5ca1550",
+  "checksum": "711a8120",
   "ohlcv": [
-    {
-      "date": "2022-10-17",
-      "open": 9550,
-      "high": 9740,
-      "low": 9430,
-      "close": 9670,
-      "volume": 43459
-    },
     {
       "date": "2022-10-18",
       "open": 9830,
@@ -8026,6 +8018,14 @@
       "low": 110800,
       "close": 114300,
       "volume": 486864
+    },
+    {
+      "date": "2026-11-26",
+      "open": 115100,
+      "high": 117300,
+      "low": 112100,
+      "close": 113400,
+      "volume": 379993
     }
   ],
   "collection_version": "3.1.0",
@@ -8038,7 +8038,7 @@
     "NaverFinance:fchart.stock.naver.com"
   ],
   "integrity_verification": {
-    "checked": 1002,
+    "checked": 1003,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
@@ -8051,7 +8051,7 @@
       "2024-11-07",
       "2025-09-19"
     ],
-    "verified_at": "2026-11-26T11:35:59.947Z"
+    "verified_at": "2026-11-26T22:43:04.327Z"
   },
   "provider_corrections": [
     "universe-v2-010120-KRX-2024-11-07",

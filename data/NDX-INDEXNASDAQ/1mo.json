@@ -22,7 +22,7 @@
     "after_sha256": "26b553361724d8a172773df6e85f5f4ca45d842b71b397d5d2c4a7bfc4699c0f"
   },
   "resolvedSymbol": "INDEXNASDAQ:NDX",
-  "fetchedAt": "2026-11-26T11:38:40.148Z",
+  "fetchedAt": "2026-11-26T22:45:44.641Z",
   "lastBarDate": "2026-11-25",
   "barCount": 50,
   "checksum": "bc2fa13",
@@ -357,7 +357,7 @@
     },
     {
       "date": "2026-03-31",
-      "open": 24960.04,
+      "open": 24599.41,
       "high": 25189.17,
       "low": 22841.42,
       "close": 23740.19,

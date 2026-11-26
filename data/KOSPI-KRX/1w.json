@@ -24,10 +24,10 @@
     "after_sha256": "d80207cfd270a89ae7ef7b977f3d44079f0d0c014bb54a30106f8bb7b22500e0"
   },
   "resolvedSymbol": "KRX:KOSPI",
-  "fetchedAt": "2026-11-26T11:37:51.267Z",
-  "lastBarDate": "2026-11-25",
+  "fetchedAt": "2026-11-26T22:44:55.632Z",
+  "lastBarDate": "2026-11-26",
   "barCount": 200,
-  "checksum": "a67ef32c",
+  "checksum": "3da70dca",
   "ohlcv": [
     {
       "date": "2023-02-03",
@@ -1622,12 +1622,12 @@
       "volume": 1036788
     },
     {
-      "date": "2026-11-25",
+      "date": "2026-11-26",
       "open": 4734.9,
       "high": 5065.74,
       "low": 4586.8,
-      "close": 4697.51,
-      "volume": 618102
+      "close": 4711.21,
+      "volume": 789098
     }
   ],
   "aggregatedFrom": "1d"
