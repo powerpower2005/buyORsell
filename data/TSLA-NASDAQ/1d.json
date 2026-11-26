@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:TSLA",
-  "fetchedAt": "2026-11-25T10:48:05.564Z",
-  "lastBarDate": "2026-11-24",
-  "barCount": 1031,
-  "checksum": "32c1d3b",
+  "fetchedAt": "2026-11-26T11:39:59.621Z",
+  "lastBarDate": "2026-11-25",
+  "barCount": 1032,
+  "checksum": "51235788",
   "ohlcv": [
     {
       "date": "2022-10-17",
@@ -4021,11 +4021,11 @@
     },
     {
       "date": "2024-10-15",
-      "open": 220.01,
-      "high": 224.26,
-      "low": 217.12,
-      "close": 219.57,
-      "volume": 62988787
+      "open": 220.13,
+      "high": 221.91,
+      "low": 213.74,
+      "close": 219.16,
+      "volume": 1875459
     },
     {
       "date": "2024-10-16",
@@ -8258,6 +8258,14 @@
       "low": 375.5,
       "close": 384.68,
       "volume": 28792919
+    },
+    {
+      "date": "2026-11-25",
+      "open": 370.52,
+      "high": 383.73,
+      "low": 357.64,
+      "close": 380.14,
+      "volume": 34915849
     }
   ],
   "collection_version": "3.1.0",
@@ -8268,13 +8276,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1031,
+    "checked": 1032,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-25T10:48:05.684Z"
+    "verified_at": "2026-11-26T11:39:59.740Z"
   },
   "provider_corrections": [
     "universe-v1-TSLA-NASDAQ-2025-05-22"

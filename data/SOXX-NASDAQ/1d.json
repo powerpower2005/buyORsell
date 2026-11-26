@@ -6,10 +6,10 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:SOXX",
-  "fetchedAt": "2026-11-25T10:47:49.763Z",
-  "lastBarDate": "2026-11-24",
-  "barCount": 1031,
-  "checksum": "973dc301",
+  "fetchedAt": "2026-11-26T11:39:43.772Z",
+  "lastBarDate": "2026-11-25",
+  "barCount": 1032,
+  "checksum": "d719fd05",
   "ohlcv": [
     {
       "date": "2022-10-17",
@@ -8258,6 +8258,14 @@
       "low": 126,
       "close": 128.62,
       "volume": 57364539
+    },
+    {
+      "date": "2026-11-25",
+      "open": 121.21,
+      "high": 128.09,
+      "low": 118.18,
+      "close": 127.98,
+      "volume": 48968293
     }
   ],
   "data_recovery": {
@@ -8287,13 +8295,13 @@
   ],
   "collection_version": "3.1.0",
   "integrity_verification": {
-    "checked": 1031,
+    "checked": 1032,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-25T10:47:49.905Z"
+    "verified_at": "2026-11-26T11:39:43.909Z"
   },
   "provider_corrections": [
     "universe-v1-SOXX-NASDAQ-2024-03-07"
