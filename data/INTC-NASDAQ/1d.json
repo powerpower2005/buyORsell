@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:INTC",
-  "fetchedAt": "2026-11-26T22:44:39.652Z",
+  "fetchedAt": "2026-11-27T10:22:25.471Z",
   "lastBarDate": "2026-11-25",
   "barCount": 1032,
   "checksum": "a232488b",
@@ -8282,7 +8282,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-26T22:44:39.822Z"
+    "verified_at": "2026-11-27T10:22:25.617Z"
   },
   "provider_corrections": [
     "universe-v1-INTC-NASDAQ-2025-05-22"

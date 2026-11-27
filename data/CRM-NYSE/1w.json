@@ -13,7 +13,7 @@
   ],
   "collection_version": "3.1.0",
   "resolvedSymbol": "NYSE:CRM",
-  "fetchedAt": "2026-11-26T22:43:51.834Z",
+  "fetchedAt": "2026-11-27T10:21:38.065Z",
   "lastBarDate": "2026-11-25",
   "barCount": 200,
   "checksum": "d07765aa",
@@ -736,7 +736,7 @@
       "high": 294.71,
       "low": 284.23,
       "close": 292.94,
-      "volume": 13074247
+      "volume": 16908218
     },
     {
       "date": "2024-10-25",

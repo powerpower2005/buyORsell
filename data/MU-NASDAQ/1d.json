@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:MU",
-  "fetchedAt": "2026-11-26T22:45:28.660Z",
+  "fetchedAt": "2026-11-27T10:23:13.845Z",
   "lastBarDate": "2026-11-25",
   "barCount": 1032,
   "checksum": "31cfdc22",
@@ -8282,7 +8282,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-26T22:45:28.958Z"
+    "verified_at": "2026-11-27T10:23:13.985Z"
   },
   "provider_corrections": [
     "universe-v1-MU-NASDAQ-2025-05-22"

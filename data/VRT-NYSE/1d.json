@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NYSE:VRT",
-  "fetchedAt": "2026-11-26T22:47:20.343Z",
+  "fetchedAt": "2026-11-27T10:25:04.541Z",
   "lastBarDate": "2026-11-25",
   "barCount": 1032,
   "checksum": "4d55b7d1",
@@ -8282,7 +8282,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-26T22:47:20.488Z"
+    "verified_at": "2026-11-27T10:25:04.657Z"
   },
   "provider_corrections": [
     "universe-v1-VRT-NYSE-2025-05-22"

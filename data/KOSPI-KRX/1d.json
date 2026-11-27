@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "KRX:KOSPI",
-  "fetchedAt": "2026-11-26T22:44:55.632Z",
+  "fetchedAt": "2026-11-27T10:22:41.233Z",
   "lastBarDate": "2026-11-26",
   "barCount": 1005,
   "checksum": "bc084ee1",
@@ -8062,7 +8062,7 @@
     "NaverFinance:fchart.stock.naver.com"
   ],
   "integrity_verification": {
-    "checked": 1006,
+    "checked": 1005,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
@@ -8071,10 +8071,9 @@
     ],
     "domestic_fallback_dates": [
       "2024-09-12",
-      "2026-06-29",
-      "2026-11-26"
+      "2026-06-29"
     ],
-    "verified_at": "2026-11-26T22:44:57.019Z"
+    "verified_at": "2026-11-27T10:22:42.517Z"
   },
   "provider_corrections": [
     "universe-v1-KOSPI-KRX-2025-04-10",

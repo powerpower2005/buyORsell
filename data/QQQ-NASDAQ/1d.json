@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:QQQ",
-  "fetchedAt": "2026-11-26T22:46:32.477Z",
+  "fetchedAt": "2026-11-27T10:24:17.097Z",
   "lastBarDate": "2026-11-25",
   "barCount": 1032,
   "checksum": "922dd971",
@@ -8281,7 +8281,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-26T22:46:32.672Z"
+    "verified_at": "2026-11-27T10:24:17.374Z"
   },
   "provider_corrections": [
     "universe-v1-QQQ-NASDAQ-2024-10-15"

@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "KRX:010120",
-  "fetchedAt": "2026-11-26T22:43:03.068Z",
+  "fetchedAt": "2026-11-27T10:20:49.628Z",
   "lastBarDate": "2026-11-26",
   "barCount": 1002,
   "checksum": "711a8120",
@@ -8038,7 +8038,7 @@
     "NaverFinance:fchart.stock.naver.com"
   ],
   "integrity_verification": {
-    "checked": 1003,
+    "checked": 1002,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
@@ -8051,7 +8051,7 @@
       "2024-11-07",
       "2025-09-19"
     ],
-    "verified_at": "2026-11-26T22:43:04.327Z"
+    "verified_at": "2026-11-27T10:20:50.871Z"
   },
   "provider_corrections": [
     "universe-v2-010120-KRX-2024-11-07",
