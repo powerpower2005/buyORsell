@@ -6,27 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:MU",
-  "fetchedAt": "2026-11-27T10:23:13.845Z",
-  "lastBarDate": "2026-11-25",
-  "barCount": 1032,
-  "checksum": "31cfdc22",
+  "fetchedAt": "2026-11-27T22:29:13.411Z",
+  "lastBarDate": "2026-11-27",
+  "barCount": 1031,
+  "checksum": "27d306b4",
   "ohlcv": [
-    {
-      "date": "2022-10-17",
-      "open": 54.6,
-      "high": 54.99,
-      "low": 52.85,
-      "close": 53.5,
-      "volume": 18261725
-    },
-    {
-      "date": "2022-10-18",
-      "open": 55.01,
-      "high": 55.14,
-      "low": 51.66,
-      "close": 52.55,
-      "volume": 19774779
-    },
     {
       "date": "2022-10-19",
       "open": 52.09,
@@ -8266,6 +8250,14 @@
       "low": 548.13,
       "close": 601.25,
       "volume": 52988430
+    },
+    {
+      "date": "2026-11-27",
+      "open": 630.13,
+      "high": 654.44,
+      "low": 607.27,
+      "close": 646.95,
+      "volume": 26833795
     }
   ],
   "collection_version": "3.1.0",
@@ -8276,13 +8268,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1032,
+    "checked": 1033,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-27T10:23:13.985Z"
+    "verified_at": "2026-11-27T22:29:13.545Z"
   },
   "provider_corrections": [
     "universe-v1-MU-NASDAQ-2025-05-22"

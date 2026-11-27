@@ -22,18 +22,18 @@
     "after_sha256": "ab34b6025825ebc4cd576c2c81618b6860779f9b49cbdf53156d136eb5c5dfe3"
   },
   "resolvedSymbol": "NASDAQ:LITE",
-  "fetchedAt": "2026-11-27T10:22:58.115Z",
-  "lastBarDate": "2026-11-25",
+  "fetchedAt": "2026-11-27T22:28:56.981Z",
+  "lastBarDate": "2026-11-27",
   "barCount": 50,
-  "checksum": "8b1b1de4",
+  "checksum": "f619009e",
   "ohlcv": [
     {
       "date": "2022-10-31",
-      "open": 67.34,
+      "open": 70.69,
       "high": 75.06,
-      "low": 67.15,
+      "low": 69.78,
       "close": 74.45,
-      "volume": 7477604
+      "volume": 5833502
     },
     {
       "date": "2022-11-30",
@@ -420,12 +420,12 @@
       "volume": 116441094
     },
     {
-      "date": "2026-11-25",
+      "date": "2026-11-27",
       "open": 802.55,
       "high": 802.55,
       "low": 430.24,
-      "close": 476.58,
-      "volume": 112125749
+      "close": 514.63,
+      "volume": 114706028
     }
   ],
   "aggregatedFrom": "1d"

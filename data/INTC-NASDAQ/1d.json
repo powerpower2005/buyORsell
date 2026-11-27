@@ -6,27 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:INTC",
-  "fetchedAt": "2026-11-27T10:22:25.471Z",
-  "lastBarDate": "2026-11-25",
-  "barCount": 1032,
-  "checksum": "a232488b",
+  "fetchedAt": "2026-11-27T22:28:23.107Z",
+  "lastBarDate": "2026-11-27",
+  "barCount": 1031,
+  "checksum": "e64d79bf",
   "ohlcv": [
-    {
-      "date": "2022-10-17",
-      "open": 26.31,
-      "high": 26.75,
-      "low": 26.17,
-      "close": 26.42,
-      "volume": 39416474
-    },
-    {
-      "date": "2022-10-18",
-      "open": 26.74,
-      "high": 26.96,
-      "low": 25.54,
-      "close": 25.87,
-      "volume": 51126851
-    },
     {
       "date": "2022-10-19",
       "open": 25.74,
@@ -8266,6 +8250,14 @@
       "low": 49.16,
       "close": 54.47,
       "volume": 129277853
+    },
+    {
+      "date": "2026-11-27",
+      "open": 56.55,
+      "high": 58.38,
+      "low": 54.55,
+      "close": 57.4,
+      "volume": 76482988
     }
   ],
   "collection_version": "3.1.0",
@@ -8276,13 +8268,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1032,
+    "checked": 1033,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-27T10:22:25.617Z"
+    "verified_at": "2026-11-27T22:28:23.241Z"
   },
   "provider_corrections": [
     "universe-v1-INTC-NASDAQ-2025-05-22"

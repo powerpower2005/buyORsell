@@ -6,7 +6,7 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NYSE:BE",
-  "fetchedAt": "2026-11-27T10:21:22.316Z",
+  "fetchedAt": "2026-11-27T22:27:18.105Z",
   "lastBarDate": "2026-11-25",
   "barCount": 1032,
   "checksum": "44a8452a",
@@ -8282,7 +8282,7 @@
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-27T10:21:22.442Z"
+    "verified_at": "2026-11-27T22:27:18.235Z"
   },
   "provider_corrections": [
     "universe-v1-BE-NYSE-2025-05-22"

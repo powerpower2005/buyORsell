@@ -6,27 +6,11 @@
   "intervalSeconds": 86400,
   "source": "google_sheets_googfinance",
   "resolvedSymbol": "NASDAQ:LITE",
-  "fetchedAt": "2026-11-27T10:22:58.115Z",
-  "lastBarDate": "2026-11-25",
-  "barCount": 1032,
-  "checksum": "ea119c11",
+  "fetchedAt": "2026-11-27T22:28:56.981Z",
+  "lastBarDate": "2026-11-27",
+  "barCount": 1031,
+  "checksum": "37fea106",
   "ohlcv": [
-    {
-      "date": "2022-10-17",
-      "open": 67.34,
-      "high": 70.06,
-      "low": 67.15,
-      "close": 69.75,
-      "volume": 875818
-    },
-    {
-      "date": "2022-10-18",
-      "open": 71.38,
-      "high": 71.9,
-      "low": 70.19,
-      "close": 71.02,
-      "volume": 768284
-    },
     {
       "date": "2022-10-19",
       "open": 70.69,
@@ -8266,6 +8250,14 @@
       "low": 430.24,
       "close": 476.58,
       "volume": 5428869
+    },
+    {
+      "date": "2026-11-27",
+      "open": 515.8,
+      "high": 516.25,
+      "low": 486.01,
+      "close": 514.63,
+      "volume": 2580279
     }
   ],
   "collection_version": "3.1.0",
@@ -8276,13 +8268,13 @@
     "YahooFinance:query1.finance.yahoo.com"
   ],
   "integrity_verification": {
-    "checked": 1032,
+    "checked": 1033,
     "unavailable": [],
     "reviewed_disagreements": [],
     "source_tags": [
       "Validation:query1.finance.yahoo.com"
     ],
-    "verified_at": "2026-11-27T10:22:58.226Z"
+    "verified_at": "2026-11-27T22:28:57.085Z"
   },
   "provider_corrections": [
     "universe-v1-LITE-NASDAQ-2025-05-22"
